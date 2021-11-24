@@ -29,7 +29,7 @@ import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.SecurityService;
-import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
+import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class TrainingDefinitionFacade {
 
     private final TrainingDefinitionService trainingDefinitionService;
-    private final CommandFeedbackApiService commandFeedbackApiService;
+    private final TrainingFeedbackApiService trainingFeedbackApiService;
     private final UserService userService;
     private final SecurityService securityService;
     private final TrainingDefinitionMapper trainingDefinitionMapper;
@@ -70,13 +70,13 @@ public class TrainingDefinitionFacade {
      */
     @Autowired
     public TrainingDefinitionFacade(TrainingDefinitionService trainingDefinitionService,
-                                    CommandFeedbackApiService commandFeedbackApiService,
+                                    TrainingFeedbackApiService trainingFeedbackApiService,
                                     UserService userService,
                                     SecurityService securityService,
                                     TrainingDefinitionMapper trainingDefMapper,
                                     LevelMapper levelMapper) {
         this.trainingDefinitionService = trainingDefinitionService;
-        this.commandFeedbackApiService = commandFeedbackApiService;
+        this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.userService = userService;
         this.securityService = securityService;
         this.trainingDefinitionMapper = trainingDefMapper;
@@ -302,7 +302,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public void delete(Long id) {
         trainingDefinitionService.delete(id);
-        commandFeedbackApiService.deleteReferenceGraph(id);
+        trainingFeedbackApiService.deleteReferenceGraph(id);
     }
 
     /**
@@ -376,9 +376,9 @@ public class TrainingDefinitionFacade {
                 .peek(level -> isAnyReferenceSolution.set(!level.getReferenceSolution().isEmpty()))
                 .map(level -> new LevelReferenceSolutionDTO(level.getId(), level.getOrder(), new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(level.getReferenceSolution()))))
                 .collect(Collectors.toList());
-        this.commandFeedbackApiService.deleteReferenceGraph(definitionId);
+        this.trainingFeedbackApiService.deleteReferenceGraph(definitionId);
         if(isAnyReferenceSolution.get()) {
-            this.commandFeedbackApiService.createReferenceGraph(definitionId, referenceSolution);
+            this.trainingFeedbackApiService.createReferenceGraph(definitionId, referenceSolution);
         }
     }
 

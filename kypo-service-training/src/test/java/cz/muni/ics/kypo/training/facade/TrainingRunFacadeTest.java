@@ -16,7 +16,7 @@ import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
-import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
+import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,7 +72,7 @@ public class TrainingRunFacadeTest {
     @Mock
     private AnswersStorageApiService answersStorageApiService;
     @Mock
-    private CommandFeedbackApiService commandFeedbackApiService;
+    private TrainingFeedbackApiService trainingFeedbackApiService;
 
     private TrainingRun trainingRun1, trainingRun2;
     private Hint hint;
@@ -88,7 +88,7 @@ public class TrainingRunFacadeTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         trainingRunFacade = new TrainingRunFacade(trainingRunService, trainingDefinitionService, answersStorageApiService,
-                securityService, userService, commandFeedbackApiService, trainingRunMapper, levelMapper, hintMapper);
+                securityService, userService, trainingFeedbackApiService, trainingRunMapper, levelMapper, hintMapper);
 
         participant = new UserRef();
         participant.setUserRefId(5L);
@@ -226,9 +226,9 @@ public class TrainingRunFacadeTest {
         given(trainingRunService.finishTrainingRun(trainingRun1.getId())).willReturn(trainingRun1);
         trainingRunFacade.finishTrainingRun(trainingRun1.getId());
         then(trainingRunService).should().finishTrainingRun(trainingRun1.getId());
-        then(commandFeedbackApiService).should(never()).createTraineeGraph(any(), any(), any(), any());
-        then(commandFeedbackApiService).should(never()).createSummaryGraph(any(), any());
-        then(commandFeedbackApiService).should(never()).deleteSummaryGraph(any());
+        then(trainingFeedbackApiService).should(never()).createTraineeGraph(any(), any(), any(), any());
+        then(trainingFeedbackApiService).should(never()).createSummaryGraph(any(), any());
+        then(trainingFeedbackApiService).should(never()).deleteSummaryGraph(any());
     }
 
     @Test

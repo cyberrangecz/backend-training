@@ -14,7 +14,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.*;
-import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
+import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class CommandVisualizationFacade {
     private final TrainingRunService trainingRunService;
     private final SecurityService securityService;
     private final UserService userService;
-    private final CommandFeedbackApiService commandFeedbackApiService;
+    private final TrainingFeedbackApiService trainingFeedbackApiService;
     private final TrainingRunMapper trainingRunMapper;
 
     @Autowired
@@ -44,13 +44,13 @@ public class CommandVisualizationFacade {
                                       TrainingRunService trainingRunService,
                                       SecurityService securityService,
                                       UserService userService,
-                                      CommandFeedbackApiService commandFeedbackApiService,
+                                      TrainingFeedbackApiService trainingFeedbackApiService,
                                       TrainingRunMapper trainingRunMapper) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingRunService = trainingRunService;
         this.securityService = securityService;
         this.userService = userService;
-        this.commandFeedbackApiService = commandFeedbackApiService;
+        this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.trainingRunMapper = trainingRunMapper;
     }
 
@@ -60,7 +60,7 @@ public class CommandVisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Object getReferenceGraph(Long instanceId) {
         TrainingInstance trainingInstance = this.trainingInstanceService.findById(instanceId);
-        return commandFeedbackApiService.getReferenceGraph(trainingInstance.getTrainingDefinition().getId());
+        return trainingFeedbackApiService.getReferenceGraph(trainingInstance.getTrainingDefinition().getId());
     }
 
     @PreAuthorize("@securityService.isTraineeOfGivenTrainingRun(#runId)")
@@ -69,12 +69,12 @@ public class CommandVisualizationFacade {
         if(trainingRun.getState() != TRState.FINISHED) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet." ));
         }
-        return commandFeedbackApiService.getReferenceGraph(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
+        return trainingFeedbackApiService.getReferenceGraph(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
     }
 
     @IsOrganizerOrAdmin
     public Object getSummaryGraph(Long instanceId) {
-        return commandFeedbackApiService.getSummaryGraph(instanceId);
+        return trainingFeedbackApiService.getSummaryGraph(instanceId);
     }
 
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
@@ -85,7 +85,7 @@ public class CommandVisualizationFacade {
         if(trainingRun.getState() != TRState.FINISHED) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet." ));
         }
-        return commandFeedbackApiService.getTraineeGraph(runId);
+        return trainingFeedbackApiService.getTraineeGraph(runId);
     }
 
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -93,13 +93,13 @@ public class CommandVisualizationFacade {
     public Object getAggregatedCommandsForOrganizer(Long instanceId, List<Long> runIds, boolean correct, List<MistakeType> mistakeTypes) {
         if(correct) {
             this.checkIfTrainingRunsAreFinished(runIds);
-            return commandFeedbackApiService.getAggregatedCorrectCommands(runIds);
+            return trainingFeedbackApiService.getAggregatedCorrectCommands(runIds);
         } else {
             if(mistakeTypes == null || mistakeTypes.isEmpty()) {
                 throw new BadRequestException("You must specify at least one mistake type.");
             }
             this.checkIfTrainingRunsAreFinished(runIds);
-            return commandFeedbackApiService.getAggregatedIncorrectCommands(runIds, mistakeTypes);
+            return trainingFeedbackApiService.getAggregatedIncorrectCommands(runIds, mistakeTypes);
         }
     }
 
@@ -109,13 +109,13 @@ public class CommandVisualizationFacade {
     public Object getAggregatedCommandsForTrainee(Long runId, boolean correct, List<MistakeType> mistakeTypes) {
         if(correct) {
             this.checkIfTrainingRunIsFinished(runId);
-            return commandFeedbackApiService.getAggregatedCorrectCommands(List.of(runId));
+            return trainingFeedbackApiService.getAggregatedCorrectCommands(List.of(runId));
         } else {
             if(mistakeTypes == null || mistakeTypes.isEmpty()) {
                 throw new BadRequestException("You must specify at least one mistake type.");
             }
             this.checkIfTrainingRunIsFinished(runId);
-            return commandFeedbackApiService.getAggregatedIncorrectCommands(List.of(runId), mistakeTypes);
+            return trainingFeedbackApiService.getAggregatedIncorrectCommands(List.of(runId), mistakeTypes);
         }
     }
 
@@ -124,7 +124,7 @@ public class CommandVisualizationFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public Object getAllCommandsByTrainingRun(Long runId) {
         this.checkIfTrainingRunIsFinished(runId);
-        return commandFeedbackApiService.getAllCommandsByTrainingRun(runId);
+        return trainingFeedbackApiService.getAllCommandsByTrainingRun(runId);
     }
 
     @IsOrganizerOrAdmin

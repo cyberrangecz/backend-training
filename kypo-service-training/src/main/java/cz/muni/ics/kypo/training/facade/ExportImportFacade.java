@@ -16,7 +16,6 @@ import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.*;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
-import cz.muni.ics.kypo.training.api.dto.traininglevel.ReferenceSolutionNodeDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
@@ -35,7 +34,7 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOpti
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
-import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
+import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
@@ -73,7 +72,7 @@ public class ExportImportFacade {
     private final TrainingDefinitionService trainingDefinitionService;
     private final SandboxApiService sandboxApiService;
     private final ElasticsearchApiService elasticsearchApiService;
-    private final CommandFeedbackApiService commandFeedbackApiService;
+    private final TrainingFeedbackApiService trainingFeedbackApiService;
     private final ExportImportMapper exportImportMapper;
     private final LevelMapper levelMapper;
     private final TrainingDefinitionMapper trainingDefinitionMapper;
@@ -93,7 +92,7 @@ public class ExportImportFacade {
     public ExportImportFacade(ExportImportService exportImportService,
                               TrainingDefinitionService trainingDefinitionService,
                               ElasticsearchApiService elasticsearchApiService,
-                              CommandFeedbackApiService commandFeedbackApiService,
+                              TrainingFeedbackApiService trainingFeedbackApiService,
                               SandboxApiService sandboxApiService,
                               ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
@@ -102,7 +101,7 @@ public class ExportImportFacade {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.elasticsearchApiService = elasticsearchApiService;
-        this.commandFeedbackApiService = commandFeedbackApiService;
+        this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.sandboxApiService = sandboxApiService;
         this.exportImportMapper = exportImportMapper;
         this.levelMapper = levelMapper;
@@ -206,7 +205,7 @@ public class ExportImportFacade {
                         new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(((TrainingLevel) level).getReferenceSolution()))))
                 .collect(Collectors.toList());
         if(isAnyReferenceSolution.get()) {
-            this.commandFeedbackApiService.createReferenceGraph(trainingDefinition.getId(), referenceSolution);
+            this.trainingFeedbackApiService.createReferenceGraph(trainingDefinition.getId(), referenceSolution);
         }
     }
 
