@@ -25,7 +25,7 @@ import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
-import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
+import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ public class TrainingRunFacade {
     private final AnswersStorageApiService answersStorageApiService;
     private final SecurityService securityService;
     private final UserService userService;
-    private final CommandFeedbackApiService commandFeedbackApiService;
+    private final TrainingFeedbackApiService trainingFeedbackApiService;
     private final TrainingRunMapper trainingRunMapper;
     private final LevelMapper levelMapper;
     private final HintMapper hintMapper;
@@ -79,7 +79,7 @@ public class TrainingRunFacade {
                              AnswersStorageApiService answersStorageApiService,
                              SecurityService securityService,
                              UserService userService,
-                             CommandFeedbackApiService commandFeedbackApiService,
+                             TrainingFeedbackApiService trainingFeedbackApiService,
                              TrainingRunMapper trainingRunMapper,
                              LevelMapper levelMapper,
                              HintMapper hintMapper) {
@@ -89,7 +89,7 @@ public class TrainingRunFacade {
         this.securityService = securityService;
         this.userService = userService;
         this.trainingRunMapper = trainingRunMapper;
-        this.commandFeedbackApiService = commandFeedbackApiService;
+        this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.levelMapper = levelMapper;
         this.hintMapper = hintMapper;
     }
@@ -142,10 +142,10 @@ public class TrainingRunFacade {
         TrainingInstance trainingInstance = null;
         for (Long trainingRunId : trainingRunIds) {
             trainingInstance = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete).getTrainingInstance();
-            commandFeedbackApiService.deleteTraineeGraph(trainingRunId);
+            trainingFeedbackApiService.deleteTraineeGraph(trainingRunId);
         }
-        commandFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
-        commandFeedbackApiService.createSummaryGraph(trainingInstance.getTrainingDefinition().getId(), trainingInstance.getId());
+        trainingFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
+        trainingFeedbackApiService.createSummaryGraph(trainingInstance.getTrainingDefinition().getId(), trainingInstance.getId());
     }
 
     /**
@@ -158,11 +158,11 @@ public class TrainingRunFacade {
     @TransactionalWO
     public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
         TrainingRun deletedTrainingRun = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete);
-        commandFeedbackApiService.deleteTraineeGraph(trainingRunId);
+        trainingFeedbackApiService.deleteTraineeGraph(trainingRunId);
         TrainingInstance trainingInstance = deletedTrainingRun.getTrainingInstance();
         TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-        commandFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
-        commandFeedbackApiService.createSummaryGraph(trainingDefinition.getId(), trainingInstance.getId());
+        trainingFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
+        trainingFeedbackApiService.createSummaryGraph(trainingDefinition.getId(), trainingInstance.getId());
     }
 
     /**
@@ -382,9 +382,9 @@ public class TrainingRunFacade {
                 .map(l -> new LevelReferenceSolutionDTO(l.getId(), l.getOrder(), new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(l.getReferenceSolution()))))
                 .collect(Collectors.toList());
         if(isAnyReferenceSolution.get()) {
-            this.commandFeedbackApiService.createTraineeGraph(definition.getId(), instance.getId(), run.getId(), referenceSolution);
-            this.commandFeedbackApiService.deleteSummaryGraph(instance.getId());
-            this.commandFeedbackApiService.createSummaryGraph(definition.getId(), instance.getId());
+            this.trainingFeedbackApiService.createTraineeGraph(definition.getId(), instance.getId(), run.getId(), referenceSolution);
+            this.trainingFeedbackApiService.deleteSummaryGraph(instance.getId());
+            this.trainingFeedbackApiService.createSummaryGraph(definition.getId(), instance.getId());
         }
     }
 

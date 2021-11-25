@@ -16,7 +16,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.*;
-import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
+import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.junit.Assert;
@@ -80,7 +80,7 @@ public class TrainingInstanceFacadeTest {
     @Mock
     private SandboxApiService sandboxApiService;
     @Mock
-    private CommandFeedbackApiService commandFeedbackApiService;
+    private TrainingFeedbackApiService trainingFeedbackApiService;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingInstanceCreateDTO trainingInstanceCreate;
@@ -97,7 +97,7 @@ public class TrainingInstanceFacadeTest {
         MockitoAnnotations.initMocks(this);
         trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService,
                 userService, elasticsearchApiService, securityService, sandboxApiService, trainingInstanceMapper, trainingRunMapper,
-                commandFeedbackApiService);
+                trainingFeedbackApiService);
 
         pageable = PageRequest.of(0, 5);
 

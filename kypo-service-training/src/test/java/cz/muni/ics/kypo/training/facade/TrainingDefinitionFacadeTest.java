@@ -26,7 +26,7 @@ import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
-import cz.muni.ics.kypo.training.service.api.CommandFeedbackApiService;
+import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -76,7 +76,7 @@ public class TrainingDefinitionFacadeTest {
     @Mock
     private TrainingDefinitionService trainingDefinitionService;
     @Mock
-    private CommandFeedbackApiService commandFeedbackApiService;
+    private TrainingFeedbackApiService trainingFeedbackApiService;
     @Mock
     private SecurityService securityService;
     @Mock
@@ -103,7 +103,7 @@ public class TrainingDefinitionFacadeTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService, commandFeedbackApiService,
+        trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService, trainingFeedbackApiService,
                 userService, securityService, trainingDefinitionMapper, levelMapper);
 
         author1 = new UserRef();
