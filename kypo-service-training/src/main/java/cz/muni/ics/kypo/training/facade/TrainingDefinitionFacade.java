@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
@@ -257,6 +258,7 @@ public class TrainingDefinitionFacade {
     public TrainingDefinitionByIdDTO clone(Long id, String title) {
         TrainingDefinitionByIdDTO clonedDefinition = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
         clonedDefinition.setLevels(gatherLevels(clonedDefinition.getId()));
+        this.updateReferenceSolution(clonedDefinition.getId());
         return clonedDefinition;
     }
 
@@ -273,6 +275,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public List<BasicLevelInfoDTO> swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
         trainingDefinitionService.swapLevels(definitionId, swapLevelFrom, swapLevelTo);
+        this.updateReferenceSolution(definitionId);
         return gatherBasicLevelInfo(definitionId);
     }
 
@@ -289,6 +292,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public List<BasicLevelInfoDTO> moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
         trainingDefinitionService.moveLevel(definitionId, levelIdToBeMoved, newPosition);
+        this.updateReferenceSolution(definitionId);
         return gatherBasicLevelInfo(definitionId);
     }
 
@@ -317,6 +321,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) {
         trainingDefinitionService.deleteOneLevel(definitionId, levelId);
+        this.updateReferenceSolution(definitionId);
         return gatherBasicLevelInfo(definitionId);
     }
 
@@ -394,6 +399,7 @@ public class TrainingDefinitionFacade {
     public void updateTrainingLevel(Long definitionId, TrainingLevelUpdateDTO trainingLevel) {
         TrainingLevel trainingLevelToUpdate = levelMapper.mapUpdateToEntity(trainingLevel);
         TrainingLevel updatedTrainingLevel = trainingDefinitionService.updateTrainingLevel(definitionId, trainingLevelToUpdate);
+        this.updateReferenceSolution(definitionId);
         this.trainingDefinitionService.auditAndSave(updatedTrainingLevel.getTrainingDefinition());
     }
 

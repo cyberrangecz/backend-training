@@ -331,6 +331,7 @@ public class TrainingDefinitionService {
         TrainingDefinition trainingDefinition = findById(definitionId);
         if (!trainingDefinition.getState().equals(TDState.UNRELEASED))
             throw new EntityConflictException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, ARCHIVED_OR_RELEASED));
+        // TODO use method findLevelById instead
         Optional<AbstractLevel> abstractLevelToDelete = abstractLevelRepository.findById(levelId);
         if (abstractLevelToDelete.isPresent()) {
             trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - abstractLevelToDelete.get().getEstimatedDuration());
