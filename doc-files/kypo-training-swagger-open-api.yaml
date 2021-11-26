@@ -1,11 +1,12 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.76"
+  version: "Version: 1.1.77"
   title: "KYPO Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo-rest-training/api/v1"
 tags:
+- name: "Command Visualizations"
 - name: "Export Imports"
 - name: "Training definitions"
 - name: "Training instances"
@@ -869,6 +870,33 @@ paths:
             $ref: "#/definitions/ApiError"
         500:
           description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /training-definitions/{definitionId}/has-reference-solution:
+    get:
+      tags:
+      - "Training definitions"
+      summary: "Get boolean value if the reference solution is defined or not."
+      description: ""
+      operationId: "hasReferenceSolution"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training Definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "True - reference solution is defined, false - otherwise."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Training definition not found."
           schema:
             $ref: "#/definitions/ApiError"
       security:
@@ -2401,6 +2429,247 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /visualizations/commands/training-instances/{instanceId}/aggregated:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get aggregated correct/incorrect commands executed during the given\
+        \ training runs."
+      description: ""
+      operationId: "getAggregatedCommandsForOrganizer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training Instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "runIds"
+        in: "query"
+        description: "Training Run IDs"
+        required: true
+        type: "List of numbers"
+        items:
+          type: "integer"
+          format: "int64"
+      - name: "correct"
+        in: "query"
+        description: "If correct or incorrect commands should be returned."
+        required: true
+        type: "boolean"
+      - name: "mistakeTypes"
+        in: "query"
+        description: "Mistake types"
+        required: false
+        type: "List of strings"
+        items:
+          type: "string"
+          enum:
+          - "SYNTAX_UNKNOWN_COMMAND"
+          - "SYNTAX_INVALID_ARGUMENTS"
+          - "SYNTAX_INVALID_OPTION"
+          - "SYNTAX_MISSING_OPTION_PARAM"
+          - "SYNTAX_INVALID_OPTION_PARAM"
+          - "SEMANTIC_UNKNOWN_IP"
+          - "SEMANTIC_WRONG_IP"
+      responses:
+        200:
+          description: "Aggregated correct/incorrect commands found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Aggregated correct/incorrect commands for the given training\
+            \ runs not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/commands/training-runs/{runId}:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get commands executed during the given training run."
+      description: ""
+      operationId: "getAllCommandsByTrainingRun"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training Run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Commands for the given training run found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Commmands for the given training run not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/commands/training-runs/{runId}/aggregated:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get aggregated correct/incorrect commands executed during the given\
+        \ training runs."
+      description: ""
+      operationId: "getAggregatedCommandsForTrainee"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training Run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "correct"
+        in: "query"
+        description: "If correct or incorrect commands should be returned."
+        required: true
+        type: "boolean"
+      - name: "mistakeTypes"
+        in: "query"
+        description: "Mistake types"
+        required: false
+        type: "List of strings"
+        items:
+          type: "string"
+          enum:
+          - "SYNTAX_UNKNOWN_COMMAND"
+          - "SYNTAX_INVALID_ARGUMENTS"
+          - "SYNTAX_INVALID_OPTION"
+          - "SYNTAX_MISSING_OPTION_PARAM"
+          - "SYNTAX_INVALID_OPTION_PARAM"
+          - "SEMANTIC_UNKNOWN_IP"
+          - "SEMANTIC_WRONG_IP"
+      responses:
+        200:
+          description: "Aggregated correct/incorrect commands found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Aggregated correct/incorrect commands for the given training\
+            \ runs not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/graphs/reference/training-instances/{instanceId}:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get reference graph for the given training instance."
+      description: ""
+      operationId: "getReferenceGraphForInstructor"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID."
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Reference graph found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Reference graph for the given training instance not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/graphs/reference/training-runs/{runId}:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get reference graph for the given training run."
+      description: ""
+      operationId: "getReferenceGraphForTrainee"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Reference graph found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Reference graph for the given training run not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/graphs/summary/training-instances/{instanceId}:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get summary graph for the given training instance."
+      description: ""
+      operationId: "getSummaryGraph"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Summary graph found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Summary graph for the given training instance not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/graphs/trainee/training-runs/{runId}:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get reference graph for the given training run."
+      description: ""
+      operationId: "getReferenceGraphForTrainee"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Reference graph found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Reference graph for the given training run not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/training-instances/{instanceId}:
     get:
       tags:
@@ -2616,6 +2885,33 @@ paths:
             $ref: "#/definitions/ApiError"
         500:
           description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/training-runs:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get finished training runs of the training instance."
+      description: ""
+      operationId: "findFinishedTrainingRunsByTrainingInstanceId"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training Instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Finished runs in the given training instance found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Finished runs in the given training instance not found."
           schema:
             $ref: "#/definitions/ApiError"
       security:
@@ -4222,6 +4518,46 @@ definitions:
         description: "Statements displayed to the participant in case of EMI."
         items:
           $ref: "#/definitions/ExtendedMatchingStatementDTO"
+  ReferenceSolutionNodeDTO:
+    type: "object"
+    required:
+    - "cmd"
+    - "cmdRegex"
+    - "cmdType"
+    - "prereqState"
+    - "stateName"
+    properties:
+      stateName:
+        type: "string"
+        example: "20"
+        description: "The name of the node in the graph."
+      prereqState:
+        type: "array"
+        example: "20"
+        description: "The list of the states (nodes) that must be reached before this\
+          \ node."
+        items:
+          type: "string"
+      cmd:
+        type: "string"
+        example: "20"
+        description: "The command which should be executed during the training."
+      cmdType:
+        type: "string"
+        example: "20"
+        description: "The type of the command (bash-command and msf-command are allowed\
+          \ for now)."
+      cmdRegex:
+        type: "string"
+        example: "20"
+        description: "Regular expression used to determine if execution of the command\
+          \ shift trainee to the node.."
+      optional:
+        type: "boolean"
+        example: false
+        description: "Mark if the node is optional in the training progress. Default\
+          \ is 'false'"
+    description: "Definition of the node in the reference graph.."
   RoleDTO:
     type: "object"
     properties:
@@ -4249,9 +4585,9 @@ definitions:
   Sort:
     type: "object"
     properties:
-      unsorted:
-        type: "boolean"
       sorted:
+        type: "boolean"
+      unsorted:
         type: "boolean"
       empty:
         type: "boolean"
@@ -4901,6 +5237,10 @@ definitions:
           example: false
           description: "Marking if flags/answers are randomly generated and are different\
             \ for each trainee. Default is false."
+        referenceSolution:
+          type: "array"
+          items:
+            $ref: "#/definitions/ReferenceSolutionNodeDTO"
       description: "An assignment containing security tasks whose completion yields\
         \ a answer."
   TrainingLevelExportDTO:
@@ -4952,6 +5292,12 @@ definitions:
           format: "int32"
           example: 20
           description: "The maximum score a participant can achieve during a level."
+        referenceSolution:
+          type: "array"
+          example: "false"
+          description: "Sequence of commands that leads to the level answer."
+          items:
+            $ref: "#/definitions/ReferenceSolutionNodeDTO"
       description: "Exported training level."
   TrainingLevelImportDTO:
     allOf:
@@ -5017,6 +5363,12 @@ definitions:
           example: false
           description: "Marking if flags/answers are randomly generated and are different\
             \ for each trainee. Default is false."
+        referenceSolution:
+          type: "array"
+          example: "false"
+          description: "Sequence of commands that leads to the level answer."
+          items:
+            $ref: "#/definitions/ReferenceSolutionNodeDTO"
       description: "Imported training level."
   TrainingLevelUpdateDTO:
     type: "object"
@@ -5101,6 +5453,12 @@ definitions:
         example: false
         description: "Marking if flags/answers are randomly generated and are different\
           \ for each trainee. Default is false."
+      referenceSolution:
+        type: "array"
+        example: "false"
+        description: "Sequence of commands that leads to the level answer."
+        items:
+          $ref: "#/definitions/ReferenceSolutionNodeDTO"
     description: "Training level to update."
   TrainingLevelVisualizationDTO:
     allOf:
