@@ -1,3 +1,4 @@
+1.1.77 Bugfix - fix evaluation of the MCQ. Integration of the training feedback - command analyses and graph-based visualization of walkthroughs.
 1.1.76 Added attribute variant answers to training levels. Removed attribute variant sandboxes from definitions. Added level order into training events. Created endpoint to get correct answers for specific training runs. 
 1.1.75 Configuration of OIDC - supporting Microsoft Azure
 1.1.74 Fix storage of the submissions, new endpoint to save multiple levels at once, assign/unassign the pool as part of the update training instance request.
