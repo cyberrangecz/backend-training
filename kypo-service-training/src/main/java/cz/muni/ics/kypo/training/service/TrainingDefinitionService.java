@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.mapping.mapstruct.CloneMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
@@ -12,12 +13,10 @@ import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
-import cz.muni.ics.kypo.training.persistence.model.question.QuestionChoice;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.startup.DefaultLevels;
 import org.apache.commons.lang3.StringUtils;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,7 @@ public class TrainingDefinitionService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingDefinitionService.class);
 
-    private ModelMapper modelMapper;
+    private CloneMapper cloneMapper;
     private TrainingDefinitionRepository trainingDefinitionRepository;
     private TrainingInstanceRepository trainingInstanceRepository;
     private AbstractLevelRepository abstractLevelRepository;
@@ -85,7 +84,7 @@ public class TrainingDefinitionService {
                                      SecurityService securityService,
                                      UserService userService,
                                      Validator validator,
-                                     ModelMapper modelMapper) {
+                                     CloneMapper cloneMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingLevelRepository = trainingLevelRepository;
@@ -96,7 +95,7 @@ public class TrainingDefinitionService {
         this.securityService = securityService;
         this.userService = userService;
         this.validator = validator;
-        this.modelMapper = modelMapper;
+        this.cloneMapper = cloneMapper;
     }
 
     @PostConstruct
@@ -228,17 +227,9 @@ public class TrainingDefinitionService {
      */
     public TrainingDefinition clone(Long id, String title) {
         TrainingDefinition trainingDefinition = findById(id);
-        TrainingDefinition clonedTrainingDefinition = new TrainingDefinition();
-        modelMapper.map(trainingDefinition, clonedTrainingDefinition);
-        clonedTrainingDefinition.setId(null);
-        clonedTrainingDefinition.setBetaTestingGroup(null);
-
+        TrainingDefinition clonedTrainingDefinition = cloneMapper.clone(trainingDefinition);
         clonedTrainingDefinition.setTitle(title);
-        clonedTrainingDefinition.setState(TDState.UNRELEASED);
-        clonedTrainingDefinition.setAuthors(new HashSet<>());
-
         addLoggedInUserToTrainingDefinitionAsAuthor(clonedTrainingDefinition);
-
         clonedTrainingDefinition = auditAndSave(clonedTrainingDefinition);
         cloneLevelsFromTrainingDefinition(trainingDefinition.getId(), clonedTrainingDefinition);
 
@@ -719,26 +710,22 @@ public class TrainingDefinitionService {
                 cloneAssessmentLevel((AssessmentLevel) level, clonedTrainingDefinition);
             }
             if (level instanceof InfoLevel) {
-                cloneInfoLevel(level, clonedTrainingDefinition);
+                cloneInfoLevel((InfoLevel) level, clonedTrainingDefinition);
             }
             if (level instanceof TrainingLevel) {
-                cloneTrainingLevel(level, clonedTrainingDefinition);
+                cloneTrainingLevel((TrainingLevel) level, clonedTrainingDefinition);
             }
         });
     }
 
-    private void cloneInfoLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {
-        InfoLevel newInfoLevel = new InfoLevel();
-        modelMapper.map(level, newInfoLevel);
-        newInfoLevel.setId(null);
-        newInfoLevel.setTrainingDefinition(trainingDefinition);
-        infoLevelRepository.save(newInfoLevel);
+    private void cloneInfoLevel(InfoLevel level, TrainingDefinition trainingDefinition) {
+        InfoLevel clonedInfoLevel = cloneMapper.clone(level);
+        clonedInfoLevel.setTrainingDefinition(trainingDefinition);
+        infoLevelRepository.save(clonedInfoLevel);
     }
 
     private void cloneAssessmentLevel(AssessmentLevel level, TrainingDefinition trainingDefinition) {
-        AssessmentLevel newAssessmentLevel = new AssessmentLevel();
-        modelMapper.map(level, newAssessmentLevel);
-        newAssessmentLevel.setId(null);
+        AssessmentLevel newAssessmentLevel = cloneMapper.clone(level);
         newAssessmentLevel.setTrainingDefinition(trainingDefinition);
         newAssessmentLevel.setQuestions(cloneQuestions(level.getQuestions()));
         assessmentLevelRepository.save(newAssessmentLevel);
@@ -747,14 +734,16 @@ public class TrainingDefinitionService {
                 .filter(question -> question.getQuestionType() == QuestionType.EMI)
                 .collect(Collectors.toList())) {
             List<ExtendedMatchingStatement> extendedMatchingStatements = question.getExtendedMatchingStatements();
+            Question clonedQuestion = newAssessmentLevel.getQuestions().get(question.getOrder());
             for (ExtendedMatchingStatement extendedMatchingStatement : extendedMatchingStatements) {
-                int ordersOfExtendedMatchingOption = extendedMatchingStatement.getExtendedMatchingOption().getOrder();
-                Question clonedQuestion = newAssessmentLevel.getQuestions().get(question.getOrder());
-                ExtendedMatchingStatement clonedExtendedMatchingStatement = clonedQuestion.getExtendedMatchingStatements().get(extendedMatchingStatement.getOrder());
-                clonedExtendedMatchingStatement.setExtendedMatchingOption(clonedQuestion.getExtendedMatchingOptions().stream()
-                        .filter(emo -> ordersOfExtendedMatchingOption == emo.getOrder())
-                        .findFirst().get()
-                );
+                if (extendedMatchingStatement.getExtendedMatchingOption() != null) {
+                    ExtendedMatchingStatement clonedExtendedMatchingStatement = clonedQuestion.getExtendedMatchingStatements().get(extendedMatchingStatement.getOrder());
+                    int ordersOfExtendedMatchingOption = extendedMatchingStatement.getExtendedMatchingOption().getOrder();
+                    clonedExtendedMatchingStatement.setExtendedMatchingOption(clonedQuestion.getExtendedMatchingOptions().stream()
+                            .filter(emo -> ordersOfExtendedMatchingOption == emo.getOrder())
+                            .findFirst().get()
+                    );
+                }
             }
         }
     }
@@ -762,80 +751,25 @@ public class TrainingDefinitionService {
     private List<Question> cloneQuestions(List<Question> questions) {
         List<Question> clonedQuestions = new ArrayList<>();
         for (Question question : questions) {
-            Question clonedQuestion = new Question();
-            modelMapper.map(question, clonedQuestion);
-            clonedQuestion.setId(null);
-            clonedQuestion.setChoices(cloneQuestionChoices(question.getChoices()));
-            clonedQuestion.setExtendedMatchingStatements(cloneExtendedMatchingItems(question.getExtendedMatchingStatements()));
-            clonedQuestion.setExtendedMatchingOptions(cloneExtendedMatchingOptions(question.getExtendedMatchingOptions()));
+            Question clonedQuestion = cloneMapper.clone(question);
+            clonedQuestion.setChoices(cloneMapper.cloneChoices(question.getChoices()));
+            clonedQuestion.setExtendedMatchingStatements(cloneMapper.cloneExtendedMatchingStatements(question.getExtendedMatchingStatements().stream()
+                    .sorted(Comparator.comparing(ExtendedMatchingStatement::getOrder))
+                    .collect(Collectors.toList())));
+            clonedQuestion.setExtendedMatchingOptions(cloneMapper.cloneExtendedMatchingOptions(question.getExtendedMatchingOptions().stream()
+                    .sorted(Comparator.comparing(ExtendedMatchingOption::getOrder))
+                    .collect(Collectors.toList())));
             clonedQuestions.add(clonedQuestion);
         }
         return clonedQuestions;
     }
 
-    private List<QuestionChoice> cloneQuestionChoices(List<QuestionChoice> questionChoices) {
-        List<QuestionChoice> clonedQuestionChoices = new ArrayList<>();
-        for (QuestionChoice questionChoice : questionChoices) {
-            QuestionChoice clonedQuestionChoice = new QuestionChoice();
-            modelMapper.map(questionChoice, clonedQuestionChoice);
-            clonedQuestionChoice.setId(null);
-            clonedQuestionChoices.add(clonedQuestionChoice);
-        }
-        return clonedQuestionChoices;
-    }
-
-    private List<ExtendedMatchingStatement> cloneExtendedMatchingItems(List<ExtendedMatchingStatement> extendedMatchingStatements) {
-        List<ExtendedMatchingStatement> clonedEMIStatements = new ArrayList<>();
-        for (ExtendedMatchingStatement extendedMatchingStatement : extendedMatchingStatements) {
-            ExtendedMatchingStatement clonedExtendedMatchingStatement = new ExtendedMatchingStatement();
-            modelMapper.map(extendedMatchingStatement, clonedExtendedMatchingStatement);
-            clonedExtendedMatchingStatement.setId(null);
-            clonedEMIStatements.add(clonedExtendedMatchingStatement.getOrder(), clonedExtendedMatchingStatement);
-        }
-        return clonedEMIStatements;
-    }
-
-    private List<ExtendedMatchingOption> cloneExtendedMatchingOptions(List<ExtendedMatchingOption> extendedMatchingOptions) {
-        List<ExtendedMatchingOption> clonedEMIOptions = new ArrayList<>();
-        for (ExtendedMatchingOption extendedMatchingOption : extendedMatchingOptions) {
-            ExtendedMatchingOption clonedExtendedMatchingOption = new ExtendedMatchingOption();
-            modelMapper.map(extendedMatchingOption, clonedExtendedMatchingOption);
-            clonedExtendedMatchingOption.setId(null);
-            clonedEMIOptions.add(clonedExtendedMatchingOption.getOrder(), clonedExtendedMatchingOption);
-        }
-        return clonedEMIOptions;
-    }
-
-    private void cloneTrainingLevel(AbstractLevel level, TrainingDefinition trainingDefinition) {
-        TrainingLevel newTrainingLevel = new TrainingLevel();
-        modelMapper.map(level, newTrainingLevel);
-        newTrainingLevel.setId(null);
-        newTrainingLevel.setHints(cloneHints(((TrainingLevel) level).getHints()));
-        newTrainingLevel.setAttachments(cloneAttachments(((TrainingLevel) level).getAttachments()));
+    private void cloneTrainingLevel(TrainingLevel level, TrainingDefinition trainingDefinition) {
+        TrainingLevel newTrainingLevel = cloneMapper.clone(level);
+        newTrainingLevel.setHints(cloneMapper.cloneHints(level.getHints()));
+        newTrainingLevel.setAttachments(cloneMapper.cloneAttachments(level.getAttachments()));
         newTrainingLevel.setTrainingDefinition(trainingDefinition);
         trainingLevelRepository.save(newTrainingLevel);
-    }
-
-    private Set<Hint> cloneHints(Set<Hint> hints) {
-        Set<Hint> newHints = new HashSet<>();
-        for (Hint hint : hints) {
-            Hint newHint = new Hint();
-            modelMapper.map(hint, newHint);
-            newHint.setId(null);
-            newHints.add(newHint);
-        }
-        return newHints;
-    }
-
-    private Set<Attachment> cloneAttachments(Set<Attachment> attachments) {
-        Set<Attachment> newAttachments = new HashSet<>();
-        for (Attachment attachment : attachments) {
-            Attachment newAttachment = new Attachment();
-            modelMapper.map(attachment, newAttachment);
-            newAttachment.setId(null);
-            newAttachments.add(newAttachment);
-        }
-        return newAttachments;
     }
 
     public void checkIfCanBeUpdated(TrainingDefinition trainingDefinition) {
