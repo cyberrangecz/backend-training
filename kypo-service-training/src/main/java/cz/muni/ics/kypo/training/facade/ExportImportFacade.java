@@ -168,6 +168,7 @@ public class ExportImportFacade {
         }
 
         TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
+        newDefinition.setEstimatedDuration(computeEstimatedDuration(importTrainingDefinitionDTO));
         TrainingDefinition newTrainingDefinition = trainingDefinitionService.create(newDefinition, false);
         List<AbstractLevelImportDTO> levels = importTrainingDefinitionDTO.getLevels();
         List<AbstractLevel> createdLevels = new ArrayList<>();
@@ -461,5 +462,9 @@ public class ExportImportFacade {
                     "Sum of hints penalties cannot be greater than maximal score of the training level."));     }
     }
 
-
+    private int computeEstimatedDuration(ImportTrainingDefinitionDTO importedTrainingDefinition) {
+        return importedTrainingDefinition.getLevels().stream()
+                .mapToInt(AbstractLevelImportDTO::getEstimatedDuration)
+                .sum();
+    }
 }
