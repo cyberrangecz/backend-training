@@ -436,7 +436,7 @@ public class TrainingRunFacade {
     @IsOrganizerOrAdmin
     @TransactionalWO
     public List<CorrectAnswerDTO> getCorrectAnswers(Long trainingRunId) {
-        TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
+        TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         List<TrainingLevel> trainingLevels = trainingRunService.getLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId()).stream()
                 .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class)
                 .map(abstractLevel -> (TrainingLevel) abstractLevel)
