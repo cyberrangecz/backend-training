@@ -254,7 +254,7 @@ public class TrainingRunFacadeTest {
         sandboxAnswersInfo.setVariantAnswers(new ArrayList<>(List.of(variantAnswer)));
 
         List<AbstractLevel> levels = new ArrayList<>(List.of(trainingLevel, infoLevel, assessmentLevel, trainingLevelVariantAnswer));
-        given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
+        given(trainingRunService.findByIdWithLevel(trainingRun1.getId())).willReturn(trainingRun1);
         given(trainingRunService.getLevels(trainingDefinition.getId())).willReturn(levels);
         given(answersStorageApiService.getAnswersBySandboxId(trainingRun1.getSandboxInstanceRefId())).willReturn(sandboxAnswersInfo);
         List<CorrectAnswerDTO> correctAnswers = trainingRunFacade.getCorrectAnswers(trainingRun1.getId());
