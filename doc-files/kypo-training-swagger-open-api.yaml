@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 1.1.79"
+  version: "Version: 1.1.80"
   title: "KYPO Training - API Reference"
 host: "localhost:8080"
 basePath: "/kypo-rest-training/api/v1"
