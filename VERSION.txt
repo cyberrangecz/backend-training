@@ -1,3 +1,4 @@
+1.1.80 Bugfix - obtaining correct answeres for instructor.
 1.1.79 Bugfix - correctly compute estimated duration when uploading training definition.
 1.1.78 Bugfix - cloning the training definition, specifically cloning Assessment level.
 1.1.77 Bugfix - fix evaluation of the MCQ. Integration of the training feedback - command analyses and graph-based visualization of walkthroughs.
