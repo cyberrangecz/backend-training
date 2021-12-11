@@ -19,7 +19,7 @@
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo-security-commons</artifactId>
-            <version>1.0.47</version>
+            <version>1.0.48</version>
         </dependency>
         <!-- necessary for OpenJDK 11-->
         <dependency>
