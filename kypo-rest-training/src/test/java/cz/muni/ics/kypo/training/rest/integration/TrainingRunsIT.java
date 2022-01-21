@@ -1,8 +1,7 @@
-package cz.muni.ics.kypo.training.rest.controllers;
+package cz.muni.ics.kypo.training.rest.integration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
@@ -32,21 +31,19 @@ import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
-import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
-import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
+import cz.muni.ics.kypo.training.rest.controllers.TrainingRunsRestController;
+import cz.muni.ics.kypo.training.rest.integration.config.DBTestUtil;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -55,15 +52,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -73,6 +67,7 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Clock;
@@ -81,7 +76,7 @@ import java.util.*;
 
 import static cz.muni.ics.kypo.commons.security.enums.OIDCItems.*;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -89,10 +84,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TrainingRunsRestController.class, TestDataFactory.class})
-@DataJpaTest
-@Import(RestConfigTest.class)
+@SpringBootTest(classes = {
+        TrainingRunsRestController.class,
+        IntegrationTestApplication.class,
+        TestDataFactory.class
+})
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@Transactional
 @TestPropertySource(properties = {"openstack-server.uri=http://localhost:8080"})
 public class TrainingRunsIT {
 
@@ -155,13 +153,9 @@ public class TrainingRunsIT {
     private ValidateAnswerDTO validAnswerDTO, invalidAnswerDTO;
     private PageResultResourcePython sandboxInfoPageResult;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.mvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(
@@ -256,7 +250,7 @@ public class TrainingRunsIT {
 
     }
 
-    @After
+    @AfterEach
     public void reset() throws SQLException {
         DBTestUtil.resetAutoIncrementColumns(applicationContext, "training_run", "abstract_level");
     }
@@ -888,20 +882,11 @@ public class TrainingRunsIT {
         for (String role : roles) {
             authorities.add(new SimpleGrantedAuthority(role));
         }
-        JsonObject sub = new JsonObject();
-        sub.addProperty(SUB.getName(), "mail3@muni.cz");
-        sub.addProperty(NAME.getName(), "Ing. Michael Johnson");
-        sub.addProperty(GIVEN_NAME.getName(), "Michael");
-        sub.addProperty(FAMILY_NAME.getName(), "Johnson");
-        Authentication authentication = Mockito.mock(Authentication.class);
-        OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
-        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        given(securityContext.getAuthentication()).willReturn(auth);
-        given(auth.getUserAuthentication()).willReturn(auth);
-        given(auth.getCredentials()).willReturn(sub);
-        given(auth.getAuthorities()).willReturn(authorities);
-        given(authentication.getDetails()).willReturn(auth);
+        Jwt jwt = new Jwt("bearer-token-value", null, null, Map.of("alg", "HS256"),
+                Map.of(ISS.getName(), "oidc-issuer", SUB.getName(), "mail@muni.cz"));
+        JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(jwt, authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 
     private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {

@@ -1,30 +1,22 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
-import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
+
 @DataJpaTest
-@Import(PersistenceConfigTest.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class AbstractLevelRepositoryTest {
 
     @Autowired
@@ -42,11 +34,7 @@ public class AbstractLevelRepositoryTest {
     private TrainingDefinition trainingDefinition;
     private Hint hint;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
         trainingDefinition = testDataFactory.getUnreleasedDefinition();
         entityManager.persistAndFlush(trainingDefinition);
@@ -79,7 +67,7 @@ public class AbstractLevelRepositoryTest {
     }
 
     @Test
-    public void findById_trainingLevel() {
+    public void findByIdTrainingLevel() {
         Long id = (Long) entityManager.persistAndGetId(trainingLevel);
         entityManager.persistAndFlush(hint);
         entityManager.persist(assessmentLevel);
@@ -91,7 +79,7 @@ public class AbstractLevelRepositoryTest {
     }
 
     @Test
-    public void findById_infoLevel() {
+    public void findByIdInfoLevel() {
         Long id = (Long) entityManager.persistAndGetId(infoLevel);
         entityManager.persist(trainingLevel);
         entityManager.persist(assessmentLevel);
@@ -102,7 +90,7 @@ public class AbstractLevelRepositoryTest {
     }
 
     @Test
-    public void findById_assesmentLevel() {
+    public void findByIdAssessmentLevel() {
         Long id = (Long) entityManager.persistAndGetId(assessmentLevel);
         entityManager.persist(trainingLevel2);
         entityManager.persist(trainingLevel);
@@ -114,7 +102,7 @@ public class AbstractLevelRepositoryTest {
     }
 
     @Test
-    public void findById_TrainingLevel_multipleOccurrences() {
+    public void findByIdTrainingLevel_multipleOccurrences() {
         entityManager.persist(assessmentLevel);
         entityManager.persist(trainingLevel);
         entityManager.persist(infoLevel);

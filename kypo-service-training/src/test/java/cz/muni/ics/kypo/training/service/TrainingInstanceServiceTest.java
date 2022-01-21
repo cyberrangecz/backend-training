@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -24,16 +25,14 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.apache.http.HttpHeaders;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -56,34 +55,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
+@SpringBootTest(classes = {TestDataFactory.class})
 public class TrainingInstanceServiceTest {
 
     @Autowired
     TestDataFactory testDataFactory;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private TrainingInstanceService trainingInstanceService;
 
-    @Mock
+    @MockBean
     private TrainingInstanceRepository trainingInstanceRepository;
-    @Mock
+    @MockBean
     private AccessTokenRepository accessTokenRepository;
-    @Mock
+    @MockBean
     private TrainingRunRepository trainingRunRepository;
-    @Mock
+    @MockBean
     private UserRefRepository organizerRefRepository;
-    @Mock
+    @MockBean
     private SecurityService securityService;
-    @Mock
+    @MockBean
     private UserService userService;
-    @Mock
+    @MockBean
     private TrainingDefinition trainingDefinition;
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingRun trainingRun1, trainingRun2;
@@ -92,9 +87,9 @@ public class TrainingInstanceServiceTest {
     private LockedPoolInfo lockedPoolInfo;
     private PoolInfoDTO poolInfoDTO;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         trainingInstanceService = new TrainingInstanceService(trainingInstanceRepository, accessTokenRepository,
                 trainingRunRepository, organizerRefRepository, securityService, userService);
 
@@ -134,9 +129,9 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().findById(trainingInstance1.getId());
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test
     public void findById_NotFound() {
-        trainingInstanceService.findById(10L);
+        assertThrows(EntityNotFoundException.class, () -> trainingInstanceService.findById(10L));
     }
 
     @Test
@@ -148,9 +143,9 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().findByIdIncludingDefinition(trainingInstance1.getId());
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test
     public void findByIdIncludingDefinition_NotFound() {
-        trainingInstanceService.findByIdIncludingDefinition(10L);
+        assertThrows(EntityNotFoundException.class, () -> trainingInstanceService.findByIdIncludingDefinition(10L));
     }
 
     @Test
@@ -206,11 +201,11 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().save(trainingInstance2);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void createTrainingInstanceWithInvalidTimes() {
         trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
         trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(10L));
-        trainingInstanceService.create(trainingInstance1);
+        assertThrows(EntityConflictException.class, () -> trainingInstanceService.create(trainingInstance1));
     }
 
     @Test
@@ -241,12 +236,12 @@ public class TrainingInstanceServiceTest {
         assertEquals(trainingInstance2.getAccessToken(), token);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateTrainingInstanceWithInvalidTimes() {
         trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
         trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(10L));
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
-        trainingInstanceService.update(trainingInstance1);
+        assertThrows(EntityConflictException.class, () -> trainingInstanceService.update(trainingInstance1));
 
         then(trainingInstanceRepository).should(never()).save(any(TrainingInstance.class));
     }
@@ -336,12 +331,12 @@ public class TrainingInstanceServiceTest {
         assertEquals(2, pr.getTotalElements());
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test
     public void findTrainingRunsByTrainingInstance_NotFound() {
-        trainingInstanceService.findTrainingRunsByTrainingInstance(10L, null, PageRequest.of(0, 2));
+        assertThrows(EntityNotFoundException.class, () -> trainingInstanceService.findTrainingRunsByTrainingInstance(10L, null, PageRequest.of(0, 2)));
     }
 
-    @After
+    @AfterEach
     public void after() {
         reset(trainingInstanceRepository);
     }
@@ -353,7 +348,7 @@ public class TrainingInstanceServiceTest {
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);

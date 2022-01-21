@@ -1,13 +1,12 @@
-package cz.muni.ics.kypo.training.rest.controllers;
+package cz.muni.ics.kypo.training.rest.integration;
 
-import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.google.gson.JsonObject;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -36,25 +35,23 @@ import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
-import cz.muni.ics.kypo.training.rest.controllers.config.DBTestUtil;
-import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
+import cz.muni.ics.kypo.training.rest.controllers.TrainingDefinitionsRestController;
+import cz.muni.ics.kypo.training.rest.integration.config.DBTestUtil;
 import org.apache.http.HttpHeaders;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.skyscreamer.jsonassert.JSONAssert;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -63,14 +60,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.StringUtils;
@@ -82,6 +76,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -89,7 +84,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static cz.muni.ics.kypo.commons.security.enums.OIDCItems.*;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
@@ -98,17 +93,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TrainingDefinitionsRestController.class, TestDataFactory.class})
-@DataJpaTest
-@Import(RestConfigTest.class)
+@SpringBootTest(classes = {
+        TrainingDefinitionsRestController.class,
+        IntegrationTestApplication.class,
+        TestDataFactory.class
+})
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@Transactional
 public class TrainingDefinitionsIT {
 
     @Mock
     private Appender<ILoggingEvent> mockAppender;
 
     private MockMvc mvc;
-    private static final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrainingDefinitionsRestController.class);
 
     @Autowired
     private TestDataFactory testDataFactory;
@@ -162,12 +160,7 @@ public class TrainingDefinitionsIT {
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO, invalidAssessmentLevelUpdateDTO;
     private UserRefDTO organizerDTO1, organizerDTO2, authorDTO1, authorDTO2;
 
-
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-
-    @Before
+    @BeforeEach
     public void init() {
         this.mvc = MockMvcBuilders.standaloneSetup(trainingDefinitionsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
@@ -271,7 +264,7 @@ public class TrainingDefinitionsIT {
         assessmentLevelUpdateDTO.setQuestions(new ArrayList<>(List.of(freeFormQuestionDTO, multipleChoiceQuestionDTO, extendedMatchingItemsQuestionDTO)));
     }
 
-    @After
+    @AfterEach
     public void reset() throws Exception {
         DBTestUtil.resetAutoIncrementColumns(applicationContext, "training_definition", "abstract_level");
     }
@@ -971,7 +964,7 @@ public class TrainingDefinitionsIT {
             } else if (question.getQuestionType() == cz.muni.ics.kypo.training.persistence.model.enums.QuestionType.EMI) {
                 assertEquals(4, question.getExtendedMatchingOptions().size());
                 assertEquals(3, question.getExtendedMatchingStatements().size());
-                question.getExtendedMatchingStatements().forEach(Assert::assertNotNull);
+                question.getExtendedMatchingStatements().forEach(Assertions::assertNotNull);
             }
         });
 
@@ -1154,7 +1147,7 @@ public class TrainingDefinitionsIT {
 
     @Test
     public void createAssessmentLevel() throws Exception {
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         TrainingDefinition trainingDefinition = trainingDefinitionRepository.save(unreleasedTrainingDefinition);
         MockHttpServletResponse response = mvc.perform(post("/training-definitions/{definitionId}/levels/{levelType}", trainingDefinition.getId(), cz.muni.ics.kypo.training.persistence.model.enums.LevelType.ASSESSMENT))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
@@ -1339,29 +1332,17 @@ public class TrainingDefinitionsIT {
     }
 
 
-    private static void assertTwoJsons(String object1, String object2) {
-        JSONAssert.assertEquals(object1, object2, false);
-    }
 
     private void mockSpringSecurityContextForGet(List<String> roles) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (String role : roles) {
             authorities.add(new SimpleGrantedAuthority(role));
         }
-        JsonObject sub = new JsonObject();
-        sub.addProperty(SUB.getName(), "mail@muni.cz");
-        sub.addProperty(NAME.getName(), "Peter Černý");
-        sub.addProperty(FAMILY_NAME.getName(), "Černý");
-        sub.addProperty(GIVEN_NAME.getName(), "Peter");
-        Authentication authentication = Mockito.mock(Authentication.class);
-        OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
-        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        given(securityContext.getAuthentication()).willReturn(auth);
-        given(auth.getUserAuthentication()).willReturn(auth);
-        given(auth.getCredentials()).willReturn(sub);
-        given(auth.getAuthorities()).willReturn(authorities);
-        given(authentication.getDetails()).willReturn(auth);
+        Jwt jwt = new Jwt("bearer-token-value", null, null, Map.of("alg", "HS256"),
+                Map.of(ISS.getName(), "oidc-issuer", SUB.getName(), "mail@muni.cz"));
+        JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(jwt, authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 
     private void assertEntityDetailError(EntityErrorDetail entityErrorDetail, Class<?> entity, String identifier, Object value, String reason) {

@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.controllers.config;
+package cz.muni.ics.kypo.training.rest.integration.config;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;

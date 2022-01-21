@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.IsCorrectAnswerDTO;
@@ -25,13 +26,14 @@ import cz.muni.ics.kypo.training.rest.ApiEntityError;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
 import cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -54,25 +56,30 @@ import java.util.Optional;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {TrainingInstanceMapperImpl.class, UserRefMapperImpl.class,
-        TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class, TrainingRunMapperImpl.class,
-        BetaTestingGroupMapperImpl.class})
-@ContextConfiguration(classes = {TestDataFactory.class})
+@SpringBootTest(classes = {
+        TestDataFactory.class,
+        TrainingInstanceMapperImpl.class,
+        UserRefMapperImpl.class,
+        TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class,
+        TrainingRunMapperImpl.class,
+        BetaTestingGroupMapperImpl.class
+})
 public class TrainingRunsRestControllerTest {
 
     private TrainingRunsRestController trainingRunsRestController;
 
-    @Mock
+    @MockBean
     private TrainingRunFacade trainingRunFacade;
 
     private MockMvc mockMvc;
+    private AutoCloseable closeable;
 
     @Autowired
     private TestDataFactory testDataFactory;
@@ -97,7 +104,7 @@ public class TrainingRunsRestControllerTest {
     private ValidateAnswerDTO validAnswerDTO;
 
 
-    @Before
+    @BeforeEach
     public void init() {
         participant1 = new UserRef();
         participant1.setId(1L);
@@ -149,9 +156,9 @@ public class TrainingRunsRestControllerTest {
         trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(page);
 
         ObjectMapper snakeCaseMapper = new ObjectMapper();
-        snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
 
-        MockitoAnnotations.initMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
         trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, snakeCaseMapper);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
@@ -160,6 +167,11 @@ public class TrainingRunsRestControllerTest {
                 .setMessageConverters(new MappingJackson2HttpMessageConverter(snakeCaseMapper), new StringHttpMessageConverter())
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import cz.muni.ics.kypo.training.persistence.model.ReferenceSolutionNode;
 import org.springframework.expression.ParseException;
@@ -20,7 +21,7 @@ public class ReferenceSolutionConverter implements AttributeConverter<Set<Refere
     @Override
     public String convertToDatabaseColumn(Set<ReferenceSolutionNode> referenceSolution) {
         String value = "";
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         try {
             value = mapper.writeValueAsString(referenceSolution);
         } catch (JsonProcessingException e) {
@@ -31,7 +32,7 @@ public class ReferenceSolutionConverter implements AttributeConverter<Set<Refere
 
     @Override
     public Set<ReferenceSolutionNode> convertToEntityAttribute(String data) {
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         Set<ReferenceSolutionNode> referenceSolution = new HashSet<>();
         try {
             referenceSolution = mapper.readValue(data, new TypeReference<Set<ReferenceSolutionNode>>() {});

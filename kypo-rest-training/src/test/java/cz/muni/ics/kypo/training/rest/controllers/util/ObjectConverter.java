@@ -1,10 +1,7 @@
 package cz.muni.ics.kypo.training.rest.controllers.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeDeserializer;
@@ -24,14 +21,14 @@ public class ObjectConverter {
     public static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule().addSerializer(new LocalDateTimeUTCSerializer()));
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         return mapper.writeValueAsString(object);
     }
 
     public static String convertJsonBytesToObject(String object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         return mapper.readValue(object, String.class);
     }
 
@@ -40,7 +37,7 @@ public class ObjectConverter {
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.registerModule( new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         return mapper.readValue(object, tTypeReference);
     }
 
@@ -48,7 +45,7 @@ public class ObjectConverter {
         ObjectMapper mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.registerModule( new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeUTCDeserializer()));
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         return mapper.readValue(object, objectClass);
     }
 

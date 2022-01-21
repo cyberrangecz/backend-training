@@ -1,27 +1,22 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
-import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.BetaTestingGroup;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
-@Import(PersistenceConfigTest.class)
 public class BetaTestingGroupRepositoryTest {
 
     @Autowired
@@ -33,11 +28,7 @@ public class BetaTestingGroupRepositoryTest {
     private BetaTestingGroup viewGroup1, viewGroup2;
     private TrainingDefinition trainingDefinition1, trainingDefinition2;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-
-    @Before
+    @BeforeEach
     public void init() {
         viewGroup1 = new BetaTestingGroup();
 

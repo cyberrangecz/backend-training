@@ -17,34 +17,35 @@ import cz.muni.ics.kypo.training.service.TrainingRunService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {LevelMapperImpl.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
-        LevelMapperImpl.class, HintMapperImpl.class, TrainingRunMapperImpl.class, BetaTestingGroupMapperImpl.class,
-        QuestionMapperImpl.class, AttachmentMapperImpl.class, ReferenceSolutionNodeMapperImpl.class})
+@SpringBootTest(classes = {
+        TestDataFactory.class,
+        TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class,
+        LevelMapperImpl.class,
+        HintMapperImpl.class,
+        TrainingRunMapperImpl.class,
+        BetaTestingGroupMapperImpl.class,
+        QuestionMapperImpl.class,
+        AttachmentMapperImpl.class,
+        ReferenceSolutionNodeMapperImpl.class})
 public class TrainingRunFacadeTest {
 
     @Autowired
@@ -56,22 +57,19 @@ public class TrainingRunFacadeTest {
     @Autowired
     TestDataFactory testDataFactory;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private TrainingRunFacade trainingRunFacade;
 
-    @Mock
+    @MockBean
     private TrainingRunService trainingRunService;
-    @Mock
+    @MockBean
     private TrainingDefinitionService trainingDefinitionService;
-    @Mock
+    @MockBean
     private SecurityService securityService;
-    @Mock
+    @MockBean
     private UserService userService;
-    @Mock
+    @MockBean
     private AnswersStorageApiService answersStorageApiService;
-    @Mock
+    @MockBean
     private TrainingFeedbackApiService trainingFeedbackApiService;
 
     private TrainingRun trainingRun1, trainingRun2;
@@ -84,9 +82,9 @@ public class TrainingRunFacadeTest {
     private TrainingInstance trainingInstance;
     private TrainingDefinition trainingDefinition;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         trainingRunFacade = new TrainingRunFacade(trainingRunService, trainingDefinitionService, answersStorageApiService,
                 securityService, userService, trainingFeedbackApiService, trainingRunMapper, levelMapper, hintMapper);
 
@@ -236,7 +234,7 @@ public class TrainingRunFacadeTest {
         given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
         given(userService.getUserRefDTOByUserRefId(participant.getUserRefId())).willReturn(participantRefDTO);
         UserRefDTO foundParticipantRefDTO = trainingRunFacade.getParticipant(trainingRun1.getId());
-        Assert.assertEquals(participantRefDTO, foundParticipantRefDTO);
+        assertEquals(participantRefDTO, foundParticipantRefDTO);
     }
 
     @Test

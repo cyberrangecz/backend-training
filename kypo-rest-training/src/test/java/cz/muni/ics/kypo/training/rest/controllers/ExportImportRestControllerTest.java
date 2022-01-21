@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
@@ -13,12 +14,14 @@ import cz.muni.ics.kypo.training.facade.ExportImportFacade;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -39,7 +42,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -48,33 +51,30 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
+@SpringBootTest(classes = TestDataFactory.class)
 public class ExportImportRestControllerTest {
 
+	private ExportImportRestController exportImportRestController;
 	@Autowired
 	private TestDataFactory testDataFactory;
-
-	private ExportImportRestController exportImportRestController;
+	@MockBean
+	private ObjectMapper objectMapper;
+	@MockBean
+	private ExportImportFacade exportImportFacade;
 
 	private MockMvc mockMvc;
-
-	@Mock
-	private ObjectMapper objectMapper;
-
-	@Mock
-	private ExportImportFacade exportImportFacade;
+	private AutoCloseable closeable;
 
 	private TrainingInstanceArchiveDTO trainingInstanceArchiveDTO;
 	private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
 
-	@Before
+	@BeforeEach
 	public void init(){
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+		objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
 		objectMapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
 
-		MockitoAnnotations.initMocks(this);
+		closeable = MockitoAnnotations.openMocks(this);
 		exportImportRestController = new ExportImportRestController(exportImportFacade, objectMapper);
 		this.mockMvc = MockMvcBuilders.standaloneSetup(exportImportRestController)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
@@ -97,6 +97,11 @@ public class ExportImportRestControllerTest {
 
 		importTrainingDefinitionDTO = testDataFactory.getImportTrainingDefinitionDTO();
 		importTrainingDefinitionDTO.setLevels(Arrays.asList(infoLevelImportDTO,assessmentLevelDTO, trainingLevelImportDTO));
+	}
+
+	@AfterEach
+	void closeService() throws Exception {
+		closeable.close();
 	}
 
 	@Test
@@ -134,7 +139,7 @@ public class ExportImportRestControllerTest {
 
 	private static String convertObjectToJsonBytes(Object object) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+		mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
 		mapper.registerModule(new JavaTimeModule().addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()));
 		return mapper.writeValueAsString(object);
 	}

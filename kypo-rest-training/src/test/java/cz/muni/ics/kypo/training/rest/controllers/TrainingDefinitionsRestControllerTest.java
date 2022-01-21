@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
@@ -24,9 +25,9 @@ import cz.muni.ics.kypo.training.persistence.model.enums.LevelType;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -51,15 +50,18 @@ import java.util.*;
 
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
+@SpringBootTest(classes = {
+        TestDataFactory.class,
+        TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class,
+        BetaTestingGroupMapperImpl.class
+})
 public class TrainingDefinitionsRestControllerTest {
 
     private TrainingDefinitionsRestController trainingDefinitionsRestController;
@@ -73,6 +75,7 @@ public class TrainingDefinitionsRestControllerTest {
     private TrainingDefinitionFacade trainingDefinitionFacade;
 
     private MockMvc mockMvc;
+    private AutoCloseable closeable;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2;
     private TrainingDefinitionByIdDTO trainingDefinitionDTO1, trainingDefinitionDTO2;
@@ -100,12 +103,12 @@ public class TrainingDefinitionsRestControllerTest {
     private Page page;
     private Pageable pageable;
 
-    @Before
+    @BeforeEach
     public void init() {
         ObjectMapper snakeCaseMapper = new ObjectMapper();
-        snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
 
-        MockitoAnnotations.initMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
         trainingDefinitionsRestController = new TrainingDefinitionsRestController(trainingDefinitionFacade, snakeCaseMapper);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingDefinitionsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
@@ -169,6 +172,11 @@ public class TrainingDefinitionsRestControllerTest {
 
         trainingDefinitionInfoDTOPageResultResource = trainingDefinitionMapper.mapToPageResultResourceInfoDTO(page);
         trainingDefinitionDTOPageResultResource = trainingDefinitionMapper.mapToPageResultResource(page);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

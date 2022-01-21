@@ -27,16 +27,12 @@ import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -50,19 +46,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {LevelMapperImpl.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
+@SpringBootTest(classes = {
+        TestDataFactory.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
         LevelMapperImpl.class, BetaTestingGroupMapperImpl.class, QuestionMapperImpl.class, HintMapperImpl.class,
         AttachmentMapperImpl.class, ReferenceSolutionNodeMapperImpl.class})
 public class TrainingDefinitionFacadeTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private TrainingDefinitionFacade trainingDefinitionFacade;
 
@@ -73,13 +65,13 @@ public class TrainingDefinitionFacadeTest {
     @Autowired
     private LevelMapperImpl levelMapper;
 
-    @Mock
+    @MockBean
     private TrainingDefinitionService trainingDefinitionService;
-    @Mock
+    @MockBean
     private TrainingFeedbackApiService trainingFeedbackApiService;
-    @Mock
+    @MockBean
     private SecurityService securityService;
-    @Mock
+    @MockBean
     private UserService userService;
 
     private TrainingDefinition trainingDefinition1, trainingDefinition2;
@@ -100,9 +92,9 @@ public class TrainingDefinitionFacadeTest {
     private Pageable pageable;
     private PageResultResource.Pagination pagination;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         trainingDefinitionFacade = new TrainingDefinitionFacade(trainingDefinitionService, trainingFeedbackApiService,
                 userService, securityService, trainingDefinitionMapper, levelMapper);
 
@@ -200,12 +192,12 @@ public class TrainingDefinitionFacadeTest {
         then(trainingDefinitionService).should().update(trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdate));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateTrainingDefinitionRemovingBTG(){
         trainingDefinitionUpdate.setBetaTestingGroup(null);
         trainingDefinition1.setBetaTestingGroup(new BetaTestingGroup());
         given(trainingDefinitionService.findById(anyLong())).willReturn(trainingDefinition1);
-        trainingDefinitionFacade.update(trainingDefinitionUpdate);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionFacade.update(trainingDefinitionUpdate));
     }
 
     @Test
@@ -342,8 +334,8 @@ public class TrainingDefinitionFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(trainingDefinition1.getAuthors().stream().map(UserRef::getUserRefId).collect(Collectors.toSet()), pageable, null, null))
                 .willReturn(new PageResultResource<>(List.of(authorDTO1, authorDTO2), pagination));
         PageResultResource<UserRefDTO> authors = trainingDefinitionFacade.getAuthors(trainingDefinition1.getId(), pageable, null, null);
-        Assert.assertEquals(authors.getPagination(), pagination);
-        Assert.assertTrue(authors.getContent().containsAll(Set.of(authorDTO1, authorDTO2)));
+        assertEquals(authors.getPagination(), pagination);
+        assertTrue(authors.getContent().containsAll(Set.of(authorDTO1, authorDTO2)));
     }
 
     @Test
@@ -362,9 +354,8 @@ public class TrainingDefinitionFacadeTest {
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         willThrow(new InternalServerErrorException("Error when calling User And Group endpoint.")).given(userService)
                 .getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_DESIGNER,new HashSet<>(Set.of(author1.getUserRefId(), author2.getUserRefId())), pageable, null, null);
-        thrown.expect(InternalServerErrorException.class);
-        thrown.expectMessage("Error when calling User And Group endpoint.");
-        trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinition1.getId(), pageable, null, null);
+        Exception ex = assertThrows(InternalServerErrorException.class, () -> trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(trainingDefinition1.getId(), pageable, null, null));
+        assertEquals("Error when calling User And Group endpoint.", ex.getMessage());
     }
 
     @Test
@@ -375,8 +366,8 @@ public class TrainingDefinitionFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
         given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author2.getUserRefId())));
-        Assert.assertEquals(2, trainingDefinition1.getAuthors().size());
-        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author3)));
+        assertEquals(2, trainingDefinition1.getAuthors().size());
+        assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author3)));
     }
 
     @Test
@@ -387,8 +378,8 @@ public class TrainingDefinitionFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
         given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author1.getUserRefId())));
-        Assert.assertEquals(3, trainingDefinition1.getAuthors().size());
-        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
+        assertEquals(3, trainingDefinition1.getAuthors().size());
+        assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
     }
 
     @Test
@@ -399,8 +390,8 @@ public class TrainingDefinitionFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
         given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author3.getUserRefId())));
-        Assert.assertEquals(3, trainingDefinition1.getAuthors().size());
-        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
+        assertEquals(3, trainingDefinition1.getAuthors().size());
+        assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
     }
 
     @Test
@@ -411,8 +402,8 @@ public class TrainingDefinitionFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(author2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO2), pagination));
         given(userService.getUserByUserRefId(author2.getUserRefId())).willReturn(author2);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId())), new HashSet<>(Set.of(author2.getUserRefId())));
-        Assert.assertEquals(2, trainingDefinition1.getAuthors().size());
-        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2)));
+        assertEquals(2, trainingDefinition1.getAuthors().size());
+        assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2)));
     }
 
     @Test
@@ -423,8 +414,8 @@ public class TrainingDefinitionFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(author2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO2), pagination));
         given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author2);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(), new HashSet<>());
-        Assert.assertEquals(2, trainingDefinition1.getAuthors().size());
-        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2)));
+        assertEquals(2, trainingDefinition1.getAuthors().size());
+        assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2)));
     }
 
     @Test
@@ -433,8 +424,8 @@ public class TrainingDefinitionFacadeTest {
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(), new HashSet<>(Set.of(author1.getUserRefId(), author2.getUserRefId())));
-        Assert.assertEquals(1, trainingDefinition1.getAuthors().size());
-        Assert.assertTrue(trainingDefinition1.getAuthors().contains(author1));
+        assertEquals(1, trainingDefinition1.getAuthors().size());
+        assertTrue(trainingDefinition1.getAuthors().contains(author1));
     }
 
     @Test
@@ -447,8 +438,8 @@ public class TrainingDefinitionFacadeTest {
         given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
         given(userService.getUserByUserRefId(author2.getUserRefId())).willReturn(author2);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId(), author3.getUserRefId())), new HashSet<>());
-        Assert.assertEquals(3, trainingDefinition1.getAuthors().size());
-        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
+        assertEquals(3, trainingDefinition1.getAuthors().size());
+        assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
     }
 
     @Test
@@ -462,8 +453,8 @@ public class TrainingDefinitionFacadeTest {
         willThrow(EntityNotFoundException.class).given(userService).getUserByUserRefId(author2.getUserRefId());
         given(userService.createUserRef(any(UserRef.class))).willReturn(author2);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId(), author3.getUserRefId())), new HashSet<>());
-        Assert.assertEquals(3, trainingDefinition1.getAuthors().size());
-        Assert.assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
+        assertEquals(3, trainingDefinition1.getAuthors().size());
+        assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
     }
 
     private UserRefDTO createUserRefDTO(Long userRefId, String fullName, String familyName, String givenName, String sub, String iss, byte[] picture) {

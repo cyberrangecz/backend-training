@@ -8,9 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.io.IOException;
+
+import static org.springframework.util.Assert.notNull;
 
 /**
  * The type Audit service.
@@ -40,7 +41,7 @@ public class AuditService {
      * @throws ElasticsearchTrainingServiceLayerException the elasticsearch training service layer exception
      */
     public <T extends AbstractAuditPOJO> void saveTrainingRunEvent(T pojoClass, long timestampDelay) throws ElasticsearchTrainingServiceLayerException{
-        Assert.notNull(pojoClass, "Null class could not be saved via audit method.");
+        notNull(pojoClass, "Null class could not be saved via audit method.");
         try {
             pojoClass.setTimestamp(System.currentTimeMillis() + timestampDelay);
             pojoClass.setType(pojoClass.getClass().getName());

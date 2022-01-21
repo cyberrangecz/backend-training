@@ -1,41 +1,35 @@
-package cz.muni.ics.kypo.training.rest.controllers;
+package cz.muni.ics.kypo.training.rest.integration;
 
 import com.anarsoft.vmlens.concurrent.junit.ConcurrentTestRunner;
 import com.anarsoft.vmlens.concurrent.junit.ThreadCount;
-import com.google.gson.JsonObject;
-import cz.muni.ics.kypo.commons.security.enums.OIDCItems;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import cz.muni.ics.kypo.training.rest.CustomRestExceptionHandlerTraining;
-import cz.muni.ics.kypo.training.rest.controllers.config.RestConfigTest;
+import cz.muni.ics.kypo.training.rest.controllers.TrainingInstancesRestController;
+import cz.muni.ics.kypo.training.rest.controllers.TrainingRunsRestController;
 import cz.muni.ics.kypo.training.service.AuditEventsService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.TestContextManager;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,14 +39,17 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.core.publisher.Mono;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import static cz.muni.ics.kypo.commons.security.enums.OIDCItems.*;
+import static cz.muni.ics.kypo.commons.security.enums.OIDCItems.ISS;
+import static cz.muni.ics.kypo.commons.security.enums.OIDCItems.SUB;
 import static cz.muni.ics.kypo.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -60,15 +57,19 @@ import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
-@RunWith(ConcurrentTestRunner.class)
-@ContextConfiguration(classes = {TrainingRunsRestController.class, TrainingInstancesRestController.class, TestDataFactory.class})
-@DataJpaTest
-@Import(RestConfigTest.class)
+@SpringBootTest(classes = {
+        TrainingInstancesRestController.class,
+        TrainingRunsRestController.class,
+        IntegrationTestApplication.class,
+        TestDataFactory.class
+})
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@Transactional
 @TestPropertySource(properties = {"openstack-server.uri=http://localhost:8080"})
+@RunWith(ConcurrentTestRunner.class)
 public class TrainingRunsConcurrentIT {
 
     private MockMvc mvc;
-    private TestContextManager testContextManager;
 
     @Autowired
     private TestDataFactory testDataFactory;
@@ -110,15 +111,12 @@ public class TrainingRunsConcurrentIT {
     private SandboxInfo sandboxInfo1;
     private TrainingRun trainingRunTrainingLevel, trainingRunAssessmentLevel;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-
     @Before
     public void init() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        testContextManager = new TestContextManager(getClass());
+        TestContextManager testContextManager = new TestContextManager(getClass());
         testContextManager.prepareTestInstance(this);
+
+        MockitoAnnotations.openMocks(this);
         this.mvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController, trainingInstancesRestController)
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
@@ -225,19 +223,10 @@ public class TrainingRunsConcurrentIT {
         for (String role : roles) {
             authorities.add(new SimpleGrantedAuthority(role));
         }
-        JsonObject sub = new JsonObject();
-        sub.addProperty(SUB.getName(), "mail2@muni.cz");
-        sub.addProperty(NAME.getName(), "Ing. Michael Johnson");
-        sub.addProperty(GIVEN_NAME.getName(), "Michael");
-        sub.addProperty(FAMILY_NAME.getName(), "Johnson");
-        Authentication authentication = Mockito.mock(Authentication.class);
-        OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
-        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
-        SecurityContextHolder.setContext(securityContext);
-        given(securityContext.getAuthentication()).willReturn(auth);
-        given(auth.getUserAuthentication()).willReturn(auth);
-        given(auth.getCredentials()).willReturn(sub);
-        given(auth.getAuthorities()).willReturn(authorities);
-        given(authentication.getDetails()).willReturn(auth);
+        Jwt jwt = new Jwt("bearer-token-value", null, null, Map.of("alg", "HS256"),
+                Map.of(ISS.getName(), "oidc-issuer", SUB.getName(), "mail@muni.cz"));
+        JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(jwt, authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 }

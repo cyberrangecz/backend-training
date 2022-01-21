@@ -19,16 +19,14 @@ import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.api.SandboxApiService;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -41,45 +39,46 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {TrainingInstanceMapperImpl.class, TrainingRunMapperImpl.class,
-        TrainingDefinitionMapper.class, UserRefMapper.class, TrainingDefinitionMapperImpl.class,
-        UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, AttachmentMapperImpl.class})
+@SpringBootTest(classes = {
+        TestDataFactory.class,
+        TrainingInstanceMapperImpl.class,
+        TrainingRunMapperImpl.class,
+        TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class,
+        BetaTestingGroupMapperImpl.class,
+        AttachmentMapperImpl.class
+})
 public class TrainingInstanceFacadeTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private TrainingInstanceFacade trainingInstanceFacade;
 
     @Autowired
-    TestDataFactory testDataFactory;
+    private TestDataFactory testDataFactory;
 
     @Autowired
-    TrainingRunMapperImpl trainingRunMapper;
+    private TrainingRunMapperImpl trainingRunMapper;
 
     @Autowired
-    TrainingInstanceMapper trainingInstanceMapper;
+    private TrainingInstanceMapper trainingInstanceMapper;
 
-    @Mock
+    @MockBean
     private TrainingInstanceService trainingInstanceService;
-    @Mock
+    @MockBean
     private TrainingRunService trainingRunService;
-    @Mock
+    @MockBean
     private ElasticsearchApiService elasticsearchApiService;
-    @Mock
+    @MockBean
     private TrainingDefinitionService trainingDefinitionService;
-    @Mock
+    @MockBean
     private SecurityService securityService;
-    @Mock
+    @MockBean
     private UserService userService;
-    @Mock
+    @MockBean
     private SandboxApiService sandboxApiService;
-    @Mock
+    @MockBean
     private TrainingFeedbackApiService trainingFeedbackApiService;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
@@ -92,9 +91,9 @@ public class TrainingInstanceFacadeTest {
     private LockedPoolInfo lockedPoolInfo;
     private TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService,
                 userService, elasticsearchApiService, securityService, sandboxApiService, trainingInstanceMapper, trainingRunMapper,
                 trainingFeedbackApiService);
@@ -198,19 +197,19 @@ public class TrainingInstanceFacadeTest {
         then(trainingInstanceService).should().delete(trainingInstance1);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void deleteTrainingInstanceWithUnfinishedInstanceAndRuns(){
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(false);
         given(trainingRunService.existsAnyForTrainingInstance(anyLong())).willReturn(true);
-        trainingInstanceFacade.delete(1L, false);
+        assertThrows(EntityConflictException.class, () -> trainingInstanceFacade.delete(1L, false));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void deleteTrainingInstanceWithLockedPool(){
         trainingInstance1.setPoolId(1L);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        trainingInstanceFacade.delete(1L, false);
+        assertThrows(EntityConflictException.class, () -> trainingInstanceFacade.delete(1L, false));
     }
 
     @Test
@@ -222,11 +221,11 @@ public class TrainingInstanceFacadeTest {
         then(sandboxApiService).should().lockPool(trainingInstance1.getId());
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void allocateSandboxesWithServiceException() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         willThrow(EntityConflictException.class).given(sandboxApiService).lockPool(anyLong());
-        trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
+        assertThrows(EntityConflictException.class, () -> trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO));
     }
 
     @Test
@@ -237,11 +236,11 @@ public class TrainingInstanceFacadeTest {
         then(trainingInstanceService).should().auditAndSave(any(TrainingInstance.class));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void unassignPoolWithNullPoolId() {
         trainingInstance1.setPoolId(null);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
+        assertThrows(EntityConflictException.class, () -> trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId()));
     }
 
     @Test
@@ -290,8 +289,8 @@ public class TrainingInstanceFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer2.getUserRefId())));
-        Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
-        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer3)));
+        assertEquals(2, trainingInstance1.getOrganizers().size());
+        assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer3)));
     }
 
     @Test
@@ -302,8 +301,8 @@ public class TrainingInstanceFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer1.getUserRefId())));
-        Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
-        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+        assertEquals(3, trainingInstance1.getOrganizers().size());
+        assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
     }
 
     @Test
@@ -314,8 +313,8 @@ public class TrainingInstanceFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer3.getUserRefId())), new HashSet<>(Set.of(organizer3.getUserRefId())));
-        Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
-        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+        assertEquals(3, trainingInstance1.getOrganizers().size());
+        assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
     }
 
     @Test
@@ -326,8 +325,8 @@ public class TrainingInstanceFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer2.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO2), pagination));
         given(userService.getUserByUserRefId(organizer2.getUserRefId())).willReturn(organizer2);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId())), new HashSet<>(Set.of(organizer2.getUserRefId())));
-        Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
-        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2)));
+        assertEquals(2, trainingInstance1.getOrganizers().size());
+        assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2)));
     }
 
     @Test
@@ -338,8 +337,8 @@ public class TrainingInstanceFacadeTest {
         given(userService.getUsersRefDTOByGivenUserIds(Set.of(organizer3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(organizerDTO3), pagination));
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(), new HashSet<>());
-        Assert.assertEquals(2, trainingInstance1.getOrganizers().size());
-        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2)));
+        assertEquals(2, trainingInstance1.getOrganizers().size());
+        assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2)));
     }
 
     @Test
@@ -348,8 +347,8 @@ public class TrainingInstanceFacadeTest {
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(organizer1.getUserRefId());
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(), new HashSet<>(Set.of(organizer1.getUserRefId(), organizer2.getUserRefId())));
-        Assert.assertEquals(1, trainingInstance1.getOrganizers().size());
-        Assert.assertTrue(trainingInstance1.getOrganizers().contains(organizer1));
+        assertEquals(1, trainingInstance1.getOrganizers().size());
+        assertTrue(trainingInstance1.getOrganizers().contains(organizer1));
     }
 
     @Test
@@ -362,8 +361,8 @@ public class TrainingInstanceFacadeTest {
         given(userService.getUserByUserRefId(organizer3.getUserRefId())).willReturn(organizer3);
         given(userService.getUserByUserRefId(organizer2.getUserRefId())).willReturn(organizer2);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId(), organizer3.getUserRefId())), new HashSet<>());
-        Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
-        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+        assertEquals(3, trainingInstance1.getOrganizers().size());
+        assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
     }
 
     @Test
@@ -377,8 +376,8 @@ public class TrainingInstanceFacadeTest {
         willThrow(EntityNotFoundException.class).given(userService).getUserByUserRefId(organizer2.getUserRefId());
         given(userService.createUserRef(any(UserRef.class))).willReturn(organizer2);
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId(), organizer3.getUserRefId())), new HashSet<>());
-        Assert.assertEquals(3, trainingInstance1.getOrganizers().size());
-        Assert.assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+        assertEquals(3, trainingInstance1.getOrganizers().size());
+        assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
     }
 
     private void deepEqualsTrainingInstanceFindAllView(TrainingInstance expected, TrainingInstanceFindAllResponseDTO actual) {
