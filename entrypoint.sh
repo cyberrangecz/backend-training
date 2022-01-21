@@ -37,4 +37,4 @@ do
     wait_for_it ${i}
 done
 
-exec /usr/bin/supervisord -c /app/supervisord.conf
+exec java -Dspring.config.location=/app/etc/training.properties -jar /app/kypo-rest-training.jar
