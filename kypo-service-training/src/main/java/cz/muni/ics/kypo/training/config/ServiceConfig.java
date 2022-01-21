@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.config;
 
 import cz.muni.csirt.kypo.elasticsearch.service.config.ElasticsearchServiceConfig;
 import cz.muni.ics.kypo.commons.security.config.ResourceServerSecurityConfig;
+import cz.muni.ics.kypo.commons.startup.config.MicroserviceRegistrationConfiguration;
 import cz.muni.ics.kypo.training.persistence.config.PersistenceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
@@ -15,7 +16,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 @Configuration
 @EnableAsync(proxyTargetClass = true)
-@Import({ElasticsearchServiceConfig.class, PersistenceConfig.class, ResourceServerSecurityConfig.class, WebClientConfig.class})
+@Import({MicroserviceRegistrationConfiguration.class,
+        ElasticsearchServiceConfig.class,
+        PersistenceConfig.class,
+        ResourceServerSecurityConfig.class,
+        WebClientConfig.class
+})
 @ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.config"})
 public class ServiceConfig {
     

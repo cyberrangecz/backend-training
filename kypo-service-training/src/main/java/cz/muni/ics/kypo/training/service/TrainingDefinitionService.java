@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.*;
@@ -103,7 +104,7 @@ public class TrainingDefinitionService {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
         mapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         try {
             InputStream inputStream = pathToDefaultLevels.isBlank() ? getClass().getResourceAsStream("/default-levels.json") : new FileInputStream(pathToDefaultLevels);
             defaultLevels = mapper.readValue(inputStream, DefaultLevels.class);

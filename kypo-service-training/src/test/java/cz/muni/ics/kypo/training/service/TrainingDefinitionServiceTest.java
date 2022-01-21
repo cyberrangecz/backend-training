@@ -12,17 +12,15 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -39,14 +37,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {CloneMapperImpl.class})
+@SpringBootTest(classes = {TestDataFactory.class, CloneMapperImpl.class})
 public class TrainingDefinitionServiceTest {
 
     @Autowired
@@ -54,28 +50,25 @@ public class TrainingDefinitionServiceTest {
     @Autowired
     private CloneMapperImpl cloneMapper;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private TrainingDefinitionService trainingDefinitionService;
-
-    @Mock
+    @MockBean
     private TrainingDefinitionRepository trainingDefinitionRepository;
-    @Mock
+    @MockBean
     private AbstractLevelRepository abstractLevelRepository;
-    @Mock
+    @MockBean
     private TrainingLevelRepository trainingLevelRepository;
-    @Mock
+    @MockBean
     private InfoLevelRepository infoLevelRepository;
-    @Mock
+    @MockBean
     private AssessmentLevelRepository assessmentLevelRepository;
-    @Mock
+    @MockBean
     private TrainingInstanceRepository trainingInstanceRepository;
-    @Mock
+    @MockBean
     private UserRefRepository userRefRepository;
-    @Mock
+    @MockBean
     private SecurityService securityService;
-    @Mock
+    @MockBean
     private UserService userService;
 
     private ModelMapper modelMapper = new ModelMapper();
@@ -91,9 +84,9 @@ public class TrainingDefinitionServiceTest {
     private Pageable pageable;
     private Predicate predicate;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, trainingLevelRepository, assessmentLevelRepository, trainingInstanceRepository, userRefRepository,
                 securityService, userService, validator, cloneMapper);
@@ -131,10 +124,10 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test
     public void getNonexistentTrainingDefinitionById() {
         Long id = 6L;
-        trainingDefinitionService.findById(id);
+        assertThrows(EntityNotFoundException.class, () -> trainingDefinitionService.findById(id));
     }
 
     @Test
@@ -231,19 +224,19 @@ public class TrainingDefinitionServiceTest {
         assertEquals(0, trainingLevel.getOrder());
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void moveLevelFromReleasedDefinition(){
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.moveLevel(releasedDefinition.getId(), 1L, 2);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.moveLevel(releasedDefinition.getId(), 1L, 2));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void moveLevelFromDefinitionWithInstances(){
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.moveLevel(unreleasedDefinition.getId(), 1L, 2);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.moveLevel(unreleasedDefinition.getId(), 1L, 2));
     }
 
     @Test
@@ -255,17 +248,17 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().save(unreleasedDefinition);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateTrainingReleasedDefinition() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.update(releasedDefinition);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.update(releasedDefinition));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateTrainingDefinitionWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.update(unreleasedDefinition);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.update(unreleasedDefinition));
     }
 
     @Test
@@ -281,17 +274,17 @@ public class TrainingDefinitionServiceTest {
         assertEquals(0, trainingLevel.getOrder());
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void swapLevelsInReleasedDefinition(){
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.swapLevels(releasedDefinition.getId(), 1L, 2L);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.swapLevels(releasedDefinition.getId(), 1L, 2L));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void swapLevelsInDefinitionWithInstances(){
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
-        trainingDefinitionService.swapLevels(unreleasedDefinition.getId(), 1L, 2L);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.swapLevels(unreleasedDefinition.getId(), 1L, 2L));
     }
 
     @Test
@@ -312,17 +305,17 @@ public class TrainingDefinitionServiceTest {
         then(infoLevelRepository).should().delete(infoLevel);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void deleteWithCannotBeDeletedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.delete(releasedDefinition.getId());
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.delete(releasedDefinition.getId()));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void deleteWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.delete(unreleasedDefinition.getId());
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.delete(unreleasedDefinition.getId()));
     }
 
     @Test
@@ -344,10 +337,10 @@ public class TrainingDefinitionServiceTest {
         then(infoLevelRepository).should().delete(infoLevel);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void deleteOneLevelWithReleasedDefinition() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(), any(Long.class));
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(), any(Long.class)));
     }
 
     @Test
@@ -362,13 +355,13 @@ public class TrainingDefinitionServiceTest {
         then(assessmentLevelRepository).should().save(assessmentLevel);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateAssessmentLevelWithReleasedDefinition() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.updateAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class));
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.updateAssessmentLevel(releasedDefinition.getId(), any(AssessmentLevel.class)));
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test
     public void updateAssessmentLevelWithLevelNotInDefinition() {
         AssessmentLevel level = new AssessmentLevel();
         level.setId(8L);
@@ -376,14 +369,14 @@ public class TrainingDefinitionServiceTest {
         given(abstractLevelRepository.findById(trainingLevel.getId())).willReturn(Optional.of(trainingLevel));
         given(abstractLevelRepository.findById(assessmentLevel.getId())).willReturn(Optional.of(assessmentLevel));
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level);
+        assertThrows(EntityNotFoundException.class, () -> trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateAssessmentLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), assessmentLevel);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), assessmentLevel));
     }
 
     @Test
@@ -397,27 +390,27 @@ public class TrainingDefinitionServiceTest {
         then(trainingLevelRepository).should().save(trainingLevel);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateTrainingLevelWithReleasedDefinition() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.updateTrainingLevel(releasedDefinition.getId(), any(TrainingLevel.class));
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.updateTrainingLevel(releasedDefinition.getId(), any(TrainingLevel.class)));
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test
     public void updateTrainingLevelWithLevelNotInDefinition() {
         TrainingLevel level = new TrainingLevel();
         level.setId(8L);
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(trainingLevel.getId())).willReturn(Optional.of(trainingLevel));
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        trainingDefinitionService.updateTrainingLevel(unreleasedDefinition.getId(), level);
+        assertThrows(EntityNotFoundException.class, () -> trainingDefinitionService.updateTrainingLevel(unreleasedDefinition.getId(), level));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateTrainingLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.updateTrainingLevel(unreleasedDefinition.getId(), trainingLevel);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.updateTrainingLevel(unreleasedDefinition.getId(), trainingLevel));
     }
 
     @Test
@@ -432,27 +425,27 @@ public class TrainingDefinitionServiceTest {
         then(infoLevelRepository).should().save(infoLevel);
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateInfoLevelWithReleasedDefinition() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.updateInfoLevel(releasedDefinition.getId(), any(InfoLevel.class));
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.updateInfoLevel(releasedDefinition.getId(), any(InfoLevel.class)));
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test
     public void updateInfoLevelWithLevelNotInDefinition() {
         InfoLevel level = new InfoLevel();
         level.setId(8L);
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
         given(abstractLevelRepository.findById(trainingLevel.getId())).willReturn(Optional.of(trainingLevel));
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), level);
+        assertThrows(EntityNotFoundException.class, () -> trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), level));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void updateInfoLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), infoLevel);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), infoLevel));
     }
 
     @Test
@@ -478,17 +471,17 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void createTrainingLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.createTrainingLevel(releasedDefinition.getId());
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.createTrainingLevel(releasedDefinition.getId()));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void createTrainingLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.createTrainingLevel(unreleasedDefinition.getId());
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.createTrainingLevel(unreleasedDefinition.getId()));
     }
 
     @Test
@@ -509,17 +502,17 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void createInfoLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.createInfoLevel(releasedDefinition.getId());
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.createInfoLevel(releasedDefinition.getId()));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void createInfoLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId());
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId()));
     }
 
     @Test
@@ -541,17 +534,17 @@ public class TrainingDefinitionServiceTest {
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void createAssessmentLevelWithCannotBeUpdatedException() {
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
-        trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId());
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId()));
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void createAssessmentLevelWithCreatedInstances() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
-        trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId());
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId()));
     }
 
     @Test
@@ -584,9 +577,9 @@ public class TrainingDefinitionServiceTest {
         then(abstractLevelRepository).should().findByIdIncludingDefinition(infoLevel.getId());
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test
     public void findLevelByIdNotExisting() {
-        trainingDefinitionService.findLevelById(555L);
+        assertThrows(EntityNotFoundException.class, () -> trainingDefinitionService.findLevelById(555L));
     }
 
     @Test
@@ -611,14 +604,14 @@ public class TrainingDefinitionServiceTest {
         assertEquals(TDState.UNRELEASED, releasedDefinition.getState());
     }
 
-    @Test(expected = EntityConflictException.class)
+    @Test
     public void switchState_RELEASEDtoUNRELEASED_withCreatedInstances() {
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(releasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
-        trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
+        assertThrows(EntityConflictException.class, () -> trainingDefinitionService.switchState(releasedDefinition.getId(), cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED));
     }
 
-    @After
+    @AfterEach
     public void after() {
         reset(trainingDefinitionRepository);
     }

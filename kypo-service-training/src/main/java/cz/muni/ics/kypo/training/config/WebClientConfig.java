@@ -13,8 +13,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
@@ -158,10 +158,10 @@ public class WebClientConfig {
 
     private ExchangeFilterFunction addSecurityHeader() {
         return (request, next) -> {
-            OAuth2Authentication authenticatedUser = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-            OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) authenticatedUser.getDetails();
+            JwtAuthenticationToken jwtAuthentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+            Jwt jwtToken = jwtAuthentication.getToken();
             ClientRequest filtered = ClientRequest.from(request)
-                    .header("Authorization", "Bearer " + details.getTokenValue())
+                    .header("Authorization", "Bearer " + jwtToken.getTokenValue())
                     .build();
             return next.exchange(filtered);
         };

@@ -3,15 +3,13 @@ package cz.muni.ics.kypo.training.service;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -19,29 +17,25 @@ import java.util.Optional;
 import static org.mockito.BDDMockito.*;
 
 
-@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {TestDataFactory.class})
 public class ExportImportServiceTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private static ExportImportService exportImportService;
-
-    @Mock
+    @MockBean
     private static TrainingDefinitionRepository trainingDefinitionRepository;
-    @Mock
+    @MockBean
     private static AbstractLevelRepository abstractLevelRepository;
-    @Mock
+    @MockBean
     private static AssessmentLevelRepository assessmentLevelRepository;
-    @Mock
+    @MockBean
     private static QuestionAnswerRepository questionAnswerRepository;
-    @Mock
+    @MockBean
     private static InfoLevelRepository infoLevelRepository;
-    @Mock
+    @MockBean
     private static TrainingLevelRepository trainingLevelRepository;
-    @Mock
+    @MockBean
     private static TrainingInstanceRepository trainingInstanceRepository;
-    @Mock
+    @MockBean
     private static TrainingRunRepository trainingRunRepository;
 
     @Mock
@@ -53,9 +47,9 @@ public class ExportImportServiceTest {
     @Mock
     private static TrainingInstance trainingInstance;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         exportImportService = new ExportImportService(trainingDefinitionRepository, abstractLevelRepository, assessmentLevelRepository,
                 questionAnswerRepository, infoLevelRepository, trainingLevelRepository, trainingInstanceRepository, trainingRunRepository);
 

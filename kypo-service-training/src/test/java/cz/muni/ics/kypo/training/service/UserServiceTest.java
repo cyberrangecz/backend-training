@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -9,15 +10,14 @@ import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
+import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.apache.http.HttpHeaders;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -35,22 +35,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {TestDataFactory.class})
 public class UserServiceTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private UserService userService;
-
-    @Mock
+    @MockBean
     private UserRefRepository userRefRepository;
-
-    @Mock
+    @MockBean
     private ExchangeFunction exchangeFunction;
 
     private UserRef userRef1, userRef2, userRef3;
@@ -58,9 +56,9 @@ public class UserServiceTest {
     private PageResultResource.Pagination pagination;
     private Pageable pageable;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         WebClient webClient = WebClient.builder()
                 .exchangeFunction(exchangeFunction)
                 .build();
@@ -98,14 +96,14 @@ public class UserServiceTest {
     public void getUserByUserRefId() {
         given(userRefRepository.findUserByUserRefId(userRef1.getUserRefId())).willReturn(Optional.of(userRef1));
         UserRef foundUserRef = userService.getUserByUserRefId(userRef1.getUserRefId());
-        Assert.assertEquals(userRef1, foundUserRef);
+        assertEquals(userRef1, foundUserRef);
     }
 
     @Test
     public void getUserRefDTOByUserRefId() throws Exception {
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
         UserRefDTO foundUserRefDTO = userService.getUserRefDTOByUserRefId(userRef1.getUserRefId());
-        Assert.assertEquals(userRefDTO1, foundUserRefDTO);
+        assertEquals(userRefDTO1, foundUserRefDTO);
     }
 
 
@@ -115,20 +113,20 @@ public class UserServiceTest {
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(new PageResultResource<UserRefDTO>(List.of(userRefDTO1, userRefDTO2), pagination)));
 
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersRefDTOByGivenUserIds(Set.of(userRef1.getUserRefId(), userRef2.getUserRefId()), pageable, null, null);
-        Assert.assertTrue(userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
-        Assert.assertEquals(pagination.getNumber(), userRefDTOPageResultResource.getPagination().getNumber());
-        Assert.assertEquals(pagination.getNumberOfElements(), userRefDTOPageResultResource.getPagination().getNumberOfElements());
-        Assert.assertEquals(pagination.getSize(), userRefDTOPageResultResource.getPagination().getSize());
-        Assert.assertEquals(pagination.getTotalElements(), userRefDTOPageResultResource.getPagination().getTotalElements());
-        Assert.assertEquals(pagination.getTotalPages(), userRefDTOPageResultResource.getPagination().getTotalPages());
+        assertTrue(userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
+        assertEquals(pagination.getNumber(), userRefDTOPageResultResource.getPagination().getNumber());
+        assertEquals(pagination.getNumberOfElements(), userRefDTOPageResultResource.getPagination().getNumberOfElements());
+        assertEquals(pagination.getSize(), userRefDTOPageResultResource.getPagination().getSize());
+        assertEquals(pagination.getTotalElements(), userRefDTOPageResultResource.getPagination().getTotalElements());
+        assertEquals(pagination.getTotalPages(), userRefDTOPageResultResource.getPagination().getTotalPages());
     }
 
     @Test
     public void getUsersRefDTOByGivenUserIdsWithEmptyIds() {
         pagination = new PageResultResource.Pagination(0, 0, 5, 0, 0);
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersRefDTOByGivenUserIds(new HashSet<>(), pageable, null, null);
-        Assert.assertTrue(userRefDTOPageResultResource.getContent().isEmpty());
-        Assert.assertEquals(pagination.toString(), userRefDTOPageResultResource.getPagination().toString());
+        assertTrue(userRefDTOPageResultResource.getContent().isEmpty());
+        assertEquals(pagination.toString(), userRefDTOPageResultResource.getPagination().toString());
     }
 
     @Test
@@ -137,7 +135,7 @@ public class UserServiceTest {
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(new PageResultResource<UserRefDTO>(List.of(userRefDTO1, userRefDTO2), pagination)));
 
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersByGivenRole(RoleType.ROLE_TRAINING_DESIGNER, pageable, null, null);
-        Assert.assertTrue(userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
+        assertTrue(userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
     }
 
     @Test
@@ -146,12 +144,12 @@ public class UserServiceTest {
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(new PageResultResource<UserRefDTO>(List.of(userRefDTO1, userRefDTO2), pagination)));
 
         PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersByGivenRoleAndNotWithGivenIds(RoleType.ROLE_TRAINING_ORGANIZER, Set.of(userRef1.getUserRefId(), userRef2.getUserRefId()), pageable, null, null);
-        Assert.assertTrue(userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
-        Assert.assertEquals(pagination.getNumber(), userRefDTOPageResultResource.getPagination().getNumber());
-        Assert.assertEquals(pagination.getNumberOfElements(), userRefDTOPageResultResource.getPagination().getNumberOfElements());
-        Assert.assertEquals(pagination.getSize(), userRefDTOPageResultResource.getPagination().getSize());
-        Assert.assertEquals(pagination.getTotalElements(), userRefDTOPageResultResource.getPagination().getTotalElements());
-        Assert.assertEquals(pagination.getTotalPages(), userRefDTOPageResultResource.getPagination().getTotalPages());
+        assertTrue(userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
+        assertEquals(pagination.getNumber(), userRefDTOPageResultResource.getPagination().getNumber());
+        assertEquals(pagination.getNumberOfElements(), userRefDTOPageResultResource.getPagination().getNumberOfElements());
+        assertEquals(pagination.getSize(), userRefDTOPageResultResource.getPagination().getSize());
+        assertEquals(pagination.getTotalElements(), userRefDTOPageResultResource.getPagination().getTotalElements());
+        assertEquals(pagination.getTotalPages(), userRefDTOPageResultResource.getPagination().getTotalPages());
     }
 
     @Test
@@ -173,7 +171,7 @@ public class UserServiceTest {
 
     private static String convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);

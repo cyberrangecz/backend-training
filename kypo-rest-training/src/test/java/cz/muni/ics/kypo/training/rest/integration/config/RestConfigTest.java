@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.rest.controllers.config;
+package cz.muni.ics.kypo.training.rest.integration.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -33,8 +33,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 @Configuration
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.facade", "cz.muni.ics.kypo.training.mapping", "cz.muni.ics.kypo.training.service",
-		"cz.muni.csirt.kypo.elasticsearch.service"})
+@ComponentScan(basePackages = {
+		"cz.muni.ics.kypo.training.facade",
+		"cz.muni.ics.kypo.training.mapping",
+		"cz.muni.ics.kypo.training.service",
+		"cz.muni.csirt.kypo.elasticsearch.service"
+})
 @EntityScan(basePackages = {"cz.muni.ics.kypo.training.persistence.model", "cz.muni.ics.kypo.commons.persistence.model"},  basePackageClasses = Jsr310JpaConverters.class)
 @EnableJpaRepositories(basePackages = {"cz.muni.ics.kypo.training.persistence.repository", "cz.muni.ics.kypo.commons"})
 public class RestConfigTest {
@@ -54,8 +58,7 @@ public class RestConfigTest {
 
 	@Bean
 	public RestHighLevelClient restHighLevelClient() throws Exception{
-		RestHighLevelClient client = new RestHighLevelClient(coreBuilder());
-		return client;
+		return new RestHighLevelClient(coreBuilder());
 	}
 
 	@Bean

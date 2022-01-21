@@ -9,24 +9,22 @@ import cz.muni.ics.kypo.training.persistence.model.InfoLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class})
+
+@SpringBootTest(classes = {
+        TestDataFactory.class,
+        TrainingDefinitionMapperImpl.class,
+        UserRefMapperImpl.class,
+        BetaTestingGroupMapperImpl.class
+})
 public class BeanMappingTest {
 
     @Autowired
@@ -43,7 +41,7 @@ public class BeanMappingTest {
     private List<InfoLevel> levels;
     private List<InfoLevelDTO> levelsDTO;
 
-    @Before
+    @BeforeEach
     public void init() {
 
         aR = new UserRef();

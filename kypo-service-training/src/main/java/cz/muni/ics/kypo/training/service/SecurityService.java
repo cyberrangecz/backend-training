@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -114,8 +114,8 @@ public class SecurityService {
      * @return the boolean
      */
     public boolean hasRole(RoleTypeSecurity roleTypeSecurity) {
-        OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA : authentication.getUserAuthentication().getAuthorities()) {
+        JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority gA : authentication.getAuthorities()) {
             if (gA.getAuthority().equals(roleTypeSecurity.name())) {
                 return true;
             }

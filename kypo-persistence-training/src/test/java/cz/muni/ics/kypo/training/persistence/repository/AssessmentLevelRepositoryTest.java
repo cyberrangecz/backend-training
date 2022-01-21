@@ -1,30 +1,22 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
-import cz.muni.ics.kypo.training.persistence.config.PersistenceConfigTest;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
-@Import(PersistenceConfigTest.class)
-@ComponentScan(basePackages = "cz.muni.ics.kypo.training.persistence.util")
 public class AssessmentLevelRepositoryTest {
 
     @Autowired
@@ -36,11 +28,7 @@ public class AssessmentLevelRepositoryTest {
 
     private AssessmentLevel assessmentLevel1, assessmentLevel2;
 
-    @SpringBootApplication
-    static class TestConfiguration {
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
         assessmentLevel1 = testDataFactory.getTest();
         assessmentLevel2 = testDataFactory.getQuestionnaire();

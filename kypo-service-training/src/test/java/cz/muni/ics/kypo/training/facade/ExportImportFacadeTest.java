@@ -17,34 +17,36 @@ import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
 import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.api.SandboxApiService;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestDataFactory.class})
-@SpringBootTest(classes = {LevelMapperImpl.class, ExportImportMapperImpl.class, TrainingDefinitionMapperImpl.class,
-        LevelMapperImpl.class, UserRefMapperImpl.class, BetaTestingGroupMapperImpl.class, HintMapperImpl.class,
-        QuestionMapperImpl.class, AttachmentMapperImpl.class, ReferenceSolutionNodeMapperImpl.class})
+@SpringBootTest(classes = {
+        TestDataFactory.class,
+        ExportImportMapperImpl.class,
+        TrainingDefinitionMapperImpl.class,
+        LevelMapperImpl.class,
+        UserRefMapperImpl.class,
+        BetaTestingGroupMapperImpl.class,
+        HintMapperImpl.class,
+        QuestionMapperImpl.class,
+        AttachmentMapperImpl.class,
+        ReferenceSolutionNodeMapperImpl.class
+})
 public class ExportImportFacadeTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private ExportImportFacade exportImportFacade;
 
@@ -57,15 +59,15 @@ public class ExportImportFacadeTest {
     @Autowired
     private TrainingDefinitionMapperImpl trainingDefinitionMapper;
 
-    @Mock
+    @MockBean
     private ObjectMapper objectMapper;
-    @Mock
+    @MockBean
     private TrainingDefinitionService trainingDefinitionService;
-    @Mock
+    @MockBean
     private SandboxApiService sandboxApiService;
-    @Mock
+    @MockBean
     private ExportImportService exportImportService;
-    @Mock
+    @MockBean
     private TrainingFeedbackApiService trainingFeedbackApiService;
 
     private TrainingDefinition trainingDefinition;
@@ -76,9 +78,9 @@ public class ExportImportFacadeTest {
     private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
     private ElasticsearchApiService elasticsearchApiService;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, elasticsearchApiService,
                 trainingFeedbackApiService, sandboxApiService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
 
