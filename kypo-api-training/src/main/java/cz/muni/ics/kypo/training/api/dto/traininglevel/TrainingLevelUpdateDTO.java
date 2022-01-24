@@ -47,7 +47,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
     @Valid
     @ApiModelProperty(value = "Information which helps participant resolve the level.")
     private Set<HintDTO> hints = new HashSet<>();
-    @ApiModelProperty(value = "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+    @ApiModelProperty(value = "Indicates if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
     private boolean variantAnswers;
     @Valid
     @ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
