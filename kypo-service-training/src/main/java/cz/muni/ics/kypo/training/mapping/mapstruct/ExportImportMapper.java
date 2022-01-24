@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
-import cz.muni.ics.kypo.training.api.dto.archive.TrainingDefinitionArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingRunArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
@@ -25,6 +24,5 @@ public interface ExportImportMapper extends ParentMapper {
     TrainingDefinition mapToEntity(ImportTrainingDefinitionDTO dto);
     TrainingInstanceArchiveDTO mapToDTO(TrainingInstance entity);
     TrainingRunExportDTO mapToDTO(TrainingRun entity);
-    TrainingDefinitionArchiveDTO mapToArchiveDTO(TrainingDefinition entity);
     TrainingRunArchiveDTO mapToArchiveDTO(TrainingRun entity);
 }

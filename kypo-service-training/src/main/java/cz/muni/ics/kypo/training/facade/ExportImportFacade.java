@@ -145,14 +145,6 @@ public class ExportImportFacade {
         return abstractLevelExportDTOs;
     }
 
-    private List<AbstractLevelArchiveDTO> mapAbstractLevelsToArchiveDTO(Long trainingDefinitionId) {
-        List<AbstractLevelArchiveDTO> abstractLevelArchiveDTOs = new ArrayList<>();
-        List<AbstractLevel> abstractLevels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionId);
-        abstractLevels.forEach(level ->
-                abstractLevelArchiveDTOs.add(levelMapper.mapToArchiveDTO(level)));
-        return abstractLevelArchiveDTOs;
-    }
-
     /**
      * Imports training definition.
      *
@@ -434,9 +426,10 @@ public class ExportImportFacade {
     }
 
     private void writeTrainingDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
-        TrainingDefinitionArchiveDTO tD = exportImportMapper.mapToArchiveDTO(exportImportService.findById(trainingInstance.getTrainingDefinition().getId()));
+        Long trainingDefinitionId = trainingInstance.getTrainingDefinition().getId();
+        ExportTrainingDefinitionAndLevelsDTO tD = exportImportMapper.mapToDTO(exportImportService.findById(trainingDefinitionId));
         if (tD != null) {
-            tD.setLevels(mapAbstractLevelsToArchiveDTO(trainingInstance.getTrainingDefinition().getId()));
+            tD.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingDefinitionId));
             ZipEntry definitionEntry = new ZipEntry("training_definition-id" + trainingInstance.getTrainingDefinition().getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(definitionEntry);
             zos.write(objectMapper.writeValueAsBytes(tD));

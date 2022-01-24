@@ -36,6 +36,8 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
     private List<AttachmentImportDTO> attachments;
     @ApiModelProperty(value = "The maximum score a participant can achieve during a level.", example = "20")
     private int maxScore;
+    @ApiModelProperty(value = "Indicates if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
+    private boolean variantAnswers;
     @ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
     private List<ReferenceSolutionNodeDTO> referenceSolution = new ArrayList<>();
 
@@ -228,6 +230,24 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
         this.referenceSolution = referenceSolution;
     }
 
+    /**
+     * Are answers variant.
+     *
+     * @return true if answers are variant and unique for each training run
+     */
+    public boolean isVariantAnswers() {
+        return variantAnswers;
+    }
+
+    /**
+     * Sets variant answers.
+     *
+     * @param variantAnswers the variant answers
+     */
+    public void setVariantAnswers(boolean variantAnswers) {
+        this.variantAnswers = variantAnswers;
+    }
+
     @Override
     public String toString() {
         return "TrainingLevelExportDTO{" +
@@ -238,8 +258,8 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
                 ", solutionPenalized=" + solutionPenalized +
                 ", hints=" + hints +
                 ", incorrectAnswerLimit=" + incorrectAnswerLimit +
-                ", attachments=" + attachments +
                 ", maxScore=" + maxScore +
+                ", variantAnswers=" + variantAnswers +
                 '}';
     }
 }
