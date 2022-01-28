@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
@@ -23,15 +24,16 @@ import java.util.Objects;
 
 /**
  * Encapsulates information about abstract level.
- * Extended by {@link AssessmentLevelDTO}, {@link TrainingLevelDTO} and {@link InfoLevelDTO}
+ * Extended by {@link AssessmentLevelDTO}, {@link TrainingLevelDTO}, {@link AccessLevelUpdateDTO} and {@link InfoLevelDTO}
  *
  */
-@ApiModel(value = "AbstractLevelUpdateDTO", subTypes = {TrainingLevelUpdateDTO.class, AssessmentLevelUpdateDTO.class, InfoLevelUpdateDTO.class},
-        description = "Superclass for classes TrainingLevelUpdateDTO, AssessmentLevelUpdateDTO and InfoLevelUpdateDTO")
+@ApiModel(value = "AbstractLevelUpdateDTO", subTypes = {TrainingLevelUpdateDTO.class, AccessLevelUpdateDTO.class, AssessmentLevelUpdateDTO.class, InfoLevelUpdateDTO.class},
+        description = "Superclass for classes TrainingLevelUpdateDTO, AccessLevelUpdateDTO, AssessmentLevelUpdateDTO and InfoLevelUpdateDTO")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "level_type", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = TrainingLevelUpdateDTO.class, name = "TRAINING_LEVEL"),
         @JsonSubTypes.Type(value = TrainingLevelUpdateDTO.class, name = "GAME_LEVEL"),
+        @JsonSubTypes.Type(value = AccessLevelUpdateDTO.class, name = "ACCESS_LEVEL"),
         @JsonSubTypes.Type(value = AssessmentLevelUpdateDTO.class, name = "ASSESSMENT_LEVEL"),
         @JsonSubTypes.Type(value = InfoLevelUpdateDTO.class, name = "INFO_LEVEL")})
 public abstract class AbstractLevelUpdateDTO {

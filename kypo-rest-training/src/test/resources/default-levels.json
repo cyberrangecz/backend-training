@@ -1,14 +1,12 @@
 {
   "intro_info_level": {
     "title" : "Test info title",
-    "estimated_duration" : 10,
     "content" : "Test content"
   },
   "get_access_level": {
       "title" : "Test training title",
-      "estimated_duration" : 10,
-      "answer" : "test",
-      "content" : "Test content",
-      "solution" : "Submit test"
+      "passkey" : "test",
+      "cloud_content" : "Test cloud content",
+      "local_content" : "Test non cloud content"
   }
 }

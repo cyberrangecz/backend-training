@@ -7,6 +7,7 @@ import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
@@ -353,6 +354,10 @@ public class TrainingDefinitionFacade {
                             .equals(((TrainingLevel)persistedLevel).getReferenceSolution());
                     trainingDefinitionService.updateTrainingLevel(updatedTrainingLevel, (TrainingLevel) persistedLevel);
                     break;
+                case ACCESS_LEVEL:
+                    AccessLevel updatedAccessLevel = levelMapper.mapUpdateToEntity((AccessLevelUpdateDTO) updatedLevelDTO);
+                    trainingDefinitionService.updateAccessLevel(updatedAccessLevel, (AccessLevel) persistedLevel);
+                    break;
                 case INFO_LEVEL:
                     InfoLevel updatedInfoLevel = levelMapper.mapUpdateToEntity((InfoLevelUpdateDTO) updatedLevelDTO);
                     trainingDefinitionService.updateInfoLevel(updatedInfoLevel, (InfoLevel) persistedLevel);
@@ -461,9 +466,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public BasicLevelInfoDTO createInfoLevel(Long definitionId) {
         InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId);
-        BasicLevelInfoDTO levelInfoDTO = levelMapper.mapTo(newInfoLevel);
-        levelInfoDTO.setLevelType(LevelType.INFO_LEVEL);
-        return levelInfoDTO;
+        return levelMapper.mapTo(newInfoLevel);
     }
 
     /**
@@ -477,9 +480,21 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public BasicLevelInfoDTO createTrainingLevel(Long definitionId) {
         TrainingLevel newTrainingLevel = trainingDefinitionService.createTrainingLevel(definitionId);
-        BasicLevelInfoDTO levelInfoDTO = levelMapper.mapTo(newTrainingLevel);
-        levelInfoDTO.setLevelType(LevelType.TRAINING_LEVEL);
-        return levelInfoDTO;
+        return levelMapper.mapTo(newTrainingLevel);
+    }
+
+    /**
+     * Creates new access level in training definition
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return {@link BasicLevelInfoDTO} of new access level
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+    @TransactionalWO
+    public BasicLevelInfoDTO createAccessLevel(Long definitionId) {
+        AccessLevel newAccessLevel = trainingDefinitionService.createAccessLevel(definitionId);
+        return levelMapper.mapTo(newAccessLevel);
     }
 
     /**
@@ -493,9 +508,7 @@ public class TrainingDefinitionFacade {
     @TransactionalWO
     public BasicLevelInfoDTO createAssessmentLevel(Long definitionId) {
         AssessmentLevel newAssessmentLevel = trainingDefinitionService.createAssessmentLevel(definitionId);
-        BasicLevelInfoDTO levelInfoDTO = levelMapper.mapTo(newAssessmentLevel);
-        levelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-        return levelInfoDTO;
+        return levelMapper.mapTo(newAssessmentLevel);
     }
 
     /**

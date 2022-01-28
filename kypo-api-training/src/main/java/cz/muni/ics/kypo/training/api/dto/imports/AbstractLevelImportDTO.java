@@ -9,18 +9,20 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * Encapsulates information about abstract level.
- * Extended by {@link AssessmentLevelImportDTO}, {@link TrainingLevelImportDTO} and {@link InfoLevelImportDTO}
+ * Extended by {@link AssessmentLevelImportDTO}, {@link TrainingLevelImportDTO}, {@link AccessLevelImportDTO} and {@link InfoLevelImportDTO}
  *
  */
-@ApiModel(value = "AbstractLevelImportDTO", subTypes = {TrainingLevelImportDTO.class, InfoLevelImportDTO.class, AssessmentLevelImportDTO.class},
-		description = "Superclass for classes TrainingLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")
+@ApiModel(value = "AbstractLevelImportDTO", subTypes = {TrainingLevelImportDTO.class, AccessLevelImportDTO.class, InfoLevelImportDTO.class, AssessmentLevelImportDTO.class},
+		description = "Superclass for classes TrainingLevelImportDTO, AccessLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "level_type", visible = true)
 @JsonSubTypes({
 		@JsonSubTypes.Type(value = TrainingLevelImportDTO.class, name = "TRAINING_LEVEL"),
 		@JsonSubTypes.Type(value = TrainingLevelImportDTO.class, name = "GAME_LEVEL"),
+		@JsonSubTypes.Type(value = AccessLevelImportDTO.class, name = "ACCESS_LEVEL"),
 		@JsonSubTypes.Type(value = AssessmentLevelImportDTO.class, name = "ASSESSMENT_LEVEL"),
 		@JsonSubTypes.Type(value = InfoLevelImportDTO.class, name = "INFO_LEVEL")})
 public class AbstractLevelImportDTO {
@@ -36,6 +38,8 @@ public class AbstractLevelImportDTO {
 	@Min(value = 0, message = "{abstractLevel.order.Min.message}")
 	protected Integer order;
 	@ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", example = "5")
+	@NotNull(message = "{abstractLevel.estimatedDuration.NotNull.message}")
+	@Min(value = 0, message = "{abstractLevel.estimatedDuration.Min.message}")
 	protected Integer estimatedDuration;
 
 	/**

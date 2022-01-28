@@ -535,6 +535,8 @@ public class TrainingDefinitionsRestController {
             basicLevelInfoDTO = trainingDefinitionFacade.createTrainingLevel(definitionId);
         } else if (levelType.equals(LevelType.ASSESSMENT)) {
             basicLevelInfoDTO = trainingDefinitionFacade.createAssessmentLevel(definitionId);
+        } else if (levelType.equals(LevelType.ACCESS)) {
+                basicLevelInfoDTO = trainingDefinitionFacade.createAccessLevel(definitionId);
         } else {
             basicLevelInfoDTO = trainingDefinitionFacade.createInfoLevel(definitionId);
         }

@@ -10,10 +10,10 @@ import java.util.Objects;
 /**
  * Encapsulates information about abstract level.
  * Used for visualization.
- * Extended by {@link AssessmentLevelVisualizationDTO}, {@link TrainingLevelVisualizationDTO} and {@link InfoLevelVisualizationDTO}.
+ * Extended by {@link AssessmentLevelVisualizationDTO}, {@link TrainingLevelVisualizationDTO}, {@link AccessLevelVisualizationDTO} and {@link InfoLevelVisualizationDTO}.
  */
-@ApiModel(value = "AbstractLevelVisualizationDTO", subTypes = {TrainingLevelVisualizationDTO.class, InfoLevelVisualizationDTO.class, AssessmentLevelVisualizationDTO.class},
-        description = "Superclass for classes TrainingLevelVisualizationDTO, AssessmentLevelVisualizationDTO and InfoLevelVisualizationDTO")
+@ApiModel(value = "AbstractLevelVisualizationDTO", subTypes = {TrainingLevelVisualizationDTO.class, AccessLevelVisualizationDTO.class, InfoLevelVisualizationDTO.class, AssessmentLevelVisualizationDTO.class},
+        description = "Superclass for classes TrainingLevelVisualizationDTO, AccessLevelVisualizationDTO, AssessmentLevelVisualizationDTO and InfoLevelVisualizationDTO")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class AbstractLevelVisualizationDTO {
 

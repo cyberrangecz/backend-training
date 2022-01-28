@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.mapping.mapstruct.CloneMapper;
@@ -52,6 +51,7 @@ public class TrainingDefinitionService {
     private TrainingLevelRepository trainingLevelRepository;
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
+    private AccessLevelRepository accessLevelRepository;
     private UserRefRepository userRefRepository;
     private SecurityService securityService;
     private UserService userService;
@@ -80,6 +80,7 @@ public class TrainingDefinitionService {
                                      InfoLevelRepository infoLevelRepository,
                                      TrainingLevelRepository trainingLevelRepository,
                                      AssessmentLevelRepository assessmentLevelRepository,
+                                     AccessLevelRepository accessLevelRepository,
                                      TrainingInstanceRepository trainingInstanceRepository,
                                      UserRefRepository userRefRepository,
                                      SecurityService securityService,
@@ -91,6 +92,7 @@ public class TrainingDefinitionService {
         this.trainingLevelRepository = trainingLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.assessmentLevelRepository = assessmentLevelRepository;
+        this.accessLevelRepository = accessLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
@@ -376,6 +378,19 @@ public class TrainingDefinitionService {
     }
 
     /**
+     * Updates access level in training definition
+     *
+     * @param updatedAccessLevel - access level with updated data
+     * @param persistedAccessLevel - access level from database with old data.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be updated in released or archived training definition.
+     */
+    public AccessLevel updateAccessLevel(AccessLevel updatedAccessLevel, AccessLevel persistedAccessLevel) {
+        this.updateCommonLevelData(updatedAccessLevel, persistedAccessLevel);
+        return accessLevelRepository.save(updatedAccessLevel);
+    }
+
+    /**
      * Updates info level in training definition
      *
      * @param definitionId - id of training definition containing level to be updated.
@@ -463,6 +478,30 @@ public class TrainingDefinitionService {
         auditAndSave(trainingDefinition);
         LOG.info("Training level with id: {} created", trainingLevel.getId());
         return trainingLevel;
+    }
+
+    /**
+     * Creates new access level
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return new {@link AccessLevel}
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be created in released or archived training definition.
+     */
+    public AccessLevel createAccessLevel(Long definitionId) {
+        TrainingDefinition trainingDefinition = findById(definitionId);
+        checkIfCanBeUpdated(trainingDefinition);
+        AccessLevel newAccessLevel = new AccessLevel();
+
+        newAccessLevel.setTitle("Title of access level");
+        newAccessLevel.setCloudContent("Cloud content of access level should be here.");
+        newAccessLevel.setLocalContent("Local (non-cloud) content of access level should be here.");
+        newAccessLevel.setOrder(getNextOrder(definitionId));
+        newAccessLevel.setTrainingDefinition(trainingDefinition);
+        AccessLevel accessLevel = accessLevelRepository.save(newAccessLevel);
+        auditAndSave(trainingDefinition);
+        LOG.info("Training level with id: {} created", accessLevel.getId());
+        return accessLevel;
     }
 
     private TrainingLevel initializeNewTrainingLevel() {
@@ -659,22 +698,18 @@ public class TrainingDefinitionService {
         introInfoLevel.setTrainingDefinition(trainingDefinition);
         introInfoLevel.setTitle(defaultLevels.getIntroInfoLevel().getTitle());
         introInfoLevel.setContent(defaultLevels.getIntroInfoLevel().getContent());
-        introInfoLevel.setEstimatedDuration(defaultLevels.getIntroInfoLevel().getEstimatedDuration());
         introInfoLevel.setOrder(0);
         infoLevelRepository.save(introInfoLevel);
 
-        TrainingLevel getAccessLevel = new TrainingLevel();
+        AccessLevel getAccessLevel = new AccessLevel();
         getAccessLevel.setOrder(1);
         getAccessLevel.setTrainingDefinition(trainingDefinition);
-        getAccessLevel.setContent(defaultLevels.getGetAccessLevel().getContent());
+        getAccessLevel.setCloudContent(defaultLevels.getGetAccessLevel().getCloudContent());
+        getAccessLevel.setLocalContent(defaultLevels.getGetAccessLevel().getLocalContent());
         getAccessLevel.setTitle(defaultLevels.getGetAccessLevel().getTitle());
-        getAccessLevel.setAnswer(defaultLevels.getGetAccessLevel().getAnswer());
-        getAccessLevel.setSolution(defaultLevels.getGetAccessLevel().getSolution());
-        getAccessLevel.setEstimatedDuration(defaultLevels.getGetAccessLevel().getEstimatedDuration());
-        getAccessLevel.setIncorrectAnswerLimit(100);
+        getAccessLevel.setPasskey(defaultLevels.getGetAccessLevel().getPasskey());
         getAccessLevel.setTrainingDefinition(trainingDefinition);
-        trainingLevelRepository.save(getAccessLevel);
-        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + introInfoLevel.getEstimatedDuration() + getAccessLevel.getEstimatedDuration());
+        accessLevelRepository.save(getAccessLevel);
     }
 
     private void checkIfLevelPresentInDefinition(Long trainingDefinitionId, AbstractLevel level) {

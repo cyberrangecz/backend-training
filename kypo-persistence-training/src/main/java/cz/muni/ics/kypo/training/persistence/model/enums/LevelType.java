@@ -17,5 +17,9 @@ public enum LevelType {
     /**
      * Training level type.
      */
-    TRAINING;
+    TRAINING,
+    /**
+     * Access level type.
+     */
+    ACCESS;
 }
