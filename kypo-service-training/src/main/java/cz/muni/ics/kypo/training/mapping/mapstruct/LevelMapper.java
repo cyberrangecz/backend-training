@@ -3,24 +3,22 @@ package cz.muni.ics.kypo.training.mapping.mapstruct;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
-import cz.muni.ics.kypo.training.api.dto.export.AssessmentLevelExportDTO;
-import cz.muni.ics.kypo.training.api.dto.export.TrainingLevelExportDTO;
+import cz.muni.ics.kypo.training.api.dto.export.*;
+import cz.muni.ics.kypo.training.api.dto.imports.AccessLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.TrainingLevelImportDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.AbstractLevelVisualizationDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.AssessmentLevelVisualizationDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.TrainingLevelVisualizationDTO;
-import cz.muni.ics.kypo.training.api.dto.export.InfoLevelExportDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.*;
 import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.InfoLevelVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelDefinitionProgressDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
@@ -44,6 +42,7 @@ public interface LevelMapper extends ParentMapper {
     // INFO LEVEL
     InfoLevel mapToEntity(InfoLevelDTO dto);
 
+    @Mapping(target = "levelType", constant = "INFO_LEVEL")
     BasicLevelInfoDTO mapTo(InfoLevel infoLevel);
 
     InfoLevel mapImportToEntity(InfoLevelImportDTO dto);
@@ -64,6 +63,7 @@ public interface LevelMapper extends ParentMapper {
 
     AssessmentLevel mapImportToEntity(AssessmentLevelImportDTO dto);
 
+    @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
     BasicLevelInfoDTO mapTo(AssessmentLevel assessmentLevel);
 
     AssessmentLevelDTO mapToAssessmentLevelDTO(AssessmentLevel entity);
@@ -82,6 +82,7 @@ public interface LevelMapper extends ParentMapper {
 
     TrainingLevel mapImportToEntity(TrainingLevelImportDTO dto);
 
+    @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
     BasicLevelInfoDTO mapTo(TrainingLevel trainingLevel);
 
     TrainingLevelDTO mapToTrainingLevelDTO(TrainingLevel entity);
@@ -91,6 +92,24 @@ public interface LevelMapper extends ParentMapper {
     TrainingLevelExportDTO mapToExportTrainingLevelDTO(TrainingLevel entity);
 
     TrainingLevelViewDTO mapToViewDTO(TrainingLevel entity);
+
+    // ACCESS LEVEL
+    AccessLevel mapToEntity(AccessLevelDTO dto);
+
+    AccessLevel mapUpdateToEntity(AccessLevelUpdateDTO dto);
+
+    AccessLevel mapImportToEntity(AccessLevelImportDTO dto);
+
+    @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
+    BasicLevelInfoDTO mapTo(AccessLevel trainingLevel);
+
+    AccessLevelDTO mapToAccessLevelDTO(AccessLevel entity);
+
+    AccessLevelVisualizationDTO mapToVisualizationAccessLevelDTO(AccessLevel entity);
+
+    AccessLevelExportDTO mapToExportAccessLevelDTO(AccessLevel entity);
+
+    AccessLevelViewDTO mapToViewDTO(AccessLevel entity);
 
     // ABSTRACT
 
@@ -120,6 +139,9 @@ public interface LevelMapper extends ParentMapper {
         } else if (entity instanceof AssessmentLevel) {
             abstractLevelDTO = mapToAssessmentLevelDTO((AssessmentLevel) entity);
             abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+        } else if (entity instanceof AccessLevel) {
+            abstractLevelDTO = mapToAccessLevelDTO((AccessLevel) entity);
+            abstractLevelDTO.setLevelType(LevelType.ACCESS_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
                     " is not instance of assessment, training or info level.");
@@ -139,6 +161,9 @@ public interface LevelMapper extends ParentMapper {
         } else if (entity instanceof AssessmentLevel) {
             abstractLevelVisualizationDTO = mapToVisualizationAssessmentLevelDTO((AssessmentLevel) entity);
             abstractLevelVisualizationDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+        } else if (entity instanceof AccessLevel) {
+            abstractLevelVisualizationDTO = mapToVisualizationAccessLevelDTO((AccessLevel) entity);
+            abstractLevelVisualizationDTO.setLevelType(LevelType.ACCESS_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
                     " is not instance of assessment, training or info level.");
@@ -157,6 +182,9 @@ public interface LevelMapper extends ParentMapper {
         } else if (entity instanceof AssessmentLevel) {
             abstractLevelExportDTO = mapToExportAssessmentLevelDTO((AssessmentLevel) entity);
             abstractLevelExportDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+        } else if (entity instanceof AccessLevel) {
+            abstractLevelExportDTO = mapToExportAccessLevelDTO((AccessLevel) entity);
+            abstractLevelExportDTO.setLevelType(LevelType.ACCESS_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
                     " is not instance of assessment, training or info level.");
@@ -170,6 +198,8 @@ public interface LevelMapper extends ParentMapper {
     LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AssessmentLevel entity);
     @Mapping(target = "levelType", constant = "INFO_LEVEL")
     LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(InfoLevel entity);
+    @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
+    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AccessLevel entity);
 
     default LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AbstractLevel entity) {
         if (entity instanceof TrainingLevel) {
@@ -178,6 +208,8 @@ public interface LevelMapper extends ParentMapper {
             return mapToLevelDefinitionProgressDTO((InfoLevel) entity);
         } else if (entity instanceof AssessmentLevel) {
             return mapToLevelDefinitionProgressDTO((AssessmentLevel) entity);
+        } else if (entity instanceof AccessLevel) {
+            return mapToLevelDefinitionProgressDTO((AccessLevel) entity);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
                     " is not instance of assessment, training or info level.");

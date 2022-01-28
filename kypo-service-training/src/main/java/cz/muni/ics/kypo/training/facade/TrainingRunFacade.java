@@ -358,6 +358,20 @@ public class TrainingRunFacade {
     }
 
     /**
+     * Check given passkey of given Training Run.
+     *
+     * @param trainingRunId id of Training Run to check passkey.
+     * @param passkey          string which player submit.
+     * @return true if passkey is correct, false if passkey is wrong.
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    @TransactionalWO
+    public Boolean isCorrectPasskey(Long trainingRunId, String passkey) {
+        return trainingRunService.isCorrectPassKey(trainingRunId, passkey);
+    }
+
+    /**
      * Finish training run.
      *
      * @param trainingRunId id of Training Run to be finished.
@@ -528,6 +542,10 @@ public class TrainingRunFacade {
             TrainingLevel trainingLevel = (TrainingLevel) abstractLevel;
             abstractLevelDTO = levelMapper.mapToViewDTO(trainingLevel);
             abstractLevelDTO.setLevelType(LevelType.TRAINING_LEVEL);
+        } else if (abstractLevel instanceof AccessLevel) {
+            AccessLevel accessLevel = (AccessLevel) abstractLevel;
+            abstractLevelDTO = levelMapper.mapToViewDTO(accessLevel);
+            abstractLevelDTO.setLevelType(LevelType.ACCESS_LEVEL);
         } else {
             InfoLevel infoLevel = (InfoLevel) abstractLevel;
             abstractLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel);

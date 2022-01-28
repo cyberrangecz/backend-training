@@ -6,11 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Encapsulates information about abstract level.
- * Extended by {@link AssessmentLevelExportDTO}, {@link TrainingLevelExportDTO} and {@link InfoLevelExportDTO}
+ * Extended by {@link AssessmentLevelExportDTO}, {@link TrainingLevelExportDTO}, {@link AccessLevelExportDTO} and {@link InfoLevelExportDTO}
  *
  */
-@ApiModel(value = "AbstractLevelExportDTO", subTypes = {TrainingLevelExportDTO.class, InfoLevelExportDTO.class, AssessmentLevelExportDTO.class},
-        description = "Superclass for classes TrainingLevelExportDTO, InfoLevelExportDTO and AssessmentLevelExportDTO")
+@ApiModel(value = "AbstractLevelExportDTO", subTypes = {TrainingLevelExportDTO.class, AccessLevelExportDTO.class, InfoLevelExportDTO.class, AssessmentLevelExportDTO.class},
+        description = "Superclass for classes TrainingLevelExportDTO, AccessLevelExportDTO, InfoLevelExportDTO and AssessmentLevelExportDTO")
 public class AbstractLevelExportDTO {
 
     @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")

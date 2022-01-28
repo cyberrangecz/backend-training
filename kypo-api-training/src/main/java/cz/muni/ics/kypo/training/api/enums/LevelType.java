@@ -18,6 +18,10 @@ public enum LevelType {
      */
     TRAINING_LEVEL,
     /**
+     * Access level type.
+     */
+    ACCESS_LEVEL,
+    /**
      * Assessment level type.
      */
     ASSESSMENT_LEVEL;
@@ -34,4 +38,10 @@ public enum LevelType {
         }
         return null;
     }
+
+    public String getName() {
+        return this.name();
+    }
+
+
 }

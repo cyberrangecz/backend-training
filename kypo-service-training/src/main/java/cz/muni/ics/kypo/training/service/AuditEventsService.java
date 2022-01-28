@@ -147,6 +147,38 @@ public class AuditEventsService {
     }
 
     /**
+     * Audit correct passkey submitted action.
+     *
+     * @param trainingRun the training run
+     * @param passkey      the passkey
+     */
+    public void auditCorrectPasskeySubmittedAction(TrainingRun trainingRun, String passkey) {
+        CorrectPasskeySubmitted.CorrectPasskeySubmittedBuilder<?, ?> correctPasskeySubmittedBuilder = (CorrectPasskeySubmitted.CorrectPasskeySubmittedBuilder<?, ?>)
+                fillInCommonBuilderFields(trainingRun, CorrectPasskeySubmitted.builder());
+
+        CorrectPasskeySubmitted correctPasskeySubmitted = correctPasskeySubmittedBuilder
+                .passkeyContent(passkey)
+                .build();
+        auditService.saveTrainingRunEvent(correctPasskeySubmitted, 0L);
+    }
+
+    /**
+     * Audit wrong passkey submitted action.
+     *
+     * @param trainingRun the training run
+     * @param passkey      the passkey
+     */
+    public void auditWrongPasskeySubmittedAction(TrainingRun trainingRun, String passkey) {
+        WrongPasskeySubmitted.WrongPasskeySubmittedBuilder<?, ?> wrongPasskeySubmittedBuilder = (WrongPasskeySubmitted.WrongPasskeySubmittedBuilder<?, ?>)
+                fillInCommonBuilderFields(trainingRun, WrongPasskeySubmitted.builder());
+
+        WrongPasskeySubmitted wrongPasskeySubmitted = wrongPasskeySubmittedBuilder
+                .passkeyContent(passkey)
+                .build();
+        auditService.saveTrainingRunEvent(wrongPasskeySubmitted, 0L);
+    }
+
+    /**
      * Audit assessment answers action.
      *
      * @param trainingRun the training run
@@ -219,6 +251,8 @@ public class AuditEventsService {
             return LevelType.INFO;
         } else if (abstractLevel instanceof AssessmentLevel) {
             return LevelType.ASSESSMENT;
+        } else if (abstractLevel instanceof AccessLevel) {
+            return LevelType.ACCESS;
         }
         return LevelType.PVP;
     }

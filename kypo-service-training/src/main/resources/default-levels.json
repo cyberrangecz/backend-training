@@ -5,10 +5,10 @@
     "content" : "Welcome to the KYPO platform. We've prepared training composed of multiple types of levels. In training levels, you need to read an assignment and find an answer to process to the next level."
   },
   "get_access_level": {
-      "title" : "Get Access",
-      "estimated_duration" : 10,
-      "answer" : "start-training",
-      "content" : "For accessing KYPO virtual machines using your local command-line tool, click on `Get SSH access` button to download ZIP file and then follow the instructions in the [documentation](https://docs.crp.kypo.muni.cz/user-guide-advanced/sandboxes/sandbox-access/#user-access). When you are ready to advance to the next phase, submit the answer provided by the organizer.\"",
-      "solution" : "Proceed to the next phase by typing \"start-training\" to the answer input field and click the submit button."
+    "title" : "Get Access",
+    "estimated_duration" : 10,
+    "passkey" : "start-training",
+    "cloud_content" : "For accessing KYPO virtual machines using your local command-line tool, click on `Get SSH access` button to download ZIP file and then follow the instructions in the [documentation](https://docs.crp.kypo.muni.cz/user-guide-advanced/sandboxes/sandbox-access/#user-access). When you are ready to advance to the next phase, submit the answer provided by the organizer.\"",
+    "local_content" : "TBA"
   }
 }

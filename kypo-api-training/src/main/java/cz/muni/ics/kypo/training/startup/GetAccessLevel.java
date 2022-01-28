@@ -6,13 +6,13 @@ import javax.validation.constraints.Size;
 public class GetAccessLevel {
     @NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
     private String title;
-    private Long estimatedDuration;
-    @NotEmpty(message = "{trainingLevel.content.NotEmpty.message}")
-    private String content;
-    @Size(max = 50, message = "{trainingLevel.answer.Size.message}")
-    private String answer;
-    @NotEmpty(message = "{trainingLevel.solution.NotEmpty.message}")
-    private String solution;
+    @NotEmpty(message = "{accessLevel.cloudContent.NotEmpty.message}")
+    private String cloudContent;
+    @NotEmpty(message = "{accessLevel.localContent.NotEmpty.message}")
+    private String localContent;
+    @Size(max = 50, message = "{accessLevel.passkey.Size.message}")
+    @NotEmpty(message = "{accessLevel.passkey.NotEmpty.message}")
+    private String passkey;
 
     public String getTitle() {
         return title;
@@ -22,35 +22,27 @@ public class GetAccessLevel {
         this.title = title;
     }
 
-    public Long getEstimatedDuration() {
-        return estimatedDuration;
+    public String getCloudContent() {
+        return cloudContent;
     }
 
-    public void setEstimatedDuration(Long estimatedDuration) {
-        this.estimatedDuration = estimatedDuration;
+    public void setCloudContent(String cloudContent) {
+        this.cloudContent = cloudContent;
     }
 
-    public String getContent() {
-        return content;
+    public String getLocalContent() {
+        return localContent;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setLocalContent(String localContent) {
+        this.localContent = localContent;
     }
 
-    public String getAnswer() {
-        return answer;
+    public String getPasskey() {
+        return passkey;
     }
 
-    public void setAnswer(String answer) {
-        this.answer = answer;
-    }
-
-    public String getSolution() {
-        return solution;
-    }
-
-    public void setSolution(String solution) {
-        this.solution = solution;
+    public void setPasskey(String passkey) {
+        this.passkey = passkey;
     }
 }

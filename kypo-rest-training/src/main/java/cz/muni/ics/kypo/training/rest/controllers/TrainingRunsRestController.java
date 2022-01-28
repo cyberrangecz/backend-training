@@ -6,6 +6,7 @@ import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.CorrectAnswerDTO;
+import cz.muni.ics.kypo.training.api.dto.accesslevel.ValidatePasskeyDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
@@ -345,6 +346,34 @@ public class TrainingRunsRestController {
                                                             @ApiParam(value = "Submitted answer", required = true)
                                                           @RequestBody @Valid ValidateAnswerDTO validateAnswerDTO) {
         return ResponseEntity.ok(trainingRunFacade.isCorrectAnswer(runId, validateAnswerDTO.getAnswer()));
+    }
+
+    /**
+     * Check if submitted passkey is correct.
+     *
+     * @param runId the run id
+     * @param validatePasskeyDTO  submitted passkey.
+     * @return True if passkey is correct, false if passkey is wrong.
+     */
+    @ApiOperation(httpMethod = "POST",
+            value = "Check passkey of the access level",
+            notes = "Current level of given training run must be access level",
+            response = Boolean.class,
+            nickname = "isCorrectPasskey",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The passkey has been checked.", response = Boolean.class),
+            @ApiResponse(code = 404, message = "The training run has not been found.", response = ApiError.class),
+            @ApiResponse(code = 400, message = "Current level is not training level and does not have answer.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @PostMapping(path = "/{runId}/is-correct-passkey", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Boolean> isCorrectPasskey(@ApiParam(value = "Training run ID", required = true)
+                                                              @PathVariable("runId") Long runId,
+                                                              @ApiParam(value = "Submitted passkey", required = true)
+                                                              @RequestBody @Valid ValidatePasskeyDTO validatePasskeyDTO) {
+        return ResponseEntity.ok(trainingRunFacade.isCorrectPasskey(runId, validatePasskeyDTO.getPasskey()));
     }
 
     /**

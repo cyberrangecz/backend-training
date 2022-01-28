@@ -402,30 +402,64 @@ public class TrainingRunService {
     public boolean isCorrectAnswer(Long runId, String answer) {
         TrainingRun trainingRun = findByIdWithLevel(runId);
         AbstractLevel level = trainingRun.getCurrentLevel();
-        if (level instanceof TrainingLevel) {
-            if (trainingRun.isLevelAnswered()) {
-                throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
-            }
-            TrainingLevel trainingLevel = (TrainingLevel) level;
-            String correctAnswer = trainingLevel.isVariantAnswers() && trainingLevel.getAnswerVariableName() != null ?
-                    answersStorageApiService.getCorrectAnswerBySandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
-                    trainingLevel.getAnswer();
-            if (correctAnswer.equals(answer)) {
-                trainingRun.setLevelAnswered(true);
-                trainingRun.increaseTotalTrainingScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
-                auditEventsService.auditCorrectAnswerSubmittedAction(trainingRun, answer);
-                auditEventsService.auditLevelCompletedAction(trainingRun);
-                auditSubmission(trainingRun, SubmissionType.CORRECT, answer);
-                return true;
-            } else if (trainingRun.getIncorrectAnswerCount() != trainingLevel.getIncorrectAnswerLimit()) {
-                trainingRun.setIncorrectAnswerCount(trainingRun.getIncorrectAnswerCount() + 1);
-            }
-            auditSubmission(trainingRun, SubmissionType.INCORRECT, answer);
-            auditEventsService.auditWrongAnswerSubmittedAction(trainingRun, answer);
-            return false;
-        } else {
+        if (level.getClass() != TrainingLevel.class) {
             throw new BadRequestException("Current level is not training level and does not have answer.");
+        } else if (trainingRun.isLevelAnswered()) {
+                throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
         }
+        return evaluateTrainingLevelAnswer(trainingRun, answer);
+    }
+
+    private boolean evaluateTrainingLevelAnswer(TrainingRun trainingRun, String answer) {
+        TrainingLevel trainingLevel = (TrainingLevel) trainingRun.getCurrentLevel();
+        String correctAnswer = trainingLevel.isVariantAnswers() && trainingLevel.getAnswerVariableName() != null ?
+                answersStorageApiService.getCorrectAnswerBySandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
+                trainingLevel.getAnswer();
+        if (correctAnswer.equals(answer)) {
+            trainingRun.setLevelAnswered(true);
+            trainingRun.increaseTotalTrainingScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
+            auditEventsService.auditCorrectAnswerSubmittedAction(trainingRun, answer);
+            auditEventsService.auditLevelCompletedAction(trainingRun);
+            auditSubmission(trainingRun, SubmissionType.CORRECT, answer);
+            return true;
+        } else if (trainingRun.getIncorrectAnswerCount() != trainingLevel.getIncorrectAnswerLimit()) {
+            trainingRun.setIncorrectAnswerCount(trainingRun.getIncorrectAnswerCount() + 1);
+        }
+        auditSubmission(trainingRun, SubmissionType.INCORRECT, answer);
+        auditEventsService.auditWrongAnswerSubmittedAction(trainingRun, answer);
+        return false;
+    }
+
+    /**
+     * Check given passkey of given Training Run.
+     *
+     * @param runId  id of Training Run to check passkey.
+     * @param passkey string which player submit.
+     * @return true if passkey is correct, false if passkey is wrong.
+     * @throws EntityNotFoundException training run is not found.
+     * @throws BadRequestException     the current level of training run is not access level.
+     */
+    public boolean isCorrectPassKey(Long runId, String passkey) {
+        TrainingRun trainingRun = findByIdWithLevel(runId);
+        AbstractLevel level = trainingRun.getCurrentLevel();
+        if (level.getClass() != AccessLevel.class) {
+            throw new BadRequestException("Current level is not access level and does not have passkey.");
+        } else if (trainingRun.isLevelAnswered()) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The passkey of the current level of training run has been already corrected."));
+        }
+        return evaluateAccessLevelPasskey(trainingRun, passkey);
+    }
+
+    private boolean evaluateAccessLevelPasskey(TrainingRun trainingRun, String passkey) {
+        AccessLevel accessLevel = (AccessLevel) trainingRun.getCurrentLevel();
+        if (accessLevel.getPasskey().equals(passkey)) {
+            trainingRun.setLevelAnswered(true);
+            auditEventsService.auditCorrectPasskeySubmittedAction(trainingRun, passkey);
+            auditEventsService.auditLevelCompletedAction(trainingRun);
+            return true;
+        }
+        auditEventsService.auditWrongPasskeySubmittedAction(trainingRun, passkey);
+        return false;
     }
 
     private void auditSubmission(TrainingRun trainingRun, SubmissionType submissionType, String answer) {
