@@ -41,7 +41,8 @@ public class TrainingInstanceDTO {
     private LocalDateTime lastEdited;
     @ApiModelProperty(value = "Name of the user who has done the last edit in instance.", example = "John Doe")
     private String lastEditedBy;
-
+    @ApiModelProperty(value = "Indicates if local sandboxes are used for training runs.", example = "true")
+    private boolean localEnvironment;
 
     /**
      * Gets id.
@@ -223,7 +224,23 @@ public class TrainingInstanceDTO {
         this.lastEditedBy = lastEditedBy;
     }
 
+    /**
+     * Gets if local environment (local sandboxes) is used for the training runs.
+     *
+     * @return true if local environment is enabled
+     */
+    public boolean isLocalEnvironment() {
+        return localEnvironment;
+    }
 
+    /**
+     * Sets if local environment (local sandboxes) is used for the training runs.
+     *
+     * @param localEnvironment true if local environment is enabled.
+     */
+    public void setLocalEnvironment(boolean localEnvironment) {
+        this.localEnvironment = localEnvironment;
+    }
 
     @Override
     public boolean equals(Object object) {
@@ -232,12 +249,13 @@ public class TrainingInstanceDTO {
         return  Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getTitle(), that.getTitle()) &&
                 Objects.equals(getAccessToken(), that.getAccessToken()) &&
-                Objects.equals(getPoolId(), that.getPoolId());
+                Objects.equals(getPoolId(), that.getPoolId()) &&
+                Objects.equals(isLocalEnvironment(), that.isLocalEnvironment());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTitle(), getAccessToken(), getPoolId());
+        return Objects.hash(getId(), getTitle(), getAccessToken(), getPoolId(), isLocalEnvironment());
     }
 
     @Override
@@ -252,6 +270,7 @@ public class TrainingInstanceDTO {
                 ", sandboxesWithTrainingRun=" + sandboxesWithTrainingRun +
                 ", lastEdited=" + lastEdited +
                 ", lastEditedBy='" + lastEditedBy + '\'' +
+                ", localEnvironment='" + localEnvironment + '\'' +
                 '}';
     }
 }

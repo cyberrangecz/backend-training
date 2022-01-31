@@ -227,7 +227,9 @@ public class TrainingRunFacade {
         try {
             // During this action we create a new TrainingRun and lock and get sandbox from OpenStack Sandbox API
             TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance, participantRefId);
-            trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
+            if (!trainingInstance.isLocalEnvironment()) {
+                trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
+            }
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (Exception e) {
             // delete/rollback acquisition lock when no training run either sandbox is assigned
@@ -245,6 +247,7 @@ public class TrainingRunFacade {
         accessTrainingRunDTO.setSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
         accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
         accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
+        accessTrainingRunDTO.setLocalEnvironment(trainingRun.getTrainingInstance().isLocalEnvironment());
         return accessTrainingRunDTO;
     }
 

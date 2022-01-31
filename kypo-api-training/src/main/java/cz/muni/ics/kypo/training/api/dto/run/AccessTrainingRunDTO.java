@@ -37,6 +37,8 @@ public class AccessTrainingRunDTO {
     private String takenSolution;
     @ApiModelProperty(value = "All already taken hints.")
     private List<TakenHintDTO> takenHints = new ArrayList<>();
+    @ApiModelProperty(value = "Indicates if local sandboxes are used for training runs.", example = "true")
+    private boolean localEnvironment;
 
     /**
      * Gets training run id.
@@ -209,10 +211,27 @@ public class AccessTrainingRunDTO {
         this.takenHints.add(takenHintDTO);
     }
 
+    /**
+     * Gets if local environment (local sandboxes) is used for the training runs.
+     *
+     * @return true if local environment is enabled
+     */
+    public boolean isLocalEnvironment() {
+        return localEnvironment;
+    }
+
+    /**
+     * Sets if local environment (local sandboxes) is used for the training runs.
+     *
+     * @param localEnvironment true if local environment is enabled.
+     */
+    public void setLocalEnvironment(boolean localEnvironment) {
+        this.localEnvironment = localEnvironment;
+    }
 
     @Override public String toString() {
         return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceRefId="
             + sandboxInstanceRefId + ", abstractLevelDTO=" + abstractLevelDTO + ", infoAboutLevels=" + infoAboutLevels + ", instanceId="
-            + instanceId + ", startTime=" + startTime + '}';
+            + instanceId + ", startTime=" + startTime + ", localEnvironment=" + localEnvironment + '}';
     }
 }

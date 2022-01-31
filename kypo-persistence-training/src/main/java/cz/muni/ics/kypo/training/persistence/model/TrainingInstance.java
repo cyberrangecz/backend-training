@@ -96,6 +96,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
             inverseJoinColumns = @JoinColumn(name = "user_ref_id")
     )
     private Set<UserRef> organizers = new HashSet<>();
+    @Column(name = "local_environment", nullable = false)
+    private boolean localEnvironment;
 
     /**
      * Gets unique identification number of Training instance
@@ -296,6 +298,24 @@ public class TrainingInstance extends AbstractEntity<Long> {
         this.organizers.removeIf(userRef -> userRefIds.contains(userRef.getUserRefId()));
     }
 
+    /**
+     * Gets if local environment (local sandboxes) is used for the training runs.
+     *
+     * @return true if local environment is enabled
+     */
+    public boolean isLocalEnvironment() {
+        return localEnvironment;
+    }
+
+    /**
+     * Sets if local environment (local sandboxes) is used for the training runs.
+     *
+     * @param localEnvironment true if local environment is enabled.
+     */
+    public void setLocalEnvironment(boolean localEnvironment) {
+        this.localEnvironment = localEnvironment;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(accessToken, startTime, endTime, title, trainingDefinition);
@@ -314,6 +334,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
                 && Objects.equals(startTime, other.getStartTime())
                 && Objects.equals(endTime, other.getEndTime())
                 && Objects.equals(title, other.getTitle())
+                && Objects.equals(localEnvironment, other.isLocalEnvironment())
                 && Objects.equals(trainingDefinition, other.getTrainingDefinition());
     }
 
@@ -324,6 +345,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", title='" + title + '\'' +
+                ", localEnvironment='" + localEnvironment + '\'' +
                 ", accessToken='" + accessToken + '\'' +
                 '}';
     }
