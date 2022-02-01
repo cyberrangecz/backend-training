@@ -10,10 +10,7 @@ import cz.muni.ics.kypo.training.api.dto.traininginstance.*;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
-import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
-import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
-import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
-import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
+import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
@@ -135,6 +132,7 @@ public class TrainingInstanceFacade {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstance.getId(),
                     "The training definition assigned to running training instance cannot be changed."));
         }
+        checkLocalEnvironmentConfiguration(trainingInstanceToUpdate);
         if(isPoolIdChanged(trainingInstance.getPoolId(), trainingInstanceToUpdate.getPoolId())) {
             handlePoolIdModification(trainingInstance.getPoolId(), trainingInstanceToUpdate.getPoolId(), trainingInstance);
         }
@@ -171,6 +169,7 @@ public class TrainingInstanceFacade {
     @TransactionalWO
     public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstanceCreateDTO) {
         TrainingInstance trainingInstance = trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
+        checkLocalEnvironmentConfiguration(trainingInstance);
         trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
         trainingInstance.setId(null);
         TrainingInstance createdTrainingInstance = trainingInstanceService.create(trainingInstance);
@@ -259,6 +258,9 @@ public class TrainingInstanceFacade {
     @TransactionalWO
     public TrainingInstanceBasicInfoDTO assignPoolToTrainingInstance(Long trainingInstanceId, TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
+        if (trainingInstance.isLocalEnvironment()) {
+            throw new BadRequestException("The pool cannot be assigned to training instance if the local environment is enabled.");
+        }
         if (trainingInstance.getPoolId() != null) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "Training instance already contains pool Id. Please first unassign pool id and then assign another pool again."));
@@ -398,6 +400,12 @@ public class TrainingInstanceFacade {
             addOrganizersToTrainingInstance(trainingInstance, organizersAddition);
         }
         trainingInstanceService.auditAndSave(trainingInstance);
+    }
+
+    private void checkLocalEnvironmentConfiguration(TrainingInstance trainingInstance) {
+        if (trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() != null) {
+            throw new BadRequestException("The pool cannot be assigned to training instance if the local environment is enabled.");
+        }
     }
 
 }

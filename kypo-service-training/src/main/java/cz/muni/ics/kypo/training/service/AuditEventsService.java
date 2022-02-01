@@ -225,10 +225,9 @@ public class AuditEventsService {
     private AbstractAuditPOJO.AbstractAuditPOJOBuilder<?, ?> fillInCommonBuilderFields(TrainingRun trainingRun, AbstractAuditPOJO.AbstractAuditPOJOBuilder<?, ?> builder) {
         TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
         AbstractLevel trainingLevel = trainingRun.getCurrentLevel();
-        builder.sandboxId(trainingRun.getSandboxInstanceRefId())
+        builder.trainingRunId(trainingRun.getId())
                 .poolId(trainingInstance.getPoolId())
-                .trainingRunId(trainingRun.getId())
-                .trainingInstanceId(trainingInstance.getId())
+                .sandboxId(trainingRun.getSandboxInstanceRefId()).trainingInstanceId(trainingInstance.getId())
                 .trainingDefinitionId(trainingInstance.getTrainingDefinition().getId())
                 .trainingTime(computeTrainingTime(trainingRun.getStartTime()))
                 .userRefId(trainingRun.getParticipantRef().getUserRefId())

@@ -287,7 +287,7 @@ public class TrainingRunService {
         TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active training session matching access token.")));
-        if (trainingInstance.getPoolId() == null) {
+        if (!trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() == null) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "At first organizer must allocate sandboxes for training instance."));
         }
@@ -369,20 +369,21 @@ public class TrainingRunService {
      */
     public TrainingRun resumeTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
         if (trainingRun.getState().equals(TRState.FINISHED) || trainingRun.getState().equals(TRState.ARCHIVED)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
                     "Cannot resume finished training run."));
         }
-        if (trainingRun.getTrainingInstance().getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
+        if (trainingInstance.getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
                     "Cannot resume training run after end of training instance."));
         }
-        if (trainingRun.getTrainingInstance().getPoolId() == null) {
+        if (!trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() == null) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
                     "The pool assignment of the appropriate training instance has been probably canceled. Please contact the organizer."));
         }
 
-        if (trainingRun.getSandboxInstanceRefId() == null) {
+        if (!trainingInstance.isLocalEnvironment() && trainingRun.getSandboxInstanceRefId() == null) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
                     "Sandbox of this training run was already deleted, you have to start new training."));
         }

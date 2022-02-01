@@ -40,6 +40,8 @@ public class TrainingInstanceUpdateDTO {
     private Long trainingDefinitionId;
     @ApiModelProperty(value = "Id of sandbox pool assigned to training instance", example = "1")
     private Long poolId;
+    @ApiModelProperty(value = "Indicates if local sandboxes are used for training runs.", example = "true")
+    private boolean localEnvironment;
 
     /**
      * Gets id.
@@ -167,6 +169,24 @@ public class TrainingInstanceUpdateDTO {
         this.poolId = poolId;
     }
 
+    /**
+     * Gets if local environment (local sandboxes) is used for the training runs.
+     *
+     * @return true if local environment is enabled
+     */
+    public boolean isLocalEnvironment() {
+        return localEnvironment;
+    }
+
+    /**
+     * Sets if local environment (local sandboxes) is used for the training runs.
+     *
+     * @param localEnvironment true if local environment is enabled.
+     */
+    public void setLocalEnvironment(boolean localEnvironment) {
+        this.localEnvironment = localEnvironment;
+    }
+
     @Override
     public String toString() {
         return "TrainingInstanceUpdateDTO{" +
@@ -177,6 +197,7 @@ public class TrainingInstanceUpdateDTO {
                 ", accessToken='" + accessToken + '\'' +
                 ", trainingDefinitionId=" + trainingDefinitionId +
                 ", poolId=" + poolId +
+                ", localEnvironment=" + localEnvironment +
                 '}';
     }
 }

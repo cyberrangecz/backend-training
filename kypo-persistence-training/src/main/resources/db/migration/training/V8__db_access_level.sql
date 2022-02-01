@@ -6,3 +6,5 @@ create table access_level (
     primary key (id),
     foreign key (id) references abstract_level
 );
+
+alter table training_instance add column local_environment boolean default (false);
