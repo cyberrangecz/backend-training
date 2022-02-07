@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.persistence.util;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -100,6 +99,10 @@ public class TestDataFactory {
     private InfoLevelUpdateDTO infoLevelUpdateDTO = generateInfoLevelUpdateDTO("New Info Title", "New Info Content");
     private InfoLevelImportDTO infoLevelImportDTO = generateInfoLevelImportDTO("Info level import", 5, "Info level import content");
     private InfoLevelDTO infoLevelDTO = generateInfoLevelDTO("Info DTO", 3, "DTO content");
+
+    private AccessLevel accessLevel = generateAccessLevel("Access level", 7L, 1, "Cloud content information",
+            "Local content information. Command: ./start.sh ${USER_ID} ${ACCESS_TOKEN} ${CENTRAL_SYSLOG_IP}.", "start-training");
+
 
     private AbstractLevelDTO abstractLevelDTO = generateAbstractLevelDTO("AbstractLevelDTO", 8, LevelType.TRAINING_LEVEL, 8);
     private BasicLevelInfoDTO basicTrainingLevelInfoDTO = generateBasicLevelInfoDTO("Basic Training Level info", LevelType.TRAINING_LEVEL);
@@ -199,13 +202,13 @@ public class TestDataFactory {
     public Question getMultipleChoiceQuestion(){
         return clone(multipleChoiceQuestion, Question.class);
     }
-    public Question getExtendedMatchingItems(){
+    public Question getExtendedMatchingStatements(){
         return clone(extendedMatchingItems, Question.class);
     }
-    public List<ExtendedMatchingStatement> getExtendedMatchingItems(int numberOfItems, String itemPrefix, Question question){
+    public List<ExtendedMatchingStatement> getExtendedMatchingStatements(int numberOfItems, String itemPrefix, Question question){
         List<ExtendedMatchingStatement> extendedMatchingStatements = new ArrayList<>();
         for (int i = 0; i < numberOfItems; i++) {
-            extendedMatchingStatements.add(generateExtendedMatchingItem(i, itemPrefix + " " + i, question));
+            extendedMatchingStatements.add(generateExtendedMatchingStatement(i, itemPrefix + " " + i, question));
         }
         return extendedMatchingStatements;
     }
@@ -269,6 +272,10 @@ public class TestDataFactory {
 
     public InfoLevel getInfoLevel2(){
         return clone(infoLevel2, InfoLevel.class);
+    }
+
+    public AccessLevel getAccessLevel(){
+        return clone(accessLevel, AccessLevel.class);
     }
 
     public AccessToken getAccessToken1(){
@@ -508,7 +515,7 @@ public class TestDataFactory {
             return extendedMatchingOption;
     }
 
-    private ExtendedMatchingStatement generateExtendedMatchingItem(int itemOrder, String itemText, Question question){
+    private ExtendedMatchingStatement generateExtendedMatchingStatement(int itemOrder, String itemText, Question question){
         ExtendedMatchingStatement extendedMatchingStatement = new ExtendedMatchingStatement();
         extendedMatchingStatement.setOrder(itemOrder);
         extendedMatchingStatement.setText(itemText);
@@ -581,6 +588,19 @@ public class TestDataFactory {
         newInfoLevel.setOrder(order);
         newInfoLevel.setContent(content);
         return newInfoLevel;
+    }
+
+    private AccessLevel generateAccessLevel(String title, long estimatedDuration, int order, String cloudContent,
+                                            String localContent, String passkey){
+        AccessLevel newAccessLevel = new AccessLevel();
+        newAccessLevel.setTitle(title);
+        newAccessLevel.setMaxScore(0);
+        newAccessLevel.setEstimatedDuration(estimatedDuration);
+        newAccessLevel.setOrder(order);
+        newAccessLevel.setCloudContent(cloudContent);
+        newAccessLevel.setLocalContent(localContent);
+        newAccessLevel.setPasskey(passkey);
+        return newAccessLevel;
     }
 
     private AccessToken generateAccessToken(String accessToken){

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import cz.muni.ics.kypo.training.api.dto.BasicLevelInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -48,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
@@ -238,12 +236,12 @@ public class TrainingDefinitionsIT {
         entityManager.persist(multipleChoiceQuestion);
         multipleChoiceQuestion.setChoices(testDataFactory.getQuestionChoices(3, "Multiple choice option", List.of(true, false, true), multipleChoiceQuestion));
 
-        Question extendedMatchingItemsQuestion = testDataFactory.getExtendedMatchingItems();
+        Question extendedMatchingItemsQuestion = testDataFactory.getExtendedMatchingStatements();
         entityManager.persist(extendedMatchingItemsQuestion);
 
         List<ExtendedMatchingOption> extendedMatchingOptions = testDataFactory.getExtendedMatchingOptions(4, "Option ", extendedMatchingItemsQuestion);
         extendedMatchingItemsQuestion.setExtendedMatchingOptions(extendedMatchingOptions);
-        extendedMatchingItemsQuestion.setExtendedMatchingStatements(testDataFactory.getExtendedMatchingItems(3, "Statement ", extendedMatchingItemsQuestion));
+        extendedMatchingItemsQuestion.setExtendedMatchingStatements(testDataFactory.getExtendedMatchingStatements(3, "Statement ", extendedMatchingItemsQuestion));
         AtomicInteger index = new AtomicInteger();
         extendedMatchingItemsQuestion.getExtendedMatchingStatements().forEach(item -> item.setExtendedMatchingOption(extendedMatchingOptions.get(index.getAndIncrement() % 4)));
         assessmentLevelWithQuestions.setQuestions(new ArrayList<>(List.of(freeFormQuestion, multipleChoiceQuestion, extendedMatchingItemsQuestion)));

@@ -173,6 +173,8 @@ public class ExportImportFacade {
                 checkAnswerAndAnswerVariableName((TrainingLevel) newLevel);
             } else if (level.getLevelType().equals(LevelType.INFO_LEVEL)) {
                 newLevel = levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
+            } else if (level.getLevelType().equals(LevelType.ACCESS_LEVEL)) {
+                newLevel = levelMapper.mapImportToEntity((AccessLevelImportDTO) level);
             } else {
                 newLevel = levelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
                 if (((AssessmentLevel) newLevel).getAssessmentType() == AssessmentType.TEST) {
