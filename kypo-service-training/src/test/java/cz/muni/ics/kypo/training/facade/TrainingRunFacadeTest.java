@@ -19,7 +19,6 @@ import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -193,16 +192,16 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void deleteTrainingRun(){
-        given(trainingRunService.deleteTrainingRun(trainingRun1.getId(), true)).willReturn(trainingRun1);
+        given(trainingRunService.deleteTrainingRun(trainingRun1.getId(), true, true)).willReturn(trainingRun1);
         trainingRunFacade.deleteTrainingRun(trainingRun1.getId(), true);
-        then(trainingRunService).should().deleteTrainingRun(trainingRun1.getId(), true);
+        then(trainingRunService).should().deleteTrainingRun(trainingRun1.getId(), true, true);
     }
 
     @Test
     public void getNextLevel() {
-        given(trainingRunService.getNextLevel(3L)).willReturn(infoLevel);
-        trainingRunFacade.getNextLevel(3L);
-        then(trainingRunService).should().getNextLevel(3L);
+        given(trainingRunService.moveToNextLevel(trainingRun1.getId())).willReturn(trainingRun1);
+        trainingRunFacade.getNextLevel(trainingRun1.getId());
+        then(trainingRunService).should().moveToNextLevel(trainingRun1.getId());
     }
 
     @Test

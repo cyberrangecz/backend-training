@@ -144,8 +144,8 @@ public class VisualizationFacade {
     @TransactionalWO
     public List<Map<String, Object>> getAllCommandsInTrainingRun(Long instanceId, Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
-        Long sandboxInstanceRef = trainingRun.getSandboxInstanceRefId();
-        return elasticsearchApiService.findAllConsoleCommandsFromSandbox(sandboxInstanceRef);
+        Long sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getId() : trainingRun.getSandboxInstanceRefId();
+        return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxIdentifier);
     }
 
     /**
@@ -513,6 +513,11 @@ public class VisualizationFacade {
             levelTabsLevelBuilder
                     .levelType(cz.muni.ics.kypo.training.api.enums.LevelType.INFO_LEVEL)
                     .content(((InfoLevel) level).getContent());
+        } else if (level instanceof AccessLevel) {
+            levelTabsLevelBuilder
+                    .levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ACCESS_LEVEL)
+                    .content(trainingInstanceData.trainingInstance.isLocalEnvironment() ?
+                            ((AccessLevel) level).getLocalContent() : ((AccessLevel) level).getCloudContent());
         } else {
             levelTabsLevelBuilder
                     .levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL)
@@ -565,6 +570,8 @@ public class VisualizationFacade {
             tableLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL);
         } else if (abstractLevel instanceof InfoLevel) {
             tableLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.INFO_LEVEL);
+        } else if (abstractLevel instanceof AccessLevel) {
+            tableLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ACCESS_LEVEL);
         }
         return tableLevelBuilder.build();
 
@@ -584,6 +591,8 @@ public class VisualizationFacade {
             clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.INFO_LEVEL);
         } else if (abstractLevel instanceof AssessmentLevel) {
             clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL);
+        } else if (abstractLevel instanceof AccessLevel) {
+            clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ACCESS_LEVEL);
         }
         LevelStatistics levelStatistics = new LevelStatistics();
         Map<Long, List<AbstractAuditPOJO>> levelEventsOfTrainingRuns = trainingInstanceData.events.getOrDefault(abstractLevel.getId(), Collections.emptyMap());
@@ -715,6 +724,8 @@ public class VisualizationFacade {
                         .solutionDisplayedTime(processedEventsData.solutionDisplayedTime);
             } else if (abstractLevel instanceof InfoLevel) {
                 timelineLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.INFO_LEVEL);
+            } else if (abstractLevel instanceof AccessLevel) {
+                timelineLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ACCESS_LEVEL);
             } else {
                 timelineLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ASSESSMENT_LEVEL)
                         .assessmentType(AssessmentType.valueOf(((AssessmentLevel) abstractLevel).getAssessmentType().name()));
@@ -738,10 +749,15 @@ public class VisualizationFacade {
                 eventDTO.setText("Hint '" + ((HintTaken) levelEvent).getHintTitle() + "' taken.");
             } else if (levelEvent instanceof WrongAnswerSubmitted) {
                 eventDTO.setText("Wrong answer submitted.");
+            } else if (levelEvent instanceof WrongPasskeySubmitted) {
+                eventDTO.setText("Wrong passkey submitted.");
             } else if (levelEvent instanceof CorrectAnswerSubmitted) {
                 score -= levelEvent.getActualScoreInLevel();
                 processedEventsData.correctAnswerTime = levelEvent.getTrainingTime();
                 eventDTO.setText("Correct answer submitted.");
+            } else if (levelEvent instanceof CorrectPasskeySubmitted) {
+                processedEventsData.correctAnswerTime = levelEvent.getTrainingTime();
+                eventDTO.setText("Correct passkey submitted.");
             } else if (levelEvent instanceof SolutionDisplayed) {
                 score -= levelEvent.getActualScoreInLevel();
                 eventDTO.setText("Solution displayed.");

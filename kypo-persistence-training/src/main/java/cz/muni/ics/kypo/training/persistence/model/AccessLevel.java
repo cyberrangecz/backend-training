@@ -93,7 +93,7 @@ public class AccessLevel extends AbstractLevel {
 
     @Override
     public String toString() {
-        return "TrainingLevel{" +
+        return "AccessLevel{" +
                 "passkey='" + passkey + '\'' +
                 ", cloudContent='" + cloudContent + '\'' +
                 ", localContent='" + localContent + '\'' +

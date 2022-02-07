@@ -320,13 +320,20 @@ public class ExportImportFacade {
             Map<Integer, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
             writeEventsByLevels(zos, run, events);
 
-            Long sandboxInstanceRefId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
-            List<Map<String, Object>> consoleCommands = elasticsearchApiService.findAllConsoleCommandsFromSandbox(sandboxInstanceRefId);
+            List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
             Integer sandboxId = (Integer) events.get(0).get("sandbox_id");
             writeConsoleCommands(zos, sandboxId, consoleCommands);
-            writeConsoleCommandsDetails(zos, sandboxId, levelStartTimestampMapping);
+            writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
         writeAssessmentsDetails(zos, assessmentsDetails);
+    }
+
+    private List<Map<String, Object>> getConsoleCommands(TrainingInstance instance, TrainingRun run) {
+        if (instance.isLocalEnvironment()) {
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(instance.getAccessToken(), run.getParticipantRef().getUserRefId());
+        }
+        Long sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
+        return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxId);
     }
 
     private void writeAssessmentsDetails(ZipOutputStream zos, Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails) throws IOException {
@@ -409,13 +416,13 @@ public class ExportImportFacade {
         }
     }
 
-    private void writeConsoleCommandsDetails(ZipOutputStream zos, Integer sandboxId, Map<Integer, Long> levelStartTimestampMapping) throws IOException {
+    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, Integer sandboxId, Map<Integer, Long> levelStartTimestampMapping) throws IOException {
         List<Long> levelTimestampRanges = new ArrayList<>(levelStartTimestampMapping.values());
         List<Integer> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
         levelTimestampRanges.add(Long.MAX_VALUE);
 
         for (int i = 0; i < levelIds.size(); i++) {
-            List<Map<String, Object>> consoleCommandsByLevel = elasticsearchApiService.findAllConsoleCommandsFromSandboxAndTimeRange(sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i+1));
+            List<Map<String, Object>> consoleCommandsByLevel = getConsoleCommandsWithinTimeRange(instance, run, sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i+1));
             ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-details" + "/level" + levelIds.get(i)+ "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(consoleCommandsEntryDetails);
             for (Map<String, Object> command : consoleCommandsByLevel) {
@@ -423,6 +430,13 @@ public class ExportImportFacade {
                 zos.write(System.lineSeparator().getBytes());
             }
         }
+    }
+
+    private List<Map<String, Object>> getConsoleCommandsWithinTimeRange(TrainingInstance instance, TrainingRun run, Integer sandboxId, Long from, Long to) {
+        if(instance.isLocalEnvironment()) {
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
+        }
+        return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, from, to);
     }
 
     private void writeTrainingDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {

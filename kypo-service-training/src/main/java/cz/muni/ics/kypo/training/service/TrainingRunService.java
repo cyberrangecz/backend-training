@@ -141,7 +141,7 @@ public class TrainingRunService {
      * @param trainingRunId training run to delete
      * @param forceDelete   delete training run in a force manner
      */
-    public TrainingRun deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
+    public TrainingRun deleteTrainingRun(Long trainingRunId, boolean forceDelete, boolean deleteDataFromElasticsearch) {
         TrainingRun trainingRun = findById(trainingRunId);
         if (!forceDelete && trainingRun.getState().equals(TRState.RUNNING)) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRun.getId().getClass(), trainingRun.getId(),
@@ -149,10 +149,24 @@ public class TrainingRunService {
         }
         questionAnswerRepository.deleteAllByTrainingRunId(trainingRunId);
         submissionRepository.deleteAllByTrainingRunId(trainingRunId);
-        elasticsearchApiService.deleteEventsFromTrainingRun(trainingRun.getTrainingInstance().getId(), trainingRunId);
+        if(deleteDataFromElasticsearch) {
+            deleteDataFromElasticsearch(trainingRun);
+        }
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.delete(trainingRun);
         return trainingRun;
+    }
+
+    private void deleteDataFromElasticsearch(TrainingRun trainingRun) {
+        if(trainingRun.getTrainingInstance().isLocalEnvironment()) {
+            String accessToken = trainingRun.getTrainingInstance().getAccessToken();
+            Long userId = trainingRun.getParticipantRef().getUserRefId();
+            elasticsearchApiService.deleteCommandsByAccessTokenAndUserId(accessToken, userId);
+        } else {
+            Long sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
+            elasticsearchApiService.deleteCommandsBySandbox(sandboxId);
+        }
+        elasticsearchApiService.deleteEventsFromTrainingRun(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
     }
 
     /**
@@ -187,13 +201,13 @@ public class TrainingRunService {
     }
 
     /**
-     * Gets next level of given Training Run and set new current level.
+     * Move to the next level of given Training Run by setting up a new current level.
      *
      * @param runId id of Training Run whose next level should be returned.
      * @return {@link AbstractLevel}
      * @throws EntityNotFoundException training run or level is not found.
      */
-    public AbstractLevel getNextLevel(Long runId) {
+    public TrainingRun moveToNextLevel(Long runId) {
         TrainingRun trainingRun = findByIdWithLevel(runId);
         int currentLevelOrder = trainingRun.getCurrentLevel().getOrder();
         int maxLevelOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
@@ -215,7 +229,7 @@ public class TrainingRunService {
         trainingRunRepository.save(trainingRun);
         auditEventsService.auditLevelStartedAction(trainingRun);
 
-        return abstractLevel;
+        return trainingRun;
     }
 
     /**
@@ -264,6 +278,11 @@ public class TrainingRunService {
         AbstractLevel initialLevel = findFirstLevelForTrainingRun(trainingInstance.getTrainingDefinition().getId());
         TrainingRun trainingRun = getNewTrainingRun(initialLevel, trainingInstance, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
         return trainingRunRepository.save(trainingRun);
+    }
+
+    public void auditTrainingRunStarted(TrainingRun trainingRun) {
+        auditEventsService.auditTrainingRunStartedAction(trainingRun);
+        auditEventsService.auditLevelStartedAction(trainingRun);
     }
 
     /**
@@ -355,8 +374,6 @@ public class TrainingRunService {
     public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
         Long sandboxInstanceRef = sandboxApiService.getAndLockSandbox(poolId).getId();
         trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
-        auditEventsService.auditTrainingRunStartedAction(trainingRun);
-        auditEventsService.auditLevelStartedAction(trainingRun);
         return trainingRunRepository.save(trainingRun);
     }
 

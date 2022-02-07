@@ -28,11 +28,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -218,7 +216,7 @@ public class TrainingRunServiceTest {
     public void deleteFinishedTrainingRun() {
         trainingRun1.setState(TRState.FINISHED);
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        trainingRunService.deleteTrainingRun(trainingRun1.getId(), false);
+        trainingRunService.deleteTrainingRun(trainingRun1.getId(), false,false);
 
         then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
@@ -229,7 +227,7 @@ public class TrainingRunServiceTest {
     public void deleteRunningTrainingRun() {
         trainingRun1.setState(TRState.RUNNING);
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        assertThrows(EntityConflictException.class, () -> trainingRunService.deleteTrainingRun(trainingRun1.getId(), false));
+        assertThrows(EntityConflictException.class, () -> trainingRunService.deleteTrainingRun(trainingRun1.getId(), false, false));
 
         then(trAcquisitionLockRepository).should(never()).deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
@@ -240,7 +238,7 @@ public class TrainingRunServiceTest {
     public void deleteRunningTrainingRunForce() {
         trainingRun1.setState(TRState.RUNNING);
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        trainingRunService.deleteTrainingRun(trainingRun1.getId(), true);
+        trainingRunService.deleteTrainingRun(trainingRun1.getId(), true, false);
 
         then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
@@ -250,7 +248,7 @@ public class TrainingRunServiceTest {
     @Test
     public void deleteTrainingRunNotFound() {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> trainingRunService.deleteTrainingRun(trainingRun1.getId(), true));
+        assertThrows(EntityNotFoundException.class, () -> trainingRunService.deleteTrainingRun(trainingRun1.getId(), true, false));
 
         then(trAcquisitionLockRepository).should(never()).deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
@@ -285,7 +283,7 @@ public class TrainingRunServiceTest {
     }
 
     @Test
-    public void getNextLevel() {
+    public void moveToNextLevel() {
         List<AbstractLevel> levels = new ArrayList<>();
         levels.add(trainingLevel);
         levels.add(infoLevel);
@@ -295,7 +293,7 @@ public class TrainingRunServiceTest {
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(any(Long.class))).willReturn(levels);
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
 
-        AbstractLevel resultAbstractLevel = trainingRunService.getNextLevel(trainingRun1.getId());
+        AbstractLevel resultAbstractLevel = trainingRunService.moveToNextLevel(trainingRun1.getId()).getCurrentLevel();
 
         assertEquals(trainingRun1.getCurrentLevel().getId(), resultAbstractLevel.getId());
         assertEquals(trainingRun1.getMaxLevelScore(), infoLevel.getMaxScore());
@@ -307,13 +305,13 @@ public class TrainingRunServiceTest {
     @Test
     public void getNextLevelTrainingRunNotFound() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> trainingRunService.getNextLevel(trainingRun1.getId()));
+        assertThrows(EntityNotFoundException.class, () -> trainingRunService.moveToNextLevel(trainingRun1.getId()));
     }
 
     @Test
     public void getNextLevelNotAnswered() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        assertThrows(EntityConflictException.class, () -> trainingRunService.getNextLevel(trainingRun1.getId()));
+        assertThrows(EntityConflictException.class, () -> trainingRunService.moveToNextLevel(trainingRun1.getId()));
     }
 
     @Test
@@ -321,7 +319,7 @@ public class TrainingRunServiceTest {
         trainingRun2.setLevelAnswered(true);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun2));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
-        assertThrows(EntityNotFoundException.class, () -> trainingRunService.getNextLevel(trainingRun2.getId()));
+        assertThrows(EntityNotFoundException.class, () -> trainingRunService.moveToNextLevel(trainingRun2.getId()));
     }
 
     @Test
@@ -440,8 +438,6 @@ public class TrainingRunServiceTest {
         given(sandboxApiService.getAndLockSandbox(anyLong())).willReturn(sandboxInfo);
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should().save(trainingRun1);
-        then(auditEventService).should().auditTrainingRunStartedAction(trainingRun1);
-        then(auditEventService).should().auditLevelStartedAction(trainingRun1);
         assertEquals(sandboxInfo.getId(), trainingRun1.getSandboxInstanceRefId());
     }
 

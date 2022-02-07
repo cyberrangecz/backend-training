@@ -7,6 +7,8 @@ import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.*;
+import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
@@ -29,6 +31,7 @@ import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,6 +54,9 @@ public class TrainingRunFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
     private static final int TIME_TO_PROPAGATE_EVENTS = 5;
+
+    @Value("${central.syslog.ip:127.0.0.1}")
+    private String centralSyslogIp;
 
     private final TrainingRunService trainingRunService;
     private final TrainingDefinitionService trainingDefinitionService;
@@ -141,7 +147,7 @@ public class TrainingRunFacade {
         }
         TrainingInstance trainingInstance = null;
         for (Long trainingRunId : trainingRunIds) {
-            trainingInstance = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete).getTrainingInstance();
+            trainingInstance = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true).getTrainingInstance();
             trainingFeedbackApiService.deleteTraineeGraph(trainingRunId);
         }
         trainingFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
@@ -157,7 +163,7 @@ public class TrainingRunFacade {
     @IsOrganizerOrAdmin
     @TransactionalWO
     public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
-        TrainingRun deletedTrainingRun = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete);
+        TrainingRun deletedTrainingRun = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true);
         trainingFeedbackApiService.deleteTraineeGraph(trainingRunId);
         TrainingInstance trainingInstance = deletedTrainingRun.getTrainingInstance();
         TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
@@ -230,6 +236,7 @@ public class TrainingRunFacade {
             if (!trainingInstance.isLocalEnvironment()) {
                 trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
             }
+            trainingRunService.auditTrainingRunStarted(trainingRun);
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (Exception e) {
             // delete/rollback acquisition lock when no training run either sandbox is assigned
@@ -248,6 +255,13 @@ public class TrainingRunFacade {
         accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
         accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
         accessTrainingRunDTO.setLocalEnvironment(trainingRun.getTrainingInstance().isLocalEnvironment());
+        if(trainingRun.getCurrentLevel().getClass() == AccessLevel.class) {
+            replacePlaceholders(
+                    (AccessLevelViewDTO) accessTrainingRunDTO.getAbstractLevelDTO(),
+                    trainingRun.getTrainingInstance().getAccessToken(),
+                    trainingRun.getParticipantRef().getUserRefId()
+            );
+        }
         return accessTrainingRunDTO;
     }
 
@@ -308,9 +322,16 @@ public class TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public AbstractLevelDTO getNextLevel(Long trainingRunId) {
-        AbstractLevel abstractLevel;
-        abstractLevel = trainingRunService.getNextLevel(trainingRunId);
-        return getCorrectAbstractLevelDTO(abstractLevel);
+        TrainingRun trainingRun = trainingRunService.moveToNextLevel(trainingRunId);
+        AbstractLevelDTO abstractLevelDTO = getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel());
+        if (abstractLevelDTO.getClass() == AccessLevelViewDTO.class) {
+            replacePlaceholders(
+                    (AccessLevelViewDTO) abstractLevelDTO,
+                    trainingRun.getTrainingInstance().getAccessToken(),
+                    trainingRun.getParticipantRef().getUserRefId()
+            );
+        }
+        return abstractLevelDTO;
     }
 
     /**
@@ -555,6 +576,14 @@ public class TrainingRunFacade {
             abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
         }
         return abstractLevelDTO;
+    }
+
+    private void replacePlaceholders(AccessLevelViewDTO accessLevelViewDTO, String accessToken, Long userId) {
+        String localContent = accessLevelViewDTO.getLocalContent();
+        localContent = localContent.replaceAll("\\$\\{ACCESS_TOKEN\\}", accessToken);
+        localContent = localContent.replaceAll("\\$\\{USER_ID\\}", userId.toString());
+        localContent = localContent.replaceAll("\\$\\{CENTRAL_SYSLOG_IP\\}", centralSyslogIp);
+        accessLevelViewDTO.setLocalContent(localContent);
     }
 
     private void deleteInfoAboutCorrectnessFromQuestions(AssessmentLevelDTO assessmentLevelDTO) {
