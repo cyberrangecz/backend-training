@@ -34,6 +34,8 @@ public class ExportImportServiceTest {
     @MockBean
     private static TrainingLevelRepository trainingLevelRepository;
     @MockBean
+    private static AccessLevelRepository accessLevelRepository;
+    @MockBean
     private static TrainingInstanceRepository trainingInstanceRepository;
     @MockBean
     private static TrainingRunRepository trainingRunRepository;
@@ -51,7 +53,7 @@ public class ExportImportServiceTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         exportImportService = new ExportImportService(trainingDefinitionRepository, abstractLevelRepository, assessmentLevelRepository,
-                questionAnswerRepository, infoLevelRepository, trainingLevelRepository, trainingInstanceRepository, trainingRunRepository);
+                questionAnswerRepository, infoLevelRepository, trainingLevelRepository, accessLevelRepository, trainingInstanceRepository, trainingRunRepository);
 
         given(assessmentLevel.getId()).willReturn(1L);
         given(assessmentLevel.getQuestions()).willReturn(new ArrayList<>());

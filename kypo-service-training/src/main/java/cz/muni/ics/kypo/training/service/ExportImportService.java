@@ -29,6 +29,7 @@ public class ExportImportService {
     private final QuestionAnswerRepository questionAnswerRepository;
     private final InfoLevelRepository infoLevelRepository;
     private final TrainingLevelRepository trainingLevelRepository;
+    private final AccessLevelRepository accessLevelRepository;
     private final TrainingInstanceRepository trainingInstanceRepository;
     private final TrainingRunRepository trainingRunRepository;
 
@@ -50,6 +51,7 @@ public class ExportImportService {
                                QuestionAnswerRepository questionAnswerRepository,
                                InfoLevelRepository infoLevelRepository,
                                TrainingLevelRepository trainingLevelRepository,
+                               AccessLevelRepository accessLevelRepository,
                                TrainingInstanceRepository trainingInstanceRepository,
                                TrainingRunRepository trainingRunRepository)
     {
@@ -58,6 +60,7 @@ public class ExportImportService {
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.questionAnswerRepository = questionAnswerRepository;
         this.trainingLevelRepository = trainingLevelRepository;
+        this.accessLevelRepository = accessLevelRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
@@ -89,6 +92,8 @@ public class ExportImportService {
             assessmentLevelRepository.save((AssessmentLevel) level);
         } else if (level instanceof InfoLevel) {
             infoLevelRepository.save((InfoLevel) level);
+        } else if (level instanceof AccessLevel) {
+            accessLevelRepository.save((AccessLevel) level);
         } else {
             trainingLevelRepository.save((TrainingLevel) level);
         }
