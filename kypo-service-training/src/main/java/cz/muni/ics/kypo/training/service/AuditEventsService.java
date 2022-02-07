@@ -227,7 +227,8 @@ public class AuditEventsService {
         AbstractLevel trainingLevel = trainingRun.getCurrentLevel();
         builder.trainingRunId(trainingRun.getId())
                 .poolId(trainingInstance.getPoolId())
-                .sandboxId(trainingRun.getSandboxInstanceRefId()).trainingInstanceId(trainingInstance.getId())
+                .sandboxId(trainingRun.getSandboxInstanceRefId())
+                .trainingInstanceId(trainingInstance.getId())
                 .trainingDefinitionId(trainingInstance.getTrainingDefinition().getId())
                 .trainingTime(computeTrainingTime(trainingRun.getStartTime()))
                 .userRefId(trainingRun.getParticipantRef().getUserRefId())
