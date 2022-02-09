@@ -323,7 +323,8 @@ public class ExportImportFacade {
             writeEventsByLevels(zos, run, events);
 
             List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
-            Integer sandboxId = (Integer) events.get(0).get("sandbox_id");
+            Integer sandboxId = events.get(0).get("sandbox_id") == null ?
+                    run.getParticipantRef().getUserRefId().intValue() : (Integer) events.get(0).get("sandbox_id");
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
