@@ -220,8 +220,6 @@ public class TrainingInstanceFacade {
     public void delete(Long trainingInstanceId, boolean forceDelete) {
         TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         if (forceDelete) {
-            Set<TrainingRun> trainingRunsInTrainingInstance = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId);
-            trainingRunsInTrainingInstance.forEach(tr -> trainingRunService.deleteTrainingRun(tr.getId(), true, false));
             if (!trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() != null) {
                 sandboxApiService.unlockPool(trainingInstance.getPoolId());
                 deleteBashCommandsByPool(trainingInstance.getPoolId());
@@ -235,6 +233,8 @@ public class TrainingInstanceFacade {
                     "First, you must unassign pool id from training instance then try it again."));
             // not possible to delete training instance with associated pool
         }
+        Set<TrainingRun> trainingRunsInTrainingInstance = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId);
+        trainingRunsInTrainingInstance.forEach(tr -> trainingRunService.deleteTrainingRun(tr.getId(), true, false));
         if (trainingInstance.isLocalEnvironment()) {
             deleteBashCommandsByAccessToken(trainingInstance.getAccessToken());
         }
