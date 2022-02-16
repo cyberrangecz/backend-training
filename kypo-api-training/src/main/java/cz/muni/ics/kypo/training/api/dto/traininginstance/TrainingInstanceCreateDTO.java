@@ -39,6 +39,8 @@ public class TrainingInstanceCreateDTO {
     private Long poolId;
     @ApiModelProperty(value = "Indicates if local sandboxes are used for training runs.", example = "true")
     private boolean localEnvironment;
+    @ApiModelProperty(value = "Id of sandbox definition assigned to training instance", example = "1")
+    private Long sandboxDefinitionId;
 
     /**
      * Gets start time.
@@ -164,6 +166,24 @@ public class TrainingInstanceCreateDTO {
      */
     public void setLocalEnvironment(boolean localEnvironment) {
         this.localEnvironment = localEnvironment;
+    }
+
+    /**
+     * Gets sandbox definition id.
+     *
+     * @return the sandbox definition id
+     */
+    public Long getSandboxDefinitionId() {
+        return sandboxDefinitionId;
+    }
+
+    /**
+     * Sets sandbox definition id.
+     *
+     * @param sandboxDefinitionId the sandbox definition id
+     */
+    public void setSandboxDefinitionId(Long sandboxDefinitionId) {
+        this.sandboxDefinitionId = sandboxDefinitionId;
     }
 
     @Override

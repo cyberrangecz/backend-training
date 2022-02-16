@@ -98,6 +98,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private Set<UserRef> organizers = new HashSet<>();
     @Column(name = "local_environment", nullable = false)
     private boolean localEnvironment;
+    @Column(name = "sandbox_definition_id")
+    private Long sandboxDefinitionId;
 
     /**
      * Gets unique identification number of Training instance
@@ -316,6 +318,24 @@ public class TrainingInstance extends AbstractEntity<Long> {
         this.localEnvironment = localEnvironment;
     }
 
+    /**
+     * Gets unique identification number of sandbox definition associated with given Training instance
+     *
+     * @return the sandbox definition id
+     */
+    public Long getSandboxDefinitionId() {
+        return sandboxDefinitionId;
+    }
+
+    /**
+     * Sets unique identification number of sandbox definition associated with given Training instance
+     *
+     * @param sandboxDefinitionId the sandbox definition id
+     */
+    public void setSandboxDefinitionId(Long sandboxDefinitionId) {
+        this.sandboxDefinitionId = sandboxDefinitionId;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(accessToken, startTime, endTime, title, trainingDefinition);
@@ -347,6 +367,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
                 ", title='" + title + '\'' +
                 ", localEnvironment='" + localEnvironment + '\'' +
                 ", accessToken='" + accessToken + '\'' +
+                ", sandboxDefinitionId='" + sandboxDefinitionId + '\'' +
                 '}';
     }
 }
