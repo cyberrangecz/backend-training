@@ -8,3 +8,4 @@ create table access_level (
 );
 
 alter table training_instance add column local_environment boolean default (false);
+alter table training_instance add column sandbox_definition_id int8 default (null);

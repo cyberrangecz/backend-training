@@ -39,6 +39,8 @@ public class AccessTrainingRunDTO {
     private List<TakenHintDTO> takenHints = new ArrayList<>();
     @ApiModelProperty(value = "Indicates if local sandboxes are used for training runs.", example = "true")
     private boolean localEnvironment;
+    @ApiModelProperty(value = "Main identifier of sandbox definition which is assigned to training instance of the training run.", example = "2")
+    private Long sandboxDefinitionId;
 
     /**
      * Gets training run id.
@@ -229,9 +231,27 @@ public class AccessTrainingRunDTO {
         this.localEnvironment = localEnvironment;
     }
 
+    /**
+     * Gets sandbox definition id.
+     *
+     * @return the sandbox definition id
+     */
+    public Long getSandboxDefinitionId() {
+        return sandboxDefinitionId;
+    }
+
+    /**
+     * Sets sandbox definition id.
+     *
+     * @param sandboxDefinitionId the sandbox definition id
+     */
+    public void setSandboxDefinitionId(Long sandboxDefinitionId) {
+        this.sandboxDefinitionId = sandboxDefinitionId;
+    }
+
     @Override public String toString() {
         return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceRefId="
             + sandboxInstanceRefId + ", abstractLevelDTO=" + abstractLevelDTO + ", infoAboutLevels=" + infoAboutLevels + ", instanceId="
-            + instanceId + ", startTime=" + startTime + ", localEnvironment=" + localEnvironment + '}';
+            + instanceId + ", startTime=" + startTime + ", localEnvironment=" + localEnvironment + ", sandboxDefinitionId=" + sandboxDefinitionId + '}';
     }
 }
