@@ -11,10 +11,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriBuilder;
+import org.springframework.web.util.UriBuilderFactory;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * The type Training Feedback Api Service.
@@ -68,14 +73,21 @@ public class TrainingFeedbackApiService {
      * @param instanceId training instance id
      * @param runId training run id
      * @param referenceSolution description of the reference solution.
+     * @param accessToken access token of the training instance. Optional.
      * @throws MicroserviceApiException error with specific message when calling training feedback microservice.
      */
-    public void createTraineeGraph(Long definitionId, Long instanceId, Long runId, List<LevelReferenceSolutionDTO> referenceSolution){
+    public void createTraineeGraph(Long definitionId, Long instanceId, Long runId, List<LevelReferenceSolutionDTO> referenceSolution, String accessToken){
         try {
+            Function<UriBuilder, URI> uriFunction = uriBuilder -> {
+                uriBuilder = uriBuilder.path("/graphs/training-definitions/{definitionId}/training-instances/{instanceId}/training-runs/{runId}");
+                if (accessToken != null) {
+                    uriBuilder = uriBuilder.queryParam("accessToken", accessToken);
+                }
+                return uriBuilder.build(definitionId, instanceId, runId);
+            };
             trainingFeedbackServiceWebClient
                     .post()
-                    .uri("/graphs/training-definitions/{definitionId}/training-instances/{instanceId}/training-runs/{runId}",
-                            definitionId, instanceId, runId)
+                    .uri(uriFunction)
                     .body(Mono.just(objectMapper.writeValueAsString(referenceSolution)), String.class)
                     .retrieve()
                     .bodyToMono(Void.class)

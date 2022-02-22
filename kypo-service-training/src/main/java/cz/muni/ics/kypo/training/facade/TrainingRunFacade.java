@@ -413,18 +413,26 @@ public class TrainingRunFacade {
     private void createTraineeGraphAndUpdateSummaryGraph(TrainingRun run) {
         TrainingInstance instance = run.getTrainingInstance();
         TrainingDefinition definition = instance.getTrainingDefinition();
-        AtomicBoolean isAnyReferenceSolution = new AtomicBoolean(false);
-        List<LevelReferenceSolutionDTO> referenceSolution = this.trainingDefinitionService
-                .getAllTrainingLevels(definition.getId())
-                .stream()
-                .peek(l -> isAnyReferenceSolution.set(!l.getReferenceSolution().isEmpty()))
-                .map(l -> new LevelReferenceSolutionDTO(l.getId(), l.getOrder(), new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(l.getReferenceSolution()))))
-                .collect(Collectors.toList());
-        if(isAnyReferenceSolution.get()) {
-            this.trainingFeedbackApiService.createTraineeGraph(definition.getId(), instance.getId(), run.getId(), referenceSolution);
+        boolean isAnyReferenceSolution = false;
+        List<LevelReferenceSolutionDTO> referenceSolution = new ArrayList<>();
+        for (TrainingLevel level : this.trainingDefinitionService.getAllTrainingLevels(definition.getId())) {
+            isAnyReferenceSolution = isAnyReferenceSolution || !level.getReferenceSolution().isEmpty();
+            referenceSolution.add(createLevelReferenceSolutionDTO(level));
+        }
+        if(isAnyReferenceSolution) {
+            this.trainingFeedbackApiService.createTraineeGraph(definition.getId(), instance.getId(), run.getId(), referenceSolution,
+                    run.getTrainingInstance().isLocalEnvironment() ? run.getTrainingInstance().getAccessToken() : null);
             this.trainingFeedbackApiService.deleteSummaryGraph(instance.getId());
             this.trainingFeedbackApiService.createSummaryGraph(definition.getId(), instance.getId());
         }
+    }
+
+    private LevelReferenceSolutionDTO createLevelReferenceSolutionDTO(TrainingLevel trainingLevel) {
+        return new LevelReferenceSolutionDTO(
+                trainingLevel.getId(),
+                trainingLevel.getOrder(),
+                new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(trainingLevel.getReferenceSolution()))
+        );
     }
 
     /**
