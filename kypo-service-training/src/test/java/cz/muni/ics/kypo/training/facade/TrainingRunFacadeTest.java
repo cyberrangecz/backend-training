@@ -223,7 +223,7 @@ public class TrainingRunFacadeTest {
         given(trainingRunService.finishTrainingRun(trainingRun1.getId())).willReturn(trainingRun1);
         trainingRunFacade.finishTrainingRun(trainingRun1.getId());
         then(trainingRunService).should().finishTrainingRun(trainingRun1.getId());
-        then(trainingFeedbackApiService).should(never()).createTraineeGraph(any(), any(), any(), any());
+        then(trainingFeedbackApiService).should(never()).createTraineeGraph(any(), any(), any(), any(), any());
         then(trainingFeedbackApiService).should(never()).createSummaryGraph(any(), any());
         then(trainingFeedbackApiService).should(never()).deleteSummaryGraph(any());
     }

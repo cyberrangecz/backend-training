@@ -190,18 +190,25 @@ public class ExportImportFacade {
     }
 
     private void createReferenceGraph(TrainingDefinition trainingDefinition, List<AbstractLevel> createdLevels) {
-        AtomicBoolean isAnyReferenceSolution = new AtomicBoolean(false);
-        List<LevelReferenceSolutionDTO> referenceSolution = createdLevels.stream()
-                .filter(level -> level.getClass() == TrainingLevel.class)
-                .peek(level -> isAnyReferenceSolution.set(!((TrainingLevel) level).getReferenceSolution().isEmpty()))
-                .map(level -> new LevelReferenceSolutionDTO(
-                        level.getId(),
-                        level.getOrder(),
-                        new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(((TrainingLevel) level).getReferenceSolution()))))
-                .collect(Collectors.toList());
-        if(isAnyReferenceSolution.get()) {
+        List<LevelReferenceSolutionDTO> referenceSolution = new ArrayList<>();
+        boolean isAnyReferenceSolution = false;
+        for (AbstractLevel level: createdLevels) {
+            if (level.getClass() == TrainingLevel.class) {
+                isAnyReferenceSolution = isAnyReferenceSolution || !((TrainingLevel) level).getReferenceSolution().isEmpty();
+                referenceSolution.add(createLevelReferenceSolutionDTO((TrainingLevel) level));
+            }
+        }
+        if(isAnyReferenceSolution) {
             this.trainingFeedbackApiService.createReferenceGraph(trainingDefinition.getId(), referenceSolution);
         }
+    }
+
+    private LevelReferenceSolutionDTO createLevelReferenceSolutionDTO(TrainingLevel trainingLevel) {
+        return new LevelReferenceSolutionDTO(
+                trainingLevel.getId(),
+                trainingLevel.getOrder(),
+                new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(trainingLevel.getReferenceSolution()))
+        );
     }
 
     private void setAnswerAndAnswerVariableNameToNullIfBlank(TrainingLevel trainingLevel) {

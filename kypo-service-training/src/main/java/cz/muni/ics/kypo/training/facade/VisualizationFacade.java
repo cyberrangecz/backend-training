@@ -144,7 +144,12 @@ public class VisualizationFacade {
     @TransactionalWO
     public List<Map<String, Object>> getAllCommandsInTrainingRun(Long instanceId, Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
-        Long sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getId() : trainingRun.getSandboxInstanceRefId();
+        if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(
+                    trainingRun.getTrainingInstance().getAccessToken(),
+                    trainingRun.getParticipantRef().getUserRefId());
+        }
+        Long sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
         return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxIdentifier);
     }
 

@@ -496,6 +496,7 @@ public class TrainingDefinitionService {
         newAccessLevel.setTitle("Title of access level");
         newAccessLevel.setCloudContent("Cloud content of access level should be here.");
         newAccessLevel.setLocalContent("Local (non-cloud) content of access level should be here.");
+        newAccessLevel.setPasskey("start-training");
         newAccessLevel.setOrder(getNextOrder(definitionId));
         newAccessLevel.setTrainingDefinition(trainingDefinition);
         AccessLevel accessLevel = accessLevelRepository.save(newAccessLevel);
