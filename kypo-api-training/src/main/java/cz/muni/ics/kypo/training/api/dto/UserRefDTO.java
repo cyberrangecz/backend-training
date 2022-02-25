@@ -34,6 +34,8 @@ public class UserRefDTO {
     private String iss;
     @ApiModelProperty(value = "Identicon of a user.", example = "iVBORw0KGgoAAAANSUhEUgAAAEsAAABLCAYAAAA4TnrqAAACIUlEQVR4Xu3YsY0dSQxAQQUlpXT5Z3CS/YgxSrQa4gLlEOBb9pj/x6//fv7/t/78/XhN3yBWyz3kBX2DWC33kBf0DWK13ENe0DeI1XIPeUHfIFbLPeQFfYNYLfeQF/QNYrXcQ17QN4jVcg95Qd8gVss95AV9g1gt95AX9A1itdxDXtA3iNVyD3lB3yBWyz3kBX2DWC33kBf0DWLERGOiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS4yB6CGiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS4yB6CGiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS4yB6CGiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS4yB6CGiLdGWaEuMgeghoi3RlmhLjIHoIaIt0ZZoS6z+8b/mPha4jwXuY4H7WOA+FriPBe5jgftY4D4WuI8F7mOB+1jgPha4jwXGbzbn2xicb2Nwvo3B+TYG59sYnG9jcL6Nwfk2BufbGJxvY3C+jcH5Ngbn2xicb2Nwvq1+z2pMtCXaEm2J1XIPEW2JtkRbYrXcQ0Rboi3Rllgt9xDRlmhLtCVWyz1EtCXaEm2J1XIPEW2JtkRbYrXcQ0Rboi3Rllgt9xDRlmhLtCVWyz1EtCXaEm2J1XIPEW2JtkRbYrXcQ0Rboi3Rllgt9xDRlmhLtCVWyz1EtCXaEm2J1XIPEW2JtkRbYrXcQ0Rboi3RlvgNt34wfeJElG8AAAAASUVORK5CYII=")
     private byte[] picture;
+    @ApiModelProperty(value = "Email of the user.", example = "johndoe@mail.muni.cz")
+    private String mail;
 
     /**
      * Gets user ref sub.
@@ -163,6 +165,23 @@ public class UserRefDTO {
         this.picture = picture;
     }
 
+    /**
+     * Gets the mail of the user.
+     *
+     * @return the mail of the user.
+     */
+    public String getMail() {
+        return mail;
+    }
+
+    /**
+     * Sets the mail of the user.
+     *
+     * @param mail the mail of the user.
+     */
+    public void setMail(String mail) {
+        this.mail = mail;
+    }
 
     @Override
     public String toString() {
@@ -173,6 +192,7 @@ public class UserRefDTO {
                 ", userRefFamilyName='" + userRefFamilyName + '\'' +
                 ", iss='" + iss + '\'' +
                 ", userRefId=" + userRefId +
+                ", mail=" + mail +
                 '}';
     }
 
