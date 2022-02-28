@@ -44,6 +44,8 @@ public class TrainingDefinitionByIdDTO {
     private LocalDateTime lastEdited;
     @ApiModelProperty(value = "Name of the user who has done the last edit in definition.", example = "John Doe")
     private String lastEditedBy;
+    @ApiModelProperty(value = "Indicates if any of the training levels have defined reference solution.")
+    private Boolean hasReferenceSolution;
 
     /**
      * Gets id.
@@ -277,6 +279,24 @@ public class TrainingDefinitionByIdDTO {
      */
     public void setLastEditedBy(String lastEditedBy) {
         this.lastEditedBy = lastEditedBy;
+    }
+
+    /**
+     * Gets indication if any of the training levels have the reference solution defined.
+     *
+     * @return true if any of the training levels have a reference solution defined, false otherwise
+     */
+    public Boolean getHasReferenceSolution() {
+        return hasReferenceSolution;
+    }
+
+    /**
+     * Sets indication if any of the training levels have the reference solution defined.
+     *
+     * @param hasReferenceSolution the boolean value
+     */
+    public void setHasReferenceSolution(Boolean hasReferenceSolution) {
+        this.hasReferenceSolution = hasReferenceSolution;
     }
 
     @Override
