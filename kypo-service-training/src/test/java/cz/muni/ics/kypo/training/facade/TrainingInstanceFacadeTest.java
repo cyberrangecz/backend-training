@@ -84,6 +84,7 @@ public class TrainingInstanceFacadeTest {
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingInstanceCreateDTO trainingInstanceCreate;
     private TrainingInstanceUpdateDTO trainingInstanceUpdate;
+    private TrainingDefinition trainingDefinition;
     private UserRef organizer1, organizer2, organizer3;
     private UserRefDTO organizerDTO1, organizerDTO2, organizerDTO3;
     private Pageable pageable;
@@ -129,6 +130,8 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceUpdate.setId(1L);
         trainingInstanceUpdate.setTrainingDefinitionId(1L);
 
+        trainingDefinition = testDataFactory.getReleasedDefinition();
+
         lockedPoolInfo = new LockedPoolInfo();
         lockedPoolInfo.setId(1L);
         lockedPoolInfo.setPoolId(1L);
@@ -142,6 +145,7 @@ public class TrainingInstanceFacadeTest {
 
     @Test
     public void findTrainingInstanceById() {
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(trainingInstanceService.findByIdIncludingDefinition(trainingInstance1.getId())).willReturn(trainingInstance1);
         trainingInstanceFacade.findById(trainingInstance1.getId());
         then(trainingInstanceService).should().findByIdIncludingDefinition(trainingInstance1.getId());

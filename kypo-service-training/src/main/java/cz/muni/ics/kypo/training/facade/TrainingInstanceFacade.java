@@ -13,9 +13,7 @@ import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingInstanceMapper;
 import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingRunMapper;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
@@ -96,7 +94,12 @@ public class TrainingInstanceFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#id)")
     @TransactionalRO
     public TrainingInstanceDTO findById(Long id) {
-        return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
+        TrainingInstanceDTO trainingInstanceDTO = trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingInstanceDTO.getSandboxDefinitionId());
+        trainingInstanceDTO.getTrainingDefinition().setHasReferenceSolution(levels.stream()
+                .filter(level -> level.getClass() == TrainingLevel.class)
+                .anyMatch(trainingLevel -> !((TrainingLevel) trainingLevel).getReferenceSolution().isEmpty()));
+        return trainingInstanceDTO;
     }
 
     /**
