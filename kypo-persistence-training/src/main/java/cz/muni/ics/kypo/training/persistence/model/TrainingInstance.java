@@ -336,6 +336,18 @@ public class TrainingInstance extends AbstractEntity<Long> {
         this.sandboxDefinitionId = sandboxDefinitionId;
     }
 
+    public boolean running() {
+        return LocalDateTime.now(Clock.systemUTC()).isAfter(this.startTime) && LocalDateTime.now().isBefore(this.endTime);
+    }
+
+    public boolean finished() {
+        return LocalDateTime.now(Clock.systemUTC()).isAfter(this.endTime);
+    }
+
+    public boolean notStarted() {
+        return LocalDateTime.now(Clock.systemUTC()).isBefore(this.startTime);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(accessToken, startTime, endTime, title, trainingDefinition);

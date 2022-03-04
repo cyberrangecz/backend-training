@@ -137,15 +137,15 @@ public class TrainingInstanceService {
         trainingInstanceToUpdate.setOrganizers(new HashSet<>(trainingInstance.getOrganizers()));
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
         //check if TI is running, true - only title can be changed, false - any field can be changed
-        if (LocalDateTime.now(Clock.systemUTC()).isAfter(trainingInstance.getStartTime())) {
-            this.checkChangedFieldsOfRunningTrainingInstance(trainingInstanceToUpdate, trainingInstance);
-        } else {
+        if (trainingInstance.notStarted()) {
             //check if new access token should be generated, if not original is kept
             if (shouldGenerateNewToken(trainingInstance.getAccessToken(), trainingInstanceToUpdate.getAccessToken())) {
                 trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
             } else {
                 trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
             }
+        } else {
+            this.checkChangedFieldsOfTrainingInstance(trainingInstanceToUpdate, trainingInstance);
         }
         return auditAndSave(trainingInstanceToUpdate).getAccessToken();
     }
@@ -158,16 +158,16 @@ public class TrainingInstanceService {
         }
     }
 
-    private void checkChangedFieldsOfRunningTrainingInstance(TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
+    private void checkChangedFieldsOfTrainingInstance(TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
         if (!currentTrainingInstance.getStartTime().equals(trainingInstanceToUpdate.getStartTime())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstanceToUpdate.getId(),
-                    "The start time of the running training instance cannot be changed. Only title can be updated."));
-        } else if (!currentTrainingInstance.getEndTime().equals(trainingInstanceToUpdate.getEndTime())) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstanceToUpdate.getId(),
-                    "The end time of the running training instance cannot be changed. Only title can be updated."));
+                    "The start time of the running or finished training instance cannot be changed. Only title and end time can be updated."));
         } else if (!currentTrainingInstance.getAccessToken().equals(trainingInstanceToUpdate.getAccessToken())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstanceToUpdate.getId(),
-                    "The access token of the running training instance cannot be changed. Only title can be updated."));
+                    "The access token of the running or finished training instance cannot be changed. Only title and end time can be updated."));
+        } else if (!Objects.equals(currentTrainingInstance.getPoolId(), trainingInstanceToUpdate.getPoolId())) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, currentTrainingInstance.getId(),
+                    "The pool in the running or finished instance cannot be changed. Only title and end time can be updated."));
         }
     }
 
