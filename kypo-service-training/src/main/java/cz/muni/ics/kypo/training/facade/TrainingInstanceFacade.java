@@ -95,7 +95,7 @@ public class TrainingInstanceFacade {
     @TransactionalRO
     public TrainingInstanceDTO findById(Long id) {
         TrainingInstanceDTO trainingInstanceDTO = trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
-        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingInstanceDTO.getSandboxDefinitionId());
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingInstanceDTO.getTrainingDefinition().getId());
         trainingInstanceDTO.getTrainingDefinition().setHasReferenceSolution(levels.stream()
                 .filter(level -> level.getClass() == TrainingLevel.class)
                 .anyMatch(trainingLevel -> !((TrainingLevel) trainingLevel).getReferenceSolution().isEmpty()));
