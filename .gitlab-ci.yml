@@ -94,8 +94,8 @@ docker_image_push_branches:
     name: gcr.io/kaniko-project/executor:v1.3.0-debug
     entrypoint: [ "" ]
   script:
-    - export CI_CUSTOM_REGISTRY_IMAGE="${CI_REGISTRY}/${CI_CUSTOM_REGISTRY_PATH_INTERNAL}/${CI_CUSTOM_IMAGE_NAME}"
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_CUSTOM_REGISTRY_USER_INTERNAL\",\"password\":\"$CI_CUSTOM_REGISTRY_PASSWORD_INTERNAL\"}}}" > /kaniko/.docker/config.json
+    - export CI_CUSTOM_REGISTRY_IMAGE="${CI_REGISTRY}/${CI_CUSTOM_REGISTRY_PATH}/${CI_CUSTOM_IMAGE_NAME}"
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_CUSTOM_REGISTRY_USER\",\"password\":\"$CI_CUSTOM_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_CUSTOM_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG --build-arg PROPRIETARY_REPO_URL=$PROPRIETARY_REPO_URL
   rules:
-    - if: '$CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
