@@ -1,3 +1,4 @@
+2.0.0 Migrate project to Java 17. Allow to edit end-time of the ongoing training instance. Bugfix - return correct value of the hasReferenceSolution attribute.
 1.2.0 Integration of the local sandboxes. Bugfix - missing variant_answers in the exported training definition. New type of level - access level. Add attribute email to the UserRefDTO. Add attribute hasReferenceSolution to the definition of the requested instance.
 1.1.82 Updated dependencies to the latest versions. Code cleanup. Configured multi-stage docker build to decrease the resulting image size.
 1.1.81 Update log4j2 dependency to 2.15.0 to avoid CVE-2021-44228 vulnerability.
