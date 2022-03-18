@@ -42,6 +42,8 @@ public class AbstractLevelDTO {
     protected TrainingDefinitionDTO trainingDefinition;
     @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
     protected int order;
+    @ApiModelProperty(value = "Minimal possible solve time (minutes) that must be taken by the player to solve the level.", example = "5")
+    protected Integer minimalPossibleSolveTime;
 
     /**
      * Gets id.
@@ -189,6 +191,24 @@ public class AbstractLevelDTO {
         this.order = order;
     }
 
+    /**
+     * Gets minimal possible solve time.
+     *
+     * @return the minimal possible solve time
+     */
+    public Integer getMinimalPossibleSolveTime() {
+        return minimalPossibleSolveTime;
+    }
+
+    /**
+     * Sets minimal possible solve time.
+     *
+     * @param minimalPossibleSolveTime the minimal possible solve time
+     */
+    public void setMinimalPossibleSolveTime(Integer minimalPossibleSolveTime) {
+        this.minimalPossibleSolveTime = minimalPossibleSolveTime;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
@@ -206,10 +226,17 @@ public class AbstractLevelDTO {
         return Objects.equals(id, other.getId());
     }
 
-    @Override public String toString() {
-        return "AbstractLevelDTO{" + "id=" + id + ", title='" + title + '\'' + ", maxScore=" + maxScore + ", snapshotHook=" + snapshotHook
-            + ", levelType=" + levelType + ", estimatedDuration=" + estimatedDuration + ", trainingDefinition=" + trainingDefinition
-            + ", order=" + order + '}';
+    @Override
+    public String toString() {
+        return "AbstractLevelDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", maxScore=" + maxScore +
+                ", levelType=" + levelType +
+                ", estimatedDuration=" + estimatedDuration +
+                ", order=" + order +
+                ", minimalPossibleSolveTime=" + minimalPossibleSolveTime +
+                '}';
     }
 }
 

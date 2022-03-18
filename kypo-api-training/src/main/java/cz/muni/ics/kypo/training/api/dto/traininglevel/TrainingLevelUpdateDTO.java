@@ -52,6 +52,8 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
     @Valid
     @ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
     private List<ReferenceSolutionNodeDTO> referenceSolution = new ArrayList<>();
+    @ApiModelProperty(value = "Minimal possible solve time (minutes) that must be taken by the player to solve the level.", example = "5")
+    protected Integer minimalPossibleSolveTime;
 
     public TrainingLevelUpdateDTO() {
         this.levelType = LevelType.TRAINING_LEVEL;
@@ -257,6 +259,24 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
         this.referenceSolution = referenceSolution;
     }
 
+    /**
+     * Gets minimal possible solve time.
+     *
+     * @return the minimal possible solve time
+     */
+    public Integer getMinimalPossibleSolveTime() {
+        return minimalPossibleSolveTime;
+    }
+
+    /**
+     * Sets minimal possible solve time.
+     *
+     * @param minimalPossibleSolveTime the minimal possible solve time
+     */
+    public void setMinimalPossibleSolveTime(Integer minimalPossibleSolveTime) {
+        this.minimalPossibleSolveTime = minimalPossibleSolveTime;
+    }
+
     @Override
     public String toString() {
         return "TrainingLevelUpdateDTO{" +
@@ -272,6 +292,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
                 ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 ", hints=" + hints +
                 ", variantAnswers=" + variantAnswers +
+                ", minimalPossibleSolveTime=" + minimalPossibleSolveTime +
                 '}';
     }
 }
