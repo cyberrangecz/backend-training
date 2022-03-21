@@ -55,6 +55,8 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
     private int maxScore;
     @Column(name = "estimated_duration")
     private long estimatedDuration;
+    @Column(name = "minimal_possible_solve_time")
+    private Long minimalPossibleSolveTime;
     @Column(name = "order_in_training_definition", nullable = false)
     private int order;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -137,6 +139,24 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
      */
     public void setEstimatedDuration(long estimatedDuration) {
         this.estimatedDuration = estimatedDuration;
+    }
+
+    /**
+     * Gets minimal possible solve time in minutes that is needed to solve level
+     *
+     * @return the minimal possible solve time
+     */
+    public Long getMinimalPossibleSolveTime() {
+        return minimalPossibleSolveTime;
+    }
+
+    /**
+     * Sets minimal possible solve time in minutes that is needed to solve level
+     *
+     * @param minimalPossibleSolveTime the minimal possible solve time
+     */
+    public void setMinimalPossibleSolveTime(Long minimalPossibleSolveTime) {
+        this.minimalPossibleSolveTime = minimalPossibleSolveTime;
     }
 
     /**

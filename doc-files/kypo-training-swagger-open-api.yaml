@@ -3223,6 +3223,12 @@ definitions:
         format: "int32"
         example: 2
         description: "Order of level, starts with 0"
+      minimal_possible_solve_time:
+        type: "integer"
+        format: "int32"
+        example: 5
+        description: "Minimal possible solve time (minutes) that must be taken by\
+          \ the player to solve the level."
     description: "Superclass for classes TrainingLevelDTO, AccessLevelDTO, AssessmentLevelDTO\
       \ and InfoLevelDTO"
   AbstractLevelExportDTO:
@@ -3251,6 +3257,12 @@ definitions:
         format: "int32"
         example: 5
         description: "Estimated time (minutes) taken by the player to solve the level."
+      minimal_possible_solve_time:
+        type: "integer"
+        format: "int32"
+        example: 5
+        description: "Minimal possible solve time (minutes) that must be taken by\
+          \ the player to solve the level."
     description: "Superclass for classes TrainingLevelExportDTO, AccessLevelExportDTO,\
       \ InfoLevelExportDTO and AssessmentLevelExportDTO"
   AbstractLevelImportDTO:
@@ -3286,6 +3298,12 @@ definitions:
         example: 5
         description: "Estimated time (minutes) taken by the player to solve the level."
         minimum: 0
+      minimal_possible_solve_time:
+        type: "integer"
+        format: "int32"
+        example: 5
+        description: "Minimal possible solve time (minutes) that must be taken by\
+          \ the player to solve the level."
     description: "Superclass for classes TrainingLevelImportDTO, AccessLevelImportDTO,\
       \ AssessmentLevelImportDTO and InfoLevelImportDTO"
   AbstractLevelUpdateDTO:
@@ -3803,6 +3821,12 @@ definitions:
           example: 5
           description: "Estimated time (minutes) taken by the player to solve the\
             \ level."
+        minimal_possible_solve_time:
+          type: "integer"
+          format: "int32"
+          example: 5
+          description: "Minimal possible solve time (minutes) that must be taken by\
+            \ the player to solve the level."
       description: "Assessment level to update."
   AssessmentLevelVisualizationDTO:
     allOf:
@@ -5681,6 +5705,12 @@ definitions:
         description: "Sequence of commands that leads to the level answer."
         items:
           $ref: "#/definitions/ReferenceSolutionNodeDTO"
+      minimal_possible_solve_time:
+        type: "integer"
+        format: "int32"
+        example: 5
+        description: "Minimal possible solve time (minutes) that must be taken by\
+          \ the player to solve the level."
     description: "Training level to update."
   TrainingLevelVisualizationDTO:
     allOf:

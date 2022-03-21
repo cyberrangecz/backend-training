@@ -41,6 +41,8 @@ public class AbstractLevelImportDTO {
 	@NotNull(message = "{abstractLevel.estimatedDuration.NotNull.message}")
 	@Min(value = 0, message = "{abstractLevel.estimatedDuration.Min.message}")
 	protected Integer estimatedDuration;
+	@ApiModelProperty(value = "Minimal possible solve time (minutes) that must be taken by the player to solve the level.", example = "5")
+	protected Integer minimalPossibleSolveTime;
 
 	/**
 	 * Instantiates a new Abstract level import dto.
@@ -122,8 +124,32 @@ public class AbstractLevelImportDTO {
 		this.estimatedDuration = estimatedDuration;
 	}
 
-	@Override public String toString() {
-		return "AbstractLevelImportDTO{" + "title='" + title + '\'' + ", levelType=" + levelType + ", order=" + order
-				+ ", estimatedDuration=" + estimatedDuration + '}';
+	/**
+	 * Gets minimal possible solve time.
+	 *
+	 * @return the minimal possible solve time
+	 */
+	public Integer getMinimalPossibleSolveTime() {
+		return minimalPossibleSolveTime;
+	}
+
+	/**
+	 * Sets minimal possible solve time.
+	 *
+	 * @param minimalPossibleSolveTime the minimal possible solve time
+	 */
+	public void setMinimalPossibleSolveTime(Integer minimalPossibleSolveTime) {
+		this.minimalPossibleSolveTime = minimalPossibleSolveTime;
+	}
+
+	@Override
+	public String toString() {
+		return "AbstractLevelImportDTO{" +
+				"title='" + title + '\'' +
+				", levelType=" + levelType +
+				", order=" + order +
+				", estimatedDuration=" + estimatedDuration +
+				", minimalPossibleSolveTime=" + minimalPossibleSolveTime +
+				'}';
 	}
 }
