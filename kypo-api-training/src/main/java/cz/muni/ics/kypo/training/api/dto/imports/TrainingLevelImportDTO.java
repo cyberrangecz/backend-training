@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.api.dto.imports;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
+import cz.muni.ics.kypo.training.api.dto.technique.MitreTechniqueDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.ReferenceSolutionNodeDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -57,6 +58,11 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 	@Valid
 	@ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
 	private List<ReferenceSolutionNodeDTO> referenceSolution = new ArrayList<>();
+	@Valid
+	@ApiModelProperty(value = "List of mitre techniques used in the training level.")
+	private List<MitreTechniqueDTO> mitreTechniques;
+	@ApiModelProperty(value = "Set of the expected commands to be executed during the training level.")
+	private Set<String> expectedCommands;
 
 	/**
 	 * Gets answer.
@@ -256,6 +262,42 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 	 */
 	public void setReferenceSolution(List<ReferenceSolutionNodeDTO> referenceSolution) {
 		this.referenceSolution = referenceSolution;
+	}
+
+	/**
+	 * Gets set of MITRE techniques used in the training level
+	 *
+	 * @return set of MITRE techniques
+	 */
+	public List<MitreTechniqueDTO> getMitreTechniques() {
+		return mitreTechniques;
+	}
+
+	/**
+	 * Sets set of MITRE techniques used in the training level
+	 *
+	 * @param mitreTechniques set of MITRE techniques
+	 */
+	public void setMitreTechniques(List<MitreTechniqueDTO> mitreTechniques) {
+		this.mitreTechniques = mitreTechniques;
+	}
+
+	/**
+	 * Gets set of expected commands executed in the training level
+	 *
+	 * @return set of expected commands
+	 */
+	public Set<String> getExpectedCommands() {
+		return expectedCommands;
+	}
+
+	/**
+	 * Sets set of expected commands executed in the training level
+	 *
+	 * @param expectedCommands set of expected commands
+	 */
+	public void setExpectedCommands(Set<String> expectedCommands) {
+		this.expectedCommands = expectedCommands;
 	}
 
 	@Override

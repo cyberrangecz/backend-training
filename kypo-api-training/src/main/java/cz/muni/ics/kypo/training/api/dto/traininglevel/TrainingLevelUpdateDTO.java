@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.api.dto.traininglevel;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import cz.muni.ics.kypo.training.api.dto.technique.MitreTechniqueDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -52,6 +53,11 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
     @Valid
     @ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
     private List<ReferenceSolutionNodeDTO> referenceSolution = new ArrayList<>();
+    @Valid
+    @ApiModelProperty(value = "List of mitre techniques used in the training level.")
+    private List<MitreTechniqueDTO> mitreTechniques;
+    @ApiModelProperty(value = "Set of the expected commands to be executed during the training level.")
+    private Set<String> expectedCommands;
     @ApiModelProperty(value = "Minimal possible solve time (minutes) that must be taken by the player to solve the level.", example = "5")
     protected Integer minimalPossibleSolveTime;
 
@@ -257,6 +263,42 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
      */
     public void setReferenceSolution(List<ReferenceSolutionNodeDTO> referenceSolution) {
         this.referenceSolution = referenceSolution;
+    }
+
+    /**
+     * Gets set of MITRE techniques used in the training level
+     *
+     * @return set of MITRE techniques
+     */
+    public List<MitreTechniqueDTO> getMitreTechniques() {
+        return mitreTechniques;
+    }
+
+    /**
+     * Sets set of MITRE techniques used in the training level
+     *
+     * @param mitreTechniques set of MITRE techniques
+     */
+    public void setMitreTechniques(List<MitreTechniqueDTO> mitreTechniques) {
+        this.mitreTechniques = mitreTechniques;
+    }
+
+    /**
+     * Gets set of expected commands executed in the training level
+     *
+     * @return set of expected commands
+     */
+    public Set<String> getExpectedCommands() {
+        return expectedCommands;
+    }
+
+    /**
+     * Sets set of expected commands executed in the training level
+     *
+     * @param expectedCommands set of expected commands
+     */
+    public void setExpectedCommands(Set<String> expectedCommands) {
+        this.expectedCommands = expectedCommands;
     }
 
     /**

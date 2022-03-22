@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.api.dto.traininglevel;
 
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import cz.muni.ics.kypo.training.api.dto.technique.MitreTechniqueDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -31,6 +32,10 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
     @ApiModelProperty(value = "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
     private boolean variantAnswers;
     private List<ReferenceSolutionNodeDTO> referenceSolution;
+    @ApiModelProperty(value = "List of mitre techniques used in the training level.")
+    private List<MitreTechniqueDTO> mitreTechniques;
+    @ApiModelProperty(value = "Set of the expected commands to be executed during the training level.")
+    private Set<String> expectedCommands;
 
     /**
      * Gets answer.
@@ -182,6 +187,42 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
 
     public void setReferenceSolution(List<ReferenceSolutionNodeDTO> referenceSolution) {
         this.referenceSolution = referenceSolution;
+    }
+
+    /**
+     * Gets set of MITRE techniques used in the training level
+     *
+     * @return set of MITRE techniques
+     */
+    public List<MitreTechniqueDTO> getMitreTechniques() {
+        return mitreTechniques;
+    }
+
+    /**
+     * Sets set of MITRE techniques used in the training level
+     *
+     * @param mitreTechniques set of MITRE techniques
+     */
+    public void setMitreTechniques(List<MitreTechniqueDTO> mitreTechniques) {
+        this.mitreTechniques = mitreTechniques;
+    }
+
+    /**
+     * Gets set of expected commands executed in the training level
+     *
+     * @return set of expected commands
+     */
+    public Set<String> getExpectedCommands() {
+        return expectedCommands;
+    }
+
+    /**
+     * Sets set of expected commands executed in the training level
+     *
+     * @param expectedCommands set of expected commands
+     */
+    public void setExpectedCommands(Set<String> expectedCommands) {
+        this.expectedCommands = expectedCommands;
     }
 
     @Override

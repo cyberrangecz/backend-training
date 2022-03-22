@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,7 @@ public class ExportImportService {
     private final QuestionAnswerRepository questionAnswerRepository;
     private final InfoLevelRepository infoLevelRepository;
     private final TrainingLevelRepository trainingLevelRepository;
+    private final MitreTechniqueRepository mitreTechniqueRepository;
     private final AccessLevelRepository accessLevelRepository;
     private final TrainingInstanceRepository trainingInstanceRepository;
     private final TrainingRunRepository trainingRunRepository;
@@ -51,6 +53,7 @@ public class ExportImportService {
                                QuestionAnswerRepository questionAnswerRepository,
                                InfoLevelRepository infoLevelRepository,
                                TrainingLevelRepository trainingLevelRepository,
+                               MitreTechniqueRepository mitreTechniqueRepository,
                                AccessLevelRepository accessLevelRepository,
                                TrainingInstanceRepository trainingInstanceRepository,
                                TrainingRunRepository trainingRunRepository)
@@ -61,6 +64,7 @@ public class ExportImportService {
         this.questionAnswerRepository = questionAnswerRepository;
         this.trainingLevelRepository = trainingLevelRepository;
         this.accessLevelRepository = accessLevelRepository;
+        this.mitreTechniqueRepository = mitreTechniqueRepository;
         this.infoLevelRepository = infoLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
@@ -95,8 +99,20 @@ public class ExportImportService {
         } else if (level instanceof AccessLevel) {
             accessLevelRepository.save((AccessLevel) level);
         } else {
+            setMitreTechniques((TrainingLevel) level);
             trainingLevelRepository.save((TrainingLevel) level);
         }
+    }
+
+    private void setMitreTechniques(TrainingLevel importedLevel) {
+        Set<String> techniqueKeys = importedLevel.getMitreTechniques().stream()
+                .map(MitreTechnique::getTechniqueKey)
+                .collect(Collectors.toSet());
+        Set<MitreTechnique> resultTechniques = mitreTechniqueRepository.findAllByTechniqueKeyIn(techniqueKeys);
+        resultTechniques.addAll(importedLevel.getMitreTechniques());
+
+        importedLevel.setMitreTechniques(new HashSet<>());
+        resultTechniques.forEach(importedLevel::addMitreTechnique);
     }
 
     /**

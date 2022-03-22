@@ -81,6 +81,12 @@ public class RestConfigTest {
 	}
 
 	@Bean
+	@Qualifier("feedbackExchangeFunction")
+	public ExchangeFunction feedbackExchangeFunction(){
+		return Mockito.mock(ExchangeFunction.class);
+	}
+
+	@Bean
 	@Primary
 	@Qualifier("userManagementServiceWebClient")
 	public WebClient userManagementServiceWebClient(){
@@ -100,6 +106,14 @@ public class RestConfigTest {
 	@Bean
 	@Qualifier("elasticsearchServiceWebClient")
 	public WebClient elasticsearchServiceWebClient(){
+		return WebClient.builder()
+				.exchangeFunction(elasticsearchExchangeFunction())
+				.build();
+	}
+
+	@Bean
+	@Qualifier("feedbackServiceWebClient")
+	public WebClient feedbackServiceWebClient(){
 		return WebClient.builder()
 				.exchangeFunction(elasticsearchExchangeFunction())
 				.build();

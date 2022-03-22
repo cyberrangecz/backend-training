@@ -52,7 +52,8 @@ import static org.mockito.BDDMockito.*;
 @SpringBootTest(classes = {
         TestDataFactory.class, TrainingDefinitionMapperImpl.class, UserRefMapperImpl.class,
         LevelMapperImpl.class, BetaTestingGroupMapperImpl.class, QuestionMapperImpl.class, HintMapperImpl.class,
-        AttachmentMapperImpl.class, ReferenceSolutionNodeMapperImpl.class})
+        AttachmentMapperImpl.class, ReferenceSolutionNodeMapperImpl.class, MitreTechniqueMapperImpl.class
+})
 public class TrainingDefinitionFacadeTest {
 
 
