@@ -52,6 +52,7 @@ public class TrainingDefinitionService {
     private InfoLevelRepository infoLevelRepository;
     private AssessmentLevelRepository assessmentLevelRepository;
     private AccessLevelRepository accessLevelRepository;
+    private MitreTechniqueRepository mitreTechniqueRepository;
     private UserRefRepository userRefRepository;
     private SecurityService securityService;
     private UserService userService;
@@ -82,6 +83,7 @@ public class TrainingDefinitionService {
                                      AssessmentLevelRepository assessmentLevelRepository,
                                      AccessLevelRepository accessLevelRepository,
                                      TrainingInstanceRepository trainingInstanceRepository,
+                                     MitreTechniqueRepository mitreTechniqueRepository,
                                      UserRefRepository userRefRepository,
                                      SecurityService securityService,
                                      UserService userService,
@@ -94,6 +96,7 @@ public class TrainingDefinitionService {
         this.assessmentLevelRepository = assessmentLevelRepository;
         this.accessLevelRepository = accessLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
+        this.mitreTechniqueRepository = mitreTechniqueRepository;
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
         this.userService = userService;
@@ -369,6 +372,7 @@ public class TrainingDefinitionService {
      */
     public TrainingLevel updateTrainingLevel(TrainingLevel updatedTrainingLevel, TrainingLevel persistedTrainingLevel) {
         this.updateCommonLevelData(updatedTrainingLevel, persistedTrainingLevel);
+        this.updateMitreTechniques(updatedTrainingLevel, persistedTrainingLevel);
         this.checkSumOfHintPenalties(updatedTrainingLevel);
         this.checkAnswerAndAnswerVariableName(updatedTrainingLevel);
         for (Hint hint : (updatedTrainingLevel).getHints()) {
@@ -457,6 +461,21 @@ public class TrainingDefinitionService {
         updatedLevel.setTrainingDefinition(trainingDefinition);
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - persistedLevel.getEstimatedDuration() + updatedLevel.getEstimatedDuration());
+    }
+
+    private void updateMitreTechniques(TrainingLevel updatedLevel, TrainingLevel persistedLevel) {
+        // Removing training level from persisted MITRE techniques
+        persistedLevel.getMitreTechniques()
+                .forEach(t -> t.getTrainingLevels().removeIf(tl -> tl.getId().equals(persistedLevel.getId())));
+
+        Set<String> techniqueKeys = updatedLevel.getMitreTechniques().stream()
+                .map(MitreTechnique::getTechniqueKey)
+                .collect(Collectors.toSet());
+        Set<MitreTechnique> resultTechniques = mitreTechniqueRepository.findAllByTechniqueKeyIn(techniqueKeys);
+        resultTechniques.addAll(updatedLevel.getMitreTechniques());
+
+        updatedLevel.setMitreTechniques(new HashSet<>());
+        resultTechniques.forEach(updatedLevel::addMitreTechnique);
     }
 
     /**

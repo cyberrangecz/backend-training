@@ -44,6 +44,19 @@ public class TrainingLevel extends AbstractLevel {
     private int incorrectAnswerLimit;
     @Column(name = "variant_answers", nullable = false)
     private boolean variantAnswers;
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE} , fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "training_level_mitre_technique",
+            joinColumns = { @JoinColumn(name = "training_level_id") },
+            inverseJoinColumns = { @JoinColumn(name = "mitre_technique_id")}
+    )
+    private Set<MitreTechnique> mitreTechniques = new HashSet<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "expected_commands",
+            joinColumns = @JoinColumn(name = "training_level_id")
+    )
+    private Set<ExpectedCommand> expectedCommands;
 
     /**
      * Used to fix missing foreign key in the child (Hint) of @OneToMany association.
@@ -241,6 +254,52 @@ public class TrainingLevel extends AbstractLevel {
      */
     public void setVariantAnswers(boolean variantAnswers) {
         this.variantAnswers = variantAnswers;
+    }
+
+    /**
+     * Gets set of MITRE techniques used in the training level
+     *
+     * @return set of MITRE techniques
+     */
+    public Set<MitreTechnique> getMitreTechniques() {
+        return mitreTechniques;
+    }
+
+    /**
+     * Sets set of MITRE techniques used in the training level
+     *
+     * @param mitreTechniques set of MITRE techniques
+     */
+    public void setMitreTechniques(Set<MitreTechnique> mitreTechniques) {
+        this.mitreTechniques = mitreTechniques;
+    }
+
+    public void addMitreTechnique(MitreTechnique mitreTechnique) {
+        this.mitreTechniques.add(mitreTechnique);
+        mitreTechnique.addTrainingLevel(this);
+    }
+
+    public void removeMitreTechnique(MitreTechnique mitreTechnique) {
+        this.mitreTechniques.remove(mitreTechnique);
+        mitreTechnique.removeTrainingLevel(this);
+    }
+
+    /**
+     * Gets set of expected commands executed in the training level
+     *
+     * @return set of expected commands
+     */
+    public Set<ExpectedCommand> getExpectedCommands() {
+        return expectedCommands;
+    }
+
+    /**
+     * Sets set of expected commands executed in the training level
+     *
+     * @param expectedCommands set of expected commands
+     */
+    public void setExpectedCommands(Set<ExpectedCommand> expectedCommands) {
+        this.expectedCommands = expectedCommands;
     }
 
     @Override

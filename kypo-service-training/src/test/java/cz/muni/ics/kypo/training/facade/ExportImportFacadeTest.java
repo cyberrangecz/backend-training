@@ -44,7 +44,8 @@ import static org.mockito.BDDMockito.given;
         HintMapperImpl.class,
         QuestionMapperImpl.class,
         AttachmentMapperImpl.class,
-        ReferenceSolutionNodeMapperImpl.class
+        ReferenceSolutionNodeMapperImpl.class,
+        MitreTechniqueMapperImpl.class
 })
 public class ExportImportFacadeTest {
 

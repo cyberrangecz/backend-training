@@ -27,6 +27,7 @@ import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import org.mapstruct.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * The InfoLevelMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type InfoLevelMapper and
@@ -35,7 +36,8 @@ import java.util.List;
  */
 @Mapper(componentModel = "spring", uses = {
         HintMapper.class, AttachmentMapper.class,
-        QuestionMapper.class, ReferenceSolutionNodeMapper.class
+        QuestionMapper.class, ReferenceSolutionNodeMapper.class,
+        MitreTechniqueMapper.class
         },
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LevelMapper extends ParentMapper {
@@ -89,9 +91,20 @@ public interface LevelMapper extends ParentMapper {
 
     TrainingLevelVisualizationDTO mapToVisualizationTrainingLevelDTO(TrainingLevel entity);
 
+    @Mapping(source = "mitreTechniques", target = "mitreTechniques", qualifiedByName = "ignoreIds")
     TrainingLevelExportDTO mapToExportTrainingLevelDTO(TrainingLevel entity);
 
     TrainingLevelViewDTO mapToViewDTO(TrainingLevel entity);
+
+    default String mapExpectedCommandToString(ExpectedCommand entity) {
+        return entity.getCommand();
+    }
+
+    default ExpectedCommand mapStringToExpectedCommand(String command) {
+        ExpectedCommand expectedCommand = new ExpectedCommand();
+        expectedCommand.setCommand(command);
+        return expectedCommand;
+    }
 
     // ACCESS LEVEL
     AccessLevel mapToEntity(AccessLevelDTO dto);

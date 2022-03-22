@@ -44,7 +44,9 @@ import static org.mockito.BDDMockito.*;
         BetaTestingGroupMapperImpl.class,
         QuestionMapperImpl.class,
         AttachmentMapperImpl.class,
-        ReferenceSolutionNodeMapperImpl.class})
+        ReferenceSolutionNodeMapperImpl.class,
+        MitreTechniqueMapperImpl.class
+})
 public class TrainingRunFacadeTest {
 
     @Autowired

@@ -12,6 +12,7 @@ import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchingOptionDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
+import cz.muni.ics.kypo.training.api.dto.technique.MitreTechniqueDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
@@ -157,6 +158,8 @@ public class TrainingDefinitionsIT {
     private AssessmentLevel assessmentLevelWithoutQuestions, assessmentLevelWithQuestions;
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO, invalidAssessmentLevelUpdateDTO;
     private UserRefDTO organizerDTO1, organizerDTO2, authorDTO1, authorDTO2;
+    private MitreTechnique mitreTechnique1, mitreTechnique2;
+    private MitreTechniqueDTO mitreTechniqueDTO1, mitreTechniqueDTO2;
 
     @BeforeEach
     public void init() {
@@ -220,6 +223,11 @@ public class TrainingDefinitionsIT {
 
         trainingInstance = testDataFactory.getOngoingInstance();
         trainingInstance.setOrganizers(Set.of(author1));
+
+        mitreTechnique1 = testDataFactory.getMitreTechnique1();
+        mitreTechnique2 = testDataFactory.getMitreTechnique2();
+        mitreTechniqueDTO1 = testDataFactory.getMitreTechniqueDTO1();
+        mitreTechniqueDTO2 = testDataFactory.getMitreTechniqueDTO2();
 
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
@@ -760,6 +768,73 @@ public class TrainingDefinitionsIT {
         assertEquals(updatedTrainingLevel.get().getSolution(), trainingLevelUpdateDTO.getSolution());
         assertEquals(updatedTrainingLevel.get().isSolutionPenalized(), trainingLevelUpdateDTO.isSolutionPenalized());
         assertEquals(updatedTrainingLevel.get().getMaxScore(), trainingLevelUpdateDTO.getMaxScore());
+    }
+
+    @Test
+    public void updateTrainingLevelAddNewMitreTechniques() throws Exception {
+        trainingDefinitionRepository.save(unreleasedTrainingDefinition);
+        trainingLevelRepository.save(trainingLevel1);
+        trainingLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
+        trainingLevelUpdateDTO.setId(trainingLevel1.getId());
+        doReturn(buildMockResponse(authorDTO1)).when(exchangeFunction).exchange(any(ClientRequest.class));
+
+        trainingLevelUpdateDTO.setMitreTechniques(List.of(mitreTechniqueDTO1, mitreTechniqueDTO2));
+
+        mvc.perform(put("/training-definitions/{definitionId}/training-levels", unreleasedTrainingDefinition.getId()).content(convertObjectToJsonBytes(trainingLevelUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNoContent());
+        Optional<TrainingLevel> updatedTrainingLevel = trainingLevelRepository.findById(trainingLevel1.getId());
+        assertTrue(updatedTrainingLevel.isPresent());
+        assertEquals(2, updatedTrainingLevel.get().getMitreTechniques().size());
+    }
+
+    @Test
+    public void updateTrainingLevelUpdateMitreTechniques() throws Exception {
+        trainingDefinitionRepository.save(unreleasedTrainingDefinition);
+        trainingLevel1.addMitreTechnique(mitreTechnique1);
+        trainingLevel1.addMitreTechnique(mitreTechnique2);
+        trainingLevelRepository.save(trainingLevel1);
+        trainingLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
+        trainingLevelUpdateDTO.setId(trainingLevel1.getId());
+        doReturn(buildMockResponse(authorDTO1)).when(exchangeFunction).exchange(any(ClientRequest.class));
+
+        MitreTechniqueDTO mitreTechniqueDTO = new MitreTechniqueDTO();
+        mitreTechniqueDTO.setId(mitreTechnique1.getId());
+        mitreTechniqueDTO.setTechniqueKey(mitreTechnique1.getTechniqueKey());
+        trainingLevelUpdateDTO.setMitreTechniques(List.of(mitreTechniqueDTO1, mitreTechniqueDTO2, mitreTechniqueDTO));
+
+        mvc.perform(put("/training-definitions/{definitionId}/training-levels", unreleasedTrainingDefinition.getId()).content(convertObjectToJsonBytes(trainingLevelUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNoContent());
+
+        Optional<TrainingLevel> updatedTrainingLevel = trainingLevelRepository.findById(trainingLevel1.getId());
+        assertTrue(updatedTrainingLevel.isPresent());
+        assertEquals(3, updatedTrainingLevel.get().getMitreTechniques().size());
+        assertFalse(updatedTrainingLevel.get().getMitreTechniques().contains(mitreTechnique2));
+        assertTrue(mitreTechnique2.getTrainingLevels().isEmpty());
+    }
+
+    @Test
+    public void updateTrainingLevelRemoveAllMitreTechniques() throws Exception {
+        trainingDefinitionRepository.save(unreleasedTrainingDefinition);
+        trainingLevel1.addMitreTechnique(mitreTechnique1);
+        trainingLevel1.addMitreTechnique(mitreTechnique2);
+        trainingLevelRepository.save(trainingLevel1);
+        trainingLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
+        trainingLevelUpdateDTO.setId(trainingLevel1.getId());
+        doReturn(buildMockResponse(authorDTO1)).when(exchangeFunction).exchange(any(ClientRequest.class));
+
+        mvc.perform(put("/training-definitions/{definitionId}/training-levels", unreleasedTrainingDefinition.getId()).content(convertObjectToJsonBytes(trainingLevelUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNoContent());
+
+        Optional<TrainingLevel> updatedTrainingLevel = trainingLevelRepository.findById(trainingLevel1.getId());
+        assertTrue(updatedTrainingLevel.isPresent());
+        assertEquals(0, updatedTrainingLevel.get().getMitreTechniques().size());
+        assertFalse(updatedTrainingLevel.get().getMitreTechniques().contains(mitreTechnique1));
+        assertFalse(updatedTrainingLevel.get().getMitreTechniques().contains(mitreTechnique2));
+        assertTrue(mitreTechnique1.getTrainingLevels().isEmpty());
+        assertTrue(mitreTechnique2.getTrainingLevels().isEmpty());
     }
 
     @Test
