@@ -159,14 +159,14 @@ public class TrainingDefinitionService {
     }
 
     /**
-     * Finds all Training Definitions accessible to users with the role of organizer.
+     * Finds all Training Definitions by state.
      *
      * @param state    represents a state of training definition if it is released or unreleased.
      * @param pageable pageable parameter with information about pagination.
      * @return all Training Definitions for organizers
      */
-    public Page<TrainingDefinition> findAllForOrganizers(TDState state, Pageable pageable) {
-        return trainingDefinitionRepository.findAllForOrganizers(state, pageable);
+    public Page<TrainingDefinition> findAllByState(TDState state, Pageable pageable) {
+        return trainingDefinitionRepository.findAllByState(state, pageable);
     }
 
     /**
@@ -189,6 +189,16 @@ public class TrainingDefinitionService {
      */
     public Page<TrainingDefinition> findAllForOrganizersUnreleased(Long loggedInUserId, Pageable pageable) {
         return trainingDefinitionRepository.findAllForOrganizersUnreleased(loggedInUserId, pageable);
+    }
+
+    /**
+     * Find all played by a user.
+     *
+     * @param userId a user id
+     * @return the list of definitions
+     */
+    public List<TrainingDefinition> findAllPlayedByUser(Long userId) {
+        return trainingDefinitionRepository.findAllPlayedByUser(userId);
     }
 
     /**

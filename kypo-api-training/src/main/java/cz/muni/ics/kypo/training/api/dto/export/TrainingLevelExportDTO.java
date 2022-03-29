@@ -47,7 +47,6 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
     private Set<String> expectedCommands;
 
 
-
     /**
      * Instantiates a new Training level export dto.
      */

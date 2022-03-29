@@ -7,6 +7,8 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * The JPA repository interface to manage {@link TrainingLevel} instances.
  */
@@ -24,5 +26,5 @@ public interface TrainingLevelRepository extends JpaRepository<TrainingLevel, Lo
             "WHERE td.id = :trainingDefinitionId AND tl.referenceSolution NOT LIKE '[]'")
     boolean hasReferenceSolution(@Param("trainingDefinitionId") Long trainingDefinitionId);
 
-
+    List<TrainingLevel> findAllByTrainingDefinitionId(@Param("trainingDefinitionId") Long trainingDefinitionId);
 }

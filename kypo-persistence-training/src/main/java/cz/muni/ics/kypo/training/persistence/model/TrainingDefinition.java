@@ -30,7 +30,7 @@ import java.util.*;
 })
 @NamedQueries({
         @NamedQuery(
-                name = "TrainingDefinition.findAllForOrganizers",
+                name = "TrainingDefinition.findAllByState",
                 query = "SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state"
         ),
         @NamedQuery(
@@ -47,6 +47,14 @@ import java.util.*;
                         "LEFT JOIN bt.organizers org " +
                         "LEFT JOIN td.authors aut " +
                         "WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'"
+        ),
+        @NamedQuery(
+                name = "TrainingDefinition.findAllPlayedByUser",
+                query = "SELECT DISTINCT td FROM TrainingRun tr " +
+                        "LEFT JOIN tr.participantRef pr " +
+                        "LEFT JOIN tr.trainingInstance ti " +
+                        "LEFT JOIN ti.trainingDefinition td " +
+                        "WHERE pr.userRefId = :userRefId"
         )
 })
 public class TrainingDefinition extends AbstractEntity<Long> {

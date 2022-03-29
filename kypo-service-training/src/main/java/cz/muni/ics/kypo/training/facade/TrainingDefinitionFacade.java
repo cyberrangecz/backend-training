@@ -169,11 +169,11 @@ public class TrainingDefinitionFacade {
         Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
         if (state == TDState.RELEASED) {
             return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
-                    trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED, pageable));
+                    trainingDefinitionService.findAllByState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.RELEASED, pageable));
         } else if (state == TDState.UNRELEASED) {
             if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
                 return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
-                        trainingDefinitionService.findAllForOrganizers(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED, pageable));
+                        trainingDefinitionService.findAllByState(cz.muni.ics.kypo.training.persistence.model.enums.TDState.UNRELEASED, pageable));
             } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER) && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
                 return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
                         trainingDefinitionService.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable));
