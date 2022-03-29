@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,12 +28,22 @@ public class TrainingLevelRepositoryTest {
     @Autowired
     private TrainingLevelRepository trainingLevelRepository;
 
-    private TrainingLevel trainingLevel1, trainingLevel2;
+    private TrainingLevel trainingLevel1, trainingLevel2, trainingLevel3;
+    private TrainingDefinition trainingDefinition1, trainingDefinition2;
 
     @BeforeEach
     public void setUp() {
+        trainingDefinition1 = testDataFactory.getArchivedDefinition();
+        trainingDefinition2 = testDataFactory.getReleasedDefinition();
+        entityManager.persist(trainingDefinition1);
+        entityManager.persist(trainingDefinition2);
+
         trainingLevel1 = testDataFactory.getPenalizedLevel();
+        trainingLevel1.setTrainingDefinition(trainingDefinition1);
         trainingLevel2 = testDataFactory.getNonPenalizedLevel();
+        trainingLevel2.setTrainingDefinition(trainingDefinition2);
+        trainingLevel3 = testDataFactory.getPenalizedLevel();
+        trainingLevel3.setTrainingDefinition(trainingDefinition1);
     }
 
     @Test
@@ -66,5 +77,16 @@ public class TrainingLevelRepositoryTest {
         assertNotNull(resultTrainingLevel);
         assertEquals(expectedTrainingLevel, resultTrainingLevel);
         assertEquals(0, resultTrainingLevel.size());
+    }
+
+    @Test
+    public void findAllByTrainingDefinition() {
+        entityManager.persist(trainingLevel1);
+        entityManager.persist(trainingLevel2);
+        entityManager.persist(trainingLevel3);
+        List<TrainingLevel> resultTrainingLevels = trainingLevelRepository.findAllByTrainingDefinitionId(trainingDefinition1.getId());
+        assertTrue(resultTrainingLevels.stream().anyMatch(l -> l.getId().equals(trainingLevel1.getId())));
+        assertTrue(resultTrainingLevels.stream().anyMatch(l -> l.getId().equals(trainingLevel3.getId())));
+        assertEquals(2, resultTrainingLevels.size());
     }
 }

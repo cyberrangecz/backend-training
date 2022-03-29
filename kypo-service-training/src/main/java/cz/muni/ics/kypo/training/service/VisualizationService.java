@@ -4,9 +4,11 @@ import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.AbstractLevelRepository;
+import cz.muni.ics.kypo.training.persistence.repository.TrainingLevelRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class VisualizationService {
 
     private final AbstractLevelRepository abstractLevelRepository;
     private final UserRefRepository userRefRepository;
+    private final TrainingLevelRepository trainingLevelRepository;
 
     /**
      * Instantiates a new Visualization service.
@@ -31,9 +34,11 @@ public class VisualizationService {
      */
     @Autowired
     public VisualizationService(AbstractLevelRepository abstractLevelRepository,
-                                UserRefRepository userRefRepository) {
+                                UserRefRepository userRefRepository,
+                                TrainingLevelRepository trainingLevelRepository) {
         this.abstractLevelRepository = abstractLevelRepository;
         this.userRefRepository = userRefRepository;
+        this.trainingLevelRepository = trainingLevelRepository;
     }
 
     /**
@@ -69,5 +74,13 @@ public class VisualizationService {
      */
     public Set<Long> getAllParticipantsRefIdsForSpecificTrainingInstance(Long trainingInstanceId) {
         return userRefRepository.findParticipantsRefIdsByTrainingInstanceId(trainingInstanceId);
+    }
+
+    public List<TrainingLevel> getAllTrainingLevels() {
+        return trainingLevelRepository.findAll();
+    }
+
+    public List<TrainingLevel> getTrainingLevelsByTrainingDefinitionId(Long trainingDefinitionId) {
+        return trainingLevelRepository.findAllByTrainingDefinitionId(trainingDefinitionId);
     }
 }

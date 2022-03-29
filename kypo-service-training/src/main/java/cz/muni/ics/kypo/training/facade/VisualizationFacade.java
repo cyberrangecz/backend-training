@@ -6,10 +6,12 @@ import cz.muni.csirt.kypo.events.trainings.LevelCompleted;
 import cz.muni.csirt.kypo.events.trainings.TrainingRunEnded;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.*;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
@@ -33,6 +35,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelProgress;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.PlayerProgress;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelState;
+import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
@@ -431,6 +434,38 @@ public class VisualizationFacade {
             levelTabsData.add(mapToLevelTabsLevelDTO(level, trainingInstanceData));
         }
         return levelTabsData;
+    }
+
+    /**
+     * Gather all summarized data about mitre techniques used in training definitions.
+     *
+     * @return training definitions with mitre techniques
+     */
+    @IsTrainee
+    @TransactionalRO
+    public List<TrainingDefinitionMitreTechniquesDTO> getTrainingDefinitionsWithMitreTechniques() {
+        List<TrainingDefinition> trainingDefinitions = trainingDefinitionService.findAllByState(TDState.RELEASED, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<TrainingLevel> trainingLevels = visualizationService.getAllTrainingLevels();
+        UserRefDTO userRefDTO = userService.getUserRefFromUserAndGroup();
+        Set<Long> playedDefinitionIds = trainingDefinitionService.findAllPlayedByUser(userRefDTO.getUserRefId()).stream()
+                .map(TrainingDefinition::getId)
+                .collect(Collectors.toSet());
+
+        List<TrainingDefinitionMitreTechniquesDTO> result = new ArrayList<>();
+
+        for (TrainingDefinition trainingDefinition: trainingDefinitions) {
+            List<TrainingLevel> trainingLevelsOfDefinition = visualizationService.getTrainingLevelsByTrainingDefinitionId(trainingDefinition.getId());
+            TrainingDefinitionMitreTechniquesDTO definitionMitreTechniquesDTO = new TrainingDefinitionMitreTechniquesDTO();
+            definitionMitreTechniquesDTO.setId(trainingDefinition.getId());
+            definitionMitreTechniquesDTO.setTitle(trainingDefinition.getTitle());
+            Set<String> techniques = trainingLevelsOfDefinition.stream()
+                    .flatMap(trainingLevel -> trainingLevel.getMitreTechniques().stream().map(MitreTechnique::getTechniqueKey))
+                    .collect(Collectors.toSet());
+            definitionMitreTechniquesDTO.setMitreTechniques(techniques);
+            definitionMitreTechniquesDTO.setPlayed(playedDefinitionIds.contains(trainingDefinition.getId()));
+            result.add(definitionMitreTechniquesDTO);
+        }
+        return result;
     }
 
     /**

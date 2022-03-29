@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotEmpty;
 
-@ApiModel(value = "MitreTechniqueDTO", description = "Represent 'how' an trainee achieves a tactical goal of the training level by performing an action.", parent = AbstractLevelDTO.class)
+@ApiModel(value = "MitreTechniqueDTO", description = "Represent 'how' an trainee achieves a tactical goal of the training level by performing an action.")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MitreTechniqueDTO {
 
