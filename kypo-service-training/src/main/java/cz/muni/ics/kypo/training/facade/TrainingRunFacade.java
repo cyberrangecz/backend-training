@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -260,6 +261,7 @@ public class TrainingRunFacade {
             replacePlaceholders(
                     (AccessLevelViewDTO) accessTrainingRunDTO.getAbstractLevelDTO(),
                     trainingRun.getTrainingInstance().getAccessToken(),
+                    securityService.getBearerToken(),
                     trainingRun.getParticipantRef().getUserRefId()
             );
         }
@@ -329,6 +331,7 @@ public class TrainingRunFacade {
             replacePlaceholders(
                     (AccessLevelViewDTO) abstractLevelDTO,
                     trainingRun.getTrainingInstance().getAccessToken(),
+                    securityService.getBearerToken(),
                     trainingRun.getParticipantRef().getUserRefId()
             );
         }
@@ -587,9 +590,10 @@ public class TrainingRunFacade {
         return abstractLevelDTO;
     }
 
-    private void replacePlaceholders(AccessLevelViewDTO accessLevelViewDTO, String accessToken, Long userId) {
+    private void replacePlaceholders(AccessLevelViewDTO accessLevelViewDTO, String accessToken, String bearerToken, Long userId) {
         String localContent = accessLevelViewDTO.getLocalContent();
         localContent = localContent.replaceAll("\\$\\{ACCESS_TOKEN\\}", accessToken);
+        localContent = localContent.replaceAll("\\$\\{BEARER_TOKEN\\}", bearerToken);
         localContent = localContent.replaceAll("\\$\\{USER_ID\\}", userId.toString());
         localContent = localContent.replaceAll("\\$\\{CENTRAL_SYSLOG_IP\\}", centralSyslogIp);
         accessLevelViewDTO.setLocalContent(localContent);
