@@ -162,4 +162,9 @@ public class SecurityService {
             throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex);
         }
     }
+
+    public String getBearerToken() {
+        JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getToken().getTokenValue();
+    }
 }
