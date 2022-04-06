@@ -27,6 +27,10 @@ public interface CloneMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "trainingDefinition", ignore = true)
+    AccessLevel clone(AccessLevel entity);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "trainingDefinition", ignore = true)
     @Mapping(target = "hints", ignore = true)
     @Mapping(target = "attachments", ignore = true)
     TrainingLevel clone(TrainingLevel entity);

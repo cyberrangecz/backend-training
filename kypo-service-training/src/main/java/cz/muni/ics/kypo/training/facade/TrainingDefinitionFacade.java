@@ -116,6 +116,8 @@ public class TrainingDefinitionFacade {
                 basicLevelInfoDTO.setLevelType(LevelType.TRAINING_LEVEL);
             else if (level instanceof AssessmentLevel)
                 basicLevelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+            else if (level instanceof AccessLevel)
+                basicLevelInfoDTO.setLevelType(LevelType.ACCESS_LEVEL);
             else
                 basicLevelInfoDTO.setLevelType(LevelType.INFO_LEVEL);
             levelInfoDTOs.add(basicLevelInfoDTO);

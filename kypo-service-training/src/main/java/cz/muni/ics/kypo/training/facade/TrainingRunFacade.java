@@ -276,6 +276,8 @@ public class TrainingRunFacade {
                 infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.ASSESSMENT_LEVEL, abstractLevel.getOrder()));
             } else if (abstractLevel instanceof TrainingLevel) {
                 infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.TRAINING_LEVEL, abstractLevel.getOrder()));
+            } else if (abstractLevel instanceof AccessLevel) {
+                infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.ACCESS_LEVEL, abstractLevel.getOrder()));
             } else {
                 infoAboutLevels.add(new BasicLevelInfoDTO(abstractLevel.getId(), abstractLevel.getTitle(), LevelType.INFO_LEVEL, abstractLevel.getOrder()));
             }
