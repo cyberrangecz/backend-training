@@ -781,6 +781,9 @@ public class TrainingDefinitionService {
             if (level instanceof TrainingLevel) {
                 cloneTrainingLevel((TrainingLevel) level, clonedTrainingDefinition);
             }
+            if (level instanceof AccessLevel) {
+                cloneAccessLevel((AccessLevel) level, clonedTrainingDefinition);
+            }
         });
     }
 
@@ -788,6 +791,12 @@ public class TrainingDefinitionService {
         InfoLevel clonedInfoLevel = cloneMapper.clone(level);
         clonedInfoLevel.setTrainingDefinition(trainingDefinition);
         infoLevelRepository.save(clonedInfoLevel);
+    }
+
+    private void cloneAccessLevel(AccessLevel level, TrainingDefinition trainingDefinition) {
+        AccessLevel clonedAccessLevel = cloneMapper.clone(level);
+        clonedAccessLevel.setTrainingDefinition(trainingDefinition);
+        accessLevelRepository.save(clonedAccessLevel);
     }
 
     private void cloneAssessmentLevel(AssessmentLevel level, TrainingDefinition trainingDefinition) {
@@ -851,10 +860,12 @@ public class TrainingDefinitionService {
     }
 
     private void deleteLevel(AbstractLevel level) {
-        if (level instanceof AssessmentLevel) {
-            assessmentLevelRepository.delete((AssessmentLevel) level);
-        } else if (level instanceof InfoLevel) {
-            infoLevelRepository.delete((InfoLevel) level);
+        if (level instanceof AssessmentLevel assessmentLevel) {
+            assessmentLevelRepository.delete(assessmentLevel);
+        } else if (level instanceof InfoLevel infoLevel) {
+            infoLevelRepository.delete(infoLevel);
+        } else if (level instanceof AccessLevel accessLevel) {
+            accessLevelRepository.delete(accessLevel);
         } else {
             trainingLevelRepository.delete((TrainingLevel) level);
         }
