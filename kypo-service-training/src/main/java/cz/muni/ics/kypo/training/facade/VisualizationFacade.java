@@ -189,7 +189,7 @@ public class VisualizationFacade {
             participants.addAll(participantsInfo.getContent());
             page++;
         }
-        while (participantsInfo.getPagination().getNumber() != participantsInfo.getPagination().getTotalPages());
+        while (page != participantsInfo.getPagination().getTotalPages());
         return participants;
     }
 
@@ -226,22 +226,10 @@ public class VisualizationFacade {
         visualizationProgressDTO.setStartTime(trainingInstance.getStartTime().toEpochSecond(ZoneOffset.UTC));
         visualizationProgressDTO.setCurrentTime(LocalDateTime.now(Clock.systemUTC()).toEpochSecond(ZoneOffset.UTC));
         visualizationProgressDTO.setEstimatedEndTime(trainingInstance.getEndTime().toEpochSecond(ZoneOffset.UTC));
-
-        //Players
-        Set<Long> playersIds = visualizationService.getAllParticipantsRefIdsForSpecificTrainingInstance(trainingInstanceId);
-        List<UserRefDTO> players = new ArrayList<>(userService.getUsersRefDTOByGivenUserIds(playersIds, PageRequest.of(0, 20), null, null).getContent());
-        players.sort(Comparator.comparingLong(UserRefDTO::getUserRefId));
-        visualizationProgressDTO.setPlayers(players);
-
-        //Levels
-        List<LevelDefinitionProgressDTO> levels = trainingRunService.getLevels(trainingDefinitionOfTrainingRun.getId()).stream()
-                .map(levelMapper::mapToLevelDefinitionProgressDTO)
-                .sorted(Comparator.comparingInt(LevelDefinitionProgressDTO::getOrder))
-                .collect(Collectors.toList());
-        visualizationProgressDTO.setLevels(levels);
+        visualizationProgressDTO.setPlayers(getListOfPlayers(trainingInstanceId));
+        visualizationProgressDTO.setLevels(getLevelDefinitions(trainingDefinitionOfTrainingRun.getId()));
 
         Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromElasticsearch = elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(trainingInstance);
-
 
         //Player progress
         List<PlayerProgress> playerProgresses = new ArrayList<>();
@@ -282,6 +270,19 @@ public class VisualizationFacade {
         }
         visualizationProgressDTO.setPlayerProgress(playerProgresses);
         return visualizationProgressDTO;
+    }
+
+    private List<UserRefDTO> getListOfPlayers(Long instanceId) {
+        List<UserRefDTO> players = getParticipantsForGivenTrainingInstance(instanceId);
+        players.sort(Comparator.comparingLong(UserRefDTO::getUserRefId));
+        return players;
+    }
+
+    private List<LevelDefinitionProgressDTO> getLevelDefinitions(Long definitionId) {
+        return trainingRunService.getLevels(definitionId).stream()
+                .map(levelMapper::mapToLevelDefinitionProgressDTO)
+                .sorted(Comparator.comparingInt(LevelDefinitionProgressDTO::getOrder))
+                .toList();
     }
 
     private Map<String, String> getAnswersByVariableNames(List<VariantAnswer> variantAnswers) {
