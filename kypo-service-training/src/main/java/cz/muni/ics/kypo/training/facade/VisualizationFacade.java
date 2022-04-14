@@ -116,7 +116,7 @@ public class VisualizationFacade {
      */
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getUsersByIds(Set<Long> usersIds, Pageable pageable) {
-        return userService.getUsersRefDTOByGivenUserIds(usersIds, pageable, null, null);
+        return userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(usersIds), pageable, null, null);
     }
 
     /**
@@ -181,8 +181,12 @@ public class VisualizationFacade {
     @IsTraineeOrAdmin
     public List<UserRefDTO> getParticipantsForGivenTrainingInstance(Long trainingInstanceId) {
         Set<Long> participantsRefIds = visualizationService.getAllParticipantsRefIdsForSpecificTrainingInstance(trainingInstanceId);
-        PageResultResource<UserRefDTO> participantsInfo;
+        return getAllUsersRefsByGivenUsersIds(new ArrayList<>(participantsRefIds));
+    }
+
+    private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
         List<UserRefDTO> participants = new ArrayList<>();
+        PageResultResource<UserRefDTO> participantsInfo;
         int page = 0;
         do {
             participantsInfo = userService.getUsersRefDTOByGivenUserIds(participantsRefIds, PageRequest.of(page, 999), null, null);
@@ -708,12 +712,10 @@ public class VisualizationFacade {
                 .stream()
                 .filter(trainingRun -> trainingRunsIdsFromEvents.contains(trainingRun.getId()))
                 .collect(Collectors.toSet());
-        Set<Long> participantsIds = trainingRuns.stream()
+        List<Long> participantsIds = trainingRuns.stream()
                 .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
-                .collect(Collectors.toSet());
-        Map<Long, UserRefDTO> participantsByIds = userService.getUsersRefDTOByGivenUserIds(participantsIds, PageRequest.of(0, 999), null, null)
-                .getContent()
-                .stream()
+                .collect(Collectors.toList());
+        Map<Long, UserRefDTO> participantsByIds = getAllUsersRefsByGivenUsersIds(participantsIds).stream()
                 .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
 
         if (userRefIdToAnonymize != null && !participantsByIds.isEmpty()) {

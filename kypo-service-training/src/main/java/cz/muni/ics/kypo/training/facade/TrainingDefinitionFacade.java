@@ -233,7 +233,7 @@ public class TrainingDefinitionFacade {
 
     private void addOrganizersToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
         trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
-        PageResultResource<UserRefDTO> organizers = userService.getUsersRefDTOByGivenUserIds(userRefIds, PageRequest.of(0, 999), null, null);
+        PageResultResource<UserRefDTO> organizers = userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(userRefIds), PageRequest.of(0, 999), null, null);
         for (UserRefDTO organizer : organizers.getContent()) {
             try {
                 trainingDefinition.getBetaTestingGroup().addOrganizer(userService.getUserByUserRefId(organizer.getUserRefId()));
@@ -577,7 +577,7 @@ public class TrainingDefinitionFacade {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
         return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getAuthors().stream()
                         .map(UserRef::getUserRefId)
-                        .collect(Collectors.toSet()),
+                        .toList(),
                 pageable, givenName, familyName);
     }
 
@@ -594,7 +594,7 @@ public class TrainingDefinitionFacade {
         if (trainingDefinition.getBetaTestingGroup() != null && !trainingDefinition.getBetaTestingGroup().getOrganizers().isEmpty()) {
             return userService.getUsersRefDTOByGivenUserIds(trainingDefinition.getBetaTestingGroup().getOrganizers().stream()
                     .map(UserRef::getUserRefId)
-                    .collect(Collectors.toSet()), pageable, null, null);
+                    .toList(), pageable, null, null);
         }
         return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, 0, 0, 0));
     }
@@ -653,24 +653,32 @@ public class TrainingDefinitionFacade {
     }
 
     private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
-        PageResultResource<UserRefDTO> authors;
+        List<UserRefDTO> authors = getAllUsersRefsByGivenUsersIds(new ArrayList<>(userRefIds));
+        Set<Long> actualAuthorsIds = trainingDefinition.getAuthors().stream()
+                .map(UserRef::getUserRefId)
+                .collect(Collectors.toSet());
+        for (UserRefDTO author : authors) {
+            if (actualAuthorsIds.contains(author.getUserRefId())) {
+                continue;
+            }
+            try {
+                trainingDefinition.addAuthor(userService.getUserByUserRefId(author.getUserRefId()));
+            } catch (EntityNotFoundException ex) {
+                trainingDefinition.addAuthor(userService.createUserRef(createUserRefFromDTO(author)));
+            }
+        }
+    }
+
+    private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
+        List<UserRefDTO> users = new ArrayList<>();
+        PageResultResource<UserRefDTO> usersPageResultResource;
         int page = 0;
         do {
-            authors = userService.getUsersRefDTOByGivenUserIds(userRefIds, PageRequest.of(page, 999), null, null);
-            Set<Long> actualAuthorsIds = trainingDefinition.getAuthors().stream()
-                    .map(UserRef::getUserRefId)
-                    .collect(Collectors.toSet());
+            usersPageResultResource = userService.getUsersRefDTOByGivenUserIds(participantsRefIds, PageRequest.of(page, 999), null, null);
+            users.addAll(usersPageResultResource.getContent());
             page++;
-            for (UserRefDTO author : authors.getContent()) {
-                if (actualAuthorsIds.contains(author.getUserRefId())) {
-                    continue;
-                }
-                try {
-                    trainingDefinition.addAuthor(userService.getUserByUserRefId(author.getUserRefId()));
-                } catch (EntityNotFoundException ex) {
-                    trainingDefinition.addAuthor(userService.createUserRef(createUserRefFromDTO(author)));
-                }
-            }
-        } while (authors.getPagination().getTotalPages() != page);
+        }
+        while (page != usersPageResultResource.getPagination().getTotalPages());
+        return users;
     }
 }
