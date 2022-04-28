@@ -31,13 +31,13 @@ public class AnswersStorageApiService {
     }
 
     /**
-     * Get correct answer for the given sandbox and with specific answer identifier.
+     * Get correct answer for the given cloud sandbox and with specific answer identifier.
      *
      * @param sandboxId id of the sandbox used by trainee.
      * @param answerVariableName identifier of the answer.
      * @throws MicroserviceApiException error with specific message when calling answer storage microservice.
      */
-    public String getCorrectAnswerBySandboxIdAndVariableName(Long sandboxId, String answerVariableName){
+    public String getCorrectAnswerByCloudSandboxIdAndVariableName(Long sandboxId, String answerVariableName){
         try {
             return answersStorageWebClient
                     .get()
@@ -47,6 +47,28 @@ public class AnswersStorageApiService {
                     .block();
         } catch (CustomWebClientException ex){
             throw new MicroserviceApiException("Error when calling Answers Storage API to get correct answer (Identifier: "+ answerVariableName +") for sandbox (ID: " + sandboxId + ").", ex);
+        }
+    }
+
+    /**
+     * Get correct answer for the given local sandbox and with specific answer identifier.
+     *
+     * @param accessToken access token of the training instance.
+     * @param userId id of the user who owns the local sandbox.
+     * @param answerVariableName identifier of the answer.
+     * @throws MicroserviceApiException error with specific message when calling answer storage microservice.
+     */
+    public String getCorrectAnswerByLocalSandboxIdAndVariableName(String accessToken, Long userId, String answerVariableName){
+        try {
+            return answersStorageWebClient
+                    .get()
+                    .uri("/access-tokens/{accessToken}/users/{userId}/answers/{answerVariableName}", accessToken, userId, answerVariableName)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Answers Storage API to get correct answer (Identifier: "+ answerVariableName +") " +
+                    "for sandbox (Access Token: " + accessToken + ", User ID: " + userId + ").", ex);
         }
     }
 
