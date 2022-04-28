@@ -431,7 +431,7 @@ public class TrainingRunService {
     private boolean evaluateTrainingLevelAnswer(TrainingRun trainingRun, String answer) {
         TrainingLevel trainingLevel = (TrainingLevel) trainingRun.getCurrentLevel();
         String correctAnswer = trainingLevel.isVariantAnswers() && trainingLevel.getAnswerVariableName() != null ?
-                answersStorageApiService.getCorrectAnswerBySandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
+                answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
                 trainingLevel.getAnswer();
         if (correctAnswer.equals(answer)) {
             trainingRun.setLevelAnswered(true);
@@ -528,19 +528,33 @@ public class TrainingRunService {
     public String getSolution(Long trainingRunId) {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
-        if (level instanceof TrainingLevel) {
+        if (level instanceof TrainingLevel trainingLevel) {
             if (!trainingRun.isSolutionTaken()) {
                 trainingRun.setSolutionTaken(true);
-                if (((TrainingLevel) level).isSolutionPenalized()) {
+                if (trainingLevel.isSolutionPenalized()) {
                     trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore());
                 }
                 trainingRunRepository.save(trainingRun);
                 auditEventsService.auditSolutionDisplayedAction(trainingRun);
             }
-            return ((TrainingLevel) level).getSolution();
+            return replaceVariableInSolution(trainingLevel, trainingRun);
         } else {
             throw new BadRequestException("Current level is not training level and does not have solution.");
         }
+    }
+
+    private String replaceVariableInSolution(TrainingLevel trainingLevel, TrainingRun trainingRun) {
+        String solutionContent = trainingLevel.getSolution();
+        String answer = trainingLevel.getAnswer();
+        if (trainingLevel.isVariantAnswers()) {
+            if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
+                answer = this.answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
+                        trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName());
+            } else {
+                answer = this.answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
+            }
+        }
+        return solutionContent.replaceAll("\\$\\{ANSWER\\}", answer);
     }
 
     /**
