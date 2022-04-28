@@ -493,7 +493,10 @@ public class TrainingRunService {
 
     private String getUserIpAddress() {
         ServletRequestAttributes requestAttributes =  ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
-        return requestAttributes == null ? "" : requestAttributes.getRequest().getHeader("X-Forwarded-For");
+        if (requestAttributes != null && requestAttributes.getRequest().getHeader("X-Forwarded-For") != null) {
+            return requestAttributes.getRequest().getHeader("X-Forwarded-For");
+        }
+        return "";
     }
 
     /**
