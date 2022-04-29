@@ -30,10 +30,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -112,7 +109,7 @@ public class UserServiceTest {
         pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
         given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(new PageResultResource<UserRefDTO>(List.of(userRefDTO1, userRefDTO2), pagination)));
 
-        PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersRefDTOByGivenUserIds(Set.of(userRef1.getUserRefId(), userRef2.getUserRefId()), pageable, null, null);
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersRefDTOByGivenUserIds(List.of(userRef1.getUserRefId(), userRef2.getUserRefId()), pageable, null, null);
         assertTrue(userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
         assertEquals(pagination.getNumber(), userRefDTOPageResultResource.getPagination().getNumber());
         assertEquals(pagination.getNumberOfElements(), userRefDTOPageResultResource.getPagination().getNumberOfElements());
@@ -124,7 +121,7 @@ public class UserServiceTest {
     @Test
     public void getUsersRefDTOByGivenUserIdsWithEmptyIds() {
         pagination = new PageResultResource.Pagination(0, 0, 5, 0, 0);
-        PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersRefDTOByGivenUserIds(new HashSet<>(), pageable, null, null);
+        PageResultResource<UserRefDTO> userRefDTOPageResultResource = userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(), pageable, null, null);
         assertTrue(userRefDTOPageResultResource.getContent().isEmpty());
         assertEquals(pagination.toString(), userRefDTOPageResultResource.getPagination().toString());
     }
