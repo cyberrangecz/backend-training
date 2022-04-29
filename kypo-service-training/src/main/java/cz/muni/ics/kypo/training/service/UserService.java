@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -84,7 +85,7 @@ public class UserService {
      * @param familyName optional parameter used for filtration
      * @return the users with given user ref ids
      */
-    public PageResultResource<UserRefDTO> getUsersRefDTOByGivenUserIds(Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
+    public PageResultResource<UserRefDTO> getUsersRefDTOByGivenUserIds(List<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
         if (userRefIds.isEmpty()) {
             return new PageResultResource<>(Collections.emptyList(), new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0));
         }
