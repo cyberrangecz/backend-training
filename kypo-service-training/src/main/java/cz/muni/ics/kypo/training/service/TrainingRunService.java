@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 public class TrainingRunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
+    private static final String X_REAL_IP_HEADER = "x-real-ip";
 
     private final TrainingRunRepository trainingRunRepository;
     private final AbstractLevelRepository abstractLevelRepository;
@@ -493,8 +494,8 @@ public class TrainingRunService {
 
     private String getUserIpAddress() {
         ServletRequestAttributes requestAttributes =  ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
-        if (requestAttributes != null && requestAttributes.getRequest().getHeader("X-Forwarded-For") != null) {
-            return requestAttributes.getRequest().getHeader("X-Forwarded-For");
+        if (requestAttributes != null && requestAttributes.getRequest().getHeader(X_REAL_IP_HEADER) != null) {
+            return requestAttributes.getRequest().getHeader(X_REAL_IP_HEADER);
         }
         return "";
     }
