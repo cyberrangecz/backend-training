@@ -7,24 +7,29 @@ import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.*;
-import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.AssessmentLevelPreviewDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.QuestionPreviewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
+import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelPreviewDTO;
 import cz.muni.ics.kypo.training.api.enums.Actions;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
+import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
@@ -43,7 +48,6 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -249,13 +253,14 @@ public class TrainingRunFacade {
     private AccessTrainingRunDTO convertToAccessTrainingRunDTO(TrainingRun trainingRun) {
         AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
         accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
-        accessTrainingRunDTO.setAbstractLevelDTO(getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel()));
+        accessTrainingRunDTO.setAbstractLevelDTO(getAbstractLevelDTO(trainingRun.getCurrentLevel()));
         accessTrainingRunDTO.setShowStepperBar(trainingRun.getTrainingInstance().getTrainingDefinition().isShowStepperBar());
         accessTrainingRunDTO.setInfoAboutLevels(getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
         accessTrainingRunDTO.setSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
         accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
         accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
         accessTrainingRunDTO.setLocalEnvironment(trainingRun.getTrainingInstance().isLocalEnvironment());
+        accessTrainingRunDTO.setBackwardMode(trainingRun.getTrainingInstance().isBackwardMode());
         accessTrainingRunDTO.setSandboxDefinitionId(trainingRun.getTrainingInstance().getSandboxDefinitionId());
         if(trainingRun.getCurrentLevel().getClass() == AccessLevel.class) {
             replacePlaceholders(
@@ -328,7 +333,7 @@ public class TrainingRunFacade {
     @TransactionalWO
     public AbstractLevelDTO getNextLevel(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.moveToNextLevel(trainingRunId);
-        AbstractLevelDTO abstractLevelDTO = getCorrectAbstractLevelDTO(trainingRun.getCurrentLevel());
+        AbstractLevelDTO abstractLevelDTO = getAbstractLevelDTO(trainingRun.getCurrentLevel());
         if (abstractLevelDTO.getClass() == AccessLevelViewDTO.class) {
             replacePlaceholders(
                     (AccessLevelViewDTO) abstractLevelDTO,
@@ -337,6 +342,7 @@ public class TrainingRunFacade {
                     trainingRun.getParticipantRef().getUserRefId()
             );
         }
+        abstractLevelDTO.setTrainingDefinition(null);
         return abstractLevelDTO;
     }
 
@@ -480,6 +486,24 @@ public class TrainingRunFacade {
     }
 
     /**
+     * Gets visited level of given Training Run.
+     *
+     * @param trainingRunId id of Training Run whose visited level should be returned.
+     * @param levelId ID of the visited level.
+     * @return {@link AbstractLevelDTO}
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+    @TransactionalWO
+    public AbstractLevelDTO getVisitedLevel(Long trainingRunId, Long levelId) {
+        AbstractLevel abstractLevel = trainingRunService.getVisitedLevel(trainingRunId, levelId);
+        TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
+        AbstractLevelDTO abstractLevelDTO = getAbstractLevelPreviewDTO(abstractLevel, trainingRun);
+        abstractLevelDTO.setTrainingDefinition(null);
+        return abstractLevelDTO;
+    }
+
+    /**
      * Gets correct answers of the given Training Run.
      *
      * @param trainingRunId id of Training Run which current level gets hint for.
@@ -492,7 +516,7 @@ public class TrainingRunFacade {
         List<TrainingLevel> trainingLevels = trainingRunService.getLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId()).stream()
                 .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class)
                 .map(abstractLevel -> (TrainingLevel) abstractLevel)
-                .collect(Collectors.toList());
+                .toList();
         boolean isVariantSandboxes = trainingLevels.stream().anyMatch(TrainingLevel::isVariantAnswers);
         Map<String, String> variantAnswers = isVariantSandboxes ? getVariantAnswers(trainingRun.getSandboxInstanceRefId()) : new HashMap<>();
         return trainingLevels.stream()
@@ -569,27 +593,85 @@ public class TrainingRunFacade {
         }
     }
 
-    private AbstractLevelDTO getCorrectAbstractLevelDTO(AbstractLevel abstractLevel) {
+    private AbstractLevelDTO getAbstractLevelDTO(AbstractLevel abstractLevel) {
         AbstractLevelDTO abstractLevelDTO;
-        if (abstractLevel instanceof AssessmentLevel) {
-            AssessmentLevel assessmentLevel = (AssessmentLevel) abstractLevel;
+        if (abstractLevel instanceof AssessmentLevel assessmentLevel) {
             abstractLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevel);
-            abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
             deleteInfoAboutCorrectnessFromQuestions((AssessmentLevelDTO) abstractLevelDTO);
-        } else if (abstractLevel instanceof TrainingLevel) {
-            TrainingLevel trainingLevel = (TrainingLevel) abstractLevel;
+        } else if (abstractLevel instanceof TrainingLevel trainingLevel) {
             abstractLevelDTO = levelMapper.mapToViewDTO(trainingLevel);
-            abstractLevelDTO.setLevelType(LevelType.TRAINING_LEVEL);
-        } else if (abstractLevel instanceof AccessLevel) {
-            AccessLevel accessLevel = (AccessLevel) abstractLevel;
+        } else if (abstractLevel instanceof AccessLevel accessLevel) {
             abstractLevelDTO = levelMapper.mapToViewDTO(accessLevel);
-            abstractLevelDTO.setLevelType(LevelType.ACCESS_LEVEL);
         } else {
             InfoLevel infoLevel = (InfoLevel) abstractLevel;
             abstractLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel);
-            abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
         }
         return abstractLevelDTO;
+    }
+
+    private AbstractLevelDTO getAbstractLevelPreviewDTO (AbstractLevel abstractLevel, TrainingRun trainingRun) {
+        if (abstractLevel instanceof InfoLevel infoLevel) {
+            return levelMapper.mapToInfoLevelDTO(infoLevel);
+        } else if (abstractLevel instanceof TrainingLevel trainingLevel) {
+            return mapToTrainingLevelPreviewDTO(trainingLevel, trainingRun);
+        } else if (abstractLevel instanceof AccessLevel accessLevel) {
+            return mapToAccessLevelViewDTO(accessLevel, trainingRun);
+        } else {
+            return mapToAssessmentLevelPreviewDTO((AssessmentLevel) abstractLevel, trainingRun);
+        }
+    }
+
+    private TrainingLevelPreviewDTO mapToTrainingLevelPreviewDTO(TrainingLevel trainingLevel, TrainingRun trainingRun) {
+        TrainingLevelPreviewDTO trainingLevelPreviewDTO = levelMapper.mapToPreviewDTO(trainingLevel);
+        trainingLevelPreviewDTO.setHints(hintMapper.mapToSetInfoDTO(trainingRun.getHintInfoList().stream()
+                .filter(hintInfo ->  hintInfo.getTrainingLevelId().equals(trainingLevel.getId()))
+                .toList())
+        );
+        String takenSolution = trainingRun.getSolutionInfoList().stream()
+                .filter(solutionInfo -> trainingLevel.getId().equals(solutionInfo.getTrainingLevelId()))
+                .map(SolutionInfo::getSolutionContent)
+                .findFirst().orElse(null);
+        trainingLevelPreviewDTO.setSolution(takenSolution);
+        return trainingLevelPreviewDTO;
+    }
+
+    private AccessLevelViewDTO mapToAccessLevelViewDTO(AccessLevel accessLevel, TrainingRun trainingRun) {
+        AccessLevelViewDTO accessLevelViewDTO = levelMapper.mapToViewDTO(accessLevel);
+        replacePlaceholders(
+                accessLevelViewDTO,
+                trainingRun.getTrainingInstance().getAccessToken(),
+                securityService.getBearerToken(),
+                trainingRun.getParticipantRef().getUserRefId()
+        );
+        return accessLevelViewDTO;
+    }
+
+    private AssessmentLevelPreviewDTO mapToAssessmentLevelPreviewDTO(AssessmentLevel assessmentLevel, TrainingRun trainingRun) {
+        Map<Long, Set<String>> userAnswersByQuestionId = trainingRunService.getQuestionAnswersByTrainingRunId(trainingRun.getId()).stream()
+                .collect(Collectors.toMap(q -> q.getQuestion().getId(), QuestionAnswer::getAnswers));
+        AssessmentLevelPreviewDTO assessmentPreviewDTO = levelMapper.mapToAssessmentLevelPreviewDTO(assessmentLevel);
+        assessmentPreviewDTO.getQuestions().forEach(previewQuestionDTO -> {
+            if (previewQuestionDTO.getQuestionType() == QuestionType.EMI) {
+                Set<String> emiAnswers = userAnswersByQuestionId.getOrDefault(previewQuestionDTO.getId(), new HashSet<>());
+                emiAnswers.stream()
+                        .map(this::convertEmiAnswerToMap)
+                        .forEach(emiAnswerMap -> previewQuestionDTO.getExtendedMatchingStatements().get(emiAnswerMap.get("statementOrder")).setUserOptionOrder(emiAnswerMap.get("optionOrder")));
+            } else {
+                if (previewQuestionDTO.getQuestionType() == QuestionType.FFQ) {
+                    previewQuestionDTO.setChoices(new ArrayList<>());
+                }
+                previewQuestionDTO.setUserAnswers(userAnswersByQuestionId.get(previewQuestionDTO.getId()));
+            }
+        });
+        return assessmentPreviewDTO;
+    }
+
+    private Map<String, Integer> convertEmiAnswerToMap(String emiAnswer) {
+        emiAnswer = emiAnswer.replaceAll("\"", "");
+        emiAnswer = emiAnswer.substring(1, emiAnswer.length() -1);
+        return Arrays.stream( emiAnswer.split(",") )
+                .map(s -> s.split(":"))
+                .collect(Collectors.toMap(s -> s[0].trim(), s -> Integer.parseInt(s[1].trim())));
     }
 
     private void replacePlaceholders(AccessLevelViewDTO accessLevelViewDTO, String accessToken, String bearerToken, Long userId) {
@@ -607,6 +689,7 @@ public class TrainingRunFacade {
             questionDTO.getExtendedMatchingStatements().forEach(statementDTO -> statementDTO.setCorrectOptionOrder(null));
         });
     }
+
     private void waitToPropagateEvents() {
         try {
             TimeUnit.SECONDS.sleep(TIME_TO_PROPAGATE_EVENTS);

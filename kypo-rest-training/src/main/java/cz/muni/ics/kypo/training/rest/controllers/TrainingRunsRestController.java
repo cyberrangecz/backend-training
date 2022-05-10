@@ -532,6 +532,36 @@ public class TrainingRunsRestController {
     }
 
     /**
+     * Get previous or current level (any visited) of given Training Run.
+     *
+     * @param runId  of Training Run for which to get previous or current level.
+     * @param levelId ID of the visited level.
+     * @param fields attributes of the object to be returned as the result.
+     * @return Requested level.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get visited level of given training run.",
+            notes = "Returns (assessment, training, info) level if any level exists and training run as well",
+            response = AbstractLevelDTO.class,
+            nickname = "getVisitedLevel",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The visited level has been found.", response = AbstractLevelDTO.class),
+            @ApiResponse(code = 404, message = "The visited level has not been found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{runId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getVisitedLevel(
+            @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
+            @ApiParam(value = "Level ID", required = true) @PathVariable("levelId") Long levelId,
+            @ApiParam(value = "Fields which should be returned in REST API response") @RequestParam(value = "fields", required = false) String fields) {
+        AbstractLevelDTO levelDTO = trainingRunFacade.getVisitedLevel(runId, levelId);
+        Squiggly.init(objectMapper, fields);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, levelDTO));
+    }
+
+    /**
      * The type Training run rest resource.
      */
     @ApiModel(value = "TrainingRunRestResource",

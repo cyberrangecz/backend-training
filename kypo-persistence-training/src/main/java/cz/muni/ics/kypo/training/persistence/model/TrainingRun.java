@@ -137,6 +137,9 @@ public class TrainingRun extends AbstractEntity<Long> {
     private int maxLevelScore;
     @Column(name = "level_answered")
     private boolean levelAnswered;
+    @ElementCollection(targetClass = SolutionInfo.class, fetch = FetchType.LAZY)
+    @CollectionTable(name = "solution_info", joinColumns = @JoinColumn(name = "training_run_id"))
+    private Set<SolutionInfo> solutionInfoList = new HashSet<>();
     @ElementCollection(targetClass = HintInfo.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "hint_info", joinColumns = @JoinColumn(name = "training_run_id"))
     private Set<HintInfo> hintInfoList = new HashSet<>();
@@ -491,6 +494,15 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
+     * Sets hint info list.
+     *
+     * @param hintInfoList the hint info list
+     */
+    public void setHintInfoList(Set<HintInfo> hintInfoList) {
+        this.hintInfoList = hintInfoList;
+    }
+
+    /**
      * Adds hint to current training level
      *
      * @param hintInfo the hint info
@@ -508,6 +520,41 @@ public class TrainingRun extends AbstractEntity<Long> {
         this.hintInfoList.remove(hintInfo);
     }
 
+    /**
+     * Gets taken solutions associated to training run
+     *
+     * @return the solution info list
+     */
+    public Set<SolutionInfo> getSolutionInfoList() {
+        return solutionInfoList;
+    }
+
+    /**
+     * Sets solution info list.
+     *
+     * @param solutionInfo the solution info list
+     */
+    public void setSolutionInfoList(Set<SolutionInfo> solutionInfo) {
+        this.solutionInfoList = solutionInfo;
+    }
+
+    /**
+     * Adds solution to current training run
+     *
+     * @param solutionInfo the solution info
+     */
+    public void addSolutionInfo(SolutionInfo solutionInfo) {
+        this.solutionInfoList.add(solutionInfo);
+    }
+
+    /**
+     * Removes solution to current training run
+     *
+     * @param solutionInfo the solution info
+     */
+    public void removeSolutionInfo(SolutionInfo solutionInfo) {
+        this.solutionInfoList.remove(solutionInfo);
+    }
 
     /**
      * Gets id of previous sandbox instance ref assigned by training run.
@@ -525,15 +572,6 @@ public class TrainingRun extends AbstractEntity<Long> {
      */
     public void setPreviousSandboxInstanceRefId(Long previousSandboxInstanceRefId) {
         this.previousSandboxInstanceRefId = previousSandboxInstanceRefId;
-    }
-
-    /**
-     * Sets hint info list.
-     *
-     * @param hintInfoList the hint info list
-     */
-    public void setHintInfoList(Set<HintInfo> hintInfoList) {
-        this.hintInfoList = hintInfoList;
     }
 
     /**
