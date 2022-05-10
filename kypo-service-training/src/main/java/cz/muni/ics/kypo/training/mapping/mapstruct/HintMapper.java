@@ -41,6 +41,8 @@ public interface HintMapper extends ParentMapper {
 
     Set<HintDTO> mapToSetDTO(Collection<Hint> entities);
 
+    Set<TakenHintDTO> mapToSetInfoDTO(Collection<HintInfo> entities);
+
     default Optional<Hint> mapToOptional(HintDTO dto) {
         return Optional.ofNullable(mapToEntity(dto));
     }

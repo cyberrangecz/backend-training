@@ -234,6 +234,27 @@ public class TrainingRunService {
     }
 
     /**
+     * Get previous/current level (visited) of given Training Run.
+     *
+     * @param runId ID of Training Run whose visited level should be returned.
+     * @param levelId ID of the visited level that should be returned.
+     * @return {@link AbstractLevel}
+     */
+    public AbstractLevel getVisitedLevel(Long runId, Long levelId) {
+        TrainingRun trainingRun = findByIdWithLevel(runId);
+        AbstractLevel abstractLevel = abstractLevelRepository.findById(levelId).orElseThrow(
+                () -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, "Level not found")));
+        TrainingDefinition trainingRunDefinition = trainingRun.getTrainingInstance().getTrainingDefinition();
+        if (!abstractLevel.getTrainingDefinition().getId().equals(trainingRunDefinition.getId())) {
+            throw new EntityConflictException(new EntityErrorDetail("Requested level (ID: " + levelId + ") is not part of the training run (ID: " + runId + ")."));
+        }
+        if (abstractLevel.getOrder() > trainingRun.getCurrentLevel().getOrder()) {
+            throw new EntityConflictException(new EntityErrorDetail("Requested level (ID: " + levelId + ") hasn't been visited yet"));
+        }
+        return abstractLevel;
+    }
+
+    /**
      * Finds all Training Runs of specific Training Definition of logged in user.
      *
      * @param definitionId id of Training Definition
@@ -532,9 +553,11 @@ public class TrainingRunService {
         if (level instanceof TrainingLevel trainingLevel) {
             if (!trainingRun.isSolutionTaken()) {
                 trainingRun.setSolutionTaken(true);
+                trainingRun.addSolutionInfo(new SolutionInfo(trainingLevel.getId(), trainingLevel.getSolution()));
                 if (trainingLevel.isSolutionPenalized()) {
                     trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore());
                 }
+
                 trainingRunRepository.save(trainingRun);
                 auditEventsService.auditSolutionDisplayedAction(trainingRun);
             }
@@ -745,5 +768,9 @@ public class TrainingRunService {
             }
         }
         return question.getPoints();
+    }
+
+    public List<QuestionAnswer> getQuestionAnswersByTrainingRunId(Long runId) {
+        return questionAnswerRepository.getAllByTrainingRunId(runId);
     }
 }

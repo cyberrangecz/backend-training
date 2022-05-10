@@ -709,7 +709,7 @@ public class TestDataFactory {
         newTrainingRun.setEventLogReference(eventLogReference);
         newTrainingRun.setState(state);
         newTrainingRun.setIncorrectAnswerCount(incorrectAnswerCount);
-        newTrainingRun.setSolutionTaken(solutionTaken);
+//        newTrainingRun.setSolutionTaken(solutionTaken);
         newTrainingRun.setSandboxInstanceRefId(SBIRefId);
         newTrainingRun.setTotalTrainingScore(totalTrainingScore);
         newTrainingRun.setTotalAssessmentScore(totalAssessmentScore);

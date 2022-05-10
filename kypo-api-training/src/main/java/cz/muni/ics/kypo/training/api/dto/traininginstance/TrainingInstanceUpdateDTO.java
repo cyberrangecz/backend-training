@@ -5,8 +5,6 @@ import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCDeserializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -44,6 +42,8 @@ public class TrainingInstanceUpdateDTO {
     private boolean localEnvironment;
     @ApiModelProperty(value = "Id of sandbox definition assigned to training instance", example = "1")
     private Long sandboxDefinitionId;
+    @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
+    private boolean backwardMode;
 
     /**
      * Gets id.
@@ -207,6 +207,24 @@ public class TrainingInstanceUpdateDTO {
         this.sandboxDefinitionId = sandboxDefinitionId;
     }
 
+    /**
+     * Gets if trainee can during training run move back to the previous levels.
+     *
+     * @return true if backward mode is enabled.
+     */
+    public boolean isBackwardMode() {
+        return backwardMode;
+    }
+
+    /**
+     * Sets if trainee can during training run move back to the previous levels.
+     *
+     * @param backwardMode true if backward mode is enabled.
+     */
+    public void setBackwardMode(boolean backwardMode) {
+        this.backwardMode = backwardMode;
+    }
+
     @Override
     public String toString() {
         return "TrainingInstanceUpdateDTO{" +
@@ -219,6 +237,7 @@ public class TrainingInstanceUpdateDTO {
                 ", poolId=" + poolId +
                 ", localEnvironment=" + localEnvironment +
                 ", sandboxDefinitionId=" + sandboxDefinitionId +
+                ", backwardModeF=" + backwardMode +
                 '}';
     }
 }

@@ -8,9 +8,11 @@ import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.AssessmentLevelPreviewDTO;
 import cz.muni.ics.kypo.training.api.dto.export.*;
 import cz.muni.ics.kypo.training.api.dto.imports.AccessLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
+import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelPreviewDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
@@ -51,6 +53,7 @@ public interface LevelMapper extends ParentMapper {
 
     InfoLevel mapUpdateToEntity(InfoLevelUpdateDTO dto);
 
+    @Mapping(target = "levelType", constant = "INFO_LEVEL")
     InfoLevelDTO mapToInfoLevelDTO(InfoLevel entity);
 
     InfoLevelVisualizationDTO mapToVisualizationInfoLevelDTO(InfoLevel entity);
@@ -68,7 +71,11 @@ public interface LevelMapper extends ParentMapper {
     @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
     BasicLevelInfoDTO mapTo(AssessmentLevel assessmentLevel);
 
+    @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
     AssessmentLevelDTO mapToAssessmentLevelDTO(AssessmentLevel entity);
+
+    @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
+    AssessmentLevelPreviewDTO mapToAssessmentLevelPreviewDTO(AssessmentLevel entity);
 
     AssessmentLevelVisualizationDTO mapToVisualizationAssessmentLevelDTO(AssessmentLevel entity);
 
@@ -94,7 +101,12 @@ public interface LevelMapper extends ParentMapper {
     @Mapping(source = "mitreTechniques", target = "mitreTechniques", qualifiedByName = "ignoreIds")
     TrainingLevelExportDTO mapToExportTrainingLevelDTO(TrainingLevel entity);
 
+    @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
     TrainingLevelViewDTO mapToViewDTO(TrainingLevel entity);
+
+    @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
+    @Mapping(target = "hints", ignore = true)
+    TrainingLevelPreviewDTO mapToPreviewDTO(TrainingLevel entity);
 
     default String mapExpectedCommandToString(ExpectedCommand entity) {
         return entity.getCommand();
@@ -116,12 +128,14 @@ public interface LevelMapper extends ParentMapper {
     @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
     BasicLevelInfoDTO mapTo(AccessLevel trainingLevel);
 
+    @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
     AccessLevelDTO mapToAccessLevelDTO(AccessLevel entity);
 
     AccessLevelVisualizationDTO mapToVisualizationAccessLevelDTO(AccessLevel entity);
 
     AccessLevelExportDTO mapToExportAccessLevelDTO(AccessLevel entity);
 
+    @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
     AccessLevelViewDTO mapToViewDTO(AccessLevel entity);
 
     // ABSTRACT

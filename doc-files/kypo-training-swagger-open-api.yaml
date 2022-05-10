@@ -2331,6 +2331,49 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /training-runs/{runId}/levels/{levelId}:
+    get:
+      tags:
+      - "Training runs"
+      summary: "Get visited level of given training run."
+      description: "Returns (assessment, training, info) level if any level exists\
+        \ and training run as well"
+      operationId: "getVisitedLevel"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "levelId"
+        in: "path"
+        description: "Level ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "fields"
+        in: "query"
+        description: "Fields which should be returned in REST API response"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "The visited level has been found."
+          schema:
+            $ref: "#/definitions/AbstractLevelDTO"
+        404:
+          description: "The visited level has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/next-levels:
     get:
       tags:
@@ -3532,6 +3575,11 @@ definitions:
         example: 2
         description: "Main identifier of sandbox definition which is assigned to training\
           \ instance of the training run."
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "Just accessed training run."
   AccessedTrainingRunDTO:
     type: "object"
@@ -4779,9 +4827,9 @@ definitions:
     properties:
       empty:
         type: "boolean"
-      sorted:
-        type: "boolean"
       unsorted:
+        type: "boolean"
+      sorted:
         type: "boolean"
   TakenHintDTO:
     type: "object"
@@ -5145,6 +5193,11 @@ definitions:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "The finished and archived instance of training definition which\
       \ includes individual finished training runs of participants."
   TrainingInstanceAssignPoolIdDTO:
@@ -5200,6 +5253,11 @@ definitions:
         format: "int64"
         example: 1
         description: "Id of sandbox definition assigned to training instance"
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
   TrainingInstanceCreateDTO:
     type: "object"
     required:
@@ -5248,6 +5306,11 @@ definitions:
         format: "int64"
         example: 1
         description: "Id of sandbox definition assigned to training instance"
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "Training Instance to create."
   TrainingInstanceDTO:
     type: "object"
@@ -5311,6 +5374,11 @@ definitions:
         format: "int64"
         example: 1
         description: "Id of sandbox definition assigned to training instance"
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "A session of attending a concrete training, which involves a deployment\
       \ of the training definition in one or more sandbox instances that are then\
       \ assigned to participants. The instance comprises one or more training runs."
@@ -5364,6 +5432,11 @@ definitions:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
   TrainingInstanceRestResource:
     type: "object"
     properties:
@@ -5433,6 +5506,11 @@ definitions:
         format: "int64"
         example: 1
         description: "Id of sandbox definition assigned to training instance"
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "Training Instance to update."
   TrainingLevelDTO:
     allOf:

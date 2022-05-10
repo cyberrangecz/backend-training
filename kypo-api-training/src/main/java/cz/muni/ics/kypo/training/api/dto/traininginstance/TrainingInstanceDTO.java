@@ -45,6 +45,8 @@ public class TrainingInstanceDTO {
     private boolean localEnvironment;
     @ApiModelProperty(value = "Id of sandbox definition assigned to training instance", example = "1")
     private Long sandboxDefinitionId;
+    @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
+    private boolean backwardMode;
 
     /**
      * Gets id.
@@ -262,6 +264,24 @@ public class TrainingInstanceDTO {
         this.sandboxDefinitionId = sandboxDefinitionId;
     }
 
+    /**
+     * Gets if trainee can during training run move back to the previous levels.
+     *
+     * @return true if backward mode is enabled.
+     */
+    public boolean isBackwardMode() {
+        return backwardMode;
+    }
+
+    /**
+     * Sets if trainee can during training run move back to the previous levels.
+     *
+     * @param backwardMode true if backward mode is enabled.
+     */
+    public void setBackwardMode(boolean backwardMode) {
+        this.backwardMode = backwardMode;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof TrainingInstanceDTO)) return false;
@@ -270,12 +290,13 @@ public class TrainingInstanceDTO {
                 Objects.equals(getTitle(), that.getTitle()) &&
                 Objects.equals(getAccessToken(), that.getAccessToken()) &&
                 Objects.equals(getPoolId(), that.getPoolId()) &&
-                Objects.equals(isLocalEnvironment(), that.isLocalEnvironment());
+                Objects.equals(isLocalEnvironment(), that.isLocalEnvironment()) &&
+                Objects.equals(isBackwardMode(), that.isBackwardMode());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTitle(), getAccessToken(), getPoolId(), isLocalEnvironment());
+        return Objects.hash(getId(), getTitle(), getAccessToken(), getPoolId(), isLocalEnvironment(), isBackwardMode());
     }
 
     @Override
@@ -292,6 +313,7 @@ public class TrainingInstanceDTO {
                 ", lastEditedBy='" + lastEditedBy + '\'' +
                 ", localEnvironment='" + localEnvironment + '\'' +
                 ", sandboxDefinitionId='" + sandboxDefinitionId + '\'' +
+                ", backwardMode='" + backwardMode + '\'' +
                 '}';
     }
 }
