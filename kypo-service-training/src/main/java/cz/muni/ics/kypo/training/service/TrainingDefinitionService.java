@@ -1,8 +1,5 @@
 package cz.muni.ics.kypo.training.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.mapping.mapstruct.CloneMapper;
@@ -15,22 +12,15 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOpti
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
-import cz.muni.ics.kypo.training.startup.DefaultLevels;
+import cz.muni.ics.kypo.training.startup.DefaultLevelsLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -56,10 +46,7 @@ public class TrainingDefinitionService {
     private UserRefRepository userRefRepository;
     private SecurityService securityService;
     private UserService userService;
-    private Validator validator;
-    @Value("${path.to.default.levels:}")
-    private String pathToDefaultLevels;
-    private DefaultLevels defaultLevels;
+    private DefaultLevelsLoader defaultLevelsLoader;
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
@@ -87,7 +74,7 @@ public class TrainingDefinitionService {
                                      UserRefRepository userRefRepository,
                                      SecurityService securityService,
                                      UserService userService,
-                                     Validator validator,
+                                     DefaultLevelsLoader defaultLevelsLoader,
                                      CloneMapper cloneMapper) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
@@ -100,27 +87,8 @@ public class TrainingDefinitionService {
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
         this.userService = userService;
-        this.validator = validator;
+        this.defaultLevelsLoader = defaultLevelsLoader;
         this.cloneMapper = cloneMapper;
-    }
-
-    @PostConstruct
-    private void loadDefaultLevels() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-        mapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
-        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
-        try {
-            InputStream inputStream = pathToDefaultLevels.isBlank() ? getClass().getResourceAsStream("/default-levels.json") : new FileInputStream(pathToDefaultLevels);
-            defaultLevels = mapper.readValue(inputStream, DefaultLevels.class);
-            Set<ConstraintViolation<DefaultLevels>> violations = this.validator.validate(defaultLevels);
-            if(!violations.isEmpty()){
-                throw new InternalServerErrorException("Could not load the default phases. Reason: " + violations.stream()
-                        .map(ConstraintViolation::getMessage).collect(Collectors.toList()));
-            }
-        } catch (IOException e) {
-            throw new InternalServerErrorException("Could not load file with the default levels.", e);
-        }
     }
 
     /**
@@ -209,7 +177,7 @@ public class TrainingDefinitionService {
      */
     public TrainingDefinition create(TrainingDefinition trainingDefinition, boolean createDefaultContent) {
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
-        if(createDefaultContent && defaultLevels != null) {
+        if(createDefaultContent) {
             this.createDefaultLevels(trainingDefinition);
         }
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
@@ -521,11 +489,10 @@ public class TrainingDefinitionService {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
         AccessLevel newAccessLevel = new AccessLevel();
-
-        newAccessLevel.setTitle("Title of access level");
-        newAccessLevel.setCloudContent("Cloud content of access level should be here.");
-        newAccessLevel.setLocalContent("Local (non-cloud) content of access level should be here.");
-        newAccessLevel.setPasskey("start-training");
+        newAccessLevel.setTitle(defaultLevelsLoader.getDefaultAccessLevel().getTitle());
+        newAccessLevel.setCloudContent(defaultLevelsLoader.getDefaultAccessLevel().getCloudContent());
+        newAccessLevel.setLocalContent(defaultLevelsLoader.getDefaultAccessLevel().getLocalContent());
+        newAccessLevel.setPasskey(defaultLevelsLoader.getDefaultAccessLevel().getPasskey());
         newAccessLevel.setOrder(getNextOrder(definitionId));
         newAccessLevel.setTrainingDefinition(trainingDefinition);
         AccessLevel accessLevel = accessLevelRepository.save(newAccessLevel);
@@ -564,8 +531,8 @@ public class TrainingDefinitionService {
         checkIfCanBeUpdated(trainingDefinition);
 
         InfoLevel newInfoLevel = new InfoLevel();
-        newInfoLevel.setTitle("Title of info level");
-        newInfoLevel.setContent("Content of info level should be here.");
+        newInfoLevel.setTitle(defaultLevelsLoader.getDefaultInfoLevel().getTitle());
+        newInfoLevel.setContent(defaultLevelsLoader.getDefaultInfoLevel().getContent());
         newInfoLevel.setOrder(getNextOrder(definitionId));
         newInfoLevel.setTrainingDefinition(trainingDefinition);
         InfoLevel infoLevel = infoLevelRepository.save(newInfoLevel);
@@ -726,18 +693,18 @@ public class TrainingDefinitionService {
     private void createDefaultLevels(TrainingDefinition trainingDefinition) {
         InfoLevel introInfoLevel = new InfoLevel();
         introInfoLevel.setTrainingDefinition(trainingDefinition);
-        introInfoLevel.setTitle(defaultLevels.getIntroInfoLevel().getTitle());
-        introInfoLevel.setContent(defaultLevels.getIntroInfoLevel().getContent());
+        introInfoLevel.setTitle(defaultLevelsLoader.getDefaultInfoLevel().getTitle());
+        introInfoLevel.setContent(defaultLevelsLoader.getDefaultInfoLevel().getContent());
         introInfoLevel.setOrder(0);
         infoLevelRepository.save(introInfoLevel);
 
         AccessLevel getAccessLevel = new AccessLevel();
         getAccessLevel.setOrder(1);
         getAccessLevel.setTrainingDefinition(trainingDefinition);
-        getAccessLevel.setCloudContent(defaultLevels.getGetAccessLevel().getCloudContent());
-        getAccessLevel.setLocalContent(defaultLevels.getGetAccessLevel().getLocalContent());
-        getAccessLevel.setTitle(defaultLevels.getGetAccessLevel().getTitle());
-        getAccessLevel.setPasskey(defaultLevels.getGetAccessLevel().getPasskey());
+        getAccessLevel.setCloudContent(defaultLevelsLoader.getDefaultAccessLevel().getCloudContent());
+        getAccessLevel.setLocalContent(defaultLevelsLoader.getDefaultAccessLevel().getLocalContent());
+        getAccessLevel.setTitle(defaultLevelsLoader.getDefaultAccessLevel().getTitle());
+        getAccessLevel.setPasskey(defaultLevelsLoader.getDefaultAccessLevel().getPasskey());
         getAccessLevel.setTrainingDefinition(trainingDefinition);
         accessLevelRepository.save(getAccessLevel);
     }

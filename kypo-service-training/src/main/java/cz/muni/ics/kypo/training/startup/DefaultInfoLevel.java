@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.startup;
 
 import javax.validation.constraints.NotEmpty;
 
-public class IntroInfoLevel {
+public class DefaultInfoLevel {
     @NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
     private String title;
     @NotEmpty(message = "{infoLevel.content.NotEmpty.message}")

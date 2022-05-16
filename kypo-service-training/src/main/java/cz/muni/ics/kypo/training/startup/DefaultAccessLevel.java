@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.startup;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
-public class GetAccessLevel {
+public class DefaultAccessLevel {
     @NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
     private String title;
     @NotEmpty(message = "{accessLevel.cloudContent.NotEmpty.message}")
