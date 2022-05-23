@@ -43,6 +43,8 @@ public class AccessTrainingRunDTO {
     private Long sandboxDefinitionId;
     @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
     private boolean backwardMode;
+    @ApiModelProperty(value = "Indicates if the current level has been already corrected/answered.", example = "true")
+    private boolean isLevelAnswered;
 
     /**
      * Gets training run id.
@@ -269,10 +271,27 @@ public class AccessTrainingRunDTO {
         this.backwardMode = backwardMode;
     }
 
-    @Override public String toString() {
-        return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceRefId="
-            + sandboxInstanceRefId + ", abstractLevelDTO=" + abstractLevelDTO + ", infoAboutLevels=" + infoAboutLevels + ", instanceId="
-            + instanceId + ", startTime=" + startTime + ", localEnvironment=" + localEnvironment + ", backwardMode=" + backwardMode
-                + ", sandboxDefinitionId=" + sandboxDefinitionId + '}';
+    public boolean isLevelAnswered() {
+        return isLevelAnswered;
+    }
+
+    public void setLevelAnswered(boolean levelAnswered) {
+        isLevelAnswered = levelAnswered;
+    }
+
+    @Override
+    public String toString() {
+        return "AccessTrainingRunDTO{" +
+                "trainingRunID=" + trainingRunID +
+                ", showStepperBar=" + showStepperBar +
+                ", sandboxInstanceRefId=" + sandboxInstanceRefId +
+                ", instanceId=" + instanceId +
+                ", startTime=" + startTime +
+                ", takenSolution='" + takenSolution + '\'' +
+                ", localEnvironment=" + localEnvironment +
+                ", sandboxDefinitionId=" + sandboxDefinitionId +
+                ", backwardMode=" + backwardMode +
+                ", isLevelAnswered=" + isLevelAnswered +
+                '}';
     }
 }
