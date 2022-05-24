@@ -267,7 +267,8 @@ public class TrainingRunFacade {
                     (AccessLevelViewDTO) accessTrainingRunDTO.getAbstractLevelDTO(),
                     trainingRun.getTrainingInstance().getAccessToken(),
                     securityService.getBearerToken(),
-                    trainingRun.getParticipantRef().getUserRefId()
+                    trainingRun.getParticipantRef().getUserRefId(),
+                    trainingRun.getTrainingInstance().getSandboxDefinitionId()
             );
         }
         return accessTrainingRunDTO;
@@ -339,7 +340,8 @@ public class TrainingRunFacade {
                     (AccessLevelViewDTO) abstractLevelDTO,
                     trainingRun.getTrainingInstance().getAccessToken(),
                     securityService.getBearerToken(),
-                    trainingRun.getParticipantRef().getUserRefId()
+                    trainingRun.getParticipantRef().getUserRefId(),
+                    trainingRun.getTrainingInstance().getSandboxDefinitionId()
             );
         }
         abstractLevelDTO.setTrainingDefinition(null);
@@ -641,7 +643,8 @@ public class TrainingRunFacade {
                 accessLevelViewDTO,
                 trainingRun.getTrainingInstance().getAccessToken(),
                 securityService.getBearerToken(),
-                trainingRun.getParticipantRef().getUserRefId()
+                trainingRun.getParticipantRef().getUserRefId(),
+                trainingRun.getTrainingInstance().getSandboxDefinitionId()
         );
         return accessLevelViewDTO;
     }
@@ -674,11 +677,12 @@ public class TrainingRunFacade {
                 .collect(Collectors.toMap(s -> s[0].trim(), s -> Integer.parseInt(s[1].trim())));
     }
 
-    private void replacePlaceholders(AccessLevelViewDTO accessLevelViewDTO, String accessToken, String bearerToken, Long userId) {
+    private void replacePlaceholders(AccessLevelViewDTO accessLevelViewDTO, String accessToken, String bearerToken, Long userId, Long sandboxDefinitionId) {
         String localContent = accessLevelViewDTO.getLocalContent();
         localContent = localContent.replaceAll("\\$\\{ACCESS_TOKEN\\}", accessToken);
         localContent = localContent.replaceAll("\\$\\{BEARER_TOKEN\\}", bearerToken);
         localContent = localContent.replaceAll("\\$\\{USER_ID\\}", userId.toString());
+        localContent = localContent.replaceAll("\\$\\{SANDBOX_DEFINITION_ID\\}", sandboxDefinitionId.toString());
         localContent = localContent.replaceAll("\\$\\{CENTRAL_SYSLOG_IP\\}", centralSyslogIp);
         accessLevelViewDTO.setLocalContent(localContent);
     }
