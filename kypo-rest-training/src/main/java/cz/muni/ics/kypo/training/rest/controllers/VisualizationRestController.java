@@ -5,12 +5,14 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.analytical.TrainingInstanceAnalyticalDashboardDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.leveltabs.LevelTabsLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.facade.AnalyticalDashboardFacade;
 import cz.muni.ics.kypo.training.facade.VisualizationFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.rest.ApiError;
@@ -46,6 +48,7 @@ public class VisualizationRestController {
     private static final Logger LOG = LoggerFactory.getLogger(VisualizationRestController.class);
 
     private VisualizationFacade visualizationFacade;
+    private AnalyticalDashboardFacade analyticalDashboardFacade;
     private ObjectMapper objectMapper;
 
     /**
@@ -56,8 +59,10 @@ public class VisualizationRestController {
      */
     @Autowired
     public VisualizationRestController(VisualizationFacade visualizationFacade,
+                                       AnalyticalDashboardFacade analyticalDashboardFacade,
                                        ObjectMapper objectMapper) {
         this.visualizationFacade = visualizationFacade;
+        this.analyticalDashboardFacade = analyticalDashboardFacade;
         this.objectMapper = objectMapper;
     }
 
@@ -373,6 +378,30 @@ public class VisualizationRestController {
     public ResponseEntity<Object> getProgressVisualizations(@ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long trainingInstanceId) {
         VisualizationProgressDTO visualizationProgressDTO = visualizationFacade.getProgressVisualization(trainingInstanceId);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationProgressDTO));
+    }
+
+    /**
+     * Get data for analytical dashboard.
+     *
+     * @param definitionId id of training definition.
+     * @return data for analytical dashboard.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary data for analytical dashboard.",
+            response = TrainingInstanceAnalyticalDashboardDTO[].class,
+            nickname = "analytical dashboard.",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for analytical dashboard found.", response = TimelineDTO.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-definitions/{definitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<TrainingInstanceAnalyticalDashboardDTO>> getAnalyticalDashboard(
+            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId) {
+        List<TrainingInstanceAnalyticalDashboardDTO> result = analyticalDashboardFacade.getDataForAnalyticalDashboard(definitionId);
+        return ResponseEntity.ok(result);
     }
 
     /**
