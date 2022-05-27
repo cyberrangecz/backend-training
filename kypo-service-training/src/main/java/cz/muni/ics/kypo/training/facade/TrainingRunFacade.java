@@ -262,6 +262,7 @@ public class TrainingRunFacade {
         accessTrainingRunDTO.setLocalEnvironment(trainingRun.getTrainingInstance().isLocalEnvironment());
         accessTrainingRunDTO.setBackwardMode(trainingRun.getTrainingInstance().isBackwardMode());
         accessTrainingRunDTO.setSandboxDefinitionId(trainingRun.getTrainingInstance().getSandboxDefinitionId());
+        accessTrainingRunDTO.setLevelAnswered(trainingRun.isLevelAnswered());
         if(trainingRun.getCurrentLevel().getClass() == AccessLevel.class) {
             replacePlaceholders(
                     (AccessLevelViewDTO) accessTrainingRunDTO.getAbstractLevelDTO(),
