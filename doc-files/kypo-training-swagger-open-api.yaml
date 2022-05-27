@@ -2331,6 +2331,49 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /training-runs/{runId}/levels/{levelId}:
+    get:
+      tags:
+      - "Training runs"
+      summary: "Get visited level of given training run."
+      description: "Returns (assessment, training, info) level if any level exists\
+        \ and training run as well"
+      operationId: "getVisitedLevel"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "levelId"
+        in: "path"
+        description: "Level ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "fields"
+        in: "query"
+        description: "Fields which should be returned in REST API response"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "The visited level has been found."
+          schema:
+            $ref: "#/definitions/AbstractLevelDTO"
+        404:
+          description: "The visited level has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /training-runs/{runId}/next-levels:
     get:
       tags:
@@ -3193,14 +3236,14 @@ definitions:
         type: "string"
         example: "Training Level1"
         description: "Short textual description of the level."
-      maxScore:
+      max_score:
         type: "integer"
         format: "int32"
         example: 20
         description: "The maximum score a participant can achieve during a level."
-      snapshotHook:
+      snapshot_hook:
         $ref: "#/definitions/SnapshotHookDTO"
-      levelType:
+      level_type:
         type: "string"
         example: "TRAINING"
         description: "Type of the level."
@@ -3209,12 +3252,12 @@ definitions:
         - "TRAINING_LEVEL"
         - "ACCESS_LEVEL"
         - "ASSESSMENT_LEVEL"
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int32"
         example: 5
         description: "Estimated time taken by the player to resolve the level."
-      trainingDefinition:
+      training_definition:
         example: "2"
         description: "Training definition to which is this level assigned."
         $ref: "#/definitions/TrainingDefinitionDTO"
@@ -3223,6 +3266,12 @@ definitions:
         format: "int32"
         example: 2
         description: "Order of level, starts with 0"
+      minimal_possible_solve_time:
+        type: "integer"
+        format: "int32"
+        example: 5
+        description: "Minimal possible solve time (minutes) that must be taken by\
+          \ the player to solve the level."
     description: "Superclass for classes TrainingLevelDTO, AccessLevelDTO, AssessmentLevelDTO\
       \ and InfoLevelDTO"
   AbstractLevelExportDTO:
@@ -3232,7 +3281,7 @@ definitions:
         type: "string"
         example: "Training Level1"
         description: "Short textual description of the level."
-      levelType:
+      level_type:
         type: "string"
         example: "TRAINING"
         description: "Type of the level."
@@ -3246,18 +3295,24 @@ definitions:
         format: "int32"
         example: 2
         description: "Order of level, starts with 0"
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int32"
         example: 5
         description: "Estimated time (minutes) taken by the player to solve the level."
+      minimal_possible_solve_time:
+        type: "integer"
+        format: "int32"
+        example: 5
+        description: "Minimal possible solve time (minutes) that must be taken by\
+          \ the player to solve the level."
     description: "Superclass for classes TrainingLevelExportDTO, AccessLevelExportDTO,\
       \ InfoLevelExportDTO and AssessmentLevelExportDTO"
   AbstractLevelImportDTO:
     type: "object"
     required:
-    - "estimatedDuration"
-    - "levelType"
+    - "estimated_duration"
+    - "level_type"
     - "order"
     discriminator: "level_type"
     properties:
@@ -3265,7 +3320,7 @@ definitions:
         type: "string"
         example: "Training Level1"
         description: "Short textual description of the level."
-      levelType:
+      level_type:
         type: "string"
         example: "TRAINING_LEVEL"
         description: "Type of the level."
@@ -3280,12 +3335,18 @@ definitions:
         example: 2
         description: "Order of level, starts with 0"
         minimum: 0
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int32"
         example: 5
         description: "Estimated time (minutes) taken by the player to solve the level."
         minimum: 0
+      minimal_possible_solve_time:
+        type: "integer"
+        format: "int32"
+        example: 5
+        description: "Minimal possible solve time (minutes) that must be taken by\
+          \ the player to solve the level."
     description: "Superclass for classes TrainingLevelImportDTO, AccessLevelImportDTO,\
       \ AssessmentLevelImportDTO and InfoLevelImportDTO"
   AbstractLevelUpdateDTO:
@@ -3304,7 +3365,7 @@ definitions:
         type: "string"
         example: "Training Level1"
         description: "Short textual description of the level."
-      levelType:
+      level_type:
         type: "string"
         example: "TRAINING_LEVEL"
         description: "Type of the level."
@@ -3327,12 +3388,12 @@ definitions:
         type: "string"
         example: "Training Level1"
         description: "Short textual description of the level."
-      maxScore:
+      max_score:
         type: "integer"
         format: "int32"
         example: 20
         description: "The maximum score a participant can achieve during a level."
-      levelType:
+      level_type:
         type: "string"
         example: "TRAINING"
         description: "Type of the level."
@@ -3341,7 +3402,7 @@ definitions:
         - "TRAINING_LEVEL"
         - "ACCESS_LEVEL"
         - "ASSESSMENT_LEVEL"
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int64"
         example: 5
@@ -3362,12 +3423,12 @@ definitions:
           type: "string"
           example: "secretAnswer"
           description: "Keyword found in training, used for access next level."
-        cloudContent:
+        cloud_content:
           type: "string"
           example: "Connect using SSH config."
           description: "The instructions on how to connect to the machine in cloud\
             \ environment."
-        localContent:
+        local_content:
           type: "string"
           example: "Use vagrant SSH connection."
           description: "The instructions on how to connect to the machine in local\
@@ -3383,12 +3444,12 @@ definitions:
           type: "string"
           example: "secretAnswer"
           description: "Keyword used for access next level."
-        cloudContent:
+        cloud_content:
           type: "string"
           example: "Connect using SSH config."
           description: "The instructions on how to connect to the machine in cloud\
             \ environment."
-        localContent:
+        local_content:
           type: "string"
           example: "Use vagrant SSH connection."
           description: "The instructions on how to connect to the machine in local\
@@ -3405,12 +3466,12 @@ definitions:
           description: "Keyword used for access next level."
           minLength: 0
           maxLength: 50
-        cloudContent:
+        cloud_content:
           type: "string"
           example: "Connect using SSH config."
           description: "The instructions on how to connect to the machine in cloud\
             \ environment."
-        localContent:
+        local_content:
           type: "string"
           example: "Use vagrant SSH connection."
           description: "The instructions on how to connect to the machine in local\
@@ -3429,12 +3490,12 @@ definitions:
           description: "Keyword found in training, used for access next level."
           minLength: 0
           maxLength: 50
-        cloudContent:
+        cloud_content:
           type: "string"
           example: "Connect using SSH config."
           description: "The instructions on how to connect to the machine in cloud\
             \ environment."
-        localContent:
+        local_content:
           type: "string"
           example: "Use vagrant SSH connection."
           description: "The instructions on how to connect to the machine in local\
@@ -3449,12 +3510,12 @@ definitions:
           type: "string"
           example: "secretAnswer"
           description: "Keyword found in training, used for access next level."
-        cloudContent:
+        cloud_content:
           type: "string"
           example: "Connect using SSH config."
           description: "The instructions on how to connect to the machine in cloud\
             \ environment."
-        localContent:
+        local_content:
           type: "string"
           example: "Use vagrant SSH connection."
           description: "The instructions on how to connect to the machine in local\
@@ -3463,57 +3524,62 @@ definitions:
   AccessTrainingRunDTO:
     type: "object"
     properties:
-      trainingRunID:
+      training_run_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Main identifier of training run."
-      showStepperBar:
+      show_stepper_bar:
         type: "boolean"
         example: false
         description: "Sign if stepper bar should be displayed."
-      sandboxInstanceRefId:
+      sandbox_instance_ref_id:
         type: "integer"
         format: "int64"
         example: 2
         description: "Main identifier of sandbox which is assigned to training run."
-      abstractLevelDTO:
+      abstract_level_dto:
         description: "First level in the current training run."
         $ref: "#/definitions/AbstractLevelDTO"
-      infoAboutLevels:
+      info_about_levels:
         type: "array"
         description: "Information about all levels in training instance."
         items:
           $ref: "#/definitions/BasicLevelInfoDTO"
-      instanceId:
+      instance_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of associated training instance"
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2016-10-19 10:23:54+02"
         description: "Date when training run started."
-      takenSolution:
+      taken_solution:
         type: "string"
         example: "true"
         description: "Sign if solution of current training level was taken"
-      takenHints:
+      taken_hints:
         type: "array"
         description: "All already taken hints."
         items:
           $ref: "#/definitions/TakenHintDTO"
-      localEnvironment:
+      local_environment:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
-      sandboxDefinitionId:
+      sandbox_definition_id:
         type: "integer"
         format: "int64"
         example: 2
         description: "Main identifier of sandbox definition which is assigned to training\
           \ instance of the training run."
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "Just accessed training run."
   AccessedTrainingRunDTO:
     type: "object"
@@ -3527,29 +3593,29 @@ definitions:
         type: "string"
         example: "Concluded Instance"
         description: "Short textual description of the training instance."
-      trainingInstanceStartDate:
+      training_instance_start_date:
         type: "string"
         format: "date-time"
         example: "2016-10-19T10:23:54"
         description: "Start date of training instance for which the training run was\
           \ created."
-      trainingInstanceEndDate:
+      training_instance_end_date:
         type: "string"
         format: "date-time"
         example: "2017-10-19T10:23:54"
         description: "End date of training instance for which the training run was\
           \ created."
-      currentLevelOrder:
+      current_level_order:
         type: "integer"
         format: "int32"
         example: 1
         description: "Current level order of training run."
-      numberOfLevels:
+      number_of_levels:
         type: "integer"
         format: "int32"
         example: 3
         description: "The number of levels in the training instance."
-      possibleAction:
+      possible_action:
         type: "string"
         example: "RESULTS"
         description: "Possible action which can be executed with training Run."
@@ -3557,7 +3623,7 @@ definitions:
         - "NONE"
         - "RESULTS"
         - "RESUME"
-      instanceId:
+      instance_id:
         type: "integer"
         format: "int64"
         example: 1
@@ -3583,7 +3649,7 @@ definitions:
     - $ref: "#/definitions/ApiError"
     - type: "object"
       properties:
-        entityErrorDetail:
+        entity_error_detail:
           description: "Detail of the entity which is related to the error."
           $ref: "#/definitions/EntityErrorDetail"
       description: "A detailed error information related to the entity."
@@ -3690,7 +3756,7 @@ definitions:
     - $ref: "#/definitions/ApiError"
     - type: "object"
       properties:
-        apiSubError:
+        api_sub_error:
           description: "Detailed error from another microservice."
           $ref: "#/definitions/ApiSubError"
       description: "A detailed error information related to the microservice."
@@ -3715,7 +3781,7 @@ definitions:
           type: "string"
           example: "Fill me up"
           description: "Assessment instructions for participant."
-        assessmentType:
+        assessment_type:
           type: "string"
           example: "TEST"
           description: "Type of assessment."
@@ -3738,7 +3804,7 @@ definitions:
           type: "string"
           example: "Fill me up"
           description: "Assessment instructions for participant."
-        assessmentType:
+        assessment_type:
           type: "string"
           example: "TEST"
           description: "Type of assessment."
@@ -3751,7 +3817,7 @@ definitions:
     - $ref: "#/definitions/AbstractLevelImportDTO"
     - type: "object"
       required:
-      - "assessmentType"
+      - "assessment_type"
       - "instructions"
       - "questions"
       properties:
@@ -3764,7 +3830,7 @@ definitions:
           type: "string"
           example: "Fill me up slowly"
           description: "Instructions of assessment level to update."
-        assessmentType:
+        assessment_type:
           type: "string"
           example: "TEST"
           description: "Type of assessment level to update."
@@ -3777,7 +3843,7 @@ definitions:
     - $ref: "#/definitions/AbstractLevelUpdateDTO"
     - type: "object"
       required:
-      - "estimatedDuration"
+      - "estimated_duration"
       - "instructions"
       - "type"
       properties:
@@ -3797,19 +3863,25 @@ definitions:
           enum:
           - "TEST"
           - "QUESTIONNAIRE"
-        estimatedDuration:
+        estimated_duration:
           type: "integer"
           format: "int32"
           example: 5
           description: "Estimated time (minutes) taken by the player to solve the\
             \ level."
+        minimal_possible_solve_time:
+          type: "integer"
+          format: "int32"
+          example: 5
+          description: "Minimal possible solve time (minutes) that must be taken by\
+            \ the player to solve the level."
       description: "Assessment level to update."
   AssessmentLevelVisualizationDTO:
     allOf:
     - $ref: "#/definitions/AbstractLevelVisualizationDTO"
     - type: "object"
       properties:
-        assessmentType:
+        assessment_type:
           type: "string"
           example: "TEST"
           description: "Type of assessment."
@@ -3847,7 +3919,7 @@ definitions:
         format: "int32"
         example: 1
         description: "Order of level among levels in training definition."
-      levelType:
+      level_type:
         type: "string"
         example: "TRAINING"
         description: "Type of the level."
@@ -3860,9 +3932,9 @@ definitions:
   BetaTestingGroupCreateDTO:
     type: "object"
     required:
-    - "organizersRefIds"
+    - "organizers_ref_ids"
     properties:
-      organizersRefIds:
+      organizers_ref_ids:
         type: "array"
         description: "Logins of users who is allowed to see training definition."
         uniqueItems: true
@@ -3873,9 +3945,9 @@ definitions:
   BetaTestingGroupUpdateDTO:
     type: "object"
     required:
-    - "organizersRefIds"
+    - "organizers_ref_ids"
     properties:
-      organizersRefIds:
+      organizers_ref_ids:
         type: "array"
         description: "Logins of users who is allowed to see training definition."
         uniqueItems: true
@@ -3892,7 +3964,7 @@ definitions:
       order:
         type: "integer"
         format: "int32"
-      levelType:
+      level_type:
         type: "string"
         enum:
         - "INFO_LEVEL"
@@ -3901,22 +3973,22 @@ definitions:
         - "ASSESSMENT_LEVEL"
       title:
         type: "string"
-      estimatedTime:
+      estimated_time:
         type: "integer"
         format: "int64"
-      maxParticipantScore:
+      max_participant_score:
         type: "integer"
         format: "int32"
-      maxParticipantTime:
+      max_participant_time:
         type: "integer"
         format: "int64"
-      averageTime:
+      average_time:
         type: "number"
         format: "float"
-      averageScore:
+      average_score:
         type: "number"
         format: "float"
-      playerData:
+      player_data:
         type: "array"
         items:
           $ref: "#/definitions/ClusteringLevelPlayerDTO"
@@ -3933,15 +4005,15 @@ definitions:
         items:
           type: "string"
           format: "byte"
-      avatarColor:
+      avatar_color:
         type: "string"
-      trainingRunId:
+      training_run_id:
         type: "integer"
         format: "int64"
-      trainingTime:
+      training_time:
         type: "integer"
         format: "int64"
-      participantLevelScore:
+      participant_level_score:
         type: "integer"
         format: "int32"
       finished:
@@ -3949,7 +4021,7 @@ definitions:
   ClusteringVisualizationDTO:
     type: "object"
     properties:
-      finalResults:
+      final_results:
         $ref: "#/definitions/TrainingResultsDTO"
       levels:
         type: "array"
@@ -3959,25 +4031,25 @@ definitions:
   CorrectAnswerDTO:
     type: "object"
     properties:
-      levelId:
+      level_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Main identifier of the training level."
-      levelTitle:
+      level_title:
         type: "string"
         example: "Training Level1"
         description: "Short textual description of the training level."
-      levelOrder:
+      level_order:
         type: "integer"
         format: "int32"
         example: 2
         description: "Order of level, starts with 0"
-      correctAnswer:
+      correct_answer:
         type: "string"
         example: "john"
         description: "Correct answer (static or variable) of the training level."
-      variableName:
+      variable_name:
         type: "string"
         example: "username"
         description: "Identifier of the variant answer."
@@ -3992,7 +4064,7 @@ definitions:
         type: "string"
         example: "id"
         description: "Identifier of the entity."
-      identifierValue:
+      identifier_value:
         type: "object"
         example: "1"
         description: "Value of the identifier."
@@ -4031,7 +4103,7 @@ definitions:
         - "RELEASED"
         - "ARCHIVED"
         - "UNRELEASED"
-      showStepperBar:
+      show_stepper_bar:
         type: "boolean"
         example: false
         description: "Sign if stepper bar should be displayed."
@@ -4040,13 +4112,13 @@ definitions:
         description: "Information about all levels in training definition."
         items:
           $ref: "#/definitions/AbstractLevelExportDTO"
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int32"
         example: 5
         description: "Estimated time (minutes) taken by the player to finish run created\
           \ from this definition."
-      variantSandboxes:
+      variant_sandboxes:
         type: "boolean"
         example: false
         description: "Marking if levels flags/answers are randomly generated and are\
@@ -4089,7 +4161,7 @@ definitions:
         example: 0
         description: "The order of the statement in question of type EMI."
         minimum: 0
-      correctOptionOrder:
+      correct_option_order:
         type: "integer"
         format: "int32"
         example: 0
@@ -4099,7 +4171,7 @@ definitions:
   HintDTO:
     type: "object"
     required:
-    - "hintPenalty"
+    - "hint_penalty"
     properties:
       id:
         type: "integer"
@@ -4115,7 +4187,7 @@ definitions:
         example: "Very good advice"
         description: "The information and experiences that are directed towards a\
           \ participant."
-      hintPenalty:
+      hint_penalty:
         type: "integer"
         format: "int32"
         example: 10
@@ -4142,7 +4214,7 @@ definitions:
         example: "Very good advice"
         description: "The information and experiences that are directed towards a\
           \ participant."
-      hintPenalty:
+      hint_penalty:
         type: "integer"
         format: "int32"
         example: 10
@@ -4157,7 +4229,7 @@ definitions:
   HintImportDTO:
     type: "object"
     required:
-    - "hintPenalty"
+    - "hint_penalty"
     - "order"
     properties:
       title:
@@ -4169,7 +4241,7 @@ definitions:
         example: "Very good advice"
         description: "The information and experiences that are directed towards a\
           \ participant."
-      hintPenalty:
+      hint_penalty:
         type: "integer"
         format: "int32"
         example: 10
@@ -4187,7 +4259,7 @@ definitions:
   ImportTrainingDefinitionDTO:
     type: "object"
     required:
-    - "showStepperBar"
+    - "show_stepper_bar"
     - "state"
     properties:
       title:
@@ -4218,7 +4290,7 @@ definitions:
         - "RELEASED"
         - "ARCHIVED"
         - "UNRELEASED"
-      showStepperBar:
+      show_stepper_bar:
         type: "boolean"
         example: false
         description: "Sign if stepper bar should be displayed."
@@ -4227,12 +4299,12 @@ definitions:
         description: "Information about all levels in training definition."
         items:
           $ref: "#/definitions/AbstractLevelImportDTO"
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int32"
         example: 5
         description: "Estimated time it takes to finish runs created from this definition."
-      variantSandboxes:
+      variant_sandboxes:
         type: "boolean"
         example: false
         description: "Marking if levels flags/answers are randomly generated and are\
@@ -4296,7 +4368,7 @@ definitions:
   IsCorrectAnswerDTO:
     type: "object"
     properties:
-      remainingAttempts:
+      remaining_attempts:
         type: "integer"
         format: "int32"
         example: 3
@@ -4435,7 +4507,7 @@ definitions:
       order:
         type: "integer"
         format: "int32"
-      levelType:
+      level_type:
         type: "string"
         enum:
         - "INFO_LEVEL"
@@ -4444,15 +4516,15 @@ definitions:
         - "ASSESSMENT_LEVEL"
       title:
         type: "string"
-      estimatedTime:
+      estimated_time:
         type: "integer"
         format: "int64"
-      maxLevelScore:
+      max_level_score:
         type: "integer"
         format: "int32"
       content:
         type: "string"
-      correctAnswer:
+      correct_answer:
         type: "string"
       hints:
         type: "array"
@@ -4462,7 +4534,7 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/LevelTabsPlayerDTO"
-      assessmentType:
+      assessment_type:
         type: "string"
         enum:
         - "TEST"
@@ -4473,23 +4545,23 @@ definitions:
       id:
         type: "integer"
         format: "int64"
-      trainingRunId:
+      training_run_id:
         type: "integer"
         format: "int64"
-      participantLevelScore:
+      participant_level_score:
         type: "integer"
         format: "int64"
       hints:
         type: "integer"
         format: "int32"
-      wrongAnswers:
+      wrong_answers:
         type: "array"
         items:
           type: "string"
       time:
         type: "integer"
         format: "int64"
-      displayedSolution:
+      displayed_solution:
         type: "boolean"
   Pageable:
     type: "object"
@@ -4503,10 +4575,10 @@ definitions:
         type: "boolean"
       unpaged:
         type: "boolean"
-      pageNumber:
+      page_number:
         type: "integer"
         format: "int32"
-      pageSize:
+      page_size:
         type: "integer"
         format: "int32"
   Pagination:
@@ -4550,12 +4622,12 @@ definitions:
         items:
           type: "string"
           format: "byte"
-      avatarColor:
+      avatar_color:
         type: "string"
-      trainingRunId:
+      training_run_id:
         type: "integer"
         format: "int64"
-      trainingTime:
+      training_time:
         type: "integer"
         format: "int64"
   PythonApiError:
@@ -4577,9 +4649,9 @@ definitions:
   QuestionAnswerDTO:
     type: "object"
     required:
-    - "questionId"
+    - "question_id"
     properties:
-      questionId:
+      question_id:
         type: "integer"
         format: "int64"
         example: 1
@@ -4591,7 +4663,7 @@ definitions:
         uniqueItems: true
         items:
           type: "string"
-      extendedMatchingPairs:
+      extended_matching_pairs:
         type: "object"
         example: "{ \"1\": [2, 3]"
         description: "Mapping of the answers to question of type extended matching\
@@ -4626,15 +4698,15 @@ definitions:
   QuestionDTO:
     type: "object"
     required:
-    - "answerRequired"
-    - "questionType"
+    - "answer_required"
+    - "question_type"
     properties:
       id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Main identifier of the question."
-      questionType:
+      question_type:
         type: "string"
         example: "FFQ"
         description: "Type of the question."
@@ -4666,7 +4738,7 @@ definitions:
         example: 0
         description: "Order of the question, starts with 0"
         minimum: 0
-      answerRequired:
+      answer_required:
         type: "boolean"
         example: true
         description: "Sign if the question must be answered by the participant or\
@@ -4676,12 +4748,12 @@ definitions:
         description: "Choices displayed to the participant in case of FFQ or MCQ."
         items:
           $ref: "#/definitions/QuestionChoiceDTO"
-      extendedMatchingOptions:
+      extended_matching_options:
         type: "array"
         description: "Options displayed to the participant in case of EMI."
         items:
           $ref: "#/definitions/ExtendedMatchingOptionDTO"
-      extendedMatchingStatements:
+      extended_matching_statements:
         type: "array"
         description: "Statements displayed to the participant in case of EMI."
         items:
@@ -4690,16 +4762,16 @@ definitions:
     type: "object"
     required:
     - "cmd"
-    - "cmdRegex"
-    - "cmdType"
-    - "prereqState"
-    - "stateName"
+    - "cmd_regex"
+    - "cmd_type"
+    - "prereq_state"
+    - "state_name"
     properties:
-      stateName:
+      state_name:
         type: "string"
         example: "20"
         description: "The name of the node in the graph."
-      prereqState:
+      prereq_state:
         type: "array"
         example: "20"
         description: "The list of the states (nodes) that must be reached before this\
@@ -4710,12 +4782,12 @@ definitions:
         type: "string"
         example: "20"
         description: "The command which should be executed during the training."
-      cmdType:
+      cmd_type:
         type: "string"
         example: "20"
         description: "The type of the command (bash-command and msf-command are allowed\
           \ for now)."
-      cmdRegex:
+      cmd_regex:
         type: "string"
         example: "20"
         description: "Regular expression used to determine if execution of the command\
@@ -4755,9 +4827,9 @@ definitions:
     properties:
       empty:
         type: "boolean"
-      sorted:
-        type: "boolean"
       unsorted:
+        type: "boolean"
+      sorted:
         type: "boolean"
   TakenHintDTO:
     type: "object"
@@ -4785,21 +4857,21 @@ definitions:
   TimelineDTO:
     type: "object"
     properties:
-      estimatedTime:
+      estimated_time:
         type: "integer"
         format: "int64"
-      maxScoreOfLevels:
+      max_score_of_levels:
         type: "array"
         items:
           type: "integer"
           format: "int32"
-      maxParticipantTime:
+      max_participant_time:
         type: "integer"
         format: "int64"
-      averageTime:
+      average_time:
         type: "number"
         format: "float"
-      playerData:
+      player_data:
         type: "array"
         items:
           $ref: "#/definitions/PlayerDataDTO"
@@ -4839,7 +4911,7 @@ definitions:
         - "RELEASED"
         - "ARCHIVED"
         - "UNRELEASED"
-      betaTestingGroupId:
+      beta_testing_group_id:
         type: "integer"
         format: "int64"
         example: 2
@@ -4849,29 +4921,29 @@ definitions:
         description: "Information about all levels in training definition."
         items:
           $ref: "#/definitions/AbstractLevelDTO"
-      showStepperBar:
+      show_stepper_bar:
         type: "boolean"
         example: false
         description: "Sign if stepper bar should be displayed."
-      canBeArchived:
+      can_be_archived:
         type: "boolean"
         example: true
         description: "Sign if training definition can be archived or not."
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int64"
         example: 5
         description: "Estimated time it takes to finish runs created from this definition."
-      lastEdited:
+      last_edited:
         type: "string"
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
         description: "Time of last edit done to definition."
-      lastEditedBy:
+      last_edited_by:
         type: "string"
         example: "John Doe"
         description: "Name of the user who has done the last edit in definition."
-      hasReferenceSolution:
+      has_reference_solution:
         type: "boolean"
         description: "Indicates if any of the training levels have defined reference\
           \ solution."
@@ -4879,8 +4951,8 @@ definitions:
   TrainingDefinitionCreateDTO:
     type: "object"
     required:
-    - "betaTestingGroup"
-    - "showStepperBar"
+    - "beta_testing_group"
+    - "show_stepper_bar"
     - "state"
     - "title"
     properties:
@@ -4914,14 +4986,14 @@ definitions:
         - "RELEASED"
         - "ARCHIVED"
         - "UNRELEASED"
-      betaTestingGroup:
+      beta_testing_group:
         description: "Group of organizers who is allowed to see the training definition."
         $ref: "#/definitions/BetaTestingGroupCreateDTO"
-      showStepperBar:
+      show_stepper_bar:
         type: "boolean"
         example: true
         description: "Sign if stepper bar should be displayed."
-      defaultContent:
+      default_content:
         type: "boolean"
         example: false
         description: "Sign if default levels should be created."
@@ -4962,30 +5034,30 @@ definitions:
         - "RELEASED"
         - "ARCHIVED"
         - "UNRELEASED"
-      betaTestingGroupId:
+      beta_testing_group_id:
         type: "integer"
         format: "int64"
         example: 14
         description: "Group of organizers who is allowed to see the training definition."
-      showStepperBar:
+      show_stepper_bar:
         type: "boolean"
         example: false
         description: "Sign if stepper bar should be displayed."
-      canBeArchived:
+      can_be_archived:
         type: "boolean"
         example: false
         description: "Sign if training definition can be archived or not."
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int64"
         example: 5
         description: "Estimated time it takes to finish runs created from this definition."
-      lastEdited:
+      last_edited:
         type: "string"
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
         description: "Time of last edit done to definition."
-      lastEditedBy:
+      last_edited_by:
         type: "string"
         example: "John Doe"
         description: "Name of the user who has done the last edit in definition."
@@ -5030,9 +5102,9 @@ definitions:
   TrainingDefinitionUpdateDTO:
     type: "object"
     required:
-    - "betaTestingGroup"
+    - "beta_testing_group"
     - "id"
-    - "showStepperBar"
+    - "show_stepper_bar"
     - "state"
     - "title"
     properties:
@@ -5070,10 +5142,10 @@ definitions:
         - "RELEASED"
         - "ARCHIVED"
         - "UNRELEASED"
-      betaTestingGroup:
+      beta_testing_group:
         description: "Group of organizers who is allowed to see the training definition."
         $ref: "#/definitions/BetaTestingGroupUpdateDTO"
-      showStepperBar:
+      show_stepper_bar:
         type: "boolean"
         example: false
         description: "Sign if stepper bar should be displayed."
@@ -5086,18 +5158,18 @@ definitions:
         format: "int64"
         example: 1
         description: "Main identifier of training instance."
-      definitionId:
+      definition_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Main identifier of training definition associated with this\
           \ instance."
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2016-10-19 10:23:54+02"
         description: "Date when training instance starts."
-      endTime:
+      end_time:
         type: "string"
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
@@ -5106,29 +5178,34 @@ definitions:
         type: "string"
         example: "Concluded Instance"
         description: "Short textual description of the training instance."
-      organizersRefIds:
+      organizers_ref_ids:
         type: "array"
         description: "Reference to organizersRefIds which organize training instance."
         uniqueItems: true
         items:
           type: "integer"
           format: "int64"
-      accessToken:
+      access_token:
         type: "string"
         example: "pass-1234"
         description: "Token needed to access runs created from this definition"
-      localEnvironment:
+      local_environment:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "The finished and archived instance of training definition which\
       \ includes individual finished training runs of participants."
   TrainingInstanceAssignPoolIdDTO:
     type: "object"
     required:
-    - "poolId"
+    - "pool_id"
     properties:
-      poolId:
+      pool_id:
         type: "integer"
         format: "int64"
         example: 2
@@ -5137,19 +5214,19 @@ definitions:
   TrainingInstanceBasicInfoDTO:
     type: "object"
     required:
-    - "accessToken"
+    - "access_token"
     properties:
       id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Main identifier of training instance."
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2016-10-19 10:23:54+02"
         description: "Date when training instance starts."
-      endTime:
+      end_time:
         type: "string"
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
@@ -5158,39 +5235,44 @@ definitions:
         type: "string"
         example: "Concluded Instance"
         description: "Short textual description of the training instance."
-      accessToken:
+      access_token:
         type: "string"
         example: "hunter"
         description: "Token used to access training run."
-      poolId:
+      pool_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox pool belonging to training instance"
-      localEnvironment:
+      local_environment:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
-      sandboxDefinitionId:
+      sandbox_definition_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox definition assigned to training instance"
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
   TrainingInstanceCreateDTO:
     type: "object"
     required:
-    - "accessToken"
-    - "endTime"
-    - "startTime"
+    - "access_token"
+    - "end_time"
+    - "start_time"
     - "title"
-    - "trainingDefinitionId"
+    - "training_definition_id"
     properties:
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2020-11-20T10:28:02.727Z"
         description: "Date when training instance starts."
-      endTime:
+      end_time:
         type: "string"
         format: "date-time"
         example: "2020-11-25T10:26:02.727Z"
@@ -5199,48 +5281,53 @@ definitions:
         type: "string"
         example: "December instance"
         description: "Short textual description of the training instance."
-      accessToken:
+      access_token:
         type: "string"
         example: "hunter"
         description: "AccessToken which will be modified and then used for accessing\
           \ training run."
-      trainingDefinitionId:
+      training_definition_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Reference to training definition from which is training instance\
           \ created."
-      poolId:
+      pool_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox pool assigned to training instance"
-      localEnvironment:
+      local_environment:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
-      sandboxDefinitionId:
+      sandbox_definition_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox definition assigned to training instance"
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "Training Instance to create."
   TrainingInstanceDTO:
     type: "object"
     required:
-    - "accessToken"
+    - "access_token"
     properties:
       id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Main identifier of training instance."
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2016-10-19 10:23:54+02"
         description: "Date when training instance starts."
-      endTime:
+      end_time:
         type: "string"
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
@@ -5249,63 +5336,68 @@ definitions:
         type: "string"
         example: "Concluded Instance"
         description: "Short textual description of the training instance."
-      trainingDefinition:
+      training_definition:
         description: "Reference to training definition from which is training instance\
           \ created."
         $ref: "#/definitions/TrainingDefinitionByIdDTO"
-      accessToken:
+      access_token:
         type: "string"
         example: "hunter"
         description: "Token used to access training run."
-      poolId:
+      pool_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox pool belonging to training instance"
-      sandboxesWithTrainingRun:
+      sandboxes_with_training_run:
         type: "array"
         example: "[3,15]"
         description: "Ids of sandboxes which are assigned to training run."
         items:
           type: "integer"
           format: "int64"
-      lastEdited:
+      last_edited:
         type: "string"
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
         description: "Time of last edit done to instance."
-      lastEditedBy:
+      last_edited_by:
         type: "string"
         example: "John Doe"
         description: "Name of the user who has done the last edit in instance."
-      localEnvironment:
+      local_environment:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
-      sandboxDefinitionId:
+      sandbox_definition_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox definition assigned to training instance"
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "A session of attending a concrete training, which involves a deployment\
       \ of the training definition in one or more sandbox instances that are then\
       \ assigned to participants. The instance comprises one or more training runs."
   TrainingInstanceFindAllResponseDTO:
     type: "object"
     required:
-    - "accessToken"
+    - "access_token"
     properties:
       id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Main identifier of training instance."
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2016-10-19 10:23:54+02"
         description: "Date when training instance starts."
-      endTime:
+      end_time:
         type: "string"
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
@@ -5314,32 +5406,37 @@ definitions:
         type: "string"
         example: "Concluded Instance"
         description: "Short textual description of the training instance."
-      trainingDefinition:
+      training_definition:
         description: "Reference to training definition from which is training instance\
           \ created."
         $ref: "#/definitions/TrainingDefinitionByIdDTO"
-      accessToken:
+      access_token:
         type: "string"
         example: "hunter"
         description: "Token used to access training run."
-      poolId:
+      pool_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox pool belonging to training instance"
-      lastEdited:
+      last_edited:
         type: "string"
         format: "date-time"
         example: "2017-10-19 10:23:54+02"
         description: "Time of last edit done to instance."
-      lastEditedBy:
+      last_edited_by:
         type: "string"
         example: "John Doe"
         description: "Name of the user who has done the last edit in instance."
-      localEnvironment:
+      local_environment:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
   TrainingInstanceRestResource:
     type: "object"
     properties:
@@ -5358,24 +5455,24 @@ definitions:
   TrainingInstanceUpdateDTO:
     type: "object"
     required:
-    - "accessToken"
-    - "endTime"
+    - "access_token"
+    - "end_time"
     - "id"
-    - "startTime"
+    - "start_time"
     - "title"
-    - "trainingDefinitionId"
+    - "training_definition_id"
     properties:
       id:
         type: "integer"
         format: "int64"
         example: 2
         description: "Main identifier of training instance."
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2019-10-19T10:28:02.727Z"
         description: "Date when training instance starts."
-      endTime:
+      end_time:
         type: "string"
         format: "date-time"
         example: "2019-10-25T10:28:02.727Z"
@@ -5384,31 +5481,36 @@ definitions:
         type: "string"
         example: "Current Instance"
         description: "Short textual description of the training instance."
-      accessToken:
+      access_token:
         type: "string"
         example: "hello-6578"
         description: "AccessToken which will be modified and then used for accessing\
           \ training run."
-      trainingDefinitionId:
+      training_definition_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Reference to training definition from which is training instance\
           \ created."
-      poolId:
+      pool_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox pool assigned to training instance"
-      localEnvironment:
+      local_environment:
         type: "boolean"
         example: true
         description: "Indicates if local sandboxes are used for training runs."
-      sandboxDefinitionId:
+      sandbox_definition_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Id of sandbox definition assigned to training instance"
+      backward_mode:
+        type: "boolean"
+        example: true
+        description: "Indicates if trainee can during training run move to the previous\
+          \ already solved levels."
     description: "Training Instance to update."
   TrainingLevelDTO:
     allOf:
@@ -5419,7 +5521,7 @@ definitions:
           type: "string"
           example: "secretAnswer"
           description: "Keyword found in training, used for access next level."
-        answerVariableName:
+        answer_variable_name:
           type: "string"
           example: "username"
           description: "Identifier that is used to obtain answer from remote storage."
@@ -5432,7 +5534,7 @@ definitions:
           type: "string"
           example: "This is how you do it"
           description: "Instruction how to get answer in training."
-        solutionPenalized:
+        solution_penalized:
           type: "boolean"
           example: true
           description: "Sign if displaying of solution is penalized."
@@ -5442,18 +5544,18 @@ definitions:
           uniqueItems: true
           items:
             $ref: "#/definitions/HintDTO"
-        incorrectAnswerLimit:
+        incorrect_answer_limit:
           type: "integer"
           format: "int32"
           example: 5
           description: "How many times player can submit incorrect answer before displaying\
             \ solution."
-        variantAnswers:
+        variant_answers:
           type: "boolean"
           example: false
           description: "Marking if flags/answers are randomly generated and are different\
             \ for each trainee. Default is false."
-        referenceSolution:
+        reference_solution:
           type: "array"
           items:
             $ref: "#/definitions/ReferenceSolutionNodeDTO"
@@ -5468,7 +5570,7 @@ definitions:
           type: "string"
           example: "secretAnswer"
           description: "Keyword found in training, used for access next level."
-        answerVariableName:
+        answer_variable_name:
           type: "string"
           example: "username"
           description: "Identifier that is used to obtain answer from remote storage."
@@ -5481,7 +5583,7 @@ definitions:
           type: "string"
           example: "This is how you do it"
           description: "Instruction how to get answer in training."
-        solutionPenalized:
+        solution_penalized:
           type: "boolean"
           example: true
           description: "Sign if displaying of solution is penalized."
@@ -5491,7 +5593,7 @@ definitions:
           uniqueItems: true
           items:
             $ref: "#/definitions/HintExportDTO"
-        incorrectAnswerLimit:
+        incorrect_answer_limit:
           type: "integer"
           format: "int32"
           example: 5
@@ -5503,17 +5605,17 @@ definitions:
           description: "List of attachments."
           items:
             $ref: "#/definitions/AttachmentImportDTO"
-        maxScore:
+        max_score:
           type: "integer"
           format: "int32"
           example: 20
           description: "The maximum score a participant can achieve during a level."
-        variantAnswers:
+        variant_answers:
           type: "boolean"
           example: false
           description: "Indicates if flags/answers are randomly generated and are\
             \ different for each trainee. Default is false."
-        referenceSolution:
+        reference_solution:
           type: "array"
           example: "false"
           description: "Sequence of commands that leads to the level answer."
@@ -5525,9 +5627,9 @@ definitions:
     - $ref: "#/definitions/AbstractLevelImportDTO"
     - type: "object"
       required:
-      - "incorrectAnswerLimit"
-      - "maxScore"
-      - "solutionPenalized"
+      - "incorrect_answer_limit"
+      - "max_score"
+      - "solution_penalized"
       properties:
         answer:
           type: "string"
@@ -5535,7 +5637,7 @@ definitions:
           description: "Keyword found in training, used for access next level."
           minLength: 0
           maxLength: 50
-        answerVariableName:
+        answer_variable_name:
           type: "string"
           example: "username"
           description: "Identifier that is used to obtain answer from remote storage."
@@ -5548,7 +5650,7 @@ definitions:
           type: "string"
           example: "This is how you do it"
           description: "Instruction how to get answer in training."
-        solutionPenalized:
+        solution_penalized:
           type: "boolean"
           example: true
           description: "Sign if displaying of solution is penalized."
@@ -5558,7 +5660,7 @@ definitions:
           uniqueItems: true
           items:
             $ref: "#/definitions/HintImportDTO"
-        incorrectAnswerLimit:
+        incorrect_answer_limit:
           type: "integer"
           format: "int32"
           example: 5
@@ -5572,19 +5674,19 @@ definitions:
           description: "List of attachments."
           items:
             $ref: "#/definitions/AttachmentImportDTO"
-        maxScore:
+        max_score:
           type: "integer"
           format: "int32"
           example: 20
           description: "The maximum score a participant can achieve during a level."
           minimum: 0
           maximum: 100
-        variantAnswers:
+        variant_answers:
           type: "boolean"
           example: false
           description: "Marking if flags/answers are randomly generated and are different\
             \ for each trainee. Default is false."
-        referenceSolution:
+        reference_solution:
           type: "array"
           example: "false"
           description: "Sequence of commands that leads to the level answer."
@@ -5596,9 +5698,9 @@ definitions:
     required:
     - "answer"
     - "id"
-    - "incorrectAnswerLimit"
-    - "maxScore"
-    - "solutionPenalized"
+    - "incorrect_answer_limit"
+    - "max_score"
+    - "solution_penalized"
     - "title"
     properties:
       id:
@@ -5610,7 +5712,7 @@ definitions:
         type: "string"
         example: "Training Level1"
         description: "Short textual description of the level."
-      levelType:
+      level_type:
         type: "string"
         example: "TRAINING_LEVEL"
         description: "Type of the level."
@@ -5619,7 +5721,7 @@ definitions:
         - "TRAINING_LEVEL"
         - "ACCESS_LEVEL"
         - "ASSESSMENT_LEVEL"
-      maxScore:
+      max_score:
         type: "integer"
         format: "int32"
         example: 20
@@ -5632,7 +5734,7 @@ definitions:
         description: "Keyword found in training, used for access next level."
         minLength: 0
         maxLength: 50
-      answerVariableName:
+      answer_variable_name:
         type: "string"
         example: "username"
         description: "Identifier that is used to obtain answer from remote storage."
@@ -5647,16 +5749,16 @@ definitions:
         type: "string"
         example: "This is how you do it"
         description: "Instruction how to get answer in training."
-      solutionPenalized:
+      solution_penalized:
         type: "boolean"
         example: false
         description: "Sign if displaying of solution is penalized."
-      estimatedDuration:
+      estimated_duration:
         type: "integer"
         format: "int32"
         example: 20
         description: "Estimated time (minutes) taken by the player to solve the level."
-      incorrectAnswerLimit:
+      incorrect_answer_limit:
         type: "integer"
         format: "int32"
         example: 5
@@ -5670,17 +5772,23 @@ definitions:
         uniqueItems: true
         items:
           $ref: "#/definitions/HintDTO"
-      variantAnswers:
+      variant_answers:
         type: "boolean"
         example: false
         description: "Indicates if flags/answers are randomly generated and are different\
           \ for each trainee. Default is false."
-      referenceSolution:
+      reference_solution:
         type: "array"
         example: "false"
         description: "Sequence of commands that leads to the level answer."
         items:
           $ref: "#/definitions/ReferenceSolutionNodeDTO"
+      minimal_possible_solve_time:
+        type: "integer"
+        format: "int32"
+        example: 5
+        description: "Minimal possible solve time (minutes) that must be taken by\
+          \ the player to solve the level."
     description: "Training level to update."
   TrainingLevelVisualizationDTO:
     allOf:
@@ -5700,7 +5808,7 @@ definitions:
           type: "string"
           example: "secretAnswer"
           description: "Keyword found in training, used for access next level."
-        solutionPenalized:
+        solution_penalized:
           type: "boolean"
           example: true
           description: "Sign if displaying of solution is penalized."
@@ -5713,34 +5821,34 @@ definitions:
   TrainingResultsDTO:
     type: "object"
     properties:
-      estimatedTime:
+      estimated_time:
         type: "integer"
         format: "int64"
-      maxParticipantScore:
+      max_participant_score:
         type: "integer"
         format: "int32"
-      maxParticipantTrainingScore:
+      max_participant_training_score:
         type: "integer"
         format: "int32"
-      maxParticipantAssessmentScore:
+      max_participant_assessment_score:
         type: "integer"
         format: "int32"
-      maxParticipantTime:
+      max_participant_time:
         type: "integer"
         format: "int64"
-      averageTime:
+      average_time:
         type: "number"
         format: "float"
-      averageScore:
+      average_score:
         type: "number"
         format: "float"
-      averageTrainingScore:
+      average_training_score:
         type: "number"
         format: "float"
-      averageAssessmentScore:
+      average_assessment_score:
         type: "number"
         format: "float"
-      playerData:
+      player_data:
         type: "array"
         items:
           $ref: "#/definitions/PlayerDataDTO"
@@ -5752,17 +5860,17 @@ definitions:
         format: "int64"
         example: 1
         description: "Main identifier of training run."
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2016-10-19 10:23:54+02"
         description: "Date when training run started."
-      endTime:
+      end_time:
         type: "string"
         format: "date-time"
         example: "2022-10-19 10:23:54+02"
         description: "Date when training run ends."
-      eventLogReference:
+      event_log_reference:
         type: "string"
       state:
         type: "string"
@@ -5772,22 +5880,22 @@ definitions:
         - "RUNNING"
         - "FINISHED"
         - "ARCHIVED"
-      sandboxInstanceRefId:
+      sandbox_instance_ref_id:
         type: "integer"
         format: "int64"
         description: "Reference to the received sandbox."
-      participantRef:
+      participant_ref:
         description: "Reference to participant of training run."
         $ref: "#/definitions/UserRefDTO"
-      definitionId:
+      definition_id:
         type: "integer"
         format: "int64"
         description: "Id of associated training definition"
-      instanceId:
+      instance_id:
         type: "integer"
         format: "int64"
         description: "Id of associated training instance"
-      previousSandboxInstanceRefId:
+      previous_sandbox_instance_ref_id:
         type: "integer"
         format: "int64"
         example: 12
@@ -5802,17 +5910,17 @@ definitions:
         format: "int64"
         example: 1
         description: "Main identifier of training run."
-      startTime:
+      start_time:
         type: "string"
         format: "date-time"
         example: "2016-10-19 10:23:54+02"
         description: "Date when training run started."
-      endTime:
+      end_time:
         type: "string"
         format: "date-time"
         example: "2022-10-19 10:23:54+02"
         description: "Date when training run ends."
-      eventLogReference:
+      event_log_reference:
         type: "string"
       state:
         type: "string"
@@ -5822,11 +5930,11 @@ definitions:
         - "RUNNING"
         - "FINISHED"
         - "ARCHIVED"
-      sandboxInstanceRefId:
+      sandbox_instance_ref_id:
         type: "integer"
         format: "int64"
         description: "Reference to the received sandbox."
-      participantRef:
+      participant_ref:
         description: "Reference to participant of training run."
         $ref: "#/definitions/UserRefDTO"
     description: "The act, or a recording, of performing actions during training from\
@@ -5947,16 +6055,16 @@ definitions:
   VisualizationInfoDTO:
     type: "object"
     properties:
-      trainingDefinitionId:
+      training_definition_id:
         type: "integer"
         format: "int64"
         example: 1
         description: "Main identifier of training definition."
-      trainingDefinitionTitle:
+      training_definition_title:
         type: "string"
         example: "TrainingDefinition2"
         description: "A name of the training/game (e.g., Photo Hunter) ."
-      trainingDefinitionEstimatedDuration:
+      training_definition_estimated_duration:
         type: "integer"
         format: "int64"
         example: 5

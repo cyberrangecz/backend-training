@@ -6,10 +6,11 @@ import cz.muni.csirt.kypo.events.trainings.LevelCompleted;
 import cz.muni.csirt.kypo.events.trainings.TrainingRunEnded;
 import cz.muni.csirt.kypo.events.trainings.enums.LevelType;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
+import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
-import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
+import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.*;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
@@ -33,6 +34,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelProgress;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.PlayerProgress;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelState;
+import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
@@ -113,7 +115,7 @@ public class VisualizationFacade {
      */
     @IsDesignerOrOrganizerOrAdmin
     public PageResultResource<UserRefDTO> getUsersByIds(Set<Long> usersIds, Pageable pageable) {
-        return userService.getUsersRefDTOByGivenUserIds(usersIds, pageable, null, null);
+        return userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(usersIds), pageable, null, null);
     }
 
     /**
@@ -124,7 +126,7 @@ public class VisualizationFacade {
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalWO
+    @TransactionalRO
     public VisualizationInfoDTO getVisualizationInfoAboutTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         TrainingDefinition trainingDefinitionOfTrainingRun = trainingRun.getTrainingInstance().getTrainingDefinition();
@@ -141,7 +143,7 @@ public class VisualizationFacade {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalWO
+    @TransactionalRO
     public List<Map<String, Object>> getAllCommandsInTrainingRun(Long instanceId, Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
         if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
@@ -178,15 +180,19 @@ public class VisualizationFacade {
     @IsTraineeOrAdmin
     public List<UserRefDTO> getParticipantsForGivenTrainingInstance(Long trainingInstanceId) {
         Set<Long> participantsRefIds = visualizationService.getAllParticipantsRefIdsForSpecificTrainingInstance(trainingInstanceId);
-        PageResultResource<UserRefDTO> participantsInfo;
+        return getAllUsersRefsByGivenUsersIds(new ArrayList<>(participantsRefIds));
+    }
+
+    private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
         List<UserRefDTO> participants = new ArrayList<>();
+        PageResultResource<UserRefDTO> participantsInfo;
         int page = 0;
         do {
             participantsInfo = userService.getUsersRefDTOByGivenUserIds(participantsRefIds, PageRequest.of(page, 999), null, null);
             participants.addAll(participantsInfo.getContent());
             page++;
         }
-        while (participantsInfo.getPagination().getNumber() != participantsInfo.getPagination().getTotalPages());
+        while (page < participantsInfo.getPagination().getTotalPages());
         return participants;
     }
 
@@ -223,22 +229,10 @@ public class VisualizationFacade {
         visualizationProgressDTO.setStartTime(trainingInstance.getStartTime().toEpochSecond(ZoneOffset.UTC));
         visualizationProgressDTO.setCurrentTime(LocalDateTime.now(Clock.systemUTC()).toEpochSecond(ZoneOffset.UTC));
         visualizationProgressDTO.setEstimatedEndTime(trainingInstance.getEndTime().toEpochSecond(ZoneOffset.UTC));
-
-        //Players
-        Set<Long> playersIds = visualizationService.getAllParticipantsRefIdsForSpecificTrainingInstance(trainingInstanceId);
-        List<UserRefDTO> players = new ArrayList<>(userService.getUsersRefDTOByGivenUserIds(playersIds, PageRequest.of(0, 20), null, null).getContent());
-        players.sort(Comparator.comparingLong(UserRefDTO::getUserRefId));
-        visualizationProgressDTO.setPlayers(players);
-
-        //Levels
-        List<LevelDefinitionProgressDTO> levels = trainingRunService.getLevels(trainingDefinitionOfTrainingRun.getId()).stream()
-                .map(levelMapper::mapToLevelDefinitionProgressDTO)
-                .sorted(Comparator.comparingInt(LevelDefinitionProgressDTO::getOrder))
-                .collect(Collectors.toList());
-        visualizationProgressDTO.setLevels(levels);
+        visualizationProgressDTO.setPlayers(getListOfPlayers(trainingInstanceId));
+        visualizationProgressDTO.setLevels(getLevelDefinitions(trainingDefinitionOfTrainingRun.getId()));
 
         Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromElasticsearch = elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(trainingInstance);
-
 
         //Player progress
         List<PlayerProgress> playerProgresses = new ArrayList<>();
@@ -279,6 +273,19 @@ public class VisualizationFacade {
         }
         visualizationProgressDTO.setPlayerProgress(playerProgresses);
         return visualizationProgressDTO;
+    }
+
+    private List<UserRefDTO> getListOfPlayers(Long instanceId) {
+        List<UserRefDTO> players = getParticipantsForGivenTrainingInstance(instanceId);
+        players.sort(Comparator.comparingLong(UserRefDTO::getUserRefId));
+        return players;
+    }
+
+    private List<LevelDefinitionProgressDTO> getLevelDefinitions(Long definitionId) {
+        return trainingRunService.getLevels(definitionId).stream()
+                .map(levelMapper::mapToLevelDefinitionProgressDTO)
+                .sorted(Comparator.comparingInt(LevelDefinitionProgressDTO::getOrder))
+                .toList();
     }
 
     private Map<String, String> getAnswersByVariableNames(List<VariantAnswer> variantAnswers) {
@@ -333,7 +340,7 @@ public class VisualizationFacade {
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalWO
+    @TransactionalRO
     public ClusteringVisualizationDTO getClusteringVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         return getClusteringVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
@@ -373,7 +380,7 @@ public class VisualizationFacade {
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalWO
+    @TransactionalRO
     public List<PlayerDataDTO> getTableVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         return getTableVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
@@ -434,6 +441,38 @@ public class VisualizationFacade {
     }
 
     /**
+     * Gather all summarized data about mitre techniques used in training definitions.
+     *
+     * @return training definitions with mitre techniques
+     */
+    @IsTrainee
+    @TransactionalRO
+    public List<TrainingDefinitionMitreTechniquesDTO> getTrainingDefinitionsWithMitreTechniques() {
+        List<TrainingDefinition> trainingDefinitions = trainingDefinitionService.findAllByState(TDState.RELEASED, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<TrainingLevel> trainingLevels = visualizationService.getAllTrainingLevels();
+        UserRefDTO userRefDTO = userService.getUserRefFromUserAndGroup();
+        Set<Long> playedDefinitionIds = trainingDefinitionService.findAllPlayedByUser(userRefDTO.getUserRefId()).stream()
+                .map(TrainingDefinition::getId)
+                .collect(Collectors.toSet());
+
+        List<TrainingDefinitionMitreTechniquesDTO> result = new ArrayList<>();
+
+        for (TrainingDefinition trainingDefinition: trainingDefinitions) {
+            List<TrainingLevel> trainingLevelsOfDefinition = visualizationService.getTrainingLevelsByTrainingDefinitionId(trainingDefinition.getId());
+            TrainingDefinitionMitreTechniquesDTO definitionMitreTechniquesDTO = new TrainingDefinitionMitreTechniquesDTO();
+            definitionMitreTechniquesDTO.setId(trainingDefinition.getId());
+            definitionMitreTechniquesDTO.setTitle(trainingDefinition.getTitle());
+            Set<String> techniques = trainingLevelsOfDefinition.stream()
+                    .flatMap(trainingLevel -> trainingLevel.getMitreTechniques().stream().map(MitreTechnique::getTechniqueKey))
+                    .collect(Collectors.toSet());
+            definitionMitreTechniquesDTO.setMitreTechniques(techniques);
+            definitionMitreTechniquesDTO.setPlayed(playedDefinitionIds.contains(trainingDefinition.getId()));
+            result.add(definitionMitreTechniquesDTO);
+        }
+        return result;
+    }
+
+    /**
      * Gather all the necessary information for organizer to display timeline visualizations.
      *
      * @param trainingInstanceId id of Training Instance to gets info.
@@ -454,7 +493,7 @@ public class VisualizationFacade {
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalWO
+    @TransactionalRO
     public TimelineDTO getTimelineVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         return getTimelineVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
@@ -672,12 +711,10 @@ public class VisualizationFacade {
                 .stream()
                 .filter(trainingRun -> trainingRunsIdsFromEvents.contains(trainingRun.getId()))
                 .collect(Collectors.toSet());
-        Set<Long> participantsIds = trainingRuns.stream()
+        List<Long> participantsIds = trainingRuns.stream()
                 .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
-                .collect(Collectors.toSet());
-        Map<Long, UserRefDTO> participantsByIds = userService.getUsersRefDTOByGivenUserIds(participantsIds, PageRequest.of(0, 999), null, null)
-                .getContent()
-                .stream()
+                .collect(Collectors.toList());
+        Map<Long, UserRefDTO> participantsByIds = getAllUsersRefsByGivenUsersIds(participantsIds).stream()
                 .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
 
         if (userRefIdToAnonymize != null && !participantsByIds.isEmpty()) {

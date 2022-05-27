@@ -35,6 +35,8 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
     private AssessmentType type;
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to solve the level.", required = true, example = "5")
     private int estimatedDuration;
+    @ApiModelProperty(value = "Minimal possible solve time (minutes) that must be taken by the player to solve the level.", example = "5")
+    protected Integer minimalPossibleSolveTime;
 
     public AssessmentLevelUpdateDTO() {
         this.levelType = LevelType.ASSESSMENT_LEVEL;
@@ -112,6 +114,24 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
         this.estimatedDuration = estimatedDuration;
     }
 
+    /**
+     * Gets minimal possible solve time.
+     *
+     * @return the minimal possible solve time
+     */
+    public Integer getMinimalPossibleSolveTime() {
+        return minimalPossibleSolveTime;
+    }
+
+    /**
+     * Sets minimal possible solve time.
+     *
+     * @param minimalPossibleSolveTime the minimal possible solve time
+     */
+    public void setMinimalPossibleSolveTime(Integer minimalPossibleSolveTime) {
+        this.minimalPossibleSolveTime = minimalPossibleSolveTime;
+    }
+
     @Override
     public String toString() {
         return "AssessmentLevelUpdateDTO{" +
@@ -121,6 +141,7 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
                 ", instructions='" + instructions + '\'' +
                 ", type=" + type +
                 ", estimatedDuration=" + estimatedDuration +
+                ", minimalPossibleSolveTime=" + minimalPossibleSolveTime +
                 '}';
     }
 }

@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.api.dto.export;
 
 import cz.muni.ics.kypo.training.api.dto.imports.AttachmentImportDTO;
+import cz.muni.ics.kypo.training.api.dto.technique.MitreTechniqueDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.ReferenceSolutionNodeDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -40,6 +41,10 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
     private boolean variantAnswers;
     @ApiModelProperty(value = "Sequence of commands that leads to the level answer.", example = "false")
     private List<ReferenceSolutionNodeDTO> referenceSolution = new ArrayList<>();
+    @ApiModelProperty(value = "Set of mitre techniques used in the training level.")
+    private Set<MitreTechniqueDTO> mitreTechniques;
+    @ApiModelProperty(value = "Set of the expected commands to be executed during the training level.")
+    private Set<String> expectedCommands;
 
 
     /**
@@ -246,6 +251,42 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
      */
     public void setVariantAnswers(boolean variantAnswers) {
         this.variantAnswers = variantAnswers;
+    }
+
+    /**
+     * Gets set of MITRE techniques used in the training level
+     *
+     * @return set of MITRE techniques
+     */
+    public Set<MitreTechniqueDTO> getMitreTechniques() {
+        return mitreTechniques;
+    }
+
+    /**
+     * Sets set of MITRE techniques used in the training level
+     *
+     * @param mitreTechniques set of MITRE techniques
+     */
+    public void setMitreTechniques(Set<MitreTechniqueDTO> mitreTechniques) {
+        this.mitreTechniques = mitreTechniques;
+    }
+
+    /**
+     * Gets set of expected commands executed in the training level
+     *
+     * @return set of expected commands
+     */
+    public Set<String> getExpectedCommands() {
+        return expectedCommands;
+    }
+
+    /**
+     * Sets set of expected commands executed in the training level
+     *
+     * @param expectedCommands set of expected commands
+     */
+    public void setExpectedCommands(Set<String> expectedCommands) {
+        this.expectedCommands = expectedCommands;
     }
 
     @Override

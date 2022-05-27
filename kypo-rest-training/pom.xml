@@ -50,6 +50,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.github.kongchen</groupId>
+            <artifactId>swagger-maven-plugin</artifactId>
+            <version>${github.kongchen.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!--TEST-->
         <dependency>
             <groupId>com.vmlens</groupId>
@@ -93,6 +105,7 @@
                             <swaggerDirectory>${swagger.directory}</swaggerDirectory>
                             <swaggerFileName>kypo-training-swagger-open-api</swaggerFileName>
                             <outputFormats>yaml</outputFormats>
+                            <swaggerApiReader>cz.muni.ics.kypo.training.rest.utils.reader.SnakeCaseSwaggerReader</swaggerApiReader>
                         </apiSource>
                     </apiSources>
                 </configuration>

@@ -1,5 +1,8 @@
 package cz.muni.ics.kypo.training.mapping.mapstruct;
 
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.ExtendedMatchingStatementPreviewDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.QuestionChoicePreviewDTO;
+import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.QuestionPreviewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchingStatementDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchingOptionDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionChoiceDTO;
@@ -37,11 +40,14 @@ public interface QuestionMapper extends ParentMapper {
     @Mapping(source = "extendedMatchingOptions", target = "extendedMatchingOptions", qualifiedByName = "extendedMatchingOptionWithoutId")
     QuestionDTO mapToQuestionDTOWithoutId(Question entity);
     QuestionDTO mapToQuestionDTO(Question entity);
+    QuestionPreviewDTO mapToQuestionPreviewDTO(Question entity);
+
 
     @Named("questionChoiceWithoutId")
     @Mapping(target = "id", ignore = true)
     QuestionChoiceDTO mapToQuestionChoiceDTOWithoutId(QuestionChoice entity);
     QuestionChoiceDTO mapToQuestionChoiceDTO(QuestionChoice entity);
+    QuestionChoicePreviewDTO mapToQuestionChoicePreviewDTO(QuestionChoice entity);
 
     @Named("extendedMatchingStatementWithoutId")
     @Mapping(target = "id", ignore = true)
@@ -49,6 +55,7 @@ public interface QuestionMapper extends ParentMapper {
     ExtendedMatchingStatementDTO mapToExtendedMatchingStatementDTOWithoutId(ExtendedMatchingStatement entity);
     @Mapping(source = "extendedMatchingOption", target = "correctOptionOrder")
     ExtendedMatchingStatementDTO mapToExtendedMatchingStatementDTO(ExtendedMatchingStatement entity);
+    ExtendedMatchingStatementPreviewDTO mapToExtendedMatchingStatementPreviewDTO(ExtendedMatchingStatement entity);
 
     @Named("extendedMatchingOptionWithoutId")
     @Mapping(target = "id", ignore = true)

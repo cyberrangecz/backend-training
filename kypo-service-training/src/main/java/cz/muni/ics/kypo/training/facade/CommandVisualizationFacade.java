@@ -54,17 +54,22 @@ public class CommandVisualizationFacade {
         this.trainingRunMapper = trainingRunMapper;
     }
 
-
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER) " +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+    public Object getReferenceGraphByDefinitionId(Long definitionId) {
+        return trainingFeedbackApiService.getReferenceGraph(definitionId);
+    }
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER) " +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
-    public Object getReferenceGraph(Long instanceId) {
+    public Object getReferenceGraphByInstanceId(Long instanceId) {
         TrainingInstance trainingInstance = this.trainingInstanceService.findById(instanceId);
         return trainingFeedbackApiService.getReferenceGraph(trainingInstance.getTrainingDefinition().getId());
     }
 
     @PreAuthorize("@securityService.isTraineeOfGivenTrainingRun(#runId)")
-    public Object getReferenceGraphForTrainee(Long runId) {
+    public Object getReferenceGraphByRunId(Long runId) {
         TrainingRun trainingRun = trainingRunService.findById(runId);
         if(trainingRun.getState() != TRState.FINISHED) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet." ));

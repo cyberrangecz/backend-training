@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 public class TrainingRunService {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
+    private static final String X_REAL_IP_HEADER = "x-real-ip";
 
     private final TrainingRunRepository trainingRunRepository;
     private final AbstractLevelRepository abstractLevelRepository;
@@ -230,6 +231,27 @@ public class TrainingRunService {
         auditEventsService.auditLevelStartedAction(trainingRun);
 
         return trainingRun;
+    }
+
+    /**
+     * Get previous/current level (visited) of given Training Run.
+     *
+     * @param runId ID of Training Run whose visited level should be returned.
+     * @param levelId ID of the visited level that should be returned.
+     * @return {@link AbstractLevel}
+     */
+    public AbstractLevel getVisitedLevel(Long runId, Long levelId) {
+        TrainingRun trainingRun = findByIdWithLevel(runId);
+        AbstractLevel abstractLevel = abstractLevelRepository.findById(levelId).orElseThrow(
+                () -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, "Level not found")));
+        TrainingDefinition trainingRunDefinition = trainingRun.getTrainingInstance().getTrainingDefinition();
+        if (!abstractLevel.getTrainingDefinition().getId().equals(trainingRunDefinition.getId())) {
+            throw new EntityConflictException(new EntityErrorDetail("Requested level (ID: " + levelId + ") is not part of the training run (ID: " + runId + ")."));
+        }
+        if (abstractLevel.getOrder() > trainingRun.getCurrentLevel().getOrder()) {
+            throw new EntityConflictException(new EntityErrorDetail("Requested level (ID: " + levelId + ") hasn't been visited yet"));
+        }
+        return abstractLevel;
     }
 
     /**
@@ -431,7 +453,7 @@ public class TrainingRunService {
     private boolean evaluateTrainingLevelAnswer(TrainingRun trainingRun, String answer) {
         TrainingLevel trainingLevel = (TrainingLevel) trainingRun.getCurrentLevel();
         String correctAnswer = trainingLevel.isVariantAnswers() && trainingLevel.getAnswerVariableName() != null ?
-                answersStorageApiService.getCorrectAnswerBySandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
+                answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
                 trainingLevel.getAnswer();
         if (correctAnswer.equals(answer)) {
             trainingRun.setLevelAnswered(true);
@@ -493,7 +515,10 @@ public class TrainingRunService {
 
     private String getUserIpAddress() {
         ServletRequestAttributes requestAttributes =  ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
-        return requestAttributes == null ? "" : requestAttributes.getRequest().getRemoteAddr();
+        if (requestAttributes != null && requestAttributes.getRequest().getHeader(X_REAL_IP_HEADER) != null) {
+            return requestAttributes.getRequest().getHeader(X_REAL_IP_HEADER);
+        }
+        return "";
     }
 
     /**
@@ -525,19 +550,35 @@ public class TrainingRunService {
     public String getSolution(Long trainingRunId) {
         TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
         AbstractLevel level = trainingRun.getCurrentLevel();
-        if (level instanceof TrainingLevel) {
+        if (level instanceof TrainingLevel trainingLevel) {
             if (!trainingRun.isSolutionTaken()) {
                 trainingRun.setSolutionTaken(true);
-                if (((TrainingLevel) level).isSolutionPenalized()) {
+                trainingRun.addSolutionInfo(new SolutionInfo(trainingLevel.getId(), trainingLevel.getSolution()));
+                if (trainingLevel.isSolutionPenalized()) {
                     trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore());
                 }
+
                 trainingRunRepository.save(trainingRun);
                 auditEventsService.auditSolutionDisplayedAction(trainingRun);
             }
-            return ((TrainingLevel) level).getSolution();
+            return replaceVariableInSolution(trainingLevel, trainingRun);
         } else {
             throw new BadRequestException("Current level is not training level and does not have solution.");
         }
+    }
+
+    private String replaceVariableInSolution(TrainingLevel trainingLevel, TrainingRun trainingRun) {
+        String solutionContent = trainingLevel.getSolution();
+        String answer = trainingLevel.getAnswer();
+        if (trainingLevel.isVariantAnswers()) {
+            if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
+                answer = this.answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
+                        trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName());
+            } else {
+                answer = this.answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
+            }
+        }
+        return solutionContent.replaceAll("\\$\\{ANSWER\\}", answer);
     }
 
     /**
@@ -727,5 +768,9 @@ public class TrainingRunService {
             }
         }
         return question.getPoints();
+    }
+
+    public List<QuestionAnswer> getQuestionAnswersByTrainingRunId(Long runId) {
+        return questionAnswerRepository.getAllByTrainingRunId(runId);
     }
 }

@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import cz.muni.ics.kypo.training.persistence.model.TrainingLevel;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

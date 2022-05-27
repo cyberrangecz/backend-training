@@ -47,6 +47,29 @@ public class CommandVisualizationRestController {
     }
 
     /**
+     * Get reference graph for the given training definition.
+     *
+     * @param definitionId ID of training definition.
+     * @return graph that represents the recommended execution of the commands during the levels and transitions among them.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get reference graph for the given training definition.",
+            response = Object.class,
+            nickname = "getReferenceGraphForDesigner",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Reference graph found.", response = VisualizationInfoDTO.class),
+            @ApiResponse(code = 404, message = "Reference graph for the given training definition not found.", response = ApiError.class)
+    })
+    @GetMapping(path = "/graphs/reference/training-definitions/{definitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getReferenceGraphForDesigner(
+            @ApiParam(value = "Training definition ID.", required = true) @PathVariable("definitionId") Long definitionId
+    ) {
+        return ResponseEntity.ok(commandVisualizationFacade.getReferenceGraphByDefinitionId(definitionId));
+    }
+
+    /**
      * Get reference graph for the given training instance.
      *
      * @param instanceId ID of training instance.
@@ -66,7 +89,7 @@ public class CommandVisualizationRestController {
     public ResponseEntity<Object> getReferenceGraphForInstructor(
             @ApiParam(value = "Training instance ID.", required = true) @PathVariable("instanceId") Long instanceId
     ) {
-        return ResponseEntity.ok(commandVisualizationFacade.getReferenceGraph(instanceId));
+        return ResponseEntity.ok(commandVisualizationFacade.getReferenceGraphByInstanceId(instanceId));
     }
 
     /**
@@ -89,7 +112,7 @@ public class CommandVisualizationRestController {
     public ResponseEntity<Object> getReferenceGraphForTrainee(
             @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId
     ) {
-        return ResponseEntity.ok(commandVisualizationFacade.getReferenceGraphForTrainee(runId));
+        return ResponseEntity.ok(commandVisualizationFacade.getReferenceGraphByRunId(runId));
     }
 
     /**

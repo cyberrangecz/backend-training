@@ -12,6 +12,8 @@ import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.startup.DefaultInfoLevel;
+import cz.muni.ics.kypo.training.startup.DefaultLevelsLoader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,14 +69,17 @@ public class TrainingDefinitionServiceTest {
     @MockBean
     private TrainingInstanceRepository trainingInstanceRepository;
     @MockBean
+    private MitreTechniqueRepository mitreTechniqueRepository;
+    @MockBean
     private UserRefRepository userRefRepository;
     @MockBean
     private SecurityService securityService;
     @MockBean
     private UserService userService;
+    @MockBean
+    private DefaultLevelsLoader defaultLevelsLoader;
 
     private ModelMapper modelMapper = new ModelMapper();
-    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     private TrainingDefinition unreleasedDefinition, releasedDefinition;
     private AssessmentLevel assessmentLevel;
@@ -90,8 +95,8 @@ public class TrainingDefinitionServiceTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
-                infoLevelRepository, trainingLevelRepository, assessmentLevelRepository, accessLevelRepository, trainingInstanceRepository, userRefRepository,
-                securityService, userService, validator, cloneMapper);
+                infoLevelRepository, trainingLevelRepository, assessmentLevelRepository, accessLevelRepository, trainingInstanceRepository,
+                mitreTechniqueRepository, userRefRepository, securityService, userService, defaultLevelsLoader, cloneMapper);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(1L);
@@ -495,7 +500,12 @@ public class TrainingDefinitionServiceTest {
         newInfoLevel.setContent("Content of info level should be here.");
         newInfoLevel.setOrder(11);
 
+        DefaultInfoLevel defaultInfoLevel = new DefaultInfoLevel();
+        defaultInfoLevel.setTitle(newInfoLevel.getTitle());
+        defaultInfoLevel.setContent(newInfoLevel.getContent());
+
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
+        given(defaultLevelsLoader.getDefaultInfoLevel()).willReturn(defaultInfoLevel);
         given(infoLevelRepository.save(any(InfoLevel.class))).willReturn(newInfoLevel);
         InfoLevel createdLevel = trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId());
 

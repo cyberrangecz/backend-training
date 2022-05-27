@@ -41,6 +41,10 @@ public class AccessTrainingRunDTO {
     private boolean localEnvironment;
     @ApiModelProperty(value = "Main identifier of sandbox definition which is assigned to training instance of the training run.", example = "2")
     private Long sandboxDefinitionId;
+    @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
+    private boolean backwardMode;
+    @ApiModelProperty(value = "Indicates if the current level has been already corrected/answered.", example = "true")
+    private boolean isLevelAnswered;
 
     /**
      * Gets training run id.
@@ -249,9 +253,45 @@ public class AccessTrainingRunDTO {
         this.sandboxDefinitionId = sandboxDefinitionId;
     }
 
-    @Override public String toString() {
-        return "AccessTrainingRunDTO{" + "trainingRunID=" + trainingRunID + ", showStepperBar=" + showStepperBar + ", sandboxInstanceRefId="
-            + sandboxInstanceRefId + ", abstractLevelDTO=" + abstractLevelDTO + ", infoAboutLevels=" + infoAboutLevels + ", instanceId="
-            + instanceId + ", startTime=" + startTime + ", localEnvironment=" + localEnvironment + ", sandboxDefinitionId=" + sandboxDefinitionId + '}';
+    /**
+     * Gets if trainee can during training run move back to the previous levels.
+     *
+     * @return true if backward mode is enabled.
+     */
+    public boolean isBackwardMode() {
+        return backwardMode;
+    }
+
+    /**
+     * Sets if trainee can during training run move back to the previous levels.
+     *
+     * @param backwardMode true if backward mode is enabled.
+     */
+    public void setBackwardMode(boolean backwardMode) {
+        this.backwardMode = backwardMode;
+    }
+
+    public boolean isLevelAnswered() {
+        return isLevelAnswered;
+    }
+
+    public void setLevelAnswered(boolean levelAnswered) {
+        isLevelAnswered = levelAnswered;
+    }
+
+    @Override
+    public String toString() {
+        return "AccessTrainingRunDTO{" +
+                "trainingRunID=" + trainingRunID +
+                ", showStepperBar=" + showStepperBar +
+                ", sandboxInstanceRefId=" + sandboxInstanceRefId +
+                ", instanceId=" + instanceId +
+                ", startTime=" + startTime +
+                ", takenSolution='" + takenSolution + '\'' +
+                ", localEnvironment=" + localEnvironment +
+                ", sandboxDefinitionId=" + sandboxDefinitionId +
+                ", backwardMode=" + backwardMode +
+                ", isLevelAnswered=" + isLevelAnswered +
+                '}';
     }
 }

@@ -15,5 +15,5 @@ public interface QuestionAnswerRepository extends JpaRepository<QuestionAnswer, 
     @Modifying
     void deleteAllByTrainingRunId(Long trainingRunId);
 
-    List<QuestionAnswer> getAllByTrainingRunId(Long questionId);
+    List<QuestionAnswer> getAllByTrainingRunId(Long trainingRunId);
 }

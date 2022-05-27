@@ -22,7 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
         ResourceServerSecurityConfig.class,
         WebClientConfig.class
 })
-@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.config"})
+@ComponentScan(basePackages = {"cz.muni.ics.kypo.training.service", "cz.muni.ics.kypo.training.config", "cz.muni.ics.kypo.training.startup"})
 public class ServiceConfig {
     
     private Environment env;

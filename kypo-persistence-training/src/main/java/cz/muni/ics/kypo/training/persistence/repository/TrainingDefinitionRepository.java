@@ -19,6 +19,7 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -75,7 +76,7 @@ public interface TrainingDefinitionRepository
      * @param pageable the pageable
      * @return page of all {@link TrainingDefinition}
      */
-    Page<TrainingDefinition> findAllForOrganizers(@Param("state") TDState state, Pageable pageable);
+    Page<TrainingDefinition> findAllByState(@Param("state") TDState state, Pageable pageable);
 
     /**
      * Find all for organizers unreleased page.
@@ -106,4 +107,12 @@ public interface TrainingDefinitionRepository
             type = EntityGraph.EntityGraphType.FETCH
     )
     Optional<TrainingDefinition> findById(Long id);
+
+    /**
+     * Find all definition played by user.
+     *
+     * @param userRefId the user ref id
+     * @return the list of training definitions
+     */
+    List<TrainingDefinition> findAllPlayedByUser(@Param("userRefId") Long userRefId);
 }
