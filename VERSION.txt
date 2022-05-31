@@ -1,3 +1,4 @@
+2.1.1 Bugfix - changed transactional annotations in visualization methods.
 2.1.0 Added attribute minimal possible solve time. Support map of games (MITRE techniques). Bugfix - deletion of access level. Bugfix - removed hardcoded page size in progress visualization. Get user IP address from submitted answers. Support backward mode (move to previous levels). Endpoint for analytical dashboard.
 2.0.0 Migrate project to Java 17. Allow to edit end-time of the ongoing training instance. Bugfix - return correct value of the hasReferenceSolution attribute.
 1.2.0 Integration of the local sandboxes. Bugfix - missing variant_answers in the exported training definition. New type of level - access level. Add attribute email to the UserRefDTO. Add attribute hasReferenceSolution to the definition of the requested instance.

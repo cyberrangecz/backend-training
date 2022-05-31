@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdm
 import cz.muni.ics.kypo.training.annotations.security.IsTrainee;
 import cz.muni.ics.kypo.training.annotations.security.IsTraineeOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
+import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.*;
@@ -126,7 +127,7 @@ public class VisualizationFacade {
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalRO
+    @TransactionalWO
     public VisualizationInfoDTO getVisualizationInfoAboutTrainingRun(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         TrainingDefinition trainingDefinitionOfTrainingRun = trainingRun.getTrainingInstance().getTrainingDefinition();
@@ -143,7 +144,7 @@ public class VisualizationFacade {
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalRO
+    @TransactionalWO
     public List<Map<String, Object>> getAllCommandsInTrainingRun(Long instanceId, Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
         if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
@@ -340,7 +341,7 @@ public class VisualizationFacade {
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalRO
+    @TransactionalWO
     public ClusteringVisualizationDTO getClusteringVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         return getClusteringVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
@@ -380,7 +381,7 @@ public class VisualizationFacade {
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalRO
+    @TransactionalWO
     public List<PlayerDataDTO> getTableVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         return getTableVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
@@ -493,7 +494,7 @@ public class VisualizationFacade {
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalRO
+    @TransactionalWO
     public TimelineDTO getTimelineVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
         return getTimelineVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
