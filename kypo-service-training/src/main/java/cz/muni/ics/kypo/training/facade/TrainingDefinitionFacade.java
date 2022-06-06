@@ -43,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -381,15 +380,14 @@ public class TrainingDefinitionFacade {
     }
 
     private void updateReferenceSolution(Long definitionId) {
-        AtomicBoolean isAnyReferenceSolution = new AtomicBoolean(false);
-        List<LevelReferenceSolutionDTO> referenceSolution = this.trainingDefinitionService
-                .getAllTrainingLevels(definitionId)
-                .stream()
-                .peek(level -> isAnyReferenceSolution.set(!level.getReferenceSolution().isEmpty()))
-                .map(level -> new LevelReferenceSolutionDTO(level.getId(), level.getOrder(), new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(level.getReferenceSolution()))))
-                .collect(Collectors.toList());
+        boolean isAnyReferenceSolution = false;
+        List<LevelReferenceSolutionDTO> referenceSolution = new ArrayList<>();
+        for (TrainingLevel level : this.trainingDefinitionService.getAllTrainingLevels(definitionId)) {
+            referenceSolution.add(new LevelReferenceSolutionDTO(level.getId(), level.getOrder(), new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(level.getReferenceSolution()))));
+            isAnyReferenceSolution = isAnyReferenceSolution || !level.getReferenceSolution().isEmpty();
+        }
         this.trainingFeedbackApiService.deleteReferenceGraph(definitionId);
-        if(isAnyReferenceSolution.get()) {
+        if(isAnyReferenceSolution) {
             this.trainingFeedbackApiService.createReferenceGraph(definitionId, referenceSolution);
         }
     }
