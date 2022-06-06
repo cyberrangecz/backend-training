@@ -132,6 +132,7 @@ public class AnalyticalDashboardFacade {
             participantLevelDetail.setDuration(lastEvent.getTrainingTime() - firstEvent.getTrainingTime());
             participantLevelDetail.setScore(lastEvent.getActualScoreInLevel());
             participantLevelDetail.setLevelId(firstEvent.getLevel());
+            participantLevelDetail.setLevelTitle(analysedLevelsById.get(firstEvent.getLevel()).getLevelTitle());
             result.add(participantLevelDetail);
         }
         participantsScore.add(trainingRunScore);
@@ -171,7 +172,7 @@ public class AnalyticalDashboardFacade {
         public TrainingInstanceData(Long instanceId, List<TrainingLevel> trainingLevels) {
             this.instanceId = instanceId;
             this.analysedLevelById = trainingLevels.stream()
-                    .collect(Collectors.toMap(AbstractLevel::getId, level -> new LevelAnalyticalDashboardDTO(level.getId(), level.getAnswer())));
+                    .collect(Collectors.toMap(AbstractLevel::getId, level -> new LevelAnalyticalDashboardDTO(level.getId(), level.getTitle(), level.getAnswer())));
             this.finishedTrainingRuns = getSetOfFinishedTrainingRuns(instanceId);
         }
     }

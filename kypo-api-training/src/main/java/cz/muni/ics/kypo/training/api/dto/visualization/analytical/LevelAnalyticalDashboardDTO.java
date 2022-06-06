@@ -15,6 +15,8 @@ public class LevelAnalyticalDashboardDTO {
 
     @ApiModelProperty(value = "Identifier of the level.", example = "1")
     private Long levelId;
+    @ApiModelProperty(value = "The title of the level.", example = "Find open ports")
+    private String levelTitle;
     @ApiModelProperty(value = "Level correct answer", example = "Secret answer")
     private String correctAnswer;
     @ApiModelProperty(value = "Overall number of correctly submitted answers. How many participants solved level.", example = "10")
@@ -25,8 +27,9 @@ public class LevelAnalyticalDashboardDTO {
     public LevelAnalyticalDashboardDTO() {
     }
 
-    public LevelAnalyticalDashboardDTO(Long levelId, String correctAnswer) {
+    public LevelAnalyticalDashboardDTO(Long levelId, String levelTitle, String correctAnswer) {
         this.levelId = levelId;
+        this.levelTitle = levelTitle;
         this.correctAnswer = correctAnswer;
     }
 
@@ -36,6 +39,14 @@ public class LevelAnalyticalDashboardDTO {
 
     public void setLevelId(Long levelId) {
         this.levelId = levelId;
+    }
+
+    public String getLevelTitle() {
+        return levelTitle;
+    }
+
+    public void setLevelTitle(String levelTitle) {
+        this.levelTitle = levelTitle;
     }
 
     public String getCorrectAnswer() {
@@ -69,7 +80,9 @@ public class LevelAnalyticalDashboardDTO {
     @Override
     public String toString() {
         return "LevelAnalyticalDashboardDTO{" +
-                "correctAnswer='" + correctAnswer + '\'' +
+                "levelId=" + levelId +
+                ", levelTitle='" + levelTitle + '\'' +
+                ", correctAnswer='" + correctAnswer + '\'' +
                 ", correctAnswersSubmitted=" + correctAnswersSubmitted +
                 ", wrongAnswers=" + wrongAnswers +
                 '}';
