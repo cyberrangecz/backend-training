@@ -63,6 +63,8 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 	private List<MitreTechniqueDTO> mitreTechniques;
 	@ApiModelProperty(value = "Set of the expected commands to be executed during the training level.")
 	private Set<String> expectedCommands;
+	@ApiModelProperty(value = "Indicates if at least one command has to be executed to complete the level. Default is true.", example = "true")
+	private boolean commandsRequired;
 
 	/**
 	 * Gets answer.
@@ -300,6 +302,24 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 		this.expectedCommands = expectedCommands;
 	}
 
+	/**
+	 * Gets boolean if at least one command has to be executed to complete the training level
+	 *
+	 * @return true if commands are required, false otherwise
+	 */
+	public boolean isCommandsRequired() {
+		return commandsRequired;
+	}
+
+	/**
+	 * Sets a boolean if at least one command has to be executed to complete the training level
+	 *
+	 * @param commandsRequired boolean value
+	 */
+	public void setCommandsRequired(boolean commandsRequired) {
+		this.commandsRequired = commandsRequired;
+	}
+
 	@Override
 	public String toString() {
 		return "TrainingLevelImportDTO{" +
@@ -313,6 +333,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO{
 				", attachments=" + attachments +
 				", maxScore=" + maxScore +
 				", variantAnswers=" + variantAnswers +
+				", commandsRequired=" + commandsRequired +
 				'}';
 	}
 }

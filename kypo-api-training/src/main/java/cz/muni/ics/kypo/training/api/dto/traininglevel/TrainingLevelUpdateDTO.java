@@ -60,6 +60,8 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
     private Set<String> expectedCommands;
     @ApiModelProperty(value = "Minimal possible solve time (minutes) that must be taken by the player to solve the level.", example = "5")
     protected Integer minimalPossibleSolveTime;
+    @ApiModelProperty(value = "Indicates if at least one command has to be executed to complete the level. Default is true.", example = "true")
+    private boolean commandsRequired;
 
     public TrainingLevelUpdateDTO() {
         this.levelType = LevelType.TRAINING_LEVEL;
@@ -319,6 +321,24 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
         this.minimalPossibleSolveTime = minimalPossibleSolveTime;
     }
 
+    /**
+     * Gets boolean if at least one command has to be executed to complete the training level
+     *
+     * @return true if commands are required, false otherwise
+     */
+    public boolean isCommandsRequired() {
+        return commandsRequired;
+    }
+
+    /**
+     * Sets a boolean if at least one command has to be executed to complete the training level
+     *
+     * @param commandsRequired boolean value
+     */
+    public void setCommandsRequired(boolean commandsRequired) {
+        this.commandsRequired = commandsRequired;
+    }
+
     @Override
     public String toString() {
         return "TrainingLevelUpdateDTO{" +
@@ -335,6 +355,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
                 ", hints=" + hints +
                 ", variantAnswers=" + variantAnswers +
                 ", minimalPossibleSolveTime=" + minimalPossibleSolveTime +
+                ", commandsRequired=" + commandsRequired +
                 '}';
     }
 }
