@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 2.0.0"
+  version: "Version: 2.1.1"
   title: "KYPO Training - API Reference"
 host: "localhost:8083"
 basePath: "/kypo-rest-training/api/v1"
@@ -2646,6 +2646,33 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /visualizations/graphs/reference/training-definitions/{definitionId}:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get reference graph for the given training definition."
+      description: ""
+      operationId: "getReferenceGraphForDesigner"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID."
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Reference graph found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Reference graph for the given training definition not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/graphs/reference/training-instances/{instanceId}:
     get:
       tags:
@@ -2750,6 +2777,64 @@ paths:
             $ref: "#/definitions/VisualizationInfoDTO"
         404:
           description: "Reference graph for the given training run not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-definitions/mitre-techniques:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get summarized mitre techniques."
+      description: ""
+      operationId: "getSummarizedMitreTechniques"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Mitre techniques found."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/TrainingDefinitionMitreTechniqueDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-definitions/{definitionId}:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary data for analytical dashboard."
+      description: ""
+      operationId: "analytical dashboard."
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for analytical dashboard found."
+          schema:
+            $ref: "#/definitions/TimelineDTO"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
           schema:
             $ref: "#/definitions/ApiError"
       security:
@@ -3580,6 +3665,8 @@ definitions:
         example: true
         description: "Indicates if trainee can during training run move to the previous\
           \ already solved levels."
+      level_answered:
+        type: "boolean"
     description: "Just accessed training run."
   AccessedTrainingRunDTO:
     type: "object"
@@ -4484,6 +4571,31 @@ definitions:
           description: "Entity detail related to the error."
           $ref: "#/definitions/EntityErrorDetail"
       description: "A detailed error from another Java mircorservice."
+  LevelAnalyticalDashboardDTO:
+    type: "object"
+    properties:
+      level_id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Identifier of the level."
+      correct_answer:
+        type: "string"
+        example: "Secret answer"
+        description: "Level correct answer"
+      correct_answers_submitted:
+        type: "integer"
+        format: "int32"
+        example: 10
+        description: "Overall number of correctly submitted answers. How many participants\
+          \ solved level."
+      wrong_answers:
+        type: "array"
+        description: "List of all wrong answers submitted by participants."
+        uniqueItems: true
+        items:
+          type: "string"
+    description: "Analytical dashboard - training level details."
   LevelTabsHintDTO:
     type: "object"
     properties:
@@ -4563,6 +4675,21 @@ definitions:
         format: "int64"
       displayed_solution:
         type: "boolean"
+  MitreTechniqueDTO:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of Mitre technique."
+      technique_key:
+        type: "string"
+        example: "T1548.001"
+    description: "Represent 'how' an trainee achieves a tactical goal of the training\
+      \ level by performing an action."
   Pageable:
     type: "object"
     properties:
@@ -4609,6 +4736,52 @@ definitions:
         format: "int32"
         example: 5
         description: "Total number of pages."
+  ParticipantAnalyticalDashboardDTO:
+    type: "object"
+    properties:
+      user_ref_id:
+        type: "integer"
+        format: "int64"
+      user_name:
+        type: "string"
+        example: "John Doe"
+        description: "Participant name"
+      levels:
+        type: "array"
+        description: "Detailed information about training levels."
+        items:
+          $ref: "#/definitions/ParticipantLevelAnalyticalDashboardDTO"
+    description: "Analytical dashboard - participant details."
+  ParticipantLevelAnalyticalDashboardDTO:
+    type: "object"
+    properties:
+      level_id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Identifier of the level."
+      hints_taken:
+        type: "integer"
+        format: "int32"
+        example: "Play me"
+        description: "Number of hint taken during level."
+      duration:
+        type: "integer"
+        format: "int64"
+        example: "This is how you do it"
+        description: "Time spent in the level."
+      score:
+        type: "integer"
+        format: "int32"
+        example: "secretAnswer"
+        description: "Keyword found in training, used for access next level."
+      wrong_answers:
+        type: "array"
+        example: "true"
+        description: "Indicates if the participant submitted a wrong answer."
+        items:
+          type: "string"
+    description: "Analytical dashboard - level details of the particular participant."
   PlayerDataDTO:
     type: "object"
     properties:
@@ -4827,9 +5000,9 @@ definitions:
     properties:
       empty:
         type: "boolean"
-      unsorted:
-        type: "boolean"
       sorted:
+        type: "boolean"
+      unsorted:
         type: "boolean"
   TakenHintDTO:
     type: "object"
@@ -5084,6 +5257,30 @@ definitions:
         - "ARCHIVED"
         - "UNRELEASED"
     description: "Basic training definition information."
+  TrainingDefinitionMitreTechniqueDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: "Delta"
+        description: "Unique identifier of the training definition."
+      title:
+        type: "string"
+        example: "Delta"
+        description: "Title of the training definition."
+      played:
+        type: "boolean"
+        example: true
+        description: "Indicates if the training definition has been played by user."
+      mitre_techniques:
+        type: "array"
+        example: "[TA0043.T1595, TA0042.T1588.006]"
+        description: "List of MITRE technique keys."
+        uniqueItems: true
+        items:
+          type: "string"
+    description: "Represent training definition and all used mitre techniques."
   TrainingDefinitionRestResource:
     type: "object"
     properties:
@@ -5150,6 +5347,49 @@ definitions:
         example: false
         description: "Sign if stepper bar should be displayed."
     description: "Training definition to update."
+  TrainingInstanceAnalyticalDashboardDTO:
+    type: "object"
+    properties:
+      title:
+        type: "string"
+        example: "Play me"
+        description: "Title of the training instance"
+      date:
+        type: "string"
+        format: "date"
+        example: "14.08.2021"
+        description: "Training instance commence date."
+      duration:
+        type: "integer"
+        format: "int64"
+        example: 847848464
+        description: "Training instance duration in milliseconds"
+      instance_id:
+        type: "integer"
+        format: "int64"
+        example: "true"
+        description: "Training instance ID."
+      average_score:
+        type: "number"
+        format: "double"
+        example: "true"
+        description: "Average score achieved by participants."
+      median_score:
+        type: "number"
+        format: "double"
+        example: "true"
+        description: "Median score achieved by participants."
+      participants:
+        type: "array"
+        description: "Details about individual participants."
+        items:
+          $ref: "#/definitions/ParticipantAnalyticalDashboardDTO"
+      levels:
+        type: "array"
+        description: "Details about individual levels."
+        items:
+          $ref: "#/definitions/LevelAnalyticalDashboardDTO"
+    description: "Information about training level needed for visualizations."
   TrainingInstanceArchiveDTO:
     type: "object"
     properties:
@@ -5559,6 +5799,18 @@ definitions:
           type: "array"
           items:
             $ref: "#/definitions/ReferenceSolutionNodeDTO"
+        mitre_techniques:
+          type: "array"
+          description: "List of mitre techniques used in the training level."
+          items:
+            $ref: "#/definitions/MitreTechniqueDTO"
+        expected_commands:
+          type: "array"
+          description: "Set of the expected commands to be executed during the training\
+            \ level."
+          uniqueItems: true
+          items:
+            type: "string"
       description: "An assignment containing security tasks whose completion yields\
         \ a answer."
   TrainingLevelExportDTO:
@@ -5621,6 +5873,19 @@ definitions:
           description: "Sequence of commands that leads to the level answer."
           items:
             $ref: "#/definitions/ReferenceSolutionNodeDTO"
+        mitre_techniques:
+          type: "array"
+          description: "Set of mitre techniques used in the training level."
+          uniqueItems: true
+          items:
+            $ref: "#/definitions/MitreTechniqueDTO"
+        expected_commands:
+          type: "array"
+          description: "Set of the expected commands to be executed during the training\
+            \ level."
+          uniqueItems: true
+          items:
+            type: "string"
       description: "Exported training level."
   TrainingLevelImportDTO:
     allOf:
@@ -5692,6 +5957,18 @@ definitions:
           description: "Sequence of commands that leads to the level answer."
           items:
             $ref: "#/definitions/ReferenceSolutionNodeDTO"
+        mitre_techniques:
+          type: "array"
+          description: "List of mitre techniques used in the training level."
+          items:
+            $ref: "#/definitions/MitreTechniqueDTO"
+        expected_commands:
+          type: "array"
+          description: "Set of the expected commands to be executed during the training\
+            \ level."
+          uniqueItems: true
+          items:
+            type: "string"
       description: "Imported training level."
   TrainingLevelUpdateDTO:
     type: "object"
@@ -5783,6 +6060,18 @@ definitions:
         description: "Sequence of commands that leads to the level answer."
         items:
           $ref: "#/definitions/ReferenceSolutionNodeDTO"
+      mitre_techniques:
+        type: "array"
+        description: "List of mitre techniques used in the training level."
+        items:
+          $ref: "#/definitions/MitreTechniqueDTO"
+      expected_commands:
+        type: "array"
+        description: "Set of the expected commands to be executed during the training\
+          \ level."
+        uniqueItems: true
+        items:
+          type: "string"
       minimal_possible_solve_time:
         type: "integer"
         format: "int32"
