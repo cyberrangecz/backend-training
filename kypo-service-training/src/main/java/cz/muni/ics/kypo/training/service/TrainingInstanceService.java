@@ -138,8 +138,8 @@ public class TrainingInstanceService {
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
         //check if TI is running, true - only title can be changed, false - any field can be changed
         if (trainingInstance.notStarted()) {
-            //check if new access token should be generated, if not original is kept
-            if (shouldGenerateNewToken(trainingInstance.getAccessToken(), trainingInstanceToUpdate.getAccessToken())) {
+            //check if access token has changed and new should be generated, if not original is kept
+            if (isAccessTokenChanged(trainingInstance.getAccessToken(), trainingInstanceToUpdate.getAccessToken())) {
                 trainingInstanceToUpdate.setAccessToken(generateAccessToken(trainingInstanceToUpdate.getAccessToken()));
             } else {
                 trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
@@ -162,7 +162,7 @@ public class TrainingInstanceService {
         if (!currentTrainingInstance.getStartTime().equals(trainingInstanceToUpdate.getStartTime())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstanceToUpdate.getId(),
                     "The start time of the running or finished training instance cannot be changed. Only title and end time can be updated."));
-        } else if (!currentTrainingInstance.getAccessToken().equals(trainingInstanceToUpdate.getAccessToken())) {
+        } else if (isAccessTokenChanged(currentTrainingInstance.getAccessToken(), trainingInstanceToUpdate.getAccessToken())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstanceToUpdate.getId(),
                     "The access token of the running or finished training instance cannot be changed. Only title and end time can be updated."));
         } else if (!Objects.equals(currentTrainingInstance.getPoolId(), trainingInstanceToUpdate.getPoolId())) {
@@ -171,7 +171,7 @@ public class TrainingInstanceService {
         }
     }
 
-    private boolean shouldGenerateNewToken(String originalToken, String newToken) {
+    private boolean isAccessTokenChanged(String originalToken, String newToken) {
         //new token should not be generated if token in update equals original token or if token in update equals original token without PIN
         String tokenWithoutPin = originalToken.substring(0, originalToken.length() - 5);
         return !(newToken.equals(tokenWithoutPin) || originalToken.equals(newToken));
