@@ -146,6 +146,7 @@ public class TrainingInstanceService {
             }
         } else {
             this.checkChangedFieldsOfTrainingInstance(trainingInstanceToUpdate, trainingInstance);
+            trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
         }
         return auditAndSave(trainingInstanceToUpdate).getAccessToken();
     }
@@ -172,9 +173,9 @@ public class TrainingInstanceService {
     }
 
     private boolean isAccessTokenChanged(String originalToken, String newToken) {
-        //new token should not be generated if token in update equals original token or if token in update equals original token without PIN
-        String tokenWithoutPin = originalToken.substring(0, originalToken.length() - 5);
-        return !(newToken.equals(tokenWithoutPin) || originalToken.equals(newToken));
+        //new token should not be generated if token in update equals original token without PIN
+        String originalTokenWithoutPin = originalToken.substring(0, originalToken.length() - 5);
+        return !newToken.equals(originalTokenWithoutPin);
     }
 
     private String generateAccessToken(String accessToken) {
