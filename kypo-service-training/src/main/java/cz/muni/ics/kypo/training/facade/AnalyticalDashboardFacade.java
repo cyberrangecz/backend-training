@@ -53,6 +53,7 @@ public class AnalyticalDashboardFacade {
     public List<TrainingInstanceAnalyticalDashboardDTO> getDataForAnalyticalDashboard(Long definitionId) {
         List<TrainingLevel> trainingLevels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
                 .filter(level -> level instanceof TrainingLevel)
+                .sorted(Comparator.comparingInt(AbstractLevel::getOrder))
                 .map(level -> (TrainingLevel) level)
                 .toList();
         Set<Long> trainingLevelIds = trainingLevels.stream()
