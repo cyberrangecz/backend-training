@@ -683,7 +683,7 @@ public class TrainingRunFacade {
         localContent = localContent.replaceAll("\\$\\{ACCESS_TOKEN\\}", accessToken);
         localContent = localContent.replaceAll("\\$\\{BEARER_TOKEN\\}", bearerToken);
         localContent = localContent.replaceAll("\\$\\{USER_ID\\}", userId.toString());
-        localContent = localContent.replaceAll("\\$\\{SANDBOX_DEFINITION_ID\\}", sandboxDefinitionId.toString());
+        localContent = localContent.replaceAll("\\$\\{SANDBOX_DEFINITION_ID\\}", sandboxDefinitionId == null ? "" : sandboxDefinitionId.toString());
         localContent = localContent.replaceAll("\\$\\{CENTRAL_SYSLOG_IP\\}", centralSyslogIp);
         accessLevelViewDTO.setLocalContent(localContent);
     }
