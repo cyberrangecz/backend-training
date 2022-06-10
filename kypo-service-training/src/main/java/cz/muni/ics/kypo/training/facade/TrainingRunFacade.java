@@ -10,10 +10,8 @@ import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.AssessmentLevelPreviewDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.QuestionPreviewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
@@ -40,7 +38,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -634,6 +631,9 @@ public class TrainingRunFacade {
                 .filter(solutionInfo -> trainingLevel.getId().equals(solutionInfo.getTrainingLevelId()))
                 .map(SolutionInfo::getSolutionContent)
                 .findFirst().orElse(null);
+        if (takenSolution != null && takenSolution.contains("${ANSWER}")) {
+            takenSolution = takenSolution.replaceAll("\\$\\{ANSWER\\}", trainingRunService.getTrainingLevelCorrectAnswer(trainingLevel, trainingRun));
+        }
         trainingLevelPreviewDTO.setSolution(takenSolution);
         return trainingLevelPreviewDTO;
     }
