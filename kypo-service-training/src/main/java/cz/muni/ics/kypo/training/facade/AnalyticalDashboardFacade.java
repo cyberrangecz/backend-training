@@ -53,7 +53,6 @@ public class AnalyticalDashboardFacade {
     public List<TrainingInstanceAnalyticalDashboardDTO> getDataForAnalyticalDashboard(Long definitionId) {
         List<TrainingLevel> trainingLevels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
                 .filter(level -> level instanceof TrainingLevel)
-                .sorted(Comparator.comparingInt(AbstractLevel::getOrder))
                 .map(level -> (TrainingLevel) level)
                 .toList();
         Set<Long> trainingLevelIds = trainingLevels.stream()
@@ -75,6 +74,7 @@ public class AnalyticalDashboardFacade {
             analysedInstance.setDate(instance.getStartTime().toLocalDate());
             analysedInstance.setDuration(Duration.between(instance.getStartTime(), instance.getEndTime()).toMillis());
             analysedInstance.setLevels(new ArrayList<>(instanceData.analysedLevelById.values()));
+            analysedInstance.getLevels().sort(Comparator.comparingInt(LevelAnalyticalDashboardDTO::getLevelOrder));
             analysedInstance.setParticipants(participantsDetails);
             analysedInstance.setAverageScore(instanceData.participantsScore.stream().reduce(0, Integer::sum).doubleValue() / participantsDetails.size());
             analysedInstance.setMedianScore(computeMedian(instanceData.participantsScore));
@@ -173,7 +173,7 @@ public class AnalyticalDashboardFacade {
         public TrainingInstanceData(Long instanceId, List<TrainingLevel> trainingLevels) {
             this.instanceId = instanceId;
             this.analysedLevelById = trainingLevels.stream()
-                    .collect(Collectors.toMap(AbstractLevel::getId, level -> new LevelAnalyticalDashboardDTO(level.getId(), level.getTitle(), level.getAnswer())));
+                    .collect(Collectors.toMap(AbstractLevel::getId, level -> new LevelAnalyticalDashboardDTO(level.getId(), level.getOrder(), level.getTitle(), level.getAnswer())));
             this.finishedTrainingRuns = getSetOfFinishedTrainingRuns(instanceId);
         }
     }
