@@ -452,9 +452,7 @@ public class TrainingRunService {
 
     private boolean evaluateTrainingLevelAnswer(TrainingRun trainingRun, String answer) {
         TrainingLevel trainingLevel = (TrainingLevel) trainingRun.getCurrentLevel();
-        String correctAnswer = trainingLevel.isVariantAnswers() && trainingLevel.getAnswerVariableName() != null ?
-                answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
-                trainingLevel.getAnswer();
+        String correctAnswer = getTrainingLevelCorrectAnswer(trainingLevel, trainingRun);
         if (correctAnswer.equals(answer)) {
             trainingRun.setLevelAnswered(true);
             trainingRun.increaseTotalTrainingScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
@@ -583,12 +581,10 @@ public class TrainingRunService {
      */
     public String getTrainingLevelCorrectAnswer(TrainingLevel trainingLevel, TrainingRun trainingRun) {
         if (trainingLevel.isVariantAnswers()) {
-            if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
-                return this.answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
-                        trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName());
-            } else {
-                return this.answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
-            }
+            return trainingRun.getTrainingInstance().isLocalEnvironment() ?
+                    answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
+                        trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName()) :
+                    answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
         }
         return trainingLevel.getAnswer();
     }

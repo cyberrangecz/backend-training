@@ -62,7 +62,7 @@ public class AnswersStorageApiService {
         try {
             return answersStorageWebClient
                     .get()
-                    .uri("/access-tokens/{accessToken}/users/{userId}/answers/{answerVariableName}", accessToken, userId, answerVariableName)
+                    .uri("/sandboxes/access-tokens/{accessToken}/users/{userId}/answers/{answerVariableName}", accessToken, userId, answerVariableName)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
@@ -74,7 +74,7 @@ public class AnswersStorageApiService {
 
 
     /**
-     * Get all answers generated for the given sandbox.
+     * Get all answers generated for the given cloud sandbox.
      *
      * @param sandboxId id of the sandbox.
      * @throws MicroserviceApiException error with specific message when calling answer storage microservice.
@@ -88,12 +88,32 @@ public class AnswersStorageApiService {
                     .bodyToMono(SandboxAnswersInfo.class)
                     .block();
         } catch (CustomWebClientException ex){
-            throw new MicroserviceApiException("Error when calling Answers Storage API to get correct answers for sandbox (ID: " + sandboxId + ").", ex);
+            throw new MicroserviceApiException("Error when calling Answers Storage API to get correct answers for cloud sandbox (ID: " + sandboxId + ").", ex);
         }
     }
 
     /**
-     * Get all answers generated for the given sandboxes.
+     * Get all answers generated for the given local sandbox.
+     *
+     * @param accessToken access token of the training instance.
+     * @param userId id of the user.
+     * @throws MicroserviceApiException error with specific message when calling answer storage microservice.
+     */
+    public SandboxAnswersInfo getAnswersByAccessTokenAndUserId(String accessToken, Long userId) {
+        try {
+            return answersStorageWebClient
+                    .get()
+                    .uri("/sandboxes/access-tokens/{accessToken}/users/{userId}", accessToken, userId)
+                    .retrieve()
+                    .bodyToMono(SandboxAnswersInfo.class)
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Answers Storage API to get correct answers for local sandbox (accessToken: " + accessToken + ", userID: " + userId + ").", ex);
+        }
+    }
+
+    /**
+     * Get all answers generated for the given cloud sandboxes.
      *
      * @param sandboxIds ids of the sandboxes.
      * @throws MicroserviceApiException error with specific message when calling answers storage microservice.
@@ -104,7 +124,7 @@ public class AnswersStorageApiService {
                     .get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/sandboxes")
-                            .queryParam("id", sandboxIds)
+                            .queryParam("sandboxRefId", sandboxIds)
                             .queryParam("page", 0)
                             .queryParam("size", Integer.MAX_VALUE)
                             .build())
@@ -113,6 +133,32 @@ public class AnswersStorageApiService {
                     .block();
         } catch (CustomWebClientException ex){
             throw new MicroserviceApiException("Error when calling Answers Storage API to get correct answers for sandboxes (IDs: " + sandboxIds + ").", ex);
+        }
+    }
+
+    /**
+     * Get all answers generated for the local sandboxes by the users IDs and specific access token.
+     *
+     * @param accessToken token of the training instance
+     * @param userIds ids of the users.
+     * @throws MicroserviceApiException error with specific message when calling answers storage microservice.
+     */
+    public PageResultResource<SandboxAnswersInfo> getAnswersByAccessTokenAndUserIds(String accessToken, List<Long> userIds) {
+        try {
+            return answersStorageWebClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/sandboxes")
+                            .queryParam("accessToken", accessToken)
+                            .queryParam("userId", userIds)
+                            .queryParam("page", 0)
+                            .queryParam("size", Integer.MAX_VALUE)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<PageResultResource<SandboxAnswersInfo>>() {})
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Answers Storage API to get correct answers for local sandboxes (accessToken: " + accessToken + ", userIDs: " + userIds + ").", ex);
         }
     }
 }
