@@ -311,6 +311,18 @@ public class TrainingInstanceService {
     }
 
     /**
+     * Find all IDs of the trainees that have been participated in training instance.
+     *
+     * @param trainingInstanceId id of training instance.
+     */
+    public List<Long> findAllTraineesByTrainingInstance(Long trainingInstanceId) {
+        return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId)
+                .stream()
+                .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Sets audit attributes to training instance and save.
      *
      * @param trainingInstance the training instance to be saved.

@@ -517,17 +517,22 @@ public class TrainingRunFacade {
                 .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class)
                 .map(abstractLevel -> (TrainingLevel) abstractLevel)
                 .toList();
-        boolean isVariantSandboxes = trainingLevels.stream().anyMatch(TrainingLevel::isVariantAnswers);
-        Map<String, String> variantAnswers = isVariantSandboxes ? getVariantAnswers(trainingRun.getSandboxInstanceRefId()) : new HashMap<>();
+        boolean isVariantAnswers = trainingLevels.stream().anyMatch(TrainingLevel::isVariantAnswers);
+        Map<String, String> variantAnswers = isVariantAnswers ? getVariantAnswers(trainingRun) : new HashMap<>();
         return trainingLevels.stream()
                 .map(trainingLevel -> mapToCorrectAnswerDTO(trainingLevel, variantAnswers))
                 .collect(Collectors.toList());
     }
 
-    private Map<String, String> getVariantAnswers(Long sandboxId) {
-        return answersStorageApiService.getAnswersBySandboxId(sandboxId)
-                .getVariantAnswers().stream()
-                .collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent));
+    private Map<String, String> getVariantAnswers(TrainingRun trainingRun) {
+        TrainingInstance instance = trainingRun.getTrainingInstance();
+        return instance.isLocalEnvironment() ?
+                answersStorageApiService.getAnswersByAccessTokenAndUserId(instance.getAccessToken(), trainingRun.getParticipantRef().getUserRefId())
+                        .getVariantAnswers().stream()
+                        .collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent)) :
+                answersStorageApiService.getAnswersBySandboxId(trainingRun.getSandboxInstanceRefId())
+                        .getVariantAnswers().stream()
+                        .collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent));
     }
 
     private CorrectAnswerDTO mapToCorrectAnswerDTO(TrainingLevel trainingLevel, Map<String, String> variantAnswers) {
