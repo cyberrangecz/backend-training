@@ -29,11 +29,11 @@ public class LevelAnalyticalDashboardDTO {
     public LevelAnalyticalDashboardDTO() {
     }
 
-    public LevelAnalyticalDashboardDTO(Long levelId, Integer levelOrder, String levelTitle, String correctAnswer) {
+    public LevelAnalyticalDashboardDTO(Long levelId, Integer levelOrder, String levelTitle, String correctAnswer, String answerVariableName) {
         this.levelId = levelId;
         this.levelOrder = levelOrder;
         this.levelTitle = levelTitle;
-        this.correctAnswer = correctAnswer;
+        this.correctAnswer = correctAnswer == null ? answerVariableName : correctAnswer;
     }
 
     public Long getLevelId() {

@@ -173,7 +173,7 @@ public class AnalyticalDashboardFacade {
         public TrainingInstanceData(Long instanceId, List<TrainingLevel> trainingLevels) {
             this.instanceId = instanceId;
             this.analysedLevelById = trainingLevels.stream()
-                    .collect(Collectors.toMap(AbstractLevel::getId, level -> new LevelAnalyticalDashboardDTO(level.getId(), level.getOrder(), level.getTitle(), level.getAnswer())));
+                    .collect(Collectors.toMap(AbstractLevel::getId, level -> new LevelAnalyticalDashboardDTO(level.getId(), level.getOrder(), level.getTitle(), level.getAnswer(), level.getAnswerVariableName())));
             this.finishedTrainingRuns = getSetOfFinishedTrainingRuns(instanceId);
         }
     }
