@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 2.1.1"
+  version: "Version: 2.1.2"
   title: "KYPO Training - API Reference"
 host: "localhost:8083"
 basePath: "/kypo-rest-training/api/v1"
@@ -4579,6 +4579,15 @@ definitions:
         format: "int64"
         example: 1
         description: "Identifier of the level."
+      level_order:
+        type: "integer"
+        format: "int32"
+        example: 4
+        description: "Order of the level."
+      level_title:
+        type: "string"
+        example: "Find open ports"
+        description: "The title of the level."
       correct_answer:
         type: "string"
         example: "Secret answer"
@@ -4760,6 +4769,10 @@ definitions:
         format: "int64"
         example: 1
         description: "Identifier of the level."
+      level_title:
+        type: "string"
+        example: "Find open ports"
+        description: "The title of the level."
       hints_taken:
         type: "integer"
         format: "int32"
@@ -5811,6 +5824,11 @@ definitions:
           uniqueItems: true
           items:
             type: "string"
+        commands_required:
+          type: "boolean"
+          example: true
+          description: "Indicates if at least one command has to be executed to complete\
+            \ the level. Default is true."
       description: "An assignment containing security tasks whose completion yields\
         \ a answer."
   TrainingLevelExportDTO:
@@ -5886,6 +5904,11 @@ definitions:
           uniqueItems: true
           items:
             type: "string"
+        commands_required:
+          type: "boolean"
+          example: true
+          description: "Indicates if at least one command has to be executed to complete\
+            \ the level. Default is true."
       description: "Exported training level."
   TrainingLevelImportDTO:
     allOf:
@@ -5969,6 +5992,11 @@ definitions:
           uniqueItems: true
           items:
             type: "string"
+        commands_required:
+          type: "boolean"
+          example: true
+          description: "Indicates if at least one command has to be executed to complete\
+            \ the level. Default is true."
       description: "Imported training level."
   TrainingLevelUpdateDTO:
     type: "object"
@@ -6078,6 +6106,11 @@ definitions:
         example: 5
         description: "Minimal possible solve time (minutes) that must be taken by\
           \ the player to solve the level."
+      commands_required:
+        type: "boolean"
+        example: true
+        description: "Indicates if at least one command has to be executed to complete\
+          \ the level. Default is true."
     description: "Training level to update."
   TrainingLevelVisualizationDTO:
     allOf:
