@@ -217,14 +217,7 @@ public class VisualizationFacade {
         Map<Long, String> answerVariableNameByLevelId = abstractLevels.stream()
                 .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class && ((TrainingLevel) abstractLevel).getAnswerVariableName() != null)
                 .collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswerVariableName()));
-        Map<Long, Map<String, String>> answersBySandboxId = new HashMap<>();
-        if (!answerVariableNameByLevelId.isEmpty()) {
-            // TODO cache the response because those data are not changing and frontend requests progress data periodically
-            answersBySandboxId = answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(trainingInstanceId))
-                    .getContent()
-                    .stream()
-                    .collect(Collectors.toMap(SandboxAnswersInfo::getSandboxRefId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
-        }
+        Map<Long, Map<String, String>> variantAnswersBySandbox = getVariantAnswers(trainingInstance, !answerVariableNameByLevelId.isEmpty());
 
         VisualizationProgressDTO visualizationProgressDTO = new VisualizationProgressDTO();
         visualizationProgressDTO.setStartTime(trainingInstance.getStartTime().toEpochSecond(ZoneOffset.UTC));
@@ -242,7 +235,6 @@ public class VisualizationFacade {
             playerProgress.setTrainingRunId(userEvents.getKey());
 
             Set<Map.Entry<Long, List<AbstractAuditPOJO>>> allUserEventsByLevelId = userEvents.getValue().entrySet();
-            Long sandboxId = allUserEventsByLevelId.iterator().next().getValue().get(0).getSandboxId();
             for (Map.Entry<Long, List<AbstractAuditPOJO>> levelEvents : allUserEventsByLevelId) {
                 List<AbstractAuditPOJO> events = levelEvents.getValue();
                 LevelProgress levelProgress = new LevelProgress();
@@ -256,9 +248,9 @@ public class VisualizationFacade {
                 levelProgress.setStartTime(events.get(levelStartedEventIndex).getTimestamp());
                 if (((LevelStarted) events.get(levelStartedEventIndex)).getLevelType() == LevelType.TRAINING) {
                     this.countWrongAnswersAndAddTakenHints(levelProgress, events);
-                    levelProgress.setAnswer(answerStaticByLevelId.get(levelProgress.getLevelId()) == null ?
-                            answersBySandboxId.getOrDefault(sandboxId, new HashMap<>()).get(answerVariableNameByLevelId.get(levelProgress.getLevelId())) :
-                            answerStaticByLevelId.get(levelProgress.getLevelId()));
+                    levelProgress.setAnswer(
+                            answerStaticByLevelId.containsKey(levelProgress.getLevelId()) ? answerStaticByLevelId.get(levelProgress.getLevelId()) :
+                            getLevelVariantAnswer(levelProgress.getLevelId(), events.get(0), answerVariableNameByLevelId, trainingInstance.isLocalEnvironment(), variantAnswersBySandbox));
                 }
 
                 int levelCompletedEventIndex = getLevelCompletedEventIndex(events);
@@ -274,6 +266,29 @@ public class VisualizationFacade {
         }
         visualizationProgressDTO.setPlayerProgress(playerProgresses);
         return visualizationProgressDTO;
+    }
+
+    private String getLevelVariantAnswer(Long levelId, AbstractAuditPOJO levelEvent, Map<Long, String> answerVariableNameByLevelId,
+                                         boolean isLocalEnvironment, Map<Long, Map<String, String>> variantAnswersBySandbox) {
+        // if local environment is enabled, the sandbox is identified by user ID, otherwise unique sandbox ID is used
+        Long sandboxIdentifier = isLocalEnvironment ? levelEvent.getUserRefId() : levelEvent.getSandboxId();
+        return variantAnswersBySandbox.getOrDefault(sandboxIdentifier, new HashMap<>()).get(answerVariableNameByLevelId.get(levelId));
+    }
+
+    private Map<Long, Map<String, String>> getVariantAnswers(TrainingInstance instance, boolean isVariableNamesDefined) {
+        if (!isVariableNamesDefined) {
+            return new HashMap<>();
+        }
+        // TODO cache the response because those data are not changing and frontend requests progress data periodically
+        return instance.isLocalEnvironment() ?
+            answersStorageApiService.getAnswersByAccessTokenAndUserIds(instance.getAccessToken(), trainingInstanceService.findAllTraineesByTrainingInstance(instance.getId()))
+                    .getContent()
+                    .stream()
+                    .collect(Collectors.toMap(SandboxAnswersInfo::getUserId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers()))) :
+            answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(instance.getId()))
+                    .getContent()
+                    .stream()
+                    .collect(Collectors.toMap(SandboxAnswersInfo::getSandboxRefId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
     }
 
     private List<UserRefDTO> getListOfPlayers(Long instanceId) {
