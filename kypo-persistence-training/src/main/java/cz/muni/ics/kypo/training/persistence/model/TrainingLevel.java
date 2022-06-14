@@ -57,6 +57,8 @@ public class TrainingLevel extends AbstractLevel {
             joinColumns = @JoinColumn(name = "training_level_id")
     )
     private Set<ExpectedCommand> expectedCommands;
+    @Column(name = "commands_required", nullable = false)
+    private boolean commandsRequired = true;
 
     /**
      * Used to fix missing foreign key in the child (Hint) of @OneToMany association.
@@ -302,6 +304,24 @@ public class TrainingLevel extends AbstractLevel {
         this.expectedCommands = expectedCommands;
     }
 
+    /**
+     * Gets boolean if at least one command has to be executed to complete the training level
+     *
+     * @return true if commands are required, false otherwise
+     */
+    public boolean isCommandsRequired() {
+        return commandsRequired;
+    }
+
+    /**
+     * Sets a boolean if at least one command has to be executed to complete the training level
+     *
+     * @param commandsRequired boolean value
+     */
+    public void setCommandsRequired(boolean commandsRequired) {
+        this.commandsRequired = commandsRequired;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -326,6 +346,7 @@ public class TrainingLevel extends AbstractLevel {
                 ", solutionPenalized=" + solutionPenalized +
                 ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 ", variantAnswers=" + variantAnswers +
+                ", commandsRequired=" + commandsRequired +
                 '}';
     }
 }

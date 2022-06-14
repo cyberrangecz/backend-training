@@ -14,6 +14,8 @@ public class ParticipantLevelAnalyticalDashboardDTO {
 
     @ApiModelProperty(value = "Identifier of the level.", example = "1")
     private Long levelId;
+    @ApiModelProperty(value = "The title of the level.", example = "Find open ports")
+    private String levelTitle;
     @ApiModelProperty(value = "Number of hint taken during level.", example = "Play me")
     private int hintsTaken;
     @ApiModelProperty(value = "Time spent in the level.", example = "This is how you do it")
@@ -29,6 +31,14 @@ public class ParticipantLevelAnalyticalDashboardDTO {
 
     public void setLevelId(Long levelId) {
         this.levelId = levelId;
+    }
+
+    public String getLevelTitle() {
+        return levelTitle;
+    }
+
+    public void setLevelTitle(String levelTitle) {
+        this.levelTitle = levelTitle;
     }
 
     public int getHintsTaken() {
@@ -75,6 +85,7 @@ public class ParticipantLevelAnalyticalDashboardDTO {
     public String toString() {
         return "ParticipantLevelAnalyticalDashboardDTO{" +
                 "levelId=" + levelId +
+                ", levelTitle=" + levelTitle +
                 ", hintsTaken=" + hintsTaken +
                 ", duration=" + duration +
                 ", score=" + score +

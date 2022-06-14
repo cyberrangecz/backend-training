@@ -452,9 +452,7 @@ public class TrainingRunService {
 
     private boolean evaluateTrainingLevelAnswer(TrainingRun trainingRun, String answer) {
         TrainingLevel trainingLevel = (TrainingLevel) trainingRun.getCurrentLevel();
-        String correctAnswer = trainingLevel.isVariantAnswers() && trainingLevel.getAnswerVariableName() != null ?
-                answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName()) :
-                trainingLevel.getAnswer();
+        String correctAnswer = getTrainingLevelCorrectAnswer(trainingLevel, trainingRun);
         if (correctAnswer.equals(answer)) {
             trainingRun.setLevelAnswered(true);
             trainingRun.increaseTotalTrainingScore(trainingRun.getMaxLevelScore() - trainingRun.getCurrentPenalty());
@@ -561,24 +559,34 @@ public class TrainingRunService {
                 trainingRunRepository.save(trainingRun);
                 auditEventsService.auditSolutionDisplayedAction(trainingRun);
             }
-            return replaceVariableInSolution(trainingLevel, trainingRun);
+            return getSolutionWithReplacedVariable(trainingLevel, trainingRun);
         } else {
             throw new BadRequestException("Current level is not training level and does not have solution.");
         }
     }
 
-    private String replaceVariableInSolution(TrainingLevel trainingLevel, TrainingRun trainingRun) {
-        String solutionContent = trainingLevel.getSolution();
-        String answer = trainingLevel.getAnswer();
-        if (trainingLevel.isVariantAnswers()) {
-            if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
-                answer = this.answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
-                        trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName());
-            } else {
-                answer = this.answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
-            }
+    private String getSolutionWithReplacedVariable(TrainingLevel trainingLevel, TrainingRun trainingRun) {
+        if(!trainingLevel.getSolution().contains("${ANSWER}")) {
+            return trainingLevel.getSolution();
         }
-        return solutionContent.replaceAll("\\$\\{ANSWER\\}", answer);
+        return trainingLevel.getSolution().replaceAll("\\$\\{ANSWER\\}", getTrainingLevelCorrectAnswer(trainingLevel, trainingRun));
+    }
+
+    /**
+     * Gets correct answer of the training level based on the Training Run parameters.
+     *
+     * @param trainingLevel Training Level whose correct answer to get.
+     * @param trainingRun Training Run of the particular trainee used to obtain variant answer
+     * @return static or variant answer based on the Training Run parameters
+     */
+    public String getTrainingLevelCorrectAnswer(TrainingLevel trainingLevel, TrainingRun trainingRun) {
+        if (trainingLevel.isVariantAnswers()) {
+            return trainingRun.getTrainingInstance().isLocalEnvironment() ?
+                    answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
+                        trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName()) :
+                    answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
+        }
+        return trainingLevel.getAnswer();
     }
 
     /**

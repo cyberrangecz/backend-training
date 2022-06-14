@@ -45,6 +45,8 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
     private Set<MitreTechniqueDTO> mitreTechniques;
     @ApiModelProperty(value = "Set of the expected commands to be executed during the training level.")
     private Set<String> expectedCommands;
+    @ApiModelProperty(value = "Indicates if at least one command has to be executed to complete the level. Default is true.", example = "true")
+    private boolean commandsRequired;
 
 
     /**
@@ -289,6 +291,24 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
         this.expectedCommands = expectedCommands;
     }
 
+    /**
+     * Gets boolean if at least one command has to be executed to complete the training level
+     *
+     * @return true if commands are required, false otherwise
+     */
+    public boolean isCommandsRequired() {
+        return commandsRequired;
+    }
+
+    /**
+     * Sets a boolean if at least one command has to be executed to complete the training level
+     *
+     * @param commandsRequired boolean value
+     */
+    public void setCommandsRequired(boolean commandsRequired) {
+        this.commandsRequired = commandsRequired;
+    }
+
     @Override
     public String toString() {
         return "TrainingLevelExportDTO{" +
@@ -301,6 +321,7 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
                 ", incorrectAnswerLimit=" + incorrectAnswerLimit +
                 ", maxScore=" + maxScore +
                 ", variantAnswers=" + variantAnswers +
+                ", commandsRequired=" + commandsRequired +
                 '}';
     }
 }

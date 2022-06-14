@@ -10,10 +10,8 @@ import cz.muni.ics.kypo.training.api.dto.*;
 import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.AssessmentLevelPreviewDTO;
-import cz.muni.ics.kypo.training.api.dto.assessmentlevel.preview.QuestionPreviewDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
-import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunByIdDTO;
@@ -40,7 +38,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -520,17 +517,22 @@ public class TrainingRunFacade {
                 .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class)
                 .map(abstractLevel -> (TrainingLevel) abstractLevel)
                 .toList();
-        boolean isVariantSandboxes = trainingLevels.stream().anyMatch(TrainingLevel::isVariantAnswers);
-        Map<String, String> variantAnswers = isVariantSandboxes ? getVariantAnswers(trainingRun.getSandboxInstanceRefId()) : new HashMap<>();
+        boolean isVariantAnswers = trainingLevels.stream().anyMatch(TrainingLevel::isVariantAnswers);
+        Map<String, String> variantAnswers = isVariantAnswers ? getVariantAnswers(trainingRun) : new HashMap<>();
         return trainingLevels.stream()
                 .map(trainingLevel -> mapToCorrectAnswerDTO(trainingLevel, variantAnswers))
                 .collect(Collectors.toList());
     }
 
-    private Map<String, String> getVariantAnswers(Long sandboxId) {
-        return answersStorageApiService.getAnswersBySandboxId(sandboxId)
-                .getVariantAnswers().stream()
-                .collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent));
+    private Map<String, String> getVariantAnswers(TrainingRun trainingRun) {
+        TrainingInstance instance = trainingRun.getTrainingInstance();
+        return instance.isLocalEnvironment() ?
+                answersStorageApiService.getAnswersByAccessTokenAndUserId(instance.getAccessToken(), trainingRun.getParticipantRef().getUserRefId())
+                        .getVariantAnswers().stream()
+                        .collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent)) :
+                answersStorageApiService.getAnswersBySandboxId(trainingRun.getSandboxInstanceRefId())
+                        .getVariantAnswers().stream()
+                        .collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent));
     }
 
     private CorrectAnswerDTO mapToCorrectAnswerDTO(TrainingLevel trainingLevel, Map<String, String> variantAnswers) {
@@ -634,6 +636,9 @@ public class TrainingRunFacade {
                 .filter(solutionInfo -> trainingLevel.getId().equals(solutionInfo.getTrainingLevelId()))
                 .map(SolutionInfo::getSolutionContent)
                 .findFirst().orElse(null);
+        if (takenSolution != null && takenSolution.contains("${ANSWER}")) {
+            takenSolution = takenSolution.replaceAll("\\$\\{ANSWER\\}", trainingRunService.getTrainingLevelCorrectAnswer(trainingLevel, trainingRun));
+        }
         trainingLevelPreviewDTO.setSolution(takenSolution);
         return trainingLevelPreviewDTO;
     }
@@ -683,7 +688,7 @@ public class TrainingRunFacade {
         localContent = localContent.replaceAll("\\$\\{ACCESS_TOKEN\\}", accessToken);
         localContent = localContent.replaceAll("\\$\\{BEARER_TOKEN\\}", bearerToken);
         localContent = localContent.replaceAll("\\$\\{USER_ID\\}", userId.toString());
-        localContent = localContent.replaceAll("\\$\\{SANDBOX_DEFINITION_ID\\}", sandboxDefinitionId.toString());
+        localContent = localContent.replaceAll("\\$\\{SANDBOX_DEFINITION_ID\\}", sandboxDefinitionId == null ? "" : sandboxDefinitionId.toString());
         localContent = localContent.replaceAll("\\$\\{CENTRAL_SYSLOG_IP\\}", centralSyslogIp);
         accessLevelViewDTO.setLocalContent(localContent);
     }

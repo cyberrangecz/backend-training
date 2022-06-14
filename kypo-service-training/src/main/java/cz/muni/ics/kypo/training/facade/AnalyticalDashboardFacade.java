@@ -74,6 +74,7 @@ public class AnalyticalDashboardFacade {
             analysedInstance.setDate(instance.getStartTime().toLocalDate());
             analysedInstance.setDuration(Duration.between(instance.getStartTime(), instance.getEndTime()).toMillis());
             analysedInstance.setLevels(new ArrayList<>(instanceData.analysedLevelById.values()));
+            analysedInstance.getLevels().sort(Comparator.comparingInt(LevelAnalyticalDashboardDTO::getLevelOrder));
             analysedInstance.setParticipants(participantsDetails);
             analysedInstance.setAverageScore(instanceData.participantsScore.stream().reduce(0, Integer::sum).doubleValue() / participantsDetails.size());
             analysedInstance.setMedianScore(computeMedian(instanceData.participantsScore));
@@ -132,6 +133,7 @@ public class AnalyticalDashboardFacade {
             participantLevelDetail.setDuration(lastEvent.getTrainingTime() - firstEvent.getTrainingTime());
             participantLevelDetail.setScore(lastEvent.getActualScoreInLevel());
             participantLevelDetail.setLevelId(firstEvent.getLevel());
+            participantLevelDetail.setLevelTitle(analysedLevelsById.get(firstEvent.getLevel()).getLevelTitle());
             result.add(participantLevelDetail);
         }
         participantsScore.add(trainingRunScore);
@@ -171,7 +173,7 @@ public class AnalyticalDashboardFacade {
         public TrainingInstanceData(Long instanceId, List<TrainingLevel> trainingLevels) {
             this.instanceId = instanceId;
             this.analysedLevelById = trainingLevels.stream()
-                    .collect(Collectors.toMap(AbstractLevel::getId, level -> new LevelAnalyticalDashboardDTO(level.getId(), level.getAnswer())));
+                    .collect(Collectors.toMap(AbstractLevel::getId, level -> new LevelAnalyticalDashboardDTO(level.getId(), level.getOrder(), level.getTitle(), level.getAnswer(), level.getAnswerVariableName())));
             this.finishedTrainingRuns = getSetOfFinishedTrainingRuns(instanceId);
         }
     }
