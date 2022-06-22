@@ -1,6 +1,8 @@
 package cz.muni.ics.kypo.training.service.api;
 
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
+import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.PoolInfoDTO;
 import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
@@ -10,10 +12,13 @@ import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.util.Set;
 
 /**
  * The type Sandbox Api service.
@@ -100,7 +105,7 @@ public class SandboxApiService {
             }
         } catch (CustomWebClientException ex) {
             if(ex.getStatusCode() != HttpStatus.NOT_FOUND){
-                throw new MicroserviceApiException("Currently, it is not possible to unlock a pool with (ID: " + poolId + ").", ex);
+                throw new MicroserviceApiException("Currently, it is not possible to unlock a pool (ID: " + poolId + ").", ex);
             }
         }
     }
@@ -118,6 +123,44 @@ public class SandboxApiService {
                 throw new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
             }
             throw new MicroserviceApiException("Error when calling OpenStack Sandbox Service API to get unlocked sandbox from pool (ID: " + poolId + ").", ex);
+        }
+    }
+
+    /**
+     * Get APG variables defined in the sandbox definition of the pool.
+     *
+     * @param poolId the pool id
+     * @return set of APG variables
+     */
+    public Set<String> getVariablesByPoolId(Long poolId) {
+        try {
+            return sandboxServiceWebClient
+                    .get()
+                    .uri("/pools/{poolId}/variables", poolId)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Set<String>>() {})
+                    .block();
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Currently, it is not possible to get variables of the pool (ID: " + poolId + ").", ex);
+        }
+    }
+
+    /**
+     * Get APG variables defined in the sandbox definition.
+     *
+     * @param sandboxDefinitionId the sandbox definition id
+     * @return set of APG variables
+     */
+    public Set<String> getVariablesBySandboxDefinitionId(Long sandboxDefinitionId) {
+        try {
+            return sandboxServiceWebClient
+                    .get()
+                    .uri("/definitions/{sandboxDefinitionId}/variables", sandboxDefinitionId)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Set<String>>() {})
+                    .block();
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Currently, it is not possible to get variables of the sandbox definition (ID: " + sandboxDefinitionId + ").", ex);
         }
     }
 }
