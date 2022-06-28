@@ -1,11 +1,7 @@
 package cz.muni.ics.kypo.training.service.api;
 
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
-import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.api.responses.PoolInfoDTO;
-import cz.muni.ics.kypo.training.api.responses.SandboxDefinitionInfo;
-import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
+import cz.muni.ics.kypo.training.api.responses.*;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.ForbiddenException;
 import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
@@ -132,13 +128,13 @@ public class SandboxApiService {
      * @param poolId the pool id
      * @return set of APG variables
      */
-    public Set<String> getVariablesByPoolId(Long poolId) {
+    public Variables getVariablesByPoolId(Long poolId) {
         try {
             return sandboxServiceWebClient
                     .get()
                     .uri("/pools/{poolId}/variables", poolId)
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Set<String>>() {})
+                    .bodyToMono(Variables.class)
                     .block();
         } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Currently, it is not possible to get variables of the pool (ID: " + poolId + ").", ex);

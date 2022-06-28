@@ -159,7 +159,7 @@ public class TrainingInstanceFacade {
                 .collect(Collectors.toSet());
         if (!trainingDefinitionVariables.isEmpty()) {
             Set<String> sandboxDefinitionVariables = trainingInstance.getPoolId() != null ?
-                    sandboxApiService.getVariablesByPoolId(trainingInstance.getPoolId()) :
+                    sandboxApiService.getVariablesByPoolId(trainingInstance.getPoolId()).getVariables() :
                     sandboxApiService.getVariablesBySandboxDefinitionId(trainingInstance.getSandboxDefinitionId());
             if(!sandboxDefinitionVariables.containsAll(trainingDefinitionVariables)) {
                 trainingDefinitionVariables.removeAll(sandboxDefinitionVariables);
