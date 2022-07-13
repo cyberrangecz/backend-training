@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.facade;
+package cz.muni.ics.kypo.training.facade.visualization;
 
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.events.trainings.*;
@@ -29,6 +29,7 @@ import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.SandboxAnswersInfo;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.QuestionMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelProgress;
@@ -36,6 +37,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.progress.PlayerProgress;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.repository.QuestionAnswerRepository;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;

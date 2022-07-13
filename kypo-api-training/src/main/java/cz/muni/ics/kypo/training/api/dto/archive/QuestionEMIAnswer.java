@@ -12,6 +12,14 @@ public class QuestionEMIAnswer {
     @JsonProperty("optionOrder")
     private Integer optionOrder;
 
+    public QuestionEMIAnswer() {
+    }
+
+    public QuestionEMIAnswer(Integer statementOrder, Integer optionOrder) {
+        this.statementOrder = statementOrder;
+        this.optionOrder = optionOrder;
+    }
+
     public Integer getStatementOrder() {
         return statementOrder;
     }

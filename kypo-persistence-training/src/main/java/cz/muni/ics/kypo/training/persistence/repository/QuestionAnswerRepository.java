@@ -8,6 +8,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface QuestionAnswerRepository extends JpaRepository<QuestionAnswer, QuestionAnswerId>, QuerydslPredicateExecutor<QuestionAnswer> {
@@ -16,4 +17,6 @@ public interface QuestionAnswerRepository extends JpaRepository<QuestionAnswer, 
     void deleteAllByTrainingRunId(Long trainingRunId);
 
     List<QuestionAnswer> getAllByTrainingRunId(Long trainingRunId);
+
+    List<QuestionAnswer> getAllByQuestionIdAndInstanceId(Long questionId, Long instanceId);
 }
