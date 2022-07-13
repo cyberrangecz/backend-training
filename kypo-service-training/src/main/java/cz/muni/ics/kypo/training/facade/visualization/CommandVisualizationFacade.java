@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.facade;
+package cz.muni.ics.kypo.training.facade.visualization;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
@@ -30,7 +30,7 @@ import java.util.List;
 @Transactional
 public class CommandVisualizationFacade {
 
-    private static final Logger LOG = LoggerFactory.getLogger(VisualizationFacade.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CommandVisualizationFacade.class);
 
     private final TrainingInstanceService trainingInstanceService;
     private final TrainingRunService trainingRunService;
