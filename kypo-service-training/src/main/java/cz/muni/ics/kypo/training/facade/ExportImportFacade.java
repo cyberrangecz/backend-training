@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdm
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.archive.*;
 import cz.muni.ics.kypo.training.api.dto.export.AbstractLevelExportDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
@@ -34,6 +35,7 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOpti
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
+import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
@@ -49,6 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -67,11 +70,14 @@ public class ExportImportFacade {
     private static final String RUNS_FOLDER = "training_runs";
     private static final String ASSESSMENTS_ANSWERS_FOLDER = "assessments_answers";
 
+    private static final String DELIMITER = ";";
+
     private final ExportImportService exportImportService;
     private final TrainingDefinitionService trainingDefinitionService;
     private final SandboxApiService sandboxApiService;
     private final ElasticsearchApiService elasticsearchApiService;
     private final TrainingFeedbackApiService trainingFeedbackApiService;
+    private final UserService userService;
     private final ExportImportMapper exportImportMapper;
     private final LevelMapper levelMapper;
     private final TrainingDefinitionMapper trainingDefinitionMapper;
@@ -81,9 +87,10 @@ public class ExportImportFacade {
      * Instantiates a new Export import facade.
      *
      * @param exportImportService       the export import service
+     * @param trainingDefinitionService the training definition service
+     * @param userService               the user service
      * @param exportImportMapper        the export import mapper
      * @param levelMapper               the level mapper
-     * @param trainingDefinitionService the training definition service
      * @param trainingDefinitionMapper  the training definition mapper
      * @param objectMapper              the object mapper
      */
@@ -93,7 +100,7 @@ public class ExportImportFacade {
                               ElasticsearchApiService elasticsearchApiService,
                               TrainingFeedbackApiService trainingFeedbackApiService,
                               SandboxApiService sandboxApiService,
-                              ExportImportMapper exportImportMapper,
+                              UserService userService, ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper,
                               ObjectMapper objectMapper) {
@@ -102,6 +109,7 @@ public class ExportImportFacade {
         this.elasticsearchApiService = elasticsearchApiService;
         this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.sandboxApiService = sandboxApiService;
+        this.userService = userService;
         this.exportImportMapper = exportImportMapper;
         this.levelMapper = levelMapper;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
@@ -265,6 +273,49 @@ public class ExportImportFacade {
                             ExtendedMatchingStatement statementToUpdate = question.getExtendedMatchingStatements().get(statementDTO.getOrder());
                             statementToUpdate.setExtendedMatchingOption(correctOption);
                         }));
+    }
+
+    /**
+     * Export all user scores from training instance
+     *
+     * @param trainingInstanceId id of the training instance
+     * @return csv file containing all user score from the instance, {@link FileToReturnDTO}
+     */
+    @IsOrganizerOrAdmin
+    @TransactionalRO
+    public FileToReturnDTO exportUserScoreFromTrainingInstance(Long trainingInstanceId) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ZipOutputStream zos = new ZipOutputStream(baos)) {
+
+            ZipEntry zipEntry = new ZipEntry("training_instance-id" + trainingInstanceId + AbstractFileExtensions.CSV_FILE_EXTENSION);
+            zos.putNextEntry(zipEntry);
+
+            Set<TrainingRun> trainingRuns = exportImportService.findRunsByInstanceId(trainingInstanceId);
+            for (TrainingRun trainingRun : trainingRuns) {
+                zos.write(getCSVString(trainingRun).getBytes(StandardCharsets.UTF_8));
+            }
+
+            zos.closeEntry();
+            zos.close();
+            FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
+            fileToReturnDTO.setContent(baos.toByteArray());
+            fileToReturnDTO.setTitle("training_instance-id" + trainingInstanceId);
+            return fileToReturnDTO;
+        } catch (IOException ex) {
+            throw new InternalServerErrorException("The .zip file was not created since there were some processing error.", ex);
+        }
+    }
+
+    /**
+     * Creates a CSV line from a training run in the format "trainingInstanceId;userRefSub;totalTrainingScore"
+     * @param trainingRun training run to use
+     * @return String with the specified format
+     */
+    private String getCSVString(TrainingRun trainingRun) {
+        UserRefDTO userRefDTO = userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
+        return trainingRun.getTrainingInstance().getId() + DELIMITER +
+                userRefDTO.getUserRefSub() + DELIMITER +
+                trainingRun.getTotalTrainingScore() + System.lineSeparator();
     }
 
     /**

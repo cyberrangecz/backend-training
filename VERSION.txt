@@ -1,3 +1,4 @@
+2.1.2 Added attribute indicating that level can be completed without commands, added level title and order to analytical dashboard data, modify validation of the access token during the TI update, support of APG variables in local environment, fix resolution of the answer viariable in solution and sandbox defintion ID in local content.
 2.1.1 Bugfix - changed transactional annotations in visualization methods.
 2.1.0 Added attribute minimal possible solve time. Support map of games (MITRE techniques). Bugfix - deletion of access level. Bugfix - removed hardcoded page size in progress visualization. Get user IP address from submitted answers. Support backward mode (move to previous levels). Endpoint for analytical dashboard.
 2.0.0 Migrate project to Java 17. Allow to edit end-time of the ongoing training instance. Bugfix - return correct value of the hasReferenceSolution attribute.
