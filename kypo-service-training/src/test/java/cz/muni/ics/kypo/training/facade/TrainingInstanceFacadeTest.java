@@ -190,6 +190,7 @@ public class TrainingInstanceFacadeTest {
         given(trainingInstanceService.findById(trainingInstanceUpdate.getId())).willReturn(trainingInstance1);
         TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setId(1L);
+        given(trainingDefinitionService.findById(trainingInstanceUpdate.getTrainingDefinitionId())).willReturn(trainingDefinition);
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         trainingInstanceUpdate.setPoolId(anyLong());
         trainingInstanceFacade.update(trainingInstanceUpdate);
