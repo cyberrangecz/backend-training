@@ -291,6 +291,8 @@ public class ExportImportFacade {
             zos.putNextEntry(zipEntry);
 
             Set<TrainingRun> trainingRuns = exportImportService.findRunsByInstanceId(trainingInstanceId);
+            String csvHeader = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
+            zos.write(csvHeader.getBytes(StandardCharsets.UTF_8));
             for (TrainingRun trainingRun : trainingRuns) {
                 zos.write(getCSVString(trainingRun).getBytes(StandardCharsets.UTF_8));
             }
