@@ -410,9 +410,6 @@ public class VisualizationFacade {
 
         return trainingInstanceData.events.entrySet().stream().map(runEvents -> {
             AbstractAuditPOJO lastLevelEvent = null;
-            int unfinishedAssessmentLevelScore = 0;
-            int unfinishedTrainingLevelScore = 0;
-            AbstractLevel unfinishedLevel = null;
             UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(runEvents.getKey());
             TablePlayerDTO tablePlayerDataDTO = new TablePlayerDTO(participantInfo, runEvents.getKey());
 
@@ -420,19 +417,13 @@ public class VisualizationFacade {
                 List<AbstractAuditPOJO> levelEvents = runEvents.getValue().get(abstractLevel.getId());
                 if (levelEvents != null) {
                     lastLevelEvent = levelEvents.get(levelEvents.size() - 1);
-                    unfinishedLevel = abstractLevel;
                 } else {
                     levelEvents = Collections.emptyList();
                 }
                 tablePlayerDataDTO.addTableLevel(mapToTableLevelDTO(abstractLevel, levelEvents));
             }
-            if (!(lastLevelEvent instanceof TrainingRunEnded) && unfinishedLevel instanceof TrainingLevel) {
-                unfinishedTrainingLevelScore = lastLevelEvent.getActualScoreInLevel();
-            } else if (!(lastLevelEvent instanceof TrainingRunEnded) && unfinishedLevel instanceof AssessmentLevel) {
-                unfinishedAssessmentLevelScore = lastLevelEvent.getActualScoreInLevel();
-            }
-            tablePlayerDataDTO.setTrainingScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalTrainingScore() + unfinishedTrainingLevelScore);
-            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore() + unfinishedAssessmentLevelScore);
+            tablePlayerDataDTO.setTrainingScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalTrainingScore());
+            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore());
             tablePlayerDataDTO.setFinished(lastLevelEvent instanceof TrainingRunEnded);
             tablePlayerDataDTO.setTrainingTime(lastLevelEvent == null ? 0 : lastLevelEvent.getTrainingTime());
             return tablePlayerDataDTO;
