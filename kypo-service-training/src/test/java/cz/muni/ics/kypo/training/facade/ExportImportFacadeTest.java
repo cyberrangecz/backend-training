@@ -196,7 +196,9 @@ public class ExportImportFacadeTest {
         given(userService.getUserRefDTOByUserRefId(trainingRuns[1].getParticipantRef().getUserRefId())).willReturn(userRefDTOS[1]);
 
         FileToReturnDTO exportedFile = exportImportFacade.exportUserScoreFromTrainingInstance(exportTrainingInstance.getId());
-        byte[] expectedResult = (getCSV(trainingRuns[0]) + getCSV(trainingRuns[1])).getBytes(StandardCharsets.UTF_8);
+        String header = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
+        String expectedString = getCSV(trainingRuns[0]) + getCSV(trainingRuns[1]);
+        byte[] expectedResult = (header + expectedString).getBytes(StandardCharsets.UTF_8);
         // since the buffer will be 0-initialized, we create another similar-sized buffer for easy comparison
         byte[] expected = new byte[1024];
         System.arraycopy(expectedResult, 0, expected, 0, expectedResult.length);
