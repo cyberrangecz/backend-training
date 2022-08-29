@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 2.1.2"
+  version: "Version: 2.2.0"
   title: "KYPO Training - API Reference"
 host: "localhost:8083"
 basePath: "/kypo-rest-training/api/v1"
@@ -74,6 +74,37 @@ paths:
             $ref: "#/definitions/ApiError"
         409:
           description: "Cannot archive instance that is not finished."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /exports/training-instances/{instanceId}/scores:
+    get:
+      tags:
+      - "Export Imports"
+      summary: "Export training instance scores"
+      description: ""
+      operationId: "exportTrainingInstanceScores"
+      produces:
+      - "application/octet-stream"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Id of training instance"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Training instance score exported"
+          schema:
+            type: "string"
+        404:
+          description: "Training instance not found."
           schema:
             $ref: "#/definitions/ApiError"
         500:
@@ -2870,6 +2901,39 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/assessments:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get assessment visualization data."
+      description: ""
+      operationId: "getAssessmentVisualizations"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for assessment visualization found."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/AssessmentVisualizationDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/training-instances/{instanceId}/clustering:
     get:
       tags:
@@ -3309,6 +3373,14 @@ securityDefinitions:
     name: "Authorization"
     in: "header"
 definitions:
+  AbstractAnswerDTO:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+        example: "Ubuntu"
+        description: "Text of the answer option"
+    description: "Superclass for classes EMIAnswerDTO, FFQAnswerDTO, MCQAnswerDTO"
   AbstractLevelDTO:
     type: "object"
     properties:
@@ -3982,6 +4054,37 @@ definitions:
           items:
             $ref: "#/definitions/QuestionDTO"
       description: "Information about assessment level needed for visualizations."
+  AssessmentVisualizationDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of level."
+      title:
+        type: "string"
+        example: "Training Level1"
+        description: "Short textual description of the level."
+      order:
+        type: "integer"
+        format: "int32"
+        example: 1
+        description: "Order of level among levels in training definition."
+      assessment_type:
+        type: "string"
+        example: "TEST"
+        description: "Type of assessment."
+        enum:
+        - "TEST"
+        - "QUESTIONNAIRE"
+      questions:
+        type: "array"
+        example: "What is my mothers name?"
+        description: "List of questions in this assessment as JSON."
+        items:
+          $ref: "#/definitions/QuestionVisualizationDTO"
+    description: "Information needed to visualize assessments statistic."
   AttachmentImportDTO:
     type: "object"
     properties:
@@ -4140,6 +4243,32 @@ definitions:
         type: "string"
         example: "username"
         description: "Identifier of the variant answer."
+  EMIAnswerDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractAnswerDTO"
+    - type: "object"
+      properties:
+        options:
+          type: "array"
+          description: "List of all available options for EMI statement."
+          items:
+            $ref: "#/definitions/EMIOptionDTO"
+      description: "Holds an answer data about the specific EMI statement."
+  EMIOptionDTO:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+        example: "ssh"
+        description: "Text of the EMI option"
+      participants:
+        type: "array"
+        description: "List of the participants that have chosen this FFQ answer."
+        items:
+          $ref: "#/definitions/UserRefDTO"
+      correct:
+        type: "boolean"
+    description: "Holds a data about the specific EMI option."
   EntityErrorDetail:
     type: "object"
     properties:
@@ -4255,6 +4384,19 @@ definitions:
         description: "The order of the correct option in the list of extended matching\
           \ options."
         minimum: 0
+  FFQAnswerDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractAnswerDTO"
+    - type: "object"
+      properties:
+        participants:
+          type: "array"
+          description: "List of the participants that have chosen this FFQ answer."
+          items:
+            $ref: "#/definitions/UserRefDTO"
+        correct:
+          type: "boolean"
+      description: "Holds a data about the specific FFQ answer."
   HintDTO:
     type: "object"
     required:
@@ -4684,6 +4826,19 @@ definitions:
         format: "int64"
       displayed_solution:
         type: "boolean"
+  MCQAnswerDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractAnswerDTO"
+    - type: "object"
+      properties:
+        participants:
+          type: "array"
+          description: "List of the participants that have chosen this MCQ option"
+          items:
+            $ref: "#/definitions/UserRefDTO"
+        correct:
+          type: "boolean"
+      description: "Holds a data about the specific MCQ option."
   MitreTechniqueDTO:
     type: "object"
     required:
@@ -4944,6 +5099,39 @@ definitions:
         description: "Statements displayed to the participant in case of EMI."
         items:
           $ref: "#/definitions/ExtendedMatchingStatementDTO"
+  QuestionVisualizationDTO:
+    type: "object"
+    required:
+    - "question_type"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of the question."
+      question_type:
+        type: "string"
+        example: "FFQ"
+        description: "Type of the question."
+        enum:
+        - "FFQ"
+        - "MCQ"
+        - "EMI"
+      text:
+        type: "string"
+        example: "What transport protocol is used for reliable transmission?"
+        description: "The content of the question."
+      order:
+        type: "integer"
+        format: "int32"
+        example: 0
+        description: "Order of the question, starts with 0"
+      answers:
+        type: "array"
+        description: "Free form question answers to questions submitted by participants."
+        items:
+          $ref: "#/definitions/AbstractAnswerDTO"
+    description: "Information needed to visualize assessments statistic."
   ReferenceSolutionNodeDTO:
     type: "object"
     required:
