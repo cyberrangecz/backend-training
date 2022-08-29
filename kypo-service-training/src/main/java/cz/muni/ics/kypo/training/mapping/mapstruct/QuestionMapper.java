@@ -7,6 +7,8 @@ import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchi
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.ExtendedMatchingOptionDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionChoiceDTO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionDTO;
+import cz.muni.ics.kypo.training.api.enums.AssessmentType;
+import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOption;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
@@ -69,4 +71,7 @@ public interface QuestionMapper extends ParentMapper {
             return entity.getOrder();
         }
     }
+
+    QuestionType mapToApiType(cz.muni.ics.kypo.training.persistence.model.enums.QuestionType questionType);
+
 }

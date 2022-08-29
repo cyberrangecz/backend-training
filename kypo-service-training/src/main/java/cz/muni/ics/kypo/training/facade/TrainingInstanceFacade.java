@@ -24,11 +24,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -125,7 +127,8 @@ public class TrainingInstanceFacade {
      * @param trainingInstanceUpdateDTO to be updated
      * @return new access token if it was changed
      */
-    @IsOrganizerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceUpdateDTO.getId())")
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         TrainingInstance updatedTrainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
@@ -138,12 +141,34 @@ public class TrainingInstanceFacade {
         }
         checkLocalEnvironmentConfiguration(updatedTrainingInstance);
         updatedTrainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
+        validateVariableNames(updatedTrainingInstance);
         Long oldPoolId = trainingInstance.getPoolId();
         String accessToken = trainingInstanceService.update(updatedTrainingInstance);
         if (isPoolIdChanged(oldPoolId, updatedTrainingInstance.getPoolId())) {
             handlePoolIdModification(oldPoolId, updatedTrainingInstance.getPoolId());
         }
         return accessToken;
+    }
+
+    private void validateVariableNames(TrainingInstance trainingInstance) {
+        if (trainingInstance.getPoolId() == null && trainingInstance.getSandboxDefinitionId() == null) {
+            return;
+        }
+        Set<String> trainingDefinitionVariables = trainingDefinitionService.getAllTrainingLevels(trainingInstance.getTrainingDefinition().getId()).stream()
+                .map(TrainingLevel::getAnswerVariableName)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (!trainingDefinitionVariables.isEmpty()) {
+            Set<String> sandboxDefinitionVariables = trainingInstance.getPoolId() != null ?
+                    sandboxApiService.getVariablesByPoolId(trainingInstance.getPoolId()).getVariables() :
+                    sandboxApiService.getVariablesBySandboxDefinitionId(trainingInstance.getSandboxDefinitionId());
+            if(!sandboxDefinitionVariables.containsAll(trainingDefinitionVariables)) {
+                trainingDefinitionVariables.removeAll(sandboxDefinitionVariables);
+                throw new EntityConflictException(new EntityErrorDetail("Variable names [" + StringUtils.collectionToCommaDelimitedString(trainingDefinitionVariables) +
+                        "] defined in the training definition (ID: " + trainingInstance.getTrainingDefinition().getId() + ") aren't present in the sandbox definition."));
+            }
+        }
+
     }
 
     private void handlePoolIdModification(Long currentPoolId, Long newPoolId) {
@@ -175,6 +200,7 @@ public class TrainingInstanceFacade {
         TrainingInstance trainingInstance = trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
         checkLocalEnvironmentConfiguration(trainingInstance);
         trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
+        validateVariableNames(trainingInstance);
         trainingInstance.setId(null);
         TrainingInstance createdTrainingInstance = trainingInstanceService.create(trainingInstance);
         if(trainingInstance.getPoolId() != null) {
@@ -427,9 +453,13 @@ public class TrainingInstanceFacade {
         if (trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() != null) {
             throw new BadRequestException("The pool cannot be assigned to training instance if the local environment is enabled.");
         }
+
+        if (!trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() == null) {
+            throw new BadRequestException("The pool must be set if local environment is disabled.");
+        }
+
         if (!trainingInstance.isLocalEnvironment() && trainingInstance.getSandboxDefinitionId() != null) {
             throw new BadRequestException("The sandbox definition cannot be set in the training instance if the local environment is disabled.");
         }
     }
-
 }

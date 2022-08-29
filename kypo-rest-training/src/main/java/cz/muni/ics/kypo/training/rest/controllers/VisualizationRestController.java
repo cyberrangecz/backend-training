@@ -5,6 +5,7 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.assessment.AssessmentVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.analytical.TrainingInstanceAnalyticalDashboardDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
@@ -12,8 +13,9 @@ import cz.muni.ics.kypo.training.api.dto.visualization.leveltabs.LevelTabsLevelD
 import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.facade.visualization.AssessmentVisualizationFacade;
+import cz.muni.ics.kypo.training.facade.visualization.VisualizationFacade;
 import cz.muni.ics.kypo.training.facade.AnalyticalDashboardFacade;
-import cz.muni.ics.kypo.training.facade.VisualizationFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
@@ -48,6 +50,7 @@ public class VisualizationRestController {
     private static final Logger LOG = LoggerFactory.getLogger(VisualizationRestController.class);
 
     private VisualizationFacade visualizationFacade;
+    private AssessmentVisualizationFacade assessmentVisualizationFacade;
     private AnalyticalDashboardFacade analyticalDashboardFacade;
     private ObjectMapper objectMapper;
 
@@ -59,9 +62,11 @@ public class VisualizationRestController {
      */
     @Autowired
     public VisualizationRestController(VisualizationFacade visualizationFacade,
+                                       AssessmentVisualizationFacade assessmentVisualizationFacade,
                                        AnalyticalDashboardFacade analyticalDashboardFacade,
                                        ObjectMapper objectMapper) {
         this.visualizationFacade = visualizationFacade;
+        this.assessmentVisualizationFacade = assessmentVisualizationFacade;
         this.analyticalDashboardFacade = analyticalDashboardFacade;
         this.objectMapper = objectMapper;
     }
@@ -424,5 +429,27 @@ public class VisualizationRestController {
     public ResponseEntity<Object> getTrainingDefinitionsWithMitreTechniques() {
         List<TrainingDefinitionMitreTechniquesDTO> trainingDefinitionMitreTechniquesDTOS = visualizationFacade.getTrainingDefinitionsWithMitreTechniques();
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionMitreTechniquesDTOS));
+    }
+
+    /**
+     * Get data for assessment visualizations. Return list of relevant data for each assessment level that can be found in the definition
+     * of the particular training instance.
+     *
+     * @return assessment visualization data
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get assessment visualization data.",
+            response = AssessmentVisualizationDTO[].class,
+            nickname = "getAssessmentVisualizations"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for assessment visualization found.", response = AssessmentVisualizationDTO[].class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/{instanceId}/assessments")
+    public ResponseEntity<Object> getAssessmentVisualizations(@ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long instanceId) {
+        List<AssessmentVisualizationDTO> assessmentVisualizationDTOs = assessmentVisualizationFacade.getAssessmentVisualizationData(instanceId);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, assessmentVisualizationDTOs));
     }
 }

@@ -10,6 +10,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+
+@NamedQueries({
+        @NamedQuery(
+                name = "QuestionAnswer.getAllByQuestionIdAndInstanceId",
+                query = "SELECT qa FROM QuestionAnswer qa " +
+                        "JOIN FETCH qa.question q " +
+                        "JOIN FETCH qa.trainingRun tr " +
+                        "JOIN FETCH tr.trainingInstance ti " +
+                        "WHERE q.id = :questionId AND ti.id = :instanceId"
+        )
+})
 @Entity
 @Table(name = "question_answer")
 public class QuestionAnswer implements Serializable {

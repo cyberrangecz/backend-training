@@ -22,6 +22,7 @@ import cz.muni.ics.kypo.training.api.dto.imports.InfoLevelImportDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelDefinitionProgressDTO;
+import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -81,6 +82,8 @@ public interface LevelMapper extends ParentMapper {
 
     @Mapping(source = "questions", target = "questions", qualifiedByName = "questionWithoutId")
     AssessmentLevelExportDTO mapToExportAssessmentLevelDTO(AssessmentLevel entity);
+
+    AssessmentType mapToApiType(cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType assessmentType);
 
     // TRAINING LEVEL
     TrainingLevel mapToEntity(TrainingLevelDTO dto);

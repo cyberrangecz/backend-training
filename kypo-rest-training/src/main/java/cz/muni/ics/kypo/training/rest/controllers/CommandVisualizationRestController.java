@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.rest.controllers;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.MistakeType;
-import cz.muni.ics.kypo.training.facade.CommandVisualizationFacade;
+import cz.muni.ics.kypo.training.facade.visualization.CommandVisualizationFacade;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;

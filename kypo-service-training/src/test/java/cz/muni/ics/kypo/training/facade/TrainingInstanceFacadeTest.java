@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.LockedPoolInfo;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
+import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
@@ -178,6 +179,7 @@ public class TrainingInstanceFacadeTest {
         given(trainingDefinitionService.findById(any(Long.class))).willReturn(new TrainingDefinition());
         given(trainingInstanceService.findUserRefsByUserRefIds(any(Set.class))).willReturn(new HashSet());
         given(userService.getUsersRefDTOByGivenUserIds(anyList(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
+        trainingInstanceCreate.setPoolId(anyLong());
         trainingInstanceFacade.create(trainingInstanceCreate);
         then(trainingInstanceService).should().create(any(TrainingInstance.class));
     }
@@ -188,7 +190,9 @@ public class TrainingInstanceFacadeTest {
         given(trainingInstanceService.findById(trainingInstanceUpdate.getId())).willReturn(trainingInstance1);
         TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
         trainingDefinition.setId(1L);
+        given(trainingDefinitionService.findById(trainingInstanceUpdate.getTrainingDefinitionId())).willReturn(trainingDefinition);
         trainingInstance1.setTrainingDefinition(trainingDefinition);
+        trainingInstanceUpdate.setPoolId(anyLong());
         trainingInstanceFacade.update(trainingInstanceUpdate);
         then(trainingInstanceService).should().update(any(TrainingInstance.class));
     }
@@ -383,6 +387,26 @@ public class TrainingInstanceFacadeTest {
         trainingInstanceFacade.editOrganizers(trainingInstance1.getId(), new HashSet<>(Set.of(organizer2.getUserRefId(), organizer3.getUserRefId())), new HashSet<>());
         assertEquals(3, trainingInstance1.getOrganizers().size());
         assertTrue(trainingInstance1.getOrganizers().containsAll(Set.of(organizer1, organizer2, organizer3)));
+    }
+
+    @Test
+    public void createNonLocalInstanceWithNoPool() {
+        trainingInstanceCreate.setLocalEnvironment(false);
+        trainingInstanceCreate.setPoolId(null);
+
+        assertThrows(BadRequestException.class, () -> trainingInstanceFacade.create(trainingInstanceCreate));
+    }
+
+    @Test
+    public void updateNonLocalInstanceWithNoPool() {
+        given(userService.getUsersRefDTOByGivenUserIds(anyList(), any(Pageable.class), anyString(), anyString())).willReturn(new PageResultResource<>(new ArrayList<>()));
+        given(trainingInstanceService.findById(trainingInstanceUpdate.getId())).willReturn(trainingInstance1);
+        TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
+        trainingDefinition.setId(1L);
+        trainingInstance1.setTrainingDefinition(trainingDefinition);
+        trainingInstance1.setPoolId(null);
+        trainingInstance1.setLocalEnvironment(false);
+        assertThrows(BadRequestException.class, () -> trainingInstanceFacade.update(trainingInstanceUpdate));
     }
 
     private void deepEqualsTrainingInstanceFindAllView(TrainingInstance expected, TrainingInstanceFindAllResponseDTO actual) {
