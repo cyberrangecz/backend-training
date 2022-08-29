@@ -3,11 +3,15 @@ package cz.muni.ics.kypo.training.service;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
+import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingLevel;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
+import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
 import cz.muni.ics.kypo.training.persistence.repository.AbstractLevelRepository;
+import cz.muni.ics.kypo.training.persistence.repository.AssessmentLevelRepository;
+import cz.muni.ics.kypo.training.persistence.repository.QuestionAnswerRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingLevelRepository;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +29,8 @@ public class VisualizationService {
     private final AbstractLevelRepository abstractLevelRepository;
     private final UserRefRepository userRefRepository;
     private final TrainingLevelRepository trainingLevelRepository;
+    private final AssessmentLevelRepository assessmentLevelRepository;
+    private final QuestionAnswerRepository questionAnswerRepository;
 
     /**
      * Instantiates a new Visualization service.
@@ -35,10 +41,14 @@ public class VisualizationService {
     @Autowired
     public VisualizationService(AbstractLevelRepository abstractLevelRepository,
                                 UserRefRepository userRefRepository,
-                                TrainingLevelRepository trainingLevelRepository) {
+                                TrainingLevelRepository trainingLevelRepository,
+                                AssessmentLevelRepository assessmentLevelRepository,
+                                QuestionAnswerRepository questionAnswerRepository) {
         this.abstractLevelRepository = abstractLevelRepository;
         this.userRefRepository = userRefRepository;
         this.trainingLevelRepository = trainingLevelRepository;
+        this.assessmentLevelRepository = assessmentLevelRepository;
+        this.questionAnswerRepository = questionAnswerRepository;
     }
 
     /**
@@ -82,5 +92,13 @@ public class VisualizationService {
 
     public List<TrainingLevel> getTrainingLevelsByTrainingDefinitionId(Long trainingDefinitionId) {
         return trainingLevelRepository.findAllByTrainingDefinitionId(trainingDefinitionId);
+    }
+
+    public List<AssessmentLevel> getAssessmentLevelsByTrainingDefinitionId(Long trainingDefinitionId) {
+        return assessmentLevelRepository.findAllByTrainingDefinitionId(trainingDefinitionId);
+    }
+
+    public List<QuestionAnswer> getAnswersToQuestionByTrainingInstance(Long questionId, Long instanceId) {
+        return questionAnswerRepository.getAllByQuestionIdAndInstanceId(questionId, instanceId);
     }
 }

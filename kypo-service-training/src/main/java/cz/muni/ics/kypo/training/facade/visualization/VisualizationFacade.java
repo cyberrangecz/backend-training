@@ -1,4 +1,4 @@
-package cz.muni.ics.kypo.training.facade;
+package cz.muni.ics.kypo.training.facade.visualization;
 
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.events.trainings.*;
@@ -29,6 +29,7 @@ import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.SandboxAnswersInfo;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.QuestionMapper;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.LevelProgress;
@@ -36,6 +37,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.progress.PlayerProgress;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
 import cz.muni.ics.kypo.training.api.enums.LevelState;
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import cz.muni.ics.kypo.training.persistence.repository.QuestionAnswerRepository;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
@@ -408,9 +410,6 @@ public class VisualizationFacade {
 
         return trainingInstanceData.events.entrySet().stream().map(runEvents -> {
             AbstractAuditPOJO lastLevelEvent = null;
-            int unfinishedAssessmentLevelScore = 0;
-            int unfinishedTrainingLevelScore = 0;
-            AbstractLevel unfinishedLevel = null;
             UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(runEvents.getKey());
             TablePlayerDTO tablePlayerDataDTO = new TablePlayerDTO(participantInfo, runEvents.getKey());
 
@@ -418,19 +417,13 @@ public class VisualizationFacade {
                 List<AbstractAuditPOJO> levelEvents = runEvents.getValue().get(abstractLevel.getId());
                 if (levelEvents != null) {
                     lastLevelEvent = levelEvents.get(levelEvents.size() - 1);
-                    unfinishedLevel = abstractLevel;
                 } else {
                     levelEvents = Collections.emptyList();
                 }
                 tablePlayerDataDTO.addTableLevel(mapToTableLevelDTO(abstractLevel, levelEvents));
             }
-            if (!(lastLevelEvent instanceof TrainingRunEnded) && unfinishedLevel instanceof TrainingLevel) {
-                unfinishedTrainingLevelScore = lastLevelEvent.getActualScoreInLevel();
-            } else if (!(lastLevelEvent instanceof TrainingRunEnded) && unfinishedLevel instanceof AssessmentLevel) {
-                unfinishedAssessmentLevelScore = lastLevelEvent.getActualScoreInLevel();
-            }
-            tablePlayerDataDTO.setTrainingScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalTrainingScore() + unfinishedTrainingLevelScore);
-            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore() + unfinishedAssessmentLevelScore);
+            tablePlayerDataDTO.setTrainingScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalTrainingScore());
+            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore());
             tablePlayerDataDTO.setFinished(lastLevelEvent instanceof TrainingRunEnded);
             tablePlayerDataDTO.setTrainingTime(lastLevelEvent == null ? 0 : lastLevelEvent.getTrainingTime());
             return tablePlayerDataDTO;

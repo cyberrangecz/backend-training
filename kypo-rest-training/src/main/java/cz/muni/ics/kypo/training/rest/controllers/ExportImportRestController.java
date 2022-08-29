@@ -110,7 +110,7 @@ public class ExportImportRestController {
     }
 
     /**
-     * Archive training instance.
+     * Archive training instance
      *
      * @param trainingInstanceId the training instance id
      * @return file containing wanted training instance
@@ -138,4 +138,41 @@ public class ExportImportRestController {
         return new ResponseEntity<>(file.getContent(), header, HttpStatus.OK);
     }
 
+    /**
+     * Export user scores from a specific training instance
+     * @param trainingInstanceId id of the training instance
+     * @return CSV file containing user scores
+     */
+    @ApiOperation(httpMethod = "GET",
+                    value = "Export training instance scores",
+                    response = String.class,
+                    nickname = "exportTrainingInstanceScores",
+                    produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Training instance score exported", response = String.class),
+            @ApiResponse(code = 404, message = "Training instance not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/exports/training-instances/{instanceId}/scores", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> exportTrainingInstanceScores(
+            @ApiParam(value = "Id of training instance", required = true)
+            @PathVariable("instanceId") Long trainingInstanceId) {
+        FileToReturnDTO file = exportImportFacade.exportUserScoreFromTrainingInstance(trainingInstanceId);
+        HttpHeaders header = zipHeader(file.getTitle(), file.getContent().length);
+        return new ResponseEntity<>(file.getContent(), header, HttpStatus.OK);
+    }
+
+    /**
+     * Create a http header for zip files
+     * @param fileName  name of the file
+     * @param length    size of the file
+     * @return corresponding {@link HttpHeaders}
+     */
+    private HttpHeaders zipHeader(String fileName, int length) {
+        HttpHeaders header = new HttpHeaders();
+        header.setContentType(new MediaType("application", "octet-stream"));
+        header.set("Content-Disposition", "inline; filename=" + fileName + AbstractFileExtensions.ZIP_FILE_EXTENSION);
+        header.setContentLength(length);
+        return header;
+    }
 }

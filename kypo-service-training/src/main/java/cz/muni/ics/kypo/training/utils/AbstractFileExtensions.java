@@ -12,4 +12,9 @@ public abstract class AbstractFileExtensions {
      * The constant ZIP_FILE_EXTENSION.
      */
     public static final String ZIP_FILE_EXTENSION = ".zip";
+
+    /**
+     * The constant CSV_FILE_EXTENSION
+     */
+    public static final String CSV_FILE_EXTENSION = ".csv";
 }

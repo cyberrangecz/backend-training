@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.analytical.LevelAnalytica
 import cz.muni.ics.kypo.training.api.dto.visualization.analytical.ParticipantAnalyticalDashboardDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.analytical.ParticipantLevelAnalyticalDashboardDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.analytical.TrainingInstanceAnalyticalDashboardDTO;
+import cz.muni.ics.kypo.training.facade.visualization.VisualizationFacade;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.*;

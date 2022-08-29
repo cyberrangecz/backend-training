@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.AssessmentLevelImportDTO;
@@ -12,6 +13,8 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.service.SecurityService;
+import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.ExportImportService;
@@ -19,18 +22,20 @@ import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
@@ -70,6 +75,10 @@ public class ExportImportFacadeTest {
     private ExportImportService exportImportService;
     @MockBean
     private TrainingFeedbackApiService trainingFeedbackApiService;
+    @MockBean
+    private UserService userService;
+    @MockBean
+    private SecurityService securityService;
 
     private TrainingDefinition trainingDefinition;
     private TrainingDefinition trainingDefinitionImported;
@@ -78,12 +87,16 @@ public class ExportImportFacadeTest {
     private InfoLevel infoLevel;
     private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
     private ElasticsearchApiService elasticsearchApiService;
+    private TrainingInstance exportTrainingInstance;
+    private TrainingRun[] trainingRuns;
+    private UserRefDTO[] userRefDTOS;
+    private final String DELIMITER = ";";
 
     @BeforeEach
     public void init() {
         MockitoAnnotations.openMocks(this);
         exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, elasticsearchApiService,
-                trainingFeedbackApiService, sandboxApiService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
+                trainingFeedbackApiService, sandboxApiService, userService, securityService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);
@@ -117,6 +130,28 @@ public class ExportImportFacadeTest {
 
         TrainingRun trainingRun = testDataFactory.getFinishedRun();
         trainingRun.setTrainingInstance(trainingInstance);
+
+
+        exportTrainingInstance = testDataFactory.getConcludedInstance();
+        exportTrainingInstance.setId(18L);
+        UserRef user = testDataFactory.getUserRef1();
+        UserRef user2 = testDataFactory.getUserRef2();
+        trainingRuns = new TrainingRun[2];
+        userRefDTOS = new UserRefDTO[2];
+        userRefDTOS[0] = testDataFactory.getUserRefDTO1();
+        userRefDTOS[1] = testDataFactory.getUserRefDTO2();
+
+        TrainingRun trainingRun2 = testDataFactory.getFinishedRun();
+        trainingRuns[0] = trainingRun2;
+        trainingRun2.setTrainingInstance(exportTrainingInstance);
+        trainingRun2.setTotalTrainingScore(131);
+        trainingRun2.setParticipantRef(user);
+
+        TrainingRun trainingRun3 = testDataFactory.getFinishedRun();
+        trainingRuns[1] = trainingRun3;
+        trainingRun3.setTrainingInstance(exportTrainingInstance);
+        trainingRun3.setTotalTrainingScore(10);
+        trainingRun3.setParticipantRef(user2);
     }
 
 	@Test
@@ -153,6 +188,37 @@ public class ExportImportFacadeTest {
         deepEqualsTrainingDefinitionDTO(trainingDefinitionByIdDTOImported, trainingDefinitionByIdDTO);
     }
 
+    @Test
+    public void exportUserScoreFromTrainingInstance() {
+        given(exportImportService.findRunsByInstanceId(exportTrainingInstance.getId())).willReturn(Arrays.stream(trainingRuns).collect(Collectors.toSet()));
+        given(userService.getUserRefDTOByUserRefId(trainingRuns[0].getParticipantRef().getUserRefId())).willReturn(userRefDTOS[0]);
+        given(userService.getUserRefDTOByUserRefId(trainingRuns[1].getParticipantRef().getUserRefId())).willReturn(userRefDTOS[1]);
+
+        FileToReturnDTO exportedFile = exportImportFacade.exportUserScoreFromTrainingInstance(exportTrainingInstance.getId());
+        String header = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
+        String expectedString = getCSV(trainingRuns[0]) + getCSV(trainingRuns[1]);
+        byte[] expectedResult = (header + expectedString).getBytes(StandardCharsets.UTF_8);
+        // since the buffer will be 0-initialized, we create another similar-sized buffer for easy comparison
+        byte[] expected = new byte[1024];
+        System.arraycopy(expectedResult, 0, expected, 0, expectedResult.length);
+        byte[] buffer = new byte[1024];
+
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(exportedFile.getContent());
+             ZipInputStream zis = new ZipInputStream(bais)) {
+            ZipEntry zipEntry = zis.getNextEntry();
+            assertNotNull(zipEntry);
+            assertEquals("training_instance-id" + exportTrainingInstance.getId() + ".csv", zipEntry.getName());
+            zis.read(buffer);
+            assertArrayEquals(expected, buffer);
+
+            // no more entries in the zip file
+            zipEntry = zis.getNextEntry();
+            assertNull(zipEntry);
+        } catch (IOException ex) {
+            fail();
+        }
+    }
+
     private void deepEqualsTrainingDefinitionDTO(TrainingDefinitionByIdDTO t1, TrainingDefinitionByIdDTO t2) {
         assertEquals(t1.getId(), t2.getId());
         assertEquals(t1.getState(), t2.getState());
@@ -162,4 +228,9 @@ public class ExportImportFacadeTest {
         assertEquals(t1.getLevels(), t2.getLevels());
     }
 
+    private String getCSV(TrainingRun trainingRun) {
+        return trainingRun.getTrainingInstance().getId() + DELIMITER
+                + userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId()).getUserRefSub() + DELIMITER
+                + trainingRun.getTotalTrainingScore() + System.lineSeparator();
+    }
 }
