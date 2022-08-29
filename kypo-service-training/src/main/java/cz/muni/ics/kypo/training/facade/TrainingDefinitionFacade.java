@@ -212,7 +212,8 @@ public class TrainingDefinitionFacade {
      *
      * @param trainingDefinitionUpdateDTO to be updated
      */
-    @IsDesignerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionUpdateDTO.getId())")
     @TransactionalWO
     public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
         TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
@@ -255,7 +256,8 @@ public class TrainingDefinitionFacade {
      * @param title the title of cloned definition
      * @return DTO of cloned definition, {@link TrainingDefinitionByIdDTO}
      */
-    @IsDesignerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
     @TransactionalWO
     public TrainingDefinitionByIdDTO clone(Long id, String title) {
         TrainingDefinitionByIdDTO clonedDefinition = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
@@ -622,7 +624,8 @@ public class TrainingDefinitionFacade {
      * @param authorsAddition      ids of the authors to be added to the training definition
      * @param authorsRemoval       ids of the authors to be removed from the training definition.
      */
-    @IsDesignerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
     @TransactionalWO
     public void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);

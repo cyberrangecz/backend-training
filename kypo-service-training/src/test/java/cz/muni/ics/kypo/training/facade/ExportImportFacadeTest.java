@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
@@ -27,16 +28,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,6 +77,8 @@ public class ExportImportFacadeTest {
     private TrainingFeedbackApiService trainingFeedbackApiService;
     @MockBean
     private UserService userService;
+    @MockBean
+    private SecurityService securityService;
 
     private TrainingDefinition trainingDefinition;
     private TrainingDefinition trainingDefinitionImported;
@@ -97,7 +96,7 @@ public class ExportImportFacadeTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, elasticsearchApiService,
-                trainingFeedbackApiService, sandboxApiService, userService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
+                trainingFeedbackApiService, sandboxApiService, userService, securityService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);
