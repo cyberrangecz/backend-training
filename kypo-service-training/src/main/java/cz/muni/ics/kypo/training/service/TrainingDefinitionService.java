@@ -848,6 +848,7 @@ public class TrainingDefinitionService {
             trainingDefinition.addAuthor(user.get());
         } else {
             UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
+            userRefRepository.saveAndFlush(newUser);
             trainingDefinition.addAuthor(newUser);
         }
     }
