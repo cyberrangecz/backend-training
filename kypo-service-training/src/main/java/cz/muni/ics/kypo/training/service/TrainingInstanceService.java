@@ -113,7 +113,7 @@ public class TrainingInstanceService {
      * @return created {@link TrainingInstance}
      */
     public TrainingInstance create(TrainingInstance trainingInstance) {
-        trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
+        trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken().trim()));
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "End time must be later than start time."));

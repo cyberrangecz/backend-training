@@ -1,3 +1,4 @@
+2.2.1 Fixed saving new user ref to repository
 2.2.0 Added functionality to export score from training instance, fix authorization requirements for various training definition/instance functions, trim access codes on instance creation, removed stack trace from errors, it is no longer possible to create/edit non-local instances without setting the pool, fixed incorrect score calculation in the trainees table visualization.
 2.1.2 Added attribute indicating that level can be completed without commands, added level title and order to analytical dashboard data, modify validation of the access token during the TI update, support of APG variables in local environment, fix resolution of the answer viariable in solution and sandbox defintion ID in local content.
 2.1.1 Bugfix - changed transactional annotations in visualization methods.
