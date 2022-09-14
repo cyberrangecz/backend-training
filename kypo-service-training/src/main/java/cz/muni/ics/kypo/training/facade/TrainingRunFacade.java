@@ -23,6 +23,7 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -147,6 +148,15 @@ public class TrainingRunFacade {
         if(trainingRunIds.isEmpty()) {
             return;
         }
+
+        if (!securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
+            for (Long trainingRunId : trainingRunIds) {
+                if (!securityService.isOrganizerOfGivenTrainingRun(trainingRunId)) {
+                    throw new SecurityException("Cannot delete training runs from different instance.");
+                }
+            }
+        }
+
         TrainingInstance trainingInstance = null;
         for (Long trainingRunId : trainingRunIds) {
             trainingInstance = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true).getTrainingInstance();
