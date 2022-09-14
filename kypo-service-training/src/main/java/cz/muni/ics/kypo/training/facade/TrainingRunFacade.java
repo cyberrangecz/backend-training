@@ -162,7 +162,8 @@ public class TrainingRunFacade {
      * @param trainingRunId training run to delete
      * @param forceDelete   indicates if this training run should be force deleted.
      */
-    @IsOrganizerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+        "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
         TrainingRun deletedTrainingRun = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true);
