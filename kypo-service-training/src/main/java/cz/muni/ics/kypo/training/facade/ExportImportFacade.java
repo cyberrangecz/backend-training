@@ -291,27 +291,21 @@ public class ExportImportFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public FileToReturnDTO exportUserScoreFromTrainingInstance(Long trainingInstanceId) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             ZipOutputStream zos = new ZipOutputStream(baos)) {
-
-            ZipEntry zipEntry = new ZipEntry("training_instance-id" + trainingInstanceId + AbstractFileExtensions.CSV_FILE_EXTENSION);
-            zos.putNextEntry(zipEntry);
-
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Set<TrainingRun> trainingRuns = exportImportService.findRunsByInstanceId(trainingInstanceId);
             String csvHeader = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
-            zos.write(csvHeader.getBytes(StandardCharsets.UTF_8));
+            baos.write(csvHeader.getBytes(StandardCharsets.UTF_8));
+
             for (TrainingRun trainingRun : trainingRuns) {
-                zos.write(getCSVString(trainingRun).getBytes(StandardCharsets.UTF_8));
+                baos.write(getCSVString(trainingRun).getBytes(StandardCharsets.UTF_8));
             }
 
-            zos.closeEntry();
-            zos.close();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
             fileToReturnDTO.setContent(baos.toByteArray());
-            fileToReturnDTO.setTitle("training_instance-id" + trainingInstanceId);
+            fileToReturnDTO.setTitle("training_instance-id" + trainingInstanceId + "-scores");
             return fileToReturnDTO;
         } catch (IOException ex) {
-            throw new InternalServerErrorException("The .zip file was not created since there were some processing error.", ex);
+            throw new InternalServerErrorException("The .csv file was not created due to some processing error.", ex);
         }
     }
 
