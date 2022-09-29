@@ -66,7 +66,7 @@ public class AnalyticalDashboardFacade {
         //INSTANCES
         for (TrainingInstance instance: trainingInstances) {
             TrainingInstanceData instanceData = new TrainingInstanceData(instance.getId(), trainingLevels);
-            var eventsByTrainingRunsAndLevels= elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(instance);
+            var eventsByTrainingRunsAndLevels= elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(instance.getId());
             List<ParticipantAnalyticalDashboardDTO> participantsDetails = processParticipants(eventsByTrainingRunsAndLevels, instanceData, trainingLevelIds);
 
             TrainingInstanceAnalyticalDashboardDTO analysedInstance = new TrainingInstanceAnalyticalDashboardDTO();
