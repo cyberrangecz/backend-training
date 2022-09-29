@@ -211,7 +211,7 @@ public class CommandVisualizationFacade {
             Long userId = trainingRun.getParticipantRef().getId();
             elasticCommands = elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
-            Long sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
+            String sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
             elasticCommands = elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxId);
         }
 

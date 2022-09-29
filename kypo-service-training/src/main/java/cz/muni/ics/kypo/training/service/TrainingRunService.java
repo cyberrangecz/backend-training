@@ -164,7 +164,7 @@ public class TrainingRunService {
             Long userId = trainingRun.getParticipantRef().getUserRefId();
             elasticsearchApiService.deleteCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
-            Long sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
+            String sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
             elasticsearchApiService.deleteCommandsBySandbox(sandboxId);
         }
         elasticsearchApiService.deleteEventsFromTrainingRun(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
@@ -394,7 +394,7 @@ public class TrainingRunService {
      * @throws MicroserviceApiException error calling OpenStack Sandbox Service API
      */
     public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
-        Long sandboxInstanceRef = sandboxApiService.getAndLockSandbox(poolId).getId();
+        String sandboxInstanceRef = sandboxApiService.getAndLockSandbox(poolId).getId();
         trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
         return trainingRunRepository.save(trainingRun);
     }

@@ -135,7 +135,7 @@ public class TrainingRunServiceTest {
         infoLevel2.setTrainingDefinition(trainingDefinition2);
 
         sandboxInfo = new SandboxInfo();
-        sandboxInfo.setId(7L);
+        sandboxInfo.setId("7L");
 
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);

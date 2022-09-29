@@ -154,7 +154,7 @@ public class VisualizationFacade {
                     trainingRun.getTrainingInstance().getAccessToken(),
                     trainingRun.getParticipantRef().getUserRefId());
         }
-        Long sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
+        String sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
         return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxIdentifier);
     }
 
@@ -219,7 +219,7 @@ public class VisualizationFacade {
         Map<Long, String> answerVariableNameByLevelId = abstractLevels.stream()
                 .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class && ((TrainingLevel) abstractLevel).getAnswerVariableName() != null)
                 .collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswerVariableName()));
-        Map<Long, Map<String, String>> variantAnswersBySandbox = getVariantAnswers(trainingInstance, !answerVariableNameByLevelId.isEmpty());
+        Map<String, Map<String, String>> variantAnswersBySandbox = getVariantAnswers(trainingInstance, !answerVariableNameByLevelId.isEmpty());
 
         VisualizationProgressDTO visualizationProgressDTO = new VisualizationProgressDTO();
         visualizationProgressDTO.setStartTime(trainingInstance.getStartTime().toEpochSecond(ZoneOffset.UTC));
@@ -271,26 +271,35 @@ public class VisualizationFacade {
     }
 
     private String getLevelVariantAnswer(Long levelId, AbstractAuditPOJO levelEvent, Map<Long, String> answerVariableNameByLevelId,
-                                         boolean isLocalEnvironment, Map<Long, Map<String, String>> variantAnswersBySandbox) {
+                                         boolean isLocalEnvironment, Map<String, Map<String, String>> variantAnswersBySandbox) {
         // if local environment is enabled, the sandbox is identified by user ID, otherwise unique sandbox ID is used
-        Long sandboxIdentifier = isLocalEnvironment ? levelEvent.getUserRefId() : levelEvent.getSandboxId();
+        String sandboxIdentifier = isLocalEnvironment ? String.valueOf(levelEvent.getUserRefId()) : levelEvent.getSandboxId();
         return variantAnswersBySandbox.getOrDefault(sandboxIdentifier, new HashMap<>()).get(answerVariableNameByLevelId.get(levelId));
     }
 
-    private Map<Long, Map<String, String>> getVariantAnswers(TrainingInstance instance, boolean isVariableNamesDefined) {
+    private Map<String, Map<String, String>> getVariantAnswers(TrainingInstance instance, boolean isVariableNamesDefined) {
         if (!isVariableNamesDefined) {
             return new HashMap<>();
         }
         // TODO cache the response because those data are not changing and frontend requests progress data periodically
-        return instance.isLocalEnvironment() ?
-            answersStorageApiService.getAnswersByAccessTokenAndUserIds(instance.getAccessToken(), trainingInstanceService.findAllTraineesByTrainingInstance(instance.getId()))
+        Map<String, Map<String, String>> variantAnswers;
+        if (instance.isLocalEnvironment()) {
+            variantAnswers =
+                    answersStorageApiService.getAnswersByAccessTokenAndUserIds(instance.getAccessToken(), trainingInstanceService.findAllTraineesByTrainingInstance(instance.getId()))
                     .getContent()
                     .stream()
-                    .collect(Collectors.toMap(SandboxAnswersInfo::getUserId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers()))) :
-            answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(instance.getId()))
+                    .collect(Collectors.toMap(this::userIdToString, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
+        } else {
+            variantAnswers = answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(instance.getId()))
                     .getContent()
                     .stream()
                     .collect(Collectors.toMap(SandboxAnswersInfo::getSandboxRefId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
+        }
+        return variantAnswers;
+    }
+
+    private String userIdToString(SandboxAnswersInfo answersInfo) {
+        return answersInfo.getUserId().toString();
     }
 
     private List<UserRefDTO> getListOfPlayers(Long instanceId) {

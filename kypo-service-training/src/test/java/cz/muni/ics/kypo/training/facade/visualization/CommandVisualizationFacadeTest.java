@@ -113,7 +113,7 @@ class CommandVisualizationFacadeTest {
             run.setStartTime(startTime);
             run.setTrainingInstance(trainingInstance);
             run.setIncorrectAnswerCount((int) i);
-            run.setSandboxInstanceRefId(i);
+            run.setSandboxInstanceRefId(String.valueOf(i));
             trainingRuns.add(run);
         }
     }
@@ -121,7 +121,7 @@ class CommandVisualizationFacadeTest {
     @Test
     void getAllCommandsByTrainingRun() {
         given(trainingRunService.findById(anyLong())).willReturn(trainingRun);
-        given(elasticsearchApiService.findAllConsoleCommandsBySandbox(anyLong())).willReturn(elasticCommands);
+        given(elasticsearchApiService.findAllConsoleCommandsBySandbox(anyString())).willReturn(elasticCommands);
         List<CommandDTO> received = commandVisualizationFacade.getAllCommandsByTrainingRun(anyLong());
         assertEquals(expected.size(), received.size());
         compareCommandDTOLists(expected, received);
@@ -137,7 +137,7 @@ class CommandVisualizationFacadeTest {
     void noCommandsFound() {
         given(trainingRunService.findById(anyLong())).willReturn(trainingRun);
         trainingInstance.setLocalEnvironment(false);
-        given(elasticsearchApiService.findAllConsoleCommandsBySandbox(anyLong())).willReturn(new ArrayList<>());
+        given(elasticsearchApiService.findAllConsoleCommandsBySandbox(anyString())).willReturn(new ArrayList<>());
         List<CommandDTO> received = commandVisualizationFacade.getAllCommandsByTrainingRun(anyLong());
         assertEquals(0, received.size());
     }
@@ -147,7 +147,7 @@ class CommandVisualizationFacadeTest {
         given(trainingRunService.findAllByTrainingInstanceId(anyLong())).willReturn(trainingRuns);
         for (long i = 0; i < 4L; i++) {
             given(trainingRunService.findById(i)).willReturn(getTrainingRun(i));
-            given(elasticsearchApiService.findAllConsoleCommandsBySandbox(i)).willReturn(List.of(elasticCommands.get((int) i)));
+            given(elasticsearchApiService.findAllConsoleCommandsBySandbox(String.valueOf(i))).willReturn(List.of(elasticCommands.get((int) i)));
         }
         Map<Long, List<CommandDTO>> received = commandVisualizationFacade.getAllCommandsByTrainingInstance(anyLong());
 
