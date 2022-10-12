@@ -105,6 +105,6 @@ public class CompactLevelViewFacade {
         if(instance.isLocalEnvironment()) {
             return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
         }
-        return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(run.getSandboxInstanceRefId().intValue(), from, to);
+        return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(run.getSandboxInstanceRefId(), from, to);
     }
 }
