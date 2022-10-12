@@ -28,10 +28,8 @@ import org.springframework.util.StringUtils;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -356,9 +354,22 @@ public class TrainingInstanceFacade {
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, isActive, pageable);
-        PageResultResource<TrainingRunDTO> trainingRunDTOsPageResult = trainingRunMapper.mapToPageResultResource(trainingRuns);
+        Set<Long> runIdsWithWorkingEventLogging = checkLogging(trainingRuns, trainingRunService::checkRunEventLogging);
+        Set<Long> runIdsWithWorkingCommandLogging = checkLogging(trainingRuns, trainingRunService::checkRunCommandLogging);
+        PageResultResource<TrainingRunDTO> trainingRunDTOsPageResult = trainingRunMapper.mapToPageResultResourceLogging(trainingRuns, runIdsWithWorkingEventLogging, runIdsWithWorkingCommandLogging);
         addParticipantsToTrainingRunDTOs(trainingRunDTOsPageResult.getContent());
         return trainingRunDTOsPageResult;
+    }
+
+    private Set<Long> checkLogging(Page<TrainingRun> runs, Function<TrainingRun, Boolean> checker) {
+        Set<Long> runIdsWithWorkingLogging = new HashSet<>();
+        runs.forEach(trainingRun -> {
+            if (checker.apply(trainingRun)) {
+                runIdsWithWorkingLogging.add(trainingRun.getId());
+            }
+        });
+
+        return runIdsWithWorkingLogging;
     }
 
     private void addParticipantsToTrainingRunDTOs(List<TrainingRunDTO> trainingRunDTOS) {
