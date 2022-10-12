@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.events.trainings.LevelStarted;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
@@ -376,7 +377,7 @@ public class ExportImportFacade {
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
             writeQuestionsAnswers(zos, run, assessmentsDetails);
-            List<Map<String, Object>> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
+            List<AbstractAuditPOJO> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
             if (events.isEmpty()) {
                 continue;
             }
@@ -384,8 +385,8 @@ public class ExportImportFacade {
             writeEventsByLevels(zos, run, events);
 
             List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
-            Integer sandboxId = events.get(0).get("sandbox_id") == null ?
-                    run.getParticipantRef().getUserRefId().intValue() : (Integer) events.get(0).get("sandbox_id");
+            Long sandboxId = events.get(0).getSandboxId() == null ?
+                    run.getParticipantRef().getUserRefId().intValue() : events.get(0).getSandboxId();
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
@@ -408,29 +409,29 @@ public class ExportImportFacade {
         }
     }
 
-    private Map<Integer, Long> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
+    private Map<Integer, Long> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
         ZipEntry eventsEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsEntry);
         //Obtain start timestamp of each level, so it can be used later
         Map<Integer, Long> levelStartTimestampMapping = new LinkedHashMap<>();
 
-        for (Map<String, Object> event : events) {
+        for (AbstractAuditPOJO event : events) {
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
             zos.write(System.lineSeparator().getBytes());
-            if (event.get("type").equals(LevelStarted.class.getCanonicalName())) {
-                levelStartTimestampMapping.put(((Integer) event.get("level")), (Long) event.get("timestamp"));
+            if (event.getType().equals(LevelStarted.class.getCanonicalName())) {
+                levelStartTimestampMapping.put((int) event.getLevel(), event.getTimestamp());
             }
         }
         return levelStartTimestampMapping;
     }
 
-    private void writeEventsByLevels(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
-        Integer currentLevel = ((Integer) events.get(0).get("level"));
+    private void writeEventsByLevels(ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
+        long currentLevel = events.get(0).getLevel();
         ZipEntry eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsDetailEntry);
-        for (Map<String, Object> event : events) {
-            if (!event.get("level").equals(currentLevel)) {
-                currentLevel = ((Integer) event.get("level"));
+        for (AbstractAuditPOJO event : events) {
+            if (event.getLevel() != currentLevel) {
+                currentLevel = event.getLevel();
                 eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
                 zos.putNextEntry(eventsDetailEntry);
             }
@@ -471,7 +472,7 @@ public class ExportImportFacade {
              + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText()+ "' }";
     }
 
-    private void writeConsoleCommands(ZipOutputStream zos, Integer sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
+    private void writeConsoleCommands(ZipOutputStream zos, Long sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
         ZipEntry consoleCommandsEntry = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(consoleCommandsEntry);
         for (Map<String, Object> command : consoleCommands) {
@@ -480,7 +481,7 @@ public class ExportImportFacade {
         }
     }
 
-    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, Integer sandboxId, Map<Integer, Long> levelStartTimestampMapping) throws IOException {
+    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, Long sandboxId, Map<Integer, Long> levelStartTimestampMapping) throws IOException {
         List<Long> levelTimestampRanges = new ArrayList<>(levelStartTimestampMapping.values());
         List<Integer> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
         levelTimestampRanges.add(Long.MAX_VALUE);
@@ -496,7 +497,7 @@ public class ExportImportFacade {
         }
     }
 
-    private List<Map<String, Object>> getConsoleCommandsWithinTimeRange(TrainingInstance instance, TrainingRun run, Integer sandboxId, Long from, Long to) {
+    private List<Map<String, Object>> getConsoleCommandsWithinTimeRange(TrainingInstance instance, TrainingRun run, Long sandboxId, Long from, Long to) {
         if(instance.isLocalEnvironment()) {
             return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
         }

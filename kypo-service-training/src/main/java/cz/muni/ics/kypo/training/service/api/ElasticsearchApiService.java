@@ -63,7 +63,7 @@ public class ElasticsearchApiService {
      * @param trainingRun thee training run whose events to obtain.
      * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
      */
-    public List<Map<String, Object>> findAllEventsFromTrainingRun(TrainingRun trainingRun){
+    public List<AbstractAuditPOJO> findAllEventsFromTrainingRun(TrainingRun trainingRun){
         try {
             Long definitionId = trainingRun.getTrainingInstance().getTrainingDefinition().getId();
             Long instanceId = trainingRun.getTrainingInstance().getId();
@@ -71,7 +71,7 @@ public class ElasticsearchApiService {
                     .get()
                     .uri("/training-platform-events/training-definitions/{definitionId}/training-instances/{instanceId}/training-runs/{runId}", definitionId, instanceId, trainingRun.getId())
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<List<AbstractAuditPOJO>>() {})
                     .block();
         } catch (CustomWebClientException ex){
             throw new MicroserviceApiException("Error when calling Elasticsearch API for particular run (ID: "+ trainingRun.getId() +").", ex);
@@ -190,7 +190,7 @@ public class ElasticsearchApiService {
         }
     }
 
-    public List<Map<String, Object>> findAllConsoleCommandsBySandboxAndTimeRange(Integer sandboxId, Long from, Long to){
+    public List<Map<String, Object>> findAllConsoleCommandsBySandboxAndTimeRange(Long sandboxId, Long from, Long to){
         try {
             return elasticsearchServiceWebClient
                     .get()
