@@ -107,6 +107,16 @@ public class TrainingInstanceService {
     }
 
     /**
+     * Find all training instances based on the list of IDs.
+     *
+     * @param ids the list of IDs
+     * @return the page
+     */
+    public List<TrainingInstance> findAllByIds(List<Long> ids) {
+        return trainingInstanceRepository.findAllById(ids);
+    }
+
+    /**
      * Creates new training instance
      *
      * @param trainingInstance to be created

@@ -381,12 +381,12 @@ public class ExportImportFacade {
             if (events.isEmpty()) {
                 continue;
             }
-            Map<Integer, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
+            Map<Long, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
             writeEventsByLevels(zos, run, events);
 
             List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
             Long sandboxId = events.get(0).getSandboxId() == null ?
-                    run.getParticipantRef().getUserRefId().intValue() : events.get(0).getSandboxId();
+                    run.getParticipantRef().getUserRefId() : events.get(0).getSandboxId();
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
@@ -409,17 +409,17 @@ public class ExportImportFacade {
         }
     }
 
-    private Map<Integer, Long> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
+    private Map<Long, Long> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
         ZipEntry eventsEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsEntry);
         //Obtain start timestamp of each level, so it can be used later
-        Map<Integer, Long> levelStartTimestampMapping = new LinkedHashMap<>();
+        Map<Long, Long> levelStartTimestampMapping = new LinkedHashMap<>();
 
         for (AbstractAuditPOJO event : events) {
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
             zos.write(System.lineSeparator().getBytes());
             if (event.getType().equals(LevelStarted.class.getCanonicalName())) {
-                levelStartTimestampMapping.put((int) event.getLevel(), event.getTimestamp());
+                levelStartTimestampMapping.put(event.getLevel(), event.getTimestamp());
             }
         }
         return levelStartTimestampMapping;
@@ -481,9 +481,9 @@ public class ExportImportFacade {
         }
     }
 
-    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, Long sandboxId, Map<Integer, Long> levelStartTimestampMapping) throws IOException {
+    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, Long sandboxId, Map<Long, Long> levelStartTimestampMapping) throws IOException {
         List<Long> levelTimestampRanges = new ArrayList<>(levelStartTimestampMapping.values());
-        List<Integer> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
+        List<Long> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
         levelTimestampRanges.add(Long.MAX_VALUE);
 
         for (int i = 0; i < levelIds.size(); i++) {

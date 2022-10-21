@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service.api;
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
 import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.slf4j.Logger;
@@ -53,6 +54,45 @@ public class ElasticsearchApiService {
                     .block();
         } catch (CustomWebClientException ex){
             throw new MicroserviceApiException("Error when calling Elasticsearch API to delete events for particular instance (ID: "+ trainingInstanceId +").", ex);
+        }
+    }
+
+    /**
+     * Obtain events from elasticsearch for particular training definition
+     *
+     * @param trainingDefinitionId the training definition id whose events to obtain.
+     * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
+     */
+    public List<AbstractAuditPOJO> findAllEventsFromTrainingDefinition(Long trainingDefinitionId){
+        try {
+            return elasticsearchServiceWebClient
+                    .get()
+                    .uri("/training-platform-events/training-definitions/{definitionId}", trainingDefinitionId)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<AbstractAuditPOJO>>() {})
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular definition (ID: "+ trainingDefinitionId +").", ex);
+        }
+    }
+
+    /**
+     * Obtain events from elasticsearch for particular training instance
+     *
+     * @param trainingInstance thee training instance whose events to obtain.
+     * @throws MicroserviceApiException error with specific message when calling elasticsearch microservice.
+     */
+    public List<AbstractAuditPOJO> findAllEventsFromTrainingInstance(TrainingInstance trainingInstance){
+        try {
+            Long definitionId = trainingInstance.getTrainingDefinition().getId();
+            return elasticsearchServiceWebClient
+                    .get()
+                    .uri("/training-platform-events/training-definitions/{definitionId}/training-instances/{instanceId}", definitionId, trainingInstance.getId())
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<AbstractAuditPOJO>>() {})
+                    .block();
+        } catch (CustomWebClientException ex){
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular instance (ID: "+ trainingInstance.getId() +").", ex);
         }
     }
 
