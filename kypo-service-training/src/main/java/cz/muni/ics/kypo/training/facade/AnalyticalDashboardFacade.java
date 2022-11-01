@@ -49,7 +49,8 @@ public class AnalyticalDashboardFacade {
      * @return data for analytical dashboard
      */
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)" +
+            "or @securityService.isOrganizerForGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public List<TrainingInstanceAnalyticalDashboardDTO> getDataForAnalyticalDashboard(Long definitionId) {
         List<TrainingLevel> trainingLevels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
