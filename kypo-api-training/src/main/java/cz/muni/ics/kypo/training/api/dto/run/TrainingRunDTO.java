@@ -32,6 +32,10 @@ public class TrainingRunDTO {
     private String sandboxInstanceRefId;
     @ApiModelProperty(value = "Reference to participant of training run.")
     private UserRefDTO participantRef;
+    @ApiModelProperty(value = "Boolean to check whether event logging works.", example = "true")
+    private boolean eventLoggingState;
+    @ApiModelProperty(value = "Boolean to check whether command logging works.", example = "true")
+    private boolean commandLoggingState;
 
     /**
      * Gets id.
@@ -159,6 +163,42 @@ public class TrainingRunDTO {
         this.participantRef = participantRef;
     }
 
+    /**
+     * Gets event logging state
+     *
+     * @return the event logging state
+     */
+    public boolean getEventLoggingState() {
+        return eventLoggingState;
+    }
+
+    /**
+     * Sets event logging state
+     *
+     * @param eventLoggingState the new event logging state
+     */
+    public void setEventLoggingState(boolean eventLoggingState) {
+        this.eventLoggingState = eventLoggingState;
+    }
+
+    /**
+     * Gets command logging state
+     *
+     * @return the command logging state
+     */
+    public boolean getCommandLoggingState() {
+        return commandLoggingState;
+    }
+
+    /**
+     * Sets command logging state
+     *
+     * @param commandLoggingState the new command logging state
+     */
+    public void setCommandLoggingState(boolean commandLoggingState) {
+        this.commandLoggingState = commandLoggingState;
+    }
+
     @Override
     public String toString() {
         return "TrainingRunDTO{" +
@@ -169,6 +209,8 @@ public class TrainingRunDTO {
                 ", state=" + state +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
                 ", participantRef=" + participantRef +
+                ", eventLoggingState=" + eventLoggingState +
+                ", commandLoggingState=" + commandLoggingState +
                 '}';
     }
 
