@@ -385,8 +385,8 @@ public class ExportImportFacade {
             writeEventsByLevels(zos, run, events);
 
             List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
-            String sandboxId = events.get(0).get("sandbox_id") == null ?
-                    run.getParticipantRef().getUserRefId().toString() : (String) events.get(0).get("sandbox_id");
+            String sandboxId = events.get(0).getSandboxId() == null ?
+                    run.getParticipantRef().getUserRefId().toString() : events.get(0).getSandboxId();
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
@@ -481,7 +481,7 @@ public class ExportImportFacade {
         }
     }
 
-    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, String sandboxId, Map<Integer, Long> levelStartTimestampMapping) throws IOException {
+    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, String sandboxId, Map<Long, Long> levelStartTimestampMapping) throws IOException {
         List<Long> levelTimestampRanges = new ArrayList<>(levelStartTimestampMapping.values());
         List<Long> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
         levelTimestampRanges.add(Long.MAX_VALUE);

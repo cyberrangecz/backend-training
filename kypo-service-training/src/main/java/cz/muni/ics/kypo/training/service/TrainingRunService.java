@@ -695,7 +695,7 @@ public class TrainingRunService {
             Long userId = run.getParticipantRef().getUserRefId();
             runCommands = elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
-            Long sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
+            String sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
             runCommands = elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxId);
         }
 
