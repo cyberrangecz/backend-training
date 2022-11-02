@@ -313,7 +313,7 @@ public class TrainingInstanceService {
      *
      * @param trainingInstanceId id of training instance.
      */
-    public List<Long> findAllSandboxesUsedByTrainingInstanceId(Long trainingInstanceId) {
+    public List<String> findAllSandboxesUsedByTrainingInstanceId(Long trainingInstanceId) {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId)
                 .stream()
                 .map(trainingRun -> trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId())

@@ -203,7 +203,7 @@ public class ElasticsearchApiService {
         }
     }
 
-    public List<Map<String, Object>> findAllConsoleCommandsBySandbox(Long sandboxId){
+    public List<Map<String, Object>> findAllConsoleCommandsBySandbox(String sandboxId){
         try {
             return elasticsearchServiceWebClient
                     .get()
@@ -230,7 +230,7 @@ public class ElasticsearchApiService {
         }
     }
 
-    public List<Map<String, Object>> findAllConsoleCommandsBySandboxAndTimeRange(Long sandboxId, Long from, Long to){
+    public List<Map<String, Object>> findAllConsoleCommandsBySandboxAndTimeRange(String sandboxId, Long from, Long to){
         try {
             return elasticsearchServiceWebClient
                     .get()
@@ -291,7 +291,7 @@ public class ElasticsearchApiService {
         }
     }
 
-    public void deleteCommandsBySandbox(Long sandboxId){
+    public void deleteCommandsBySandbox(String sandboxId){
         try{
             elasticsearchServiceWebClient
                     .delete()

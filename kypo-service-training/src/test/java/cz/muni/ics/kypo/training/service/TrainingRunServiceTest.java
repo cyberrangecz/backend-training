@@ -136,7 +136,7 @@ public class TrainingRunServiceTest {
         infoLevel2.setTrainingDefinition(trainingDefinition2);
 
         sandboxInfo = new SandboxInfo();
-        sandboxInfo.setId(7L);
+        sandboxInfo.setId("7L");
 
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
@@ -602,7 +602,7 @@ public class TrainingRunServiceTest {
     public void testCheckRunCommandLogging() {
         trainingRun1.getTrainingInstance().setLocalEnvironment(false);
         trainingRun2.getTrainingInstance().setLocalEnvironment(true);
-        given(elasticsearchApiService.findAllConsoleCommandsBySandbox(anyLong())).willReturn(List.of());
+        given(elasticsearchApiService.findAllConsoleCommandsBySandbox(anyString())).willReturn(List.of());
         given(elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(anyString(), anyLong())).willReturn(List.of(new HashMap<>()));
 
         assertFalse(trainingRunService.checkRunCommandLogging(trainingRun1));

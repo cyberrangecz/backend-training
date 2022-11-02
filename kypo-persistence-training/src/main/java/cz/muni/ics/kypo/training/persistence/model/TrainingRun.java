@@ -121,7 +121,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private TrainingInstance trainingInstance;
     @Column(name = "sandbox_instance_ref_id")
-    private Long sandboxInstanceRefId;
+    private String sandboxInstanceRefId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
     private UserRef participantRef;
@@ -144,7 +144,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     @CollectionTable(name = "hint_info", joinColumns = @JoinColumn(name = "training_run_id"))
     private Set<HintInfo> hintInfoList = new HashSet<>();
     @Column(name = "previous_sandbox_instance_ref_id")
-    private Long previousSandboxInstanceRefId;
+    private String previousSandboxInstanceRefId;
     @Column(name = "current_penalty")
     private int currentPenalty;
 
@@ -286,7 +286,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @return the sandbox instance ref id
      */
-    public Long getSandboxInstanceRefId() {
+    public String getSandboxInstanceRefId() {
         return sandboxInstanceRefId;
     }
 
@@ -295,7 +295,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @param sandboxInstanceRefId the sandbox instance ref id
      */
-    public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+    public void setSandboxInstanceRefId(String sandboxInstanceRefId) {
         this.sandboxInstanceRefId = sandboxInstanceRefId;
     }
 
@@ -561,7 +561,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @return the id of previous sandbox instance ref
      */
-    public Long getPreviousSandboxInstanceRefId() {
+    public String getPreviousSandboxInstanceRefId() {
         return previousSandboxInstanceRefId;
     }
 
@@ -570,7 +570,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @param previousSandboxInstanceRefId the id of previous sandbox instance ref
      */
-    public void setPreviousSandboxInstanceRefId(Long previousSandboxInstanceRefId) {
+    public void setPreviousSandboxInstanceRefId(String previousSandboxInstanceRefId) {
         this.previousSandboxInstanceRefId = previousSandboxInstanceRefId;
     }
 

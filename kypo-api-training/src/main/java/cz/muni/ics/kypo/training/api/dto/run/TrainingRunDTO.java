@@ -29,7 +29,7 @@ public class TrainingRunDTO {
     @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
     private TRState state;
     @ApiModelProperty(value = "Reference to the received sandbox.")
-    private Long sandboxInstanceRefId;
+    private String sandboxInstanceRefId;
     @ApiModelProperty(value = "Reference to participant of training run.")
     private UserRefDTO participantRef;
     @ApiModelProperty(value = "Boolean to check whether event logging works.", example = "true")
@@ -132,7 +132,7 @@ public class TrainingRunDTO {
      *
      * @return the sandbox instance ref id
      */
-    public Long getSandboxInstanceRefId() {
+    public String getSandboxInstanceRefId() {
         return sandboxInstanceRefId;
     }
 
@@ -141,7 +141,7 @@ public class TrainingRunDTO {
      *
      * @param sandboxInstanceRefId the sandbox instance ref id
      */
-    public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+    public void setSandboxInstanceRefId(String sandboxInstanceRefId) {
         this.sandboxInstanceRefId = sandboxInstanceRefId;
     }
 
