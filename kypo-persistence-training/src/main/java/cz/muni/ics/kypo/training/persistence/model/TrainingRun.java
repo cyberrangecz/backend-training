@@ -120,7 +120,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     private AbstractLevel currentLevel;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private TrainingInstance trainingInstance;
-    @Column(name = "sandbox_instance_ref_id")
+    @Column(name = "sandbox_instance_ref_id", length = 36)
     private String sandboxInstanceRefId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
@@ -143,7 +143,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     @ElementCollection(targetClass = HintInfo.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "hint_info", joinColumns = @JoinColumn(name = "training_run_id"))
     private Set<HintInfo> hintInfoList = new HashSet<>();
-    @Column(name = "previous_sandbox_instance_ref_id")
+    @Column(name = "previous_sandbox_instance_ref_id", length = 36)
     private String previousSandboxInstanceRefId;
     @Column(name = "current_penalty")
     private int currentPenalty;
