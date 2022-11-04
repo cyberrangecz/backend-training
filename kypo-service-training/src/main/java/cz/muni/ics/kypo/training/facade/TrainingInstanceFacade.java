@@ -41,6 +41,7 @@ public class TrainingInstanceFacade {
     private final TrainingInstanceService trainingInstanceService;
     private final TrainingDefinitionService trainingDefinitionService;
     private final TrainingRunService trainingRunService;
+    private final CheatingDetectionService cheatingDetectionService;
     private final UserService userService;
     private final SecurityService securityService;
     private final TrainingInstanceMapper trainingInstanceMapper;
@@ -56,6 +57,7 @@ public class TrainingInstanceFacade {
      * @param trainingInstanceService   the training instance service
      * @param trainingDefinitionService the training definition service
      * @param trainingRunService        the training run service
+     * @param cheatingDetectionService  the cheating detection service
      * @param trainingInstanceMapper    the training instance mapper
      * @param trainingRunMapper         the training run mapper
      * @param userService               the user service
@@ -66,6 +68,7 @@ public class TrainingInstanceFacade {
     public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService,
                                   TrainingDefinitionService trainingDefinitionService,
                                   TrainingRunService trainingRunService,
+                                  CheatingDetectionService cheatingDetectionService,
                                   UserService userService,
                                   ElasticsearchApiService elasticsearchApiService,
                                   SecurityService securityService,
@@ -76,6 +79,7 @@ public class TrainingInstanceFacade {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingRunService = trainingRunService;
+        this.cheatingDetectionService = cheatingDetectionService;
         this.userService = userService;
         this.elasticsearchApiService = elasticsearchApiService;
         this.securityService = securityService;
@@ -125,8 +129,7 @@ public class TrainingInstanceFacade {
      * @param trainingInstanceUpdateDTO to be updated
      * @return new access token if it was changed
      */
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceUpdateDTO.getId())")
+    @IsOrganizerOrAdmin
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         TrainingInstance updatedTrainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
@@ -275,6 +278,7 @@ public class TrainingInstanceFacade {
             deleteBashCommandsByAccessToken(trainingInstance.getAccessToken());
         }
         trainingInstanceService.delete(trainingInstance);
+        cheatingDetectionService.deleteAllCheatingDetectionsOfTrainingInstance(trainingInstanceId);
         trainingFeedbackApiService.deleteAllGraphsByTrainingInstance(trainingInstanceId);
         elasticsearchApiService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
     }

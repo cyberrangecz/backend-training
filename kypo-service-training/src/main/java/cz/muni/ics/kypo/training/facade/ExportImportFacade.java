@@ -469,7 +469,7 @@ public class ExportImportFacade {
 
     private String mapEmiAnswerToString(Question question, QuestionEMIAnswer emiAnswer) {
         return "{ statement: '" + question.getExtendedMatchingStatements().get(emiAnswer.getStatementOrder()).getText()
-             + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText()+ "' }";
+                + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText()+ "' }";
     }
 
     private void writeConsoleCommands(ZipOutputStream zos, String sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {

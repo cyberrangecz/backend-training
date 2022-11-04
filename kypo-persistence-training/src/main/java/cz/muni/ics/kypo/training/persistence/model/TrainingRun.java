@@ -147,6 +147,8 @@ public class TrainingRun extends AbstractEntity<Long> {
     private String previousSandboxInstanceRefId;
     @Column(name = "current_penalty")
     private int currentPenalty;
+    @Column(name = "has_detection_event")
+    private boolean hasDetectionEvent;
 
     /**
      * Gets unique identification number of Training run
@@ -590,6 +592,14 @@ public class TrainingRun extends AbstractEntity<Long> {
      */
     public void setCurrentPenalty(int currentPenalty) {
         this.currentPenalty = currentPenalty;
+    }
+
+    public boolean isHasDetectionEvent() {
+        return hasDetectionEvent;
+    }
+
+    public void setHasDetectionEvent(boolean hasDetectionEvent) {
+        this.hasDetectionEvent = hasDetectionEvent;
     }
 
     @Override

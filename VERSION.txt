@@ -1,3 +1,4 @@
+2.3.0 Added experimental version of cheating detection functionality - new rest waypoint, facade and service and mappers. Added entities for cheating detection events. Added a attribute to training run specifying if it has detection events.
 2.2.1 Fixed saving new user ref to repository
 2.2.0 Added functionality to export score from training instance, fix authorization requirements for various training definition/instance functions, trim access codes on instance creation, removed stack trace from errors, it is no longer possible to create/edit non-local instances without setting the pool, fixed incorrect score calculation in the trainees table visualization.
 2.1.2 Added attribute indicating that level can be completed without commands, added level title and order to analytical dashboard data, modify validation of the access token during the TI update, support of APG variables in local environment, fix resolution of the answer viariable in solution and sandbox defintion ID in local content.
@@ -17,3 +18,4 @@
 1.1.73 Integration of APG to the kypo training service.
 1.1.72 Renaming flag to answer, renaming game level to training level.
 1.1.71 KYPO2 renamed to KYPO.
+
