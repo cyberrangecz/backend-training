@@ -196,6 +196,11 @@ public class VisualizationRestController {
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationInfoDTO));
     }
 
+    /**
+     * Gather all necessary information for clustering visualization from all instances of the specified training definition
+     * @param trainingDefinitionId id of training definition
+     * @return {@link ClusteringVisualizationDTO} containing all the necessary information
+     */
     @ApiOperation(httpMethod = "GET",
             value = "Get necessary clustering visualization data for training definition.",
             response = ClusteringVisualizationDTO.class,
@@ -213,6 +218,30 @@ public class VisualizationRestController {
             @PathVariable("definitionId") Long trainingDefinitionId) {
         ClusteringVisualizationDTO clusteringVisualizationDTO =
                 visualizationFacade.getClusteringVisualizationsForTrainingDefinition(trainingDefinitionId);
+        return ResponseEntity.ok(clusteringVisualizationDTO);
+    }
+
+    /**
+     * Gather all necessary information for clustering visualization from the specified instances
+     * @param instanceIds ids of instances to use
+     * @return {@link ClusteringVisualizationDTO} containing all the necessary information
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary clustering visualization data for the specified training instances.",
+            response = ClusteringVisualizationDTO.class,
+            nickname = "getClusteringVisualizationsForTrainingInstances",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = ClusteringVisualizationDTO.class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/clustering", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClusteringVisualizationDTO> getClusteringVisualizationsForTrainingInstances(
+            @ApiParam(value = "Training instance IDs", required = true)
+            @RequestParam(value = "instanceIds", required = true) List<Long> instanceIds) {
+        ClusteringVisualizationDTO clusteringVisualizationDTO = visualizationFacade.getClusteringForTrainingInstances(instanceIds);
         return ResponseEntity.ok(clusteringVisualizationDTO);
     }
 

@@ -181,6 +181,7 @@ class VisualizationFacadeTest {
 
         ClusteringVisualizationDTO clusteringVisualizationDTO = visualizationFacade.getClusteringVisualizationsForTrainingDefinition(1L);
         TrainingResultsDTO resultsDTO = clusteringVisualizationDTO.getFinalResults();
+        assertEquals(250, resultsDTO.getMaxAchievableScore());
         assertEquals(277, resultsDTO.getMaxParticipantScore());
         assertEquals(185, resultsDTO.getMaxParticipantTrainingScore());
         assertEquals(92, resultsDTO.getMaxParticipantAssessmentScore());
@@ -191,8 +192,8 @@ class VisualizationFacadeTest {
         assertEquals(48.5, resultsDTO.getAverageAssessmentScore());
         assertEquals(9, resultsDTO.getPlayerData().size());
 
-        checkClusteringLevelDTO(clusteringVisualizationDTO.getLevels().get(0), 140, 1, 1, 75);
-        checkClusteringLevelDTO(clusteringVisualizationDTO.getLevels().get(2), 170, 1, 1, 105);
+        checkClusteringLevelDTO(clusteringVisualizationDTO.getLevels().get(0), 100, 140, 1, 1, 75);
+        checkClusteringLevelDTO(clusteringVisualizationDTO.getLevels().get(2), 50, 170, 1, 1, 105);
     }
 
     private LevelStarted getLevelStarted(Long time) {
@@ -218,8 +219,9 @@ class VisualizationFacadeTest {
         return runEnded.build();
     }
 
-    private void checkClusteringLevelDTO(ClusteringLevelDTO level, int maxScore, int maxTime, float averageTime, float averageScore) {
-        assertEquals(maxScore, level.getMaxParticipantScore());
+    private void checkClusteringLevelDTO(ClusteringLevelDTO level, int maxAchievableScore, int maxParticipantScore, int maxTime, float averageTime, float averageScore) {
+        assertEquals(maxAchievableScore, level.getMaxAchievableScore());
+        assertEquals(maxParticipantScore, level.getMaxParticipantScore());
         assertEquals(maxTime, level.getMaxParticipantTime());
         assertEquals(averageTime, level.getAverageTime());
         assertEquals(averageScore, level.getAverageScore());

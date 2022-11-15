@@ -355,33 +355,61 @@ public class VisualizationFacade {
             "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
     @TransactionalRO
     public ClusteringVisualizationDTO getClusteringVisualizationsForTrainingDefinition(Long trainingDefinitionId) {
-        return getClusteringForTrainingDefinition(trainingDefinitionId);
+        List<TrainingInstance> instances = trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(trainingDefinitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
+        Long estimatedDuration = trainingDefinition.getEstimatedDuration();
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition.getId());
+        return getClustering(instances, levels, estimatedDuration);
     }
 
-    private ClusteringVisualizationDTO getClusteringForTrainingDefinition(Long trainingDefinitionId) {
-        TrainingInstanceStatistics trainingInstanceStatistics = new TrainingInstanceStatistics();
-        TrainingData trainingData = getTrainingData(trainingDefinitionId, trainingInstanceStatistics);
+    /**
+     * Gather all the necessary information for designer to display clustering visualizations from specified instances
+     *
+     * @param instanceIds ids of training instances
+     * @return {@link ClusteringVisualizationDTO} with data from all the specified training instances
+     */
+    @TransactionalRO
+    public ClusteringVisualizationDTO getClusteringForTrainingInstances(List<Long> instanceIds) {
+        List<TrainingInstance> instances = instanceIds.stream().map(trainingInstanceService::findById).toList();
+        TrainingDefinition trainingDefinition = trainingInstanceService.findByIdIncludingDefinition(instanceIds.get(0)).getTrainingDefinition();
+        Long estimatedDuration = trainingDefinition.getEstimatedDuration();
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition.getId());
+        return getClustering(instances, levels, estimatedDuration);
+    }
 
+    private ClusteringVisualizationDTO getClustering(List<TrainingInstance> instances,
+                                                     List<AbstractLevel> levels,
+                                                     Long estimatedDuration) {
+        TrainingInstanceStatistics trainingInstanceStatistics = new TrainingInstanceStatistics();
+        TrainingData trainingData = getTrainingData(instances, levels, estimatedDuration, trainingInstanceStatistics);
+
+
+        int maxScore = 0;
+        for (AbstractLevel level : levels) {
+            maxScore += level.getMaxScore();
+        }
         // we reuse the TrainingInstanceStatistics class as the corresponding class
         // for training definition statistics would have the same fields and same functions
         TrainingResultsDTO finalResultsField = mapToFinalResultsDTO(
                 trainingData.estimatedDuration,
                 trainingData.participantsByTrainingRuns,
                 trainingInstanceStatistics);
+        finalResultsField.setMaxAchievableScore(maxScore);
         return new ClusteringVisualizationDTO(finalResultsField, trainingData.levelsField);
     }
 
-    private TrainingData getTrainingData(Long trainingDefinitionId,
+    private TrainingData getTrainingData(List<TrainingInstance> instances,
+                                         List<AbstractLevel> levels,
+                                         Long estimatedDuration,
                                          TrainingInstanceStatistics trainingInstanceStatistics) {
         TrainingData trainingData = new TrainingData();
-        trainingData.estimatedDuration = trainingDefinitionService.findById(trainingDefinitionId).getEstimatedDuration();
-        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinitionId);
+        trainingData.estimatedDuration = estimatedDuration;
         trainingData.participantsByTrainingRuns = new HashMap<>();
         trainingData.levelsField = new ArrayList<>(levels.size());
         // the mapping is map<levelId, map<runId, list<events>>>
         trainingData.events = new HashMap<>(levels.size());
 
-        for (TrainingInstance trainingInstance : trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(trainingDefinitionId)) {
+        for (TrainingInstance trainingInstance : instances) {
             Map<Long, Map<Long, List<AbstractAuditPOJO>>> instanceEvents = elasticsearchApiService.getAggregatedEventsByLevelsAndTrainingRuns(trainingInstance.getId());
             for (AbstractLevel level : levels) {
                 trainingData.events.computeIfAbsent(level.getId(), value -> new HashMap<>())
@@ -427,13 +455,16 @@ public class VisualizationFacade {
                 trainingInstanceData.participantsByTrainingRuns);
         // Must be before getFinalResultsField() because of statistics
         List<ClusteringLevelDTO> levelsField = new ArrayList<>();
+        int maxScore = 0;
         for (AbstractLevel abstractLevel : trainingInstanceData.levels) {
             levelsField.add(mapToLevelResultDTO(abstractLevel, trainingData, trainingInstanceStatistics));
+            maxScore += abstractLevel.getMaxScore();
         }
         TrainingResultsDTO finalResultsField = mapToFinalResultsDTO(
                 trainingData.estimatedDuration,
                 trainingData.participantsByTrainingRuns,
                 trainingInstanceStatistics);
+        finalResultsField.setMaxAchievableScore(maxScore);
         return new ClusteringVisualizationDTO(finalResultsField, levelsField);
     }
 
@@ -700,7 +731,8 @@ public class VisualizationFacade {
                 .id(abstractLevel.getId())
                 .title(abstractLevel.getTitle())
                 .order(abstractLevel.getOrder())
-                .estimatedTime(TimeUnit.MINUTES.toMillis(abstractLevel.getEstimatedDuration()));
+                .estimatedTime(TimeUnit.MINUTES.toMillis(abstractLevel.getEstimatedDuration()))
+                .maxAchievableScore(abstractLevel.getMaxScore());
         if (abstractLevel instanceof TrainingLevel) {
             clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.TRAINING_LEVEL);
         } else if (abstractLevel instanceof InfoLevel) {
@@ -718,9 +750,7 @@ public class VisualizationFacade {
             UserRefDTO participantInfo = trainingData.participantsByTrainingRuns.get(trainingRunLevelEvents.getKey());
             ClusteringLevelPlayerDTO playerDataDTOForLevel = new ClusteringLevelPlayerDTO(participantInfo, trainingRunLevelEvents.getKey(),
                     lastLevelEvent.getTrainingTime() - firstLevelEvent.getTrainingTime(), lastLevelEvent.getActualScoreInLevel(), lastLevelEvent instanceof LevelCompleted);
-//            if (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded) {
             levelStatistics.updateStatistics(playerDataDTOForLevel.getTrainingTime(), playerDataDTOForLevel.getParticipantLevelScore());
-//            }
             if (!(lastLevelEvent instanceof LevelCompleted)) {
                 trainingInstanceStatistics.addTrainingRun(lastLevelEvent);
             }
