@@ -124,8 +124,13 @@ public class ClusterAnalysisService {
         double[] numOfHints = StatUtils.normalize(extractHintsTaken(userEvents));
 
         for (int i = 0; i < userEvents.size(); i++) {
-            result.add(new EuclideanDoublePoint(new double[]{timeAfterHint[i], wrongAnswers[i], totalScores[i],
-                    timePlayed[i], numOfHints[i]}));
+            result.add(new EuclideanDoublePoint(new double[]{
+                ClusterMathUtils.handleNaN(timeAfterHint[i]),
+                ClusterMathUtils.handleNaN(wrongAnswers[i]),
+                ClusterMathUtils.handleNaN(totalScores[i]),
+                ClusterMathUtils.handleNaN(timePlayed[i]),
+                ClusterMathUtils.handleNaN(numOfHints[i])
+            }));
         }
         return result;
 
