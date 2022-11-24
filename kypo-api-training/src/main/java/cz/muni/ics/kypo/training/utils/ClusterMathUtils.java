@@ -50,8 +50,8 @@ public class ClusterMathUtils {
             }
 
             // Compute mean and standard deviation
-            double mean = stats.getMean();
-            double standardDeviation = stats.getStandardDeviation();
+            double mean = handleNaN(stats.getMean());
+            double standardDeviation = handleNaN(stats.getStandardDeviation());
 
             if (standardDeviation == 0) {
                 standardDeviation = 1;
@@ -63,6 +63,10 @@ public class ClusterMathUtils {
 
         }
         return sample;
+    }
+
+    public static double handleNaN(Double value) {
+        return Double.isNaN(value) ? 0.0 : value;
     }
 
 }
