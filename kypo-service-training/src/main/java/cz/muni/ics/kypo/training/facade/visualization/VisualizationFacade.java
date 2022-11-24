@@ -289,7 +289,7 @@ public class VisualizationFacade {
     }
 
     private List<UserRefDTO> getListOfPlayers(Long instanceId) {
-        List<UserRefDTO> players = getParticipantsForGivenTrainingInstance(instanceId);
+        List<UserRefDTO> players = new ArrayList<>(getParticipantsForGivenTrainingInstance(instanceId));
         players.sort(Comparator.comparingLong(UserRefDTO::getUserRefId));
         return players;
     }
