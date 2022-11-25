@@ -1,3 +1,4 @@
+22.12-rc.1 Changed sandboxId type to string, added maxAchievableScore field to ClusteringLevelDTO, added new endpoint for clustering visualization, added automatic check if logging works for training events and commands.
 2.3.0 Added experimental version of cheating detection functionality - new rest waypoint, facade and service and mappers. Added entities for cheating detection events. Added a attribute to training run specifying if it has detection events.
 2.2.1 Fixed saving new user ref to repository
 2.2.0 Added functionality to export score from training instance, fix authorization requirements for various training definition/instance functions, trim access codes on instance creation, removed stack trace from errors, it is no longer possible to create/edit non-local instances without setting the pool, fixed incorrect score calculation in the trainees table visualization.
