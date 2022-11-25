@@ -167,21 +167,21 @@ public class TestDataFactory {
             LocalDateTime.now(Clock.systemUTC()).minusHours(10), "Archived instance", "archived-6666");
 
     private TrainingRun runningRun = generateTrainingRun(LocalDateTime.now(Clock.systemUTC()).minusHours(2), LocalDateTime.now(Clock.systemUTC()).plusHours(2),
-            "logReference1", TRState.RUNNING, 2, true, 1L, 55, 21,
-            200, false, 2L, 20);
+            "logReference1", TRState.RUNNING, 2, true, "1L", 55, 21,
+            200, false, "2L", 20);
     private TrainingRun finishedRun = generateTrainingRun(LocalDateTime.now(Clock.systemUTC()).minusHours(10), LocalDateTime.now(Clock.systemUTC()).minusHours(5),
-            "logReference2", TRState.FINISHED, 4, false, 3L, 80, 40, 300, true, 4L, 0);
+            "logReference2", TRState.FINISHED, 4, false, "3L", 80, 40, 300, true, "4L", 0);
     private TrainingRun archivedRun = generateTrainingRun(LocalDateTime.now(Clock.systemUTC()).minusHours(20), LocalDateTime.now(Clock.systemUTC()).minusHours(10),
-            "logReference3", TRState.ARCHIVED, 0, false, 5L, 500, 100, 600, true, 6L, 0);
+            "logReference3", TRState.ARCHIVED, 0, false, "5L", 500, 100, 600, true, "6L", 0);
     private TrainingRunByIdDTO trainingRunByIdDTO = generateTrainingRunByIdDTO(LocalDateTime.now(Clock.systemUTC()).minusHours(2), LocalDateTime.now(Clock.systemUTC()).plusHours(2),
-            "logReference1", cz.muni.ics.kypo.training.api.enums.TRState.RUNNING, 5L);
+            "logReference1", cz.muni.ics.kypo.training.api.enums.TRState.RUNNING, "5L");
     private TrainingRunDTO trainingRunDTO = generateTrainingRunDTO(LocalDateTime.now(Clock.systemUTC()).minusHours(9), LocalDateTime.now(Clock.systemUTC()).minusHours(5),
-            "logReference1", cz.muni.ics.kypo.training.api.enums.TRState.FINISHED, 7L);
+            "logReference1", cz.muni.ics.kypo.training.api.enums.TRState.FINISHED, "7L");
     private AccessedTrainingRunDTO accessedTrainingRunDTO = generateAccessedTrainingRunDTO("Accessed run", LocalDateTime.now(Clock.systemUTC()).minusHours(8), LocalDateTime.now(Clock.systemUTC()).minusHours(4), 5,
             6, Actions.RESUME);
 
     private PoolInfoDTO poolInfoDTO = generatePoolInfoDTO(1L, 1L, 5L, 10L, 5L, "sha", "revSha");
-    private SandboxInfo sandboxInfo = generateSandboxInfo(1L, 1, 4);
+    private SandboxInfo sandboxInfo = generateSandboxInfo("1L", 1, 4);
     private SandboxPoolInfo sandboxPoolInfo = generateSandboxPoolInfo(1L, 1L, 10L, 5L);
     private LockedPoolInfo lockedPoolInfo = generateLockedPoolInfo(1L, 1L);
 
@@ -701,8 +701,8 @@ public class TestDataFactory {
     }
 
     private TrainingRun generateTrainingRun(LocalDateTime startTime, LocalDateTime endTime, String eventLogReference, TRState state,
-                                            int incorrectAnswerCount, boolean solutionTaken, Long SBIRefId, int totalTrainingScore,
-                                            int totalAssessmentScore, int maxScore, boolean levelAnswered, Long previousSBIRefId, int currentPenalty){
+                                            int incorrectAnswerCount, boolean solutionTaken, String SBIRefId, int totalTrainingScore,
+                                            int totalAssessmentScore, int maxScore, boolean levelAnswered, String previousSBIRefId, int currentPenalty){
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setStartTime(startTime);
         newTrainingRun.setEndTime(endTime);
@@ -890,7 +890,7 @@ public class TestDataFactory {
     }
 
     private TrainingRunByIdDTO generateTrainingRunByIdDTO(LocalDateTime start, LocalDateTime end, String logReference, cz.muni.ics.kypo.training.api.enums.TRState state,
-                                                          Long SBIId){
+                                                          String SBIId){
         TrainingRunByIdDTO trainingRunByIdDTO = new TrainingRunByIdDTO();
         trainingRunByIdDTO.setStartTime(start);
         trainingRunByIdDTO.setEndTime(end);
@@ -901,7 +901,7 @@ public class TestDataFactory {
     }
 
     private TrainingRunDTO generateTrainingRunDTO(LocalDateTime start, LocalDateTime end, String logReference, cz.muni.ics.kypo.training.api.enums.TRState state,
-                                                  Long SBIId){
+                                                  String SBIId){
         TrainingRunDTO trainingRunDTO = new TrainingRunDTO();
         trainingRunDTO.setStartTime(start);
         trainingRunDTO.setEndTime(end);
@@ -996,7 +996,7 @@ public class TestDataFactory {
         return poolInfoDTO;
     }
 
-    private SandboxInfo generateSandboxInfo(Long id, Integer lockId, Integer allocationUnit){
+    private SandboxInfo generateSandboxInfo(String id, Integer lockId, Integer allocationUnit){
         SandboxInfo sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(id);
         sandboxInfo.setAllocationUnitId(allocationUnit);

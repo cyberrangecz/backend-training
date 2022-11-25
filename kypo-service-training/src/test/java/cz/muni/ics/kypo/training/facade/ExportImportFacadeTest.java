@@ -203,17 +203,10 @@ public class ExportImportFacadeTest {
         System.arraycopy(expectedResult, 0, expected, 0, expectedResult.length);
         byte[] buffer = new byte[1024];
 
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(exportedFile.getContent());
-             ZipInputStream zis = new ZipInputStream(bais)) {
-            ZipEntry zipEntry = zis.getNextEntry();
-            assertNotNull(zipEntry);
-            assertEquals("training_instance-id" + exportTrainingInstance.getId() + ".csv", zipEntry.getName());
-            zis.read(buffer);
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(exportedFile.getContent())) {
+            assertEquals("training_instance-id" + exportTrainingInstance.getId() + "-scores", exportedFile.getTitle());
+            bais.read(buffer);
             assertArrayEquals(expected, buffer);
-
-            // no more entries in the zip file
-            zipEntry = zis.getNextEntry();
-            assertNull(zipEntry);
         } catch (IOException ex) {
             fail();
         }
@@ -234,3 +227,4 @@ public class ExportImportFacadeTest {
                 + trainingRun.getTotalTrainingScore() + System.lineSeparator();
     }
 }
+

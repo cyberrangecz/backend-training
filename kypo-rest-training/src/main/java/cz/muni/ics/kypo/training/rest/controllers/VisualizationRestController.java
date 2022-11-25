@@ -5,10 +5,10 @@ import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.assessment.AssessmentVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.analytical.TrainingInstanceAnalyticalDashboardDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.compact.CompactLevelViewDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.leveltabs.LevelTabsLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.timeline.TimelineDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.progress.VisualizationProgressDTO;
@@ -16,7 +16,7 @@ import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.facade.visualization.AssessmentVisualizationFacade;
 import cz.muni.ics.kypo.training.facade.visualization.VisualizationFacade;
 import cz.muni.ics.kypo.training.facade.AnalyticalDashboardFacade;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
+import cz.muni.ics.kypo.training.facade.CompactLevelViewFacade;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import io.swagger.annotations.*;
@@ -52,6 +52,7 @@ public class VisualizationRestController {
     private VisualizationFacade visualizationFacade;
     private AssessmentVisualizationFacade assessmentVisualizationFacade;
     private AnalyticalDashboardFacade analyticalDashboardFacade;
+    private CompactLevelViewFacade compactLevelViewFacade;
     private ObjectMapper objectMapper;
 
     /**
@@ -64,9 +65,10 @@ public class VisualizationRestController {
     public VisualizationRestController(VisualizationFacade visualizationFacade,
                                        AssessmentVisualizationFacade assessmentVisualizationFacade,
                                        AnalyticalDashboardFacade analyticalDashboardFacade,
+                                       CompactLevelViewFacade compactLevelViewFacade,
                                        ObjectMapper objectMapper) {
         this.visualizationFacade = visualizationFacade;
-        this.assessmentVisualizationFacade = assessmentVisualizationFacade;
+        this.compactLevelViewFacade = compactLevelViewFacade;
         this.analyticalDashboardFacade = analyticalDashboardFacade;
         this.objectMapper = objectMapper;
     }
@@ -192,6 +194,55 @@ public class VisualizationRestController {
                                                 @RequestParam Set<Long> usersIds) {
         PageResultResource<UserRefDTO> visualizationInfoDTO = visualizationFacade.getUsersByIds(usersIds, pageable);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, visualizationInfoDTO));
+    }
+
+    /**
+     * Gather all necessary information for clustering visualization from all instances of the specified training definition
+     * @param trainingDefinitionId id of training definition
+     * @return {@link ClusteringVisualizationDTO} containing all the necessary information
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary clustering visualization data for training definition.",
+            response = ClusteringVisualizationDTO.class,
+            nickname = "getClusteringVisualizationsForTrainingDefinition",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = ClusteringVisualizationDTO.class),
+            @ApiResponse(code = 404, message = "Training definition with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-definitions/{definitionId}/clustering", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClusteringVisualizationDTO> getClusteringVisualizationsForTrainingDefinition(
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId") Long trainingDefinitionId) {
+        ClusteringVisualizationDTO clusteringVisualizationDTO =
+                visualizationFacade.getClusteringVisualizationsForTrainingDefinition(trainingDefinitionId);
+        return ResponseEntity.ok(clusteringVisualizationDTO);
+    }
+
+    /**
+     * Gather all necessary information for clustering visualization from the specified instances
+     * @param instanceIds ids of instances to use
+     * @return {@link ClusteringVisualizationDTO} containing all the necessary information
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get necessary clustering visualization data for the specified training instances.",
+            response = ClusteringVisualizationDTO.class,
+            nickname = "getClusteringVisualizationsForTrainingInstances",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for visualization found.", response = ClusteringVisualizationDTO.class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/clustering", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClusteringVisualizationDTO> getClusteringVisualizationsForTrainingInstances(
+            @ApiParam(value = "Training instance IDs", required = true)
+            @RequestParam(value = "instanceIds", required = true) List<Long> instanceIds) {
+        ClusteringVisualizationDTO clusteringVisualizationDTO = visualizationFacade.getClusteringForTrainingInstances(instanceIds);
+        return ResponseEntity.ok(clusteringVisualizationDTO);
     }
 
     /**
@@ -432,24 +483,27 @@ public class VisualizationRestController {
     }
 
     /**
-     * Get data for assessment visualizations. Return list of relevant data for each assessment level that can be found in the definition
-     * of the particular training instance.
+     * Get data for compact level view visualization.
      *
-     * @return assessment visualization data
+     * @param instanceId id of training instance.
+     * @param levelId id of level.
+     * @return data for compact level view visualization.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get assessment visualization data.",
-            response = AssessmentVisualizationDTO[].class,
-            nickname = "getAssessmentVisualizations"
+            value = "Get necessary data for compact level view visualization.",
+            response = CompactLevelViewDTO.class,
+            nickname = "compact level view visualization",
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data for assessment visualization found.", response = AssessmentVisualizationDTO[].class),
-            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 200, message = "Data for analytical dashboard found.", response = TimelineDTO.class),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/training-instances/{instanceId}/assessments")
-    public ResponseEntity<Object> getAssessmentVisualizations(@ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long instanceId) {
-        List<AssessmentVisualizationDTO> assessmentVisualizationDTOs = assessmentVisualizationFacade.getAssessmentVisualizationData(instanceId);
-        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, assessmentVisualizationDTOs));
+    @GetMapping(path = "/training-instances/{instanceId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CompactLevelViewDTO> getCompactLevelViewVisualization(
+            @ApiParam(value = "Training instance ID", required = true) @PathVariable Long instanceId,
+            @ApiParam(value = "Level ID", required = true) @PathVariable Long levelId) {
+        return ResponseEntity.ok(compactLevelViewFacade.getCompactLevelViewData(instanceId, levelId));
     }
 }
