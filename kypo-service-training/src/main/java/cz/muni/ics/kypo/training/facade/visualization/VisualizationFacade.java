@@ -706,7 +706,7 @@ public class VisualizationFacade {
                 .id(abstractLevel.getId())
                 .order(abstractLevel.getOrder());
         AbstractAuditPOJO lastLevelEvent = levelEvents.isEmpty() ? null : levelEvents.get(levelEvents.size() -1);
-        if (!levelEvents.isEmpty() && lastLevelEvent instanceof LevelCompleted) {
+        if (!levelEvents.isEmpty() && (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded)) {
             tableLevelBuilder.score(lastLevelEvent.getActualScoreInLevel());
         }
 
