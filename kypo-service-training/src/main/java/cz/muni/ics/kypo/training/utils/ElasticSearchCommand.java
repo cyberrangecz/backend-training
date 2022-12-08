@@ -14,7 +14,7 @@ public class ElasticSearchCommand {
     @JsonProperty(value = "timestamp_str")
     private String timestampStr;
     @JsonProperty(value = "sandbox_id")
-    private Long sandboxId;
+    private String sandboxId;
     private String cmd;
     @JsonProperty(value = "pool_id")
     private Long poolId;
@@ -47,11 +47,11 @@ public class ElasticSearchCommand {
         this.timestampStr = timestampStr;
     }
 
-    public Long getSandboxId() {
+    public String getSandboxId() {
         return sandboxId;
     }
 
-    public void setSandboxId(Long sandboxId) {
+    public void setSandboxId(String sandboxId) {
         this.sandboxId = sandboxId;
     }
 

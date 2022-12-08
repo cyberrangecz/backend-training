@@ -6,6 +6,7 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.analytical.TrainingInstanceAnalyticalDashboardDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.assessment.AssessmentVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.ClusteringVisualizationDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.compact.CompactLevelViewDTO;
@@ -70,6 +71,7 @@ public class VisualizationRestController {
         this.visualizationFacade = visualizationFacade;
         this.compactLevelViewFacade = compactLevelViewFacade;
         this.analyticalDashboardFacade = analyticalDashboardFacade;
+        this.assessmentVisualizationFacade = assessmentVisualizationFacade;
         this.objectMapper = objectMapper;
     }
 
@@ -506,4 +508,27 @@ public class VisualizationRestController {
             @ApiParam(value = "Level ID", required = true) @PathVariable Long levelId) {
         return ResponseEntity.ok(compactLevelViewFacade.getCompactLevelViewData(instanceId, levelId));
     }
+
+    /**
+     * Get data for assessment visualizations. Return list of relevant data for each assessment level that can be found in the definition
+     * of the particular training instance.
+     *
+     * @return assessment visualization data
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get assessment visualization data.",
+            response = AssessmentVisualizationDTO[].class,
+            nickname = "getAssessmentVisualizations"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data for assessment visualization found.", response = AssessmentVisualizationDTO[].class),
+            @ApiResponse(code = 404, message = "Training instance with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-instances/{instanceId}/assessments")
+    public ResponseEntity<Object> getAssessmentVisualizations(@ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId") Long instanceId) {
+        List<AssessmentVisualizationDTO> assessmentVisualizationDTOs = assessmentVisualizationFacade.getAssessmentVisualizationData(instanceId);
+        return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, assessmentVisualizationDTOs));
+    }
+
 }
