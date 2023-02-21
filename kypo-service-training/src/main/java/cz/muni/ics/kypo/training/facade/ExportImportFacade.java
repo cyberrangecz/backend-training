@@ -426,13 +426,13 @@ public class ExportImportFacade {
     }
 
     private void writeEventsByLevels(ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
-        long currentLevel = events.get(0).getLevel();
-        ZipEntry eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        long currentLevelOrder = events.get(0).getLevelOrder();
+        ZipEntry eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + (currentLevelOrder + 1) + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsDetailEntry);
         for (AbstractAuditPOJO event : events) {
-            if (event.getLevel() != currentLevel) {
-                currentLevel = event.getLevel();
-                eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            if (event.getLevelOrder() != currentLevelOrder) {
+                currentLevelOrder = event.getLevelOrder();
+                eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + (currentLevelOrder + 1) + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
                 zos.putNextEntry(eventsDetailEntry);
             }
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
@@ -488,7 +488,7 @@ public class ExportImportFacade {
 
         for (int i = 0; i < levelIds.size(); i++) {
             List<Map<String, Object>> consoleCommandsByLevel = getConsoleCommandsWithinTimeRange(instance, run, sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i+1));
-            ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-details" + "/level" + levelIds.get(i)+ "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-details" + "/level" + (i + 1) + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(consoleCommandsEntryDetails);
             for (Map<String, Object> command : consoleCommandsByLevel) {
                 zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
