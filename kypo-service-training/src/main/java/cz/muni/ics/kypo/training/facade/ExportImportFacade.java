@@ -427,14 +427,12 @@ public class ExportImportFacade {
 
     private void writeEventsByLevels(ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
         long currentLevel = events.get(0).getLevel();
-        int index = 1;
-        ZipEntry eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + index + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        ZipEntry eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + (events.get(0).getLevelOrder() + 1) + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsDetailEntry);
         for (AbstractAuditPOJO event : events) {
             if (event.getLevel() != currentLevel) {
-                index++;
                 currentLevel = event.getLevel();
-                eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + index + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + (event.getLevelOrder() + 1) + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
                 zos.putNextEntry(eventsDetailEntry);
             }
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
