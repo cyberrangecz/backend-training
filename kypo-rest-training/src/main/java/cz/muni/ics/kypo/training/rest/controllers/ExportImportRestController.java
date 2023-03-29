@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
-import cz.muni.ics.kypo.training.api.dto.cheatingdetection.CheatingDetectionDTO;
 import cz.muni.ics.kypo.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.imports.ImportTrainingDefinitionDTO;
