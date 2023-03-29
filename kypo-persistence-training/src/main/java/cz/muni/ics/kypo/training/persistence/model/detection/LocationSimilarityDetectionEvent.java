@@ -10,6 +10,16 @@ import java.util.Objects;
 @Entity
 @Table(name = "location_similarity_detection_event")
 @PrimaryKeyJoinColumn(name = "id")
+@NamedQueries({
+        @NamedQuery(
+                name = "LocationSimilarityDetectionEvent.findLocationSimilarityEventById",
+                query = "SELECT lsde FROM LocationSimilarityDetectionEvent lsde WHERE lsde.id = :eventId"
+        ),
+        @NamedQuery(
+                name = "LocationSimilarityDetectionEvent.findAllByCheatingDetectionId",
+                query = "SELECT lsde FROM LocationSimilarityDetectionEvent lsde WHERE lsde.cheatingDetectionId = :cheatingDetectionId"
+        )
+})
 public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
 
     @Column(name = "ip_address")
@@ -20,14 +30,6 @@ public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
 
     @Column(name = "is_address_deploy")
     private boolean isAddressDeploy;
-
-    @OneToMany(
-            mappedBy = "detectionEvent",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    private Set<DetectionEventParticipant> participants = new HashSet<>();
 
     public String getIpAddress() {
         return ipAddress;
@@ -53,15 +55,6 @@ public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
         this.isAddressDeploy = isAddressDeploy;
     }
 
-    public Set<DetectionEventParticipant> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(Set<DetectionEventParticipant> participants) {
-        this.participants = participants;
-    }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -70,13 +63,12 @@ public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
         LocationSimilarityDetectionEvent other = (LocationSimilarityDetectionEvent) o;
         return Objects.equals(getIpAddress(), other.getIpAddress()) &&
                 Objects.equals(getDns(), other.getDns()) &&
-                Objects.equals(getIsAddressDeploy(), other.getIsAddressDeploy()) &&
-                Objects.equals(getParticipants(), other.getParticipants());
+                Objects.equals(getIsAddressDeploy(), other.getIsAddressDeploy());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getIpAddress(), getDns(), getIsAddressDeploy(), getParticipants());
+        return Objects.hash(super.hashCode(), getIpAddress(), getDns(), getIsAddressDeploy());
     }
 
     @Override
@@ -84,8 +76,6 @@ public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
         return "LocationSimilarityDetectionEvent{" +
                 "ipAddress='" + ipAddress + '\'' +
                 ", dns='" + dns + '\'' +
-                ", isAddressDeploy='" + isAddressDeploy + '\'' +
-                ", participants='" + participants +
-                '}';
+                ", isAddressDeploy='" + isAddressDeploy + '}';
     }
 }

@@ -6,7 +6,9 @@ import cz.muni.ics.kypo.training.persistence.model.enums.CommandType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Class representing Detection event.
@@ -35,6 +37,10 @@ import java.util.Objects;
         @NamedQuery(
                 name = "AbstractDetectionEvent.getNumberOfDetections",
                 query = "SELECT COUNT(de) FROM AbstractDetectionEvent de WHERE de.cheatingDetectionId = :cheatingDetectionId"
+        ),
+        @NamedQuery(
+                name = "AbstractDetectionEvent.findDetectionEventById",
+                query = "SELECT de FROM AbstractDetectionEvent de WHERE de.id = :eventId"
         )
 })
 public class AbstractDetectionEvent extends AbstractEntity<Long> {
@@ -51,7 +57,9 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
     private LocalDateTime detectedAt;
     @Column(name = "participant_count", nullable = false)
     private int participantCount;
-
+    @Enumerated(EnumType.STRING)
+    @Column(name = "detection_event_type", nullable = false)
+    private DetectionEventType detectionEventType;
 
     /**
      * Gets training instance id.
@@ -161,6 +169,14 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
         this.participantCount = count;
     }
 
+    public DetectionEventType getDetectionEventType() {
+        return detectionEventType;
+    }
+
+    public void setDetectionEventType(DetectionEventType detectionEventType) {
+        this.detectionEventType = detectionEventType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -171,12 +187,13 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
                 Objects.equals(cheatingDetectionId, that.cheatingDetectionId) &&
                 Objects.equals(levelId, that.levelId) &&
                 Objects.equals(levelTitle, that.levelTitle) &&
-                Objects.equals(detectedAt, that.detectedAt);
+                Objects.equals(detectedAt, that.detectedAt) &&
+                Objects.equals(detectionEventType, that.detectionEventType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelTitle, detectedAt, participantCount);
+        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelTitle, detectedAt, participantCount, detectionEventType);
     }
 
     @Override
@@ -187,6 +204,7 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
                 ", levelId=" + levelId +
                 ", levelTitle=" + levelTitle +
                 ", detectedAt=" + detectedAt +
-                ", participantCount=" + participantCount + '}';
+                ", participantCount=" + participantCount +
+                ", detectionEventType=" + detectionEventType  + '}';
     }
 }

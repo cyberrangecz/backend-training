@@ -16,8 +16,6 @@ public class AnswerSimilarityDetectionEventDTO extends AbstractDetectionEventDTO
     private String answer;
     @ApiModelProperty(value = "Name of a player who was assigned the correct answer.", example = "John Doe")
     private String answerOwner;
-    @ApiModelProperty(value = "Participants who submitted the answer of detection event.", example = "")
-    private List<DetectionEventParticipantDTO> participants;
 
     public String getAnswer() {
         return answer;
@@ -35,14 +33,6 @@ public class AnswerSimilarityDetectionEventDTO extends AbstractDetectionEventDTO
         this.answerOwner = answerOwner;
     }
 
-    public List<DetectionEventParticipantDTO> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(List<DetectionEventParticipantDTO> participants) {
-        this.participants = participants;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,13 +40,12 @@ public class AnswerSimilarityDetectionEventDTO extends AbstractDetectionEventDTO
         if (!super.equals(o)) return false;
         AnswerSimilarityDetectionEventDTO that = (AnswerSimilarityDetectionEventDTO) o;
         return Objects.equals(answer, that.answer) &&
-                Objects.equals(answerOwner, that.answerOwner) &&
-                Objects.equals(participants, that.participants);
+                Objects.equals(answerOwner, that.answerOwner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), answer, answerOwner, participants);
+        return Objects.hash(super.hashCode(), answer, answerOwner);
     }
 
     @Override
@@ -64,7 +53,6 @@ public class AnswerSimilarityDetectionEventDTO extends AbstractDetectionEventDTO
         return "AnswerSimilarityDetectionEventDTO{" +
                 "answer='" + answer + '\'' +
                 ", answerOwner='" + answerOwner + '\'' +
-                ", participants=" + participants +
                 '}';
     }
 }

@@ -8,17 +8,20 @@ import java.util.Objects;
 @Entity
 @Table(name = "time_proximity_detection_event")
 @PrimaryKeyJoinColumn(name = "id")
+@NamedQueries({
+        @NamedQuery(
+                name = "TimeProximityDetectionEvent.findTimeProximityEventById",
+                query = "SELECT tpde FROM TimeProximityDetectionEvent tpde WHERE tpde.id = :eventId"
+        ),
+        @NamedQuery(
+                name = "TimeProximityDetectionEvent.findAllByCheatingDetectionId",
+                query = "SELECT tpde FROM TimeProximityDetectionEvent tpde WHERE tpde.cheatingDetectionId = :cheatingDetectionId"
+        )
+})
 public class TimeProximityDetectionEvent extends AbstractDetectionEvent {
 
     @Column(name = "threshold")
     private Long threshold;
-    @OneToMany(
-            mappedBy = "detectionEvent",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    private Set<DetectionEventParticipant> participants = new HashSet<>();
 
     public Long getThreshold() {
         return threshold;
@@ -28,33 +31,23 @@ public class TimeProximityDetectionEvent extends AbstractDetectionEvent {
         this.threshold = threshold;
     }
 
-    public Set<DetectionEventParticipant> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(Set<DetectionEventParticipant> participants) {
-        this.participants = participants;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TimeProximityDetectionEvent)) return false;
         if (!super.equals(o)) return false;
         TimeProximityDetectionEvent other = (TimeProximityDetectionEvent) o;
-        return Objects.equals(getParticipants(), other.getParticipants()) &&
-                Objects.equals(getThreshold(), other.getThreshold());
+        return Objects.equals(getThreshold(), other.getThreshold());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getParticipants(), getThreshold());
+        return Objects.hash(super.hashCode(), getThreshold());
     }
 
     @Override
     public String toString() {
         return "TimeProximityDetectionEvent{" +
-                "participants='" + participants + '\'' +
                 ", threshold='" + threshold +
                 '}';
     }
