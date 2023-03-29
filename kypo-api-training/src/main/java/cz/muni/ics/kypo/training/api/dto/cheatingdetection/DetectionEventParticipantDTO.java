@@ -22,7 +22,12 @@ public class DetectionEventParticipantDTO {
     @ApiModelProperty(value = "Time in which the level was solved.", example = "20")
     private Long solvedInTime;
     @ApiModelProperty(value = "Name of the participant.", example = "John Doe")
-    private String name;
+    private String participantName;
+
+    @ApiModelProperty(value = "User id of participant.", example = "6")
+    private Long userId;
+    @ApiModelProperty(value = "the id of detection event", example = "3")
+    private Long detectionEventId;
 
     public String getIpAddress() {
         return ipAddress;
@@ -48,12 +53,28 @@ public class DetectionEventParticipantDTO {
         this.solvedInTime = solvedInTime;
     }
 
-    public String getName() {
-        return name;
+    public String getParticipantName() {
+        return participantName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setParticipantName(String participantName) {
+        this.participantName = participantName;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getDetectionEventId() {
+        return detectionEventId;
+    }
+
+    public void setDetectionEventId(Long detectionEventId) {
+        this.detectionEventId = detectionEventId;
     }
 
     @Override
@@ -64,12 +85,14 @@ public class DetectionEventParticipantDTO {
         return Objects.equals(ipAddress, that.ipAddress) &&
                 Objects.equals(occurredAt, that.occurredAt) &&
                 Objects.equals(solvedInTime, that.solvedInTime) &&
-                Objects.equals(name, that.name);
+                Objects.equals(participantName, that.participantName) &&
+                Objects.equals(userId, that.userId) &&
+                Objects.equals(detectionEventId, that.detectionEventId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ipAddress, occurredAt, solvedInTime, name);
+        return Objects.hash(ipAddress, occurredAt, solvedInTime, participantName, detectionEventId);
     }
 
     @Override
@@ -78,7 +101,9 @@ public class DetectionEventParticipantDTO {
                 "ipAddress='" + ipAddress + '\'' +
                 ", occurredAt=" + occurredAt +
                 ", solvedInTime=" + solvedInTime +
-                ", name='" + name + '\'' +
+                ", participantName='" + participantName + '\'' +
+                ", userId='" + userId + '\'' +
+                ", detectionEventId='" + detectionEventId + '\'' +
                 '}';
     }
 }

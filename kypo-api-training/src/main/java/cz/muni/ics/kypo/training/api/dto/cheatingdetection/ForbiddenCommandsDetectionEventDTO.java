@@ -15,9 +15,6 @@ public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDT
 
     @ApiModelProperty(value = "List of forbidden commands.", example = "1")
     private String[] forbiddenCommands;
-    @ApiModelProperty(value = "Participant of the detection event.", example = "1")
-    private DetectionEventParticipantDTO participant;
-
 
     public String[] getForbiddenCommands() {
         return forbiddenCommands;
@@ -27,33 +24,24 @@ public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDT
         this.forbiddenCommands = forbiddenCommands;
     }
 
-    public DetectionEventParticipantDTO getParticipant() {
-        return participant;
-    }
-
-    public void setParticipant(DetectionEventParticipantDTO participant) {
-        this.participant = participant;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ForbiddenCommandsDetectionEventDTO that = (ForbiddenCommandsDetectionEventDTO) o;
-        return Objects.equals(forbiddenCommands, that.forbiddenCommands) && Objects.equals(participant, that.participant);
+        return Objects.equals(forbiddenCommands, that.forbiddenCommands);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), forbiddenCommands, participant);
+        return Objects.hash(super.hashCode(), forbiddenCommands);
     }
 
     @Override
     public String toString() {
         return "ForbiddenCommandsDetectionEventDTO{" +
                 "forbiddenCommands=" + forbiddenCommands +
-                ", participant=" + participant +
                 '}';
     }
 }

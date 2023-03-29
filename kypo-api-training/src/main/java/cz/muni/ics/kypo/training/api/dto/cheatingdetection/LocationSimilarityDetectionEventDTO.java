@@ -18,8 +18,6 @@ public class LocationSimilarityDetectionEventDTO extends AbstractDetectionEventD
     private String dns;
     @ApiModelProperty(value = "If the address is the same as deployment.", example = "false")
     private boolean isAddressDeploy;
-    @ApiModelProperty(value = "participants of the detection event.", example = "1")
-    private List<DetectionEventParticipantDTO> participants;
 
     public String getIpAddress() {
         return ipAddress;
@@ -45,26 +43,18 @@ public class LocationSimilarityDetectionEventDTO extends AbstractDetectionEventD
         isAddressDeploy = addressDeploy;
     }
 
-    public List<DetectionEventParticipantDTO> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(List<DetectionEventParticipantDTO> participants) {
-        this.participants = participants;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         LocationSimilarityDetectionEventDTO that = (LocationSimilarityDetectionEventDTO) o;
-        return isAddressDeploy == that.isAddressDeploy && Objects.equals(ipAddress, that.ipAddress) && Objects.equals(dns, that.dns) && Objects.equals(participants, that.participants);
+        return isAddressDeploy == that.isAddressDeploy && Objects.equals(ipAddress, that.ipAddress) && Objects.equals(dns, that.dns);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), ipAddress, dns, isAddressDeploy, participants);
+        return Objects.hash(super.hashCode(), ipAddress, dns, isAddressDeploy);
     }
 
     @Override
@@ -73,7 +63,6 @@ public class LocationSimilarityDetectionEventDTO extends AbstractDetectionEventD
                 "ipAddress='" + ipAddress + '\'' +
                 ", dns='" + dns + '\'' +
                 ", isAddressDeploy=" + isAddressDeploy +
-                ", participants=" + participants +
                 '}';
     }
 }

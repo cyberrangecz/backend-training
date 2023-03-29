@@ -16,9 +16,6 @@ public class MinimalSolveTimeDetectionEventDTO extends AbstractDetectionEventDTO
     @ApiModelProperty(value = "Minimal time required to solve the level.", example = "1")
     private Long minimalSolveTime;
 
-    @ApiModelProperty(value = "Participants of the detection event.", example = "1")
-    private List<DetectionEventParticipantDTO> participants;
-
     public Long getMinimalSolveTime() {
         return minimalSolveTime;
     }
@@ -27,34 +24,24 @@ public class MinimalSolveTimeDetectionEventDTO extends AbstractDetectionEventDTO
         this.minimalSolveTime = minimalSolveTime;
     }
 
-    public List<DetectionEventParticipantDTO> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(List<DetectionEventParticipantDTO> participants) {
-        this.participants = participants;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         MinimalSolveTimeDetectionEventDTO that = (MinimalSolveTimeDetectionEventDTO) o;
-        return Objects.equals(minimalSolveTime, that.minimalSolveTime) &&
-                Objects.equals(participants, that.participants);
+        return Objects.equals(minimalSolveTime, that.minimalSolveTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), minimalSolveTime, participants);
+        return Objects.hash(super.hashCode(), minimalSolveTime);
     }
 
     @Override
     public String toString() {
         return "MinimalSolveTimeDetectionEventDTO{" +
                 "minimalSolveTime=" + minimalSolveTime +
-                ", participants=" + participants +
                 '}';
     }
 }

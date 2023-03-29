@@ -25,10 +25,7 @@ import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.exceptions.UnprocessableEntityException;
-import cz.muni.ics.kypo.training.mapping.mapstruct.ExportImportMapper;
-import cz.muni.ics.kypo.training.mapping.mapstruct.LevelMapper;
-import cz.muni.ics.kypo.training.mapping.mapstruct.ReferenceSolutionNodeMapper;
-import cz.muni.ics.kypo.training.mapping.mapstruct.TrainingDefinitionMapper;
+import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
@@ -36,12 +33,9 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOpti
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
-import cz.muni.ics.kypo.training.service.SecurityService;
-import cz.muni.ics.kypo.training.service.UserService;
+import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
-import cz.muni.ics.kypo.training.service.ExportImportService;
-import cz.muni.ics.kypo.training.service.TrainingDefinitionService;
 import cz.muni.ics.kypo.training.service.api.SandboxApiService;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.apache.commons.lang3.StringUtils;
@@ -72,9 +66,7 @@ public class ExportImportFacade {
     private static final String EVENTS_FOLDER = "training_events";
     private static final String RUNS_FOLDER = "training_runs";
     private static final String ASSESSMENTS_ANSWERS_FOLDER = "assessments_answers";
-
     private static final String DELIMITER = ";";
-
     private final ExportImportService exportImportService;
     private final TrainingDefinitionService trainingDefinitionService;
     private final SandboxApiService sandboxApiService;
@@ -105,7 +97,9 @@ public class ExportImportFacade {
                               ElasticsearchApiService elasticsearchApiService,
                               TrainingFeedbackApiService trainingFeedbackApiService,
                               SandboxApiService sandboxApiService,
-                              UserService userService, SecurityService securityService, ExportImportMapper exportImportMapper,
+                              UserService userService,
+                              SecurityService securityService,
+                              ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper,
                               ObjectMapper objectMapper) {
@@ -321,6 +315,8 @@ public class ExportImportFacade {
                 userRefDTO.getUserRefSub() + DELIMITER +
                 trainingRun.getTotalTrainingScore() + System.lineSeparator();
     }
+
+
 
     /**
      * Exports Training Instance to file

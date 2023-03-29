@@ -49,6 +49,11 @@ public interface AbstractDetectionEventRepository extends JpaRepository<Abstract
      */
     Long getNumberOfDetections(@Param("cheatingDetectionId") Long cheatingDetectionId);
 
-
+    /**
+     * Returns the detection event based on its id
+     *
+     * @param eventId the detection event id
+     */
+    AbstractDetectionEvent findDetectionEventById(@Param("eventId") Long eventId);
 }
 

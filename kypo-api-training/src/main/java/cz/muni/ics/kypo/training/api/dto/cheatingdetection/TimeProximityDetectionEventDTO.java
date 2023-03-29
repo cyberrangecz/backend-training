@@ -14,8 +14,6 @@ public class TimeProximityDetectionEventDTO extends AbstractDetectionEventDTO {
 
     @ApiModelProperty(value = "Time threshold for detection.", example = "1")
     private Long threshold;
-    @ApiModelProperty(value = "Participants of the detection event.", example = "1")
-    private List<DetectionEventParticipantDTO> participants;
 
     public Long getThreshold() {
         return threshold;
@@ -25,33 +23,24 @@ public class TimeProximityDetectionEventDTO extends AbstractDetectionEventDTO {
         this.threshold = threshold;
     }
 
-    public List<DetectionEventParticipantDTO> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(List<DetectionEventParticipantDTO> participants) {
-        this.participants = participants;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         TimeProximityDetectionEventDTO that = (TimeProximityDetectionEventDTO) o;
-        return Objects.equals(threshold, that.threshold) && Objects.equals(participants, that.participants);
+        return Objects.equals(threshold, that.threshold);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), threshold, participants);
+        return Objects.hash(super.hashCode(), threshold);
     }
 
     @Override
     public String toString() {
         return "TimeProximityDetectionEventDTO{" +
                 "threshold=" + threshold +
-                ", participants=" + participants +
                 '}';
     }
 }
