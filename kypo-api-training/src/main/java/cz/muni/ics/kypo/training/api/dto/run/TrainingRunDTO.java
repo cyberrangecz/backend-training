@@ -36,6 +36,8 @@ public class TrainingRunDTO {
     private boolean eventLoggingState;
     @ApiModelProperty(value = "Boolean to check whether command logging works.", example = "true")
     private boolean commandLoggingState;
+    @ApiModelProperty(value = "Boolean to check whether the run has any detection events logged", example = "true")
+    private boolean hasDetectionEvent;
 
     /**
      * Gets id.
@@ -199,6 +201,14 @@ public class TrainingRunDTO {
         this.commandLoggingState = commandLoggingState;
     }
 
+    public boolean getHasDetectionEvent() {
+        return hasDetectionEvent;
+    }
+
+    public void setHasDetectionEvent(boolean hasDetectionEvent) {
+        this.hasDetectionEvent = hasDetectionEvent;
+    }
+
     @Override
     public String toString() {
         return "TrainingRunDTO{" +
@@ -211,6 +221,7 @@ public class TrainingRunDTO {
                 ", participantRef=" + participantRef +
                 ", eventLoggingState=" + eventLoggingState +
                 ", commandLoggingState=" + commandLoggingState +
+                ", hasDetectionEvent=" + hasDetectionEvent +
                 '}';
     }
 
@@ -220,11 +231,12 @@ public class TrainingRunDTO {
         TrainingRunDTO that = (TrainingRunDTO) object;
         return Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getState(), that.getState()) &&
-                Objects.equals(getParticipantRef(), that.getParticipantRef());
+                Objects.equals(getParticipantRef(), that.getParticipantRef()) &&
+                Objects.equals(getHasDetectionEvent(), that.getHasDetectionEvent());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getState(), getParticipantRef());
+        return Objects.hash(getId(), getState(), getParticipantRef(), getHasDetectionEvent());
     }
 }

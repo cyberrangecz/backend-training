@@ -8,6 +8,14 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "detection_event_participant")
+@NamedQueries({
+        @NamedQuery(
+                name = "DetectionEventParticipant.findAllByEventId",
+                query = "SELECT dep FROM DetectionEventParticipant dep " +
+                        "WHERE dep.detectionEventId = :eventId " +
+                        "ORDER BY dep.occurredAt"
+        )
+})
 public class DetectionEventParticipant extends AbstractEntity<Long> {
 
     @Column(name = "ip_address", nullable = true)
@@ -18,12 +26,10 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
     private String participantName;
     @Column(name = "solved_in_time", nullable = true)
     private Long solvedInTime;
-    @Column(name = "name", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "detection_event_id")
-    private AbstractDetectionEvent detectionEvent;
+    @Column(name = "detection_event_id", nullable = false)
+    private Long detectionEventId;
 
     public String getIpAddress() {
         return ipAddress;
@@ -65,12 +71,12 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
         this.userId = userId;
     }
 
-    public AbstractDetectionEvent getDetectionEvent() {
-        return detectionEvent;
+    public Long getDetectionEventId() {
+        return detectionEventId;
     }
 
-    public void setDetectionEvent(AbstractDetectionEvent detectionEvent) {
-        this.detectionEvent = detectionEvent;
+    public void setDetectionEventId(Long detectionEventId) {
+        this.detectionEventId = detectionEventId;
     }
 
     @Override
@@ -83,12 +89,12 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
                 Objects.equals(participantName, that.participantName) &&
                 Objects.equals(solvedInTime, that.solvedInTime) &&
                 Objects.equals(userId, that.userId) &&
-                Objects.equals(detectionEvent, that.detectionEvent);
+                Objects.equals(detectionEventId, that.detectionEventId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ipAddress, occurredAt, participantName, solvedInTime, userId, detectionEvent);
+        return Objects.hash(ipAddress, occurredAt, participantName, solvedInTime, userId, detectionEventId);
     }
 
     @Override
@@ -99,7 +105,7 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
                 ", participantName=" + participantName +
                 ", solvedInTime=" + solvedInTime +
                 ", userId=" + userId +
-                ", detectionEvent=" + detectionEvent +
+                ", detectionEventId=" + detectionEventId +
                 '}';
     }
 }

@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import cz.muni.ics.kypo.training.api.enums.DetectionEventType;
 import cz.muni.ics.kypo.training.api.enums.CommandType;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -37,6 +38,8 @@ import java.util.Objects;
         @JsonSubTypes.Type(value = TimeProximityDetectionEventDTO.class, name = "TimeProximityDetectionEventDTO")})
 public class AbstractDetectionEventDTO {
 
+    @ApiModelProperty(value = "id of detection event.", example = "1")
+    private Long id;
     @ApiModelProperty(value = "id of a training instance in which the event was detected.", example = "1")
     private Long trainingInstanceId;
     @ApiModelProperty(value = "id of a cheating detection during which the event was detected.", example = "2")
@@ -179,6 +182,14 @@ public class AbstractDetectionEventDTO {
         this.detectionEventType = detectionEventType;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -189,12 +200,13 @@ public class AbstractDetectionEventDTO {
                 Objects.equals(levelId, that.levelId) && Objects.equals(levelTitle, that.levelTitle) &&
                 Objects.equals(detectedAt, that.detectedAt) &&
                 Objects.equals(participantCount, that.participantCount) &&
-                detectionEventType == that.detectionEventType;
+                Objects.equals(detectionEventType, that.detectionEventType) &&
+                Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelTitle, detectedAt, participantCount, detectionEventType);
+        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelTitle, detectedAt, participantCount, detectionEventType, id);
     }
 
     @java.lang.Override
@@ -207,6 +219,7 @@ public class AbstractDetectionEventDTO {
                 ", detectedAt=" + detectedAt +
                 ", participantCount=" + participantCount +
                 ", detectionEventType=" + detectionEventType +
+                ", id=" + id +
                 '}';
     }
 }
