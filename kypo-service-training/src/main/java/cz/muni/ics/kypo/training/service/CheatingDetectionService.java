@@ -413,10 +413,23 @@ public class CheatingDetectionService {
     }
 
     private boolean evalCheatOfNoCommands(String sandboxId, LocalDateTime from, Submission submission, TrainingLevel level, Long instanceId) {
+        String except = "find ~ -name";
+        String command;
         var results = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(
                 sandboxId, from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
                 submission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
-        return (level.isCommandsRequired()) && results.isEmpty();
+        if (results.isEmpty()) {
+            return level.isCommandsRequired();
+        } else {
+            for (var commandMap : results) {
+                command = commandMap.get("cmd").toString();
+                if (command.contains(except)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        //return (level.isCommandsRequired()) && results.isEmpty();
     }
 
     private DetectionEventParticipant extractParticipant(Submission s) {
