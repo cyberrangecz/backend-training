@@ -413,7 +413,7 @@ public class CheatingDetectionService {
     }
 
     private boolean evalCheatOfNoCommands(String sandboxId, LocalDateTime from, Submission submission, TrainingLevel level, Long instanceId) {
-        String except = "find ~ -name";
+        String except = "find";
         String command;
         var results = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(
                 sandboxId, from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
@@ -423,7 +423,7 @@ public class CheatingDetectionService {
         } else {
             for (var commandMap : results) {
                 command = commandMap.get("cmd").toString();
-                if (command.contains(except)) {
+                if (!command.contains(except)) {
                     return true;
                 }
             }
