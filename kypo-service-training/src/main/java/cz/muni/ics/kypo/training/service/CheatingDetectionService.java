@@ -585,6 +585,10 @@ public class CheatingDetectionService {
         return detectionEventParticipantRepository.findAllByEventId(eventId, pageable);
     }
 
+    public List<DetectionEventParticipant> findAllParticipantsOfEvent(Long eventId) {
+        return detectionEventParticipantRepository.findAllByEventId(eventId);
+    }
+
     public AbstractDetectionEvent findDetectionEventById(Long eventId) {
         return detectionEventRepository.findDetectionEventById(eventId);
     }
