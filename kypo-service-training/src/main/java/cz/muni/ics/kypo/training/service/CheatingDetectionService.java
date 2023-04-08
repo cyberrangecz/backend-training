@@ -214,14 +214,13 @@ public class CheatingDetectionService {
         List<TrainingLevel> trainingLevels = trainingLevelRepository
                 .findAllByTrainingDefinitionId(trainingInstanceService.findById(trainingInstanceId).getTrainingDefinition().getId());
         for (var level : trainingLevels) {
-            evaluateLocationSimilarityByLevels(submissionRepository.getSubmissionsByLevelAndInstance(trainingInstanceId, level.getId()),
-                    level, trainingInstanceId, cd);
+            evaluateLocationSimilarityByLevels(submissionRepository.getSubmissionsByLevelAndInstance(trainingInstanceId, level.getId()), cd);
         }
         cd.setLocationSimilarityState(CheatingDetectionState.FINISHED);
         updateCheatingDetection(cd);
     }
 
-    private void evaluateLocationSimilarityByLevels(List<Submission> submissions, TrainingLevel level, Long trainingInstanceId, CheatingDetection cd) {
+    private void evaluateLocationSimilarityByLevels(List<Submission> submissions, CheatingDetection cd) {
         boolean wasPut;
         List<List<Submission>> groups = new ArrayList<>();
         Set<DetectionEventParticipant> participants;
@@ -242,8 +241,13 @@ public class CheatingDetectionService {
         }
         for (var group : groups) {
             participants = new HashSet<>();
-            for (var value : group) participants.add(extractParticipant(value));
-            for (var sub : group) auditRunDetectionEvent(sub.getTrainingRun());
+            for (var submission : group) {
+                var participant = extractParticipant(submission);
+                if (!participants.contains(participant)) {
+                    participants.add(participant);
+                }
+                auditRunDetectionEvent(submission.getTrainingRun());
+            }
             auditLocationSimilarityEvent(group.get(0), cd, participants);
         }
     }
