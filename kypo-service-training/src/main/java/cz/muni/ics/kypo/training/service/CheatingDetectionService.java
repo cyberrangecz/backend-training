@@ -192,10 +192,10 @@ public class CheatingDetectionService {
         }
         for (var answer : answers) {
             if (answer.getAnswerContent().equals(submission.getProvided()) && answerVariable.equals(answer.getAnswerVariableName())) {
-                //TODO will change with next batch
                 participants = new HashSet<>();
                 participants.add(extractParticipant(submission));
-                auditAnswerSimilarityEvent(submission, cd, participants, submissionSandboxId);
+                String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
+                auditAnswerSimilarityEvent(submission, cd, participants, answerOwner);
                 run.setHasDetectionEvent(true);
                 trainingRunRepository.save(run);
             }
@@ -644,15 +644,17 @@ public class CheatingDetectionService {
         trainingRunRepository.save(run);
         LocationSimilarityDetectionEvent event = new LocationSimilarityDetectionEvent();
         String domainName;
+        String submissionDomainName;
         try {
             InetAddress envAddress = InetAddress.getByName(environment.getProperty("server.address"));
             domainName = envAddress.getHostName();
-            event.setIsAddressDeploy(domainName.equals(InetAddress.getByName(submission.getIpAddress()).getHostName()));
+            submissionDomainName = InetAddress.getByName(submission.getIpAddress()).getHostName();
+            event.setIsAddressDeploy(domainName.equals(submissionDomainName));
         } catch (UnknownHostException e) {
-            domainName = "unspecified";
+            submissionDomainName = "unspecified";
             event.setIsAddressDeploy(false);
         }
-        event.setDns(domainName);
+        event.setDns(submissionDomainName);
         event.setIpAddress(submission.getIpAddress());
         event.setCheatingDetectionId(cd.getId());
         event.setDetectedAt(cd.getExecuteTime());
