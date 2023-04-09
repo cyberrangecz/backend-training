@@ -31,7 +31,7 @@ import java.util.zip.ZipOutputStream;
 @Transactional
 public class CheatingDetectionFacade {
 
-    private static final String DETECTION_EVENTS_FOLDER = "detelction_events";
+    private static final String DETECTION_EVENTS_FOLDER = "detection_events";
     private static final String ANSWER_SIMILARITY_FOLDER = "answer_similarity";
     private static final String LOCATION_SIMILARITY_FOLDER = "location_similarity";
     private static final String TIME_PROXIMITY_FOLDER = "time_proximity";
@@ -259,7 +259,12 @@ public class CheatingDetectionFacade {
     private void writeDetectionEventToFile(ZipOutputStream zos, AbstractDetectionEvent event, String dirName) throws IOException {
         ZipEntry detectionEventEntry = new ZipEntry(DETECTION_EVENTS_FOLDER + "/" + dirName + "/detection-event-id" + event.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(detectionEventEntry);
+        List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfEvent(event.getId());
         zos.write(objectMapper.writeValueAsBytes(event));
+        zos.write(objectMapper.writeValueAsBytes("\nParticipants\n"));
+        for (var participant : participants) {
+            zos.write(objectMapper.writeValueAsBytes(participant));
+        }
     }
 
     private void writeAnswerSimilarityDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId) throws IOException {

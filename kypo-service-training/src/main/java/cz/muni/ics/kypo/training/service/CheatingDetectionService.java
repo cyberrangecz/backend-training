@@ -192,10 +192,10 @@ public class CheatingDetectionService {
         }
         for (var answer : answers) {
             if (answer.getAnswerContent().equals(submission.getProvided()) && answerVariable.equals(answer.getAnswerVariableName())) {
-                //TODO will change with next batch
                 participants = new HashSet<>();
                 participants.add(extractParticipant(submission));
-                auditAnswerSimilarityEvent(submission, cd, participants, submissionSandboxId);
+                String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
+                auditAnswerSimilarityEvent(submission, cd, participants, answerOwner);
                 run.setHasDetectionEvent(true);
                 trainingRunRepository.save(run);
             }
@@ -214,17 +214,17 @@ public class CheatingDetectionService {
         List<TrainingLevel> trainingLevels = trainingLevelRepository
                 .findAllByTrainingDefinitionId(trainingInstanceService.findById(trainingInstanceId).getTrainingDefinition().getId());
         for (var level : trainingLevels) {
-            evaluateLocationSimilarityByLevels(submissionRepository.getSubmissionsByLevelAndInstance(trainingInstanceId, level.getId()),
-                    level, trainingInstanceId, cd);
+            evaluateLocationSimilarityByLevels(submissionRepository.getSubmissionsByLevelAndInstance(trainingInstanceId, level.getId()), cd);
         }
         cd.setLocationSimilarityState(CheatingDetectionState.FINISHED);
         updateCheatingDetection(cd);
     }
 
-    private void evaluateLocationSimilarityByLevels(List<Submission> submissions, TrainingLevel level, Long trainingInstanceId, CheatingDetection cd) {
+    private void evaluateLocationSimilarityByLevels(List<Submission> submissions, CheatingDetection cd) {
         boolean wasPut;
         List<List<Submission>> groups = new ArrayList<>();
         Set<DetectionEventParticipant> participants;
+        List<Long> runIds;
         for (var submission : submissions) {
             wasPut = false;
             for (var group : groups) {
@@ -242,8 +242,15 @@ public class CheatingDetectionService {
         }
         for (var group : groups) {
             participants = new HashSet<>();
-            for (var value : group) participants.add(extractParticipant(value));
-            for (var sub : group) auditRunDetectionEvent(sub.getTrainingRun());
+            runIds = new ArrayList<>();
+            for (var submission : group) {
+                Long submissionRunId = submission.getTrainingRun().getId();
+                if (!runIds.contains(submissionRunId)) {
+                    participants.add(extractParticipant(submission));
+                    runIds.add(submissionRunId);
+                }
+                auditRunDetectionEvent(submission.getTrainingRun());
+            }
             auditLocationSimilarityEvent(group.get(0), cd, participants);
         }
     }
@@ -413,10 +420,23 @@ public class CheatingDetectionService {
     }
 
     private boolean evalCheatOfNoCommands(String sandboxId, LocalDateTime from, Submission submission, TrainingLevel level, Long instanceId) {
+        String except = "find";
+        String command;
         var results = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(
                 sandboxId, from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
                 submission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
-        return (level.isCommandsRequired()) && results.isEmpty();
+        if (results.isEmpty()) {
+            return level.isCommandsRequired();
+        } else {
+            for (var commandMap : results) {
+                command = commandMap.get("cmd").toString();
+                if (!command.contains(except)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        //return (level.isCommandsRequired()) && results.isEmpty();
     }
 
     private DetectionEventParticipant extractParticipant(Submission s) {
@@ -572,6 +592,10 @@ public class CheatingDetectionService {
         return detectionEventParticipantRepository.findAllByEventId(eventId, pageable);
     }
 
+    public List<DetectionEventParticipant> findAllParticipantsOfEvent(Long eventId) {
+        return detectionEventParticipantRepository.findAllByEventId(eventId);
+    }
+
     public AbstractDetectionEvent findDetectionEventById(Long eventId) {
         return detectionEventRepository.findDetectionEventById(eventId);
     }
@@ -644,15 +668,17 @@ public class CheatingDetectionService {
         trainingRunRepository.save(run);
         LocationSimilarityDetectionEvent event = new LocationSimilarityDetectionEvent();
         String domainName;
+        String submissionDomainName;
         try {
             InetAddress envAddress = InetAddress.getByName(environment.getProperty("server.address"));
             domainName = envAddress.getHostName();
-            event.setIsAddressDeploy(domainName.equals(InetAddress.getByName(submission.getIpAddress()).getHostName()));
+            submissionDomainName = InetAddress.getByName(submission.getIpAddress()).getHostName();
+            event.setIsAddressDeploy(domainName.equals(submissionDomainName));
         } catch (UnknownHostException e) {
-            domainName = "unspecified";
+            submissionDomainName = "unspecified";
             event.setIsAddressDeploy(false);
         }
-        event.setDns(domainName);
+        event.setDns(submissionDomainName);
         event.setIpAddress(submission.getIpAddress());
         event.setCheatingDetectionId(cd.getId());
         event.setDetectedAt(cd.getExecuteTime());
