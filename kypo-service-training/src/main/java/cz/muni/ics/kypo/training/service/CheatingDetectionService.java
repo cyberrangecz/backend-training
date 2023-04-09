@@ -224,6 +224,7 @@ public class CheatingDetectionService {
         boolean wasPut;
         List<List<Submission>> groups = new ArrayList<>();
         Set<DetectionEventParticipant> participants;
+        List<Long> runIds;
         for (var submission : submissions) {
             wasPut = false;
             for (var group : groups) {
@@ -241,10 +242,12 @@ public class CheatingDetectionService {
         }
         for (var group : groups) {
             participants = new HashSet<>();
+            runIds = new ArrayList<>();
             for (var submission : group) {
-                var participant = extractParticipant(submission);
-                if (!participants.contains(participant)) {
-                    participants.add(participant);
+                Long submissionRunId = submission.getTrainingRun().getId();
+                if (!runIds.contains(submissionRunId)) {
+                    participants.add(extractParticipant(submission));
+                    runIds.add(submissionRunId);
                 }
                 auditRunDetectionEvent(submission.getTrainingRun());
             }
