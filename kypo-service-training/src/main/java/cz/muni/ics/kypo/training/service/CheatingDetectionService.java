@@ -422,7 +422,6 @@ public class CheatingDetectionService {
     private boolean evalCheatOfNoCommands(String sandboxId, LocalDateTime from, Submission submission, TrainingLevel level, Long instanceId) {
         String except = "find";
         String command;
-<<<<<<< kypo-service-training/src/main/java/cz/muni/ics/kypo/training/service/CheatingDetectionService.java
         long fromMilli = from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
         long toMilli = submission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
         var results = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, fromMilli, toMilli);
@@ -433,23 +432,6 @@ public class CheatingDetectionService {
         filterCommands.add("find");
         var filteredResults = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, fromMilli, toMilli, filterCommands);
         return filteredResults.size() == results.size();
-=======
-        var results = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(
-                sandboxId, from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
-                submission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
-        if (results.isEmpty()) {
-            return level.isCommandsRequired();
-        } else {
-            for (var commandMap : results) {
-                command = commandMap.get("cmd").toString();
-                if (!command.contains(except)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        //return (level.isCommandsRequired()) && results.isEmpty();
->>>>>>> kypo-service-training/src/main/java/cz/muni/ics/kypo/training/service/CheatingDetectionService.java
     }
 
     private DetectionEventParticipant extractParticipant(Submission s) {
