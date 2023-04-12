@@ -389,7 +389,7 @@ public class CheatingDetectionService {
                 submission = submissions.get(i);
                 from = (i == 0) ? run.getStartTime() : submissions.get(i - 1).getDate();
                 Long currentId = submission.getLevel().getId();
-                if (!trainingLevelsById.containsKey(currentId)) {
+                if (!trainingLevelsById.containsKey(currentId) || !trainingLevelsById.get(currentId).isCommandsRequired()) {
                     continue;
                 }
                 if (evalCheatOfNoCommands(run.getSandboxInstanceRefId(), from, submission,
@@ -422,21 +422,16 @@ public class CheatingDetectionService {
     private boolean evalCheatOfNoCommands(String sandboxId, LocalDateTime from, Submission submission, TrainingLevel level, Long instanceId) {
         String except = "find";
         String command;
-        var results = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(
-                sandboxId, from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
-                submission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
+        long fromMilli = from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
+        long toMilli = submission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
+        var results = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, fromMilli, toMilli);
         if (results.isEmpty()) {
-            return level.isCommandsRequired();
-        } else {
-            for (var commandMap : results) {
-                command = commandMap.get("cmd").toString();
-                if (!command.contains(except)) {
-                    return true;
-                }
-            }
-            return false;
+            return true;
         }
-        //return (level.isCommandsRequired()) && results.isEmpty();
+        List<String> filterCommands = new ArrayList<>();
+        filterCommands.add("find");
+        var filteredResults = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, fromMilli, toMilli, filterCommands);
+        return filteredResults.size() == results.size();
     }
 
     private DetectionEventParticipant extractParticipant(Submission s) {
