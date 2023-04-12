@@ -1,3 +1,4 @@
+2.3.3 Bugfix - no commands detection method correction. 
 2.3.2 Updated cheating detection service with fixes and optimalizations.
 2.3.1 Updated exported information from training instance with correct level ids. Added new functionality and enhancements to experimental cheating detection - new rest endpoints, bugfixes and reworked data structures.
 22.12-rc.1 Changed sandboxId type to string, added maxAchievableScore field to ClusteringLevelDTO, added new endpoint for clustering visualization, added automatic check if logging works for training events and commands.

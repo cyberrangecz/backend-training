@@ -230,6 +230,24 @@ public class ElasticsearchApiService {
         }
     }
 
+    public List<Map<String, Object>> findAllConsoleCommandsBySandboxAndTimeRange(String sandboxId, Long from, Long to, List<String> filterCommands){
+        try {
+            return elasticsearchServiceWebClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder.path("/training-platform-commands/sandboxes/{sandboxId}/ranges")
+                            .queryParam("from", from)
+                            .queryParam("to", to)
+                            .queryParam("filterCommands", filterCommands)
+                            .build(sandboxId)
+                    )
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
+                    .block();
+        } catch (CustomWebClientException ex) {
+            throw new MicroserviceApiException("Error when calling Elasticsearch API for particular commands of sandbox (ID: " + sandboxId +").", ex);
+        }
+    }
+
     public List<Map<String, Object>> findAllConsoleCommandsBySandboxAndTimeRange(String sandboxId, Long from, Long to){
         try {
             return elasticsearchServiceWebClient
