@@ -241,6 +241,9 @@ public class CheatingDetectionService {
             }});
         }
         for (var group : groups) {
+            if (group.size() < 2) {
+                continue;
+            }
             participants = new HashSet<>();
             runIds = new ArrayList<>();
             for (var submission : group) {
@@ -376,7 +379,7 @@ public class CheatingDetectionService {
         List<TrainingLevel> trainingLevels = trainingLevelRepository
                 .findAllByTrainingDefinitionId(trainingInstanceService.findById(trainingInstanceId).getTrainingDefinition().getId());
         Map<Long, TrainingLevel> trainingLevelsById = new HashMap<>();
-        Map<Long, List<Submission>> emptySubmissionsByLevels = new HashMap<>();
+        Map<Long, List<Submission>> detectedSubmissionsByLevels = new HashMap<>();
         for (var level : trainingLevels) {
             trainingLevelsById.put(level.getId(), level);
         }
@@ -385,29 +388,28 @@ public class CheatingDetectionService {
         Submission submission;
         for (var run : trainingRuns) {
             submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
-            for (int i = 0; i < submissions.size(); i++) {
+            for (int i = 0; i < submissions.size() - 1; i++) {
                 submission = submissions.get(i);
                 from = (i == 0) ? run.getStartTime() : submissions.get(i - 1).getDate();
                 Long currentId = submission.getLevel().getId();
                 if (!trainingLevelsById.containsKey(currentId) || !trainingLevelsById.get(currentId).isCommandsRequired()) {
                     continue;
                 }
-                if (evalCheatOfNoCommands(run.getSandboxInstanceRefId(), from, submission,
-                        trainingLevelsById.get(currentId), trainingInstanceId)) {
-                    if (emptySubmissionsByLevels.containsKey(submission.getLevel().getId())) {
-                        var tempSubmissions = emptySubmissionsByLevels.get(submission.getLevel().getId());
+                if (evalCheatOfNoCommands(run.getSandboxInstanceRefId(), from, submission)) {
+                    if (detectedSubmissionsByLevels.containsKey(submission.getLevel().getId())) {
+                        var tempSubmissions = detectedSubmissionsByLevels.get(submission.getLevel().getId());
                         tempSubmissions.add(submission);
-                        emptySubmissionsByLevels.put(submission.getLevel().getId(), tempSubmissions);
+                        detectedSubmissionsByLevels.put(submission.getLevel().getId(), tempSubmissions);
                     } else {
                         List<Submission> subs = new ArrayList<>();
                         subs.add(submission);
-                        emptySubmissionsByLevels.put(submission.getLevel().getId(), subs);
+                        detectedSubmissionsByLevels.put(submission.getLevel().getId(), subs);
                     }
                 }
             }
         }
         Set<DetectionEventParticipant> runs;
-        for (var set : emptySubmissionsByLevels.entrySet()) {
+        for (var set : detectedSubmissionsByLevels.entrySet()) {
             runs = new HashSet<>();
             for (var sub : set.getValue()) {
                 runs.add(extractParticipant(sub));
@@ -419,19 +421,10 @@ public class CheatingDetectionService {
         updateCheatingDetection(cd);
     }
 
-    private boolean evalCheatOfNoCommands(String sandboxId, LocalDateTime from, Submission submission, TrainingLevel level, Long instanceId) {
-        String except = "find";
-        String command;
+    private boolean evalCheatOfNoCommands(String sandboxId, LocalDateTime from, Submission submission) {
         long fromMilli = from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
         long toMilli = submission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
-        var results = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, fromMilli, toMilli);
-        if (results.isEmpty()) {
-            return true;
-        }
-        List<String> filterCommands = new ArrayList<>();
-        filterCommands.add("find");
-        var filteredResults = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, fromMilli, toMilli, filterCommands);
-        return filteredResults.size() == results.size();
+        return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, fromMilli, toMilli).isEmpty();
     }
 
     private DetectionEventParticipant extractParticipant(Submission s) {
