@@ -1,3 +1,4 @@
+2.3.4 Bugifx - fix location similarity detection event incorrect flagging of single user.
 2.3.3 Bugfix - no commands detection method correction. 
 2.3.2 Updated cheating detection service with fixes and optimalizations.
 2.3.1 Updated exported information from training instance with correct level ids. Added new functionality and enhancements to experimental cheating detection - new rest endpoints, bugfixes and reworked data structures.
