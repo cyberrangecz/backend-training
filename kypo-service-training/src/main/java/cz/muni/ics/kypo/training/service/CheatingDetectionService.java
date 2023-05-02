@@ -170,6 +170,9 @@ public class CheatingDetectionService {
         }
         for (Submission submission : submissionRepository.getIncorrectSubmissionsOfTrainingInstance(trainingInstanceId)) {
             Long currentId = submission.getLevel().getId();
+            if (checkIfAnswerBelongsToDifferentLevel(answerMap.get(submission.getTrainingRun().getSandboxInstanceRefId()), submission.getProvided())) {
+                continue;
+            }
             if (!trainingLevelsById.containsKey(currentId)) {
                 continue;
             }
@@ -180,6 +183,15 @@ public class CheatingDetectionService {
         }
         cd.setAnswerSimilarityState(CheatingDetectionState.FINISHED);
         updateCheatingDetection(cd);
+    }
+
+    private boolean checkIfAnswerBelongsToDifferentLevel(List<VariantAnswer> answers, String provided) {
+        for (var answer : answers) {
+            if (answer.getAnswerContent().equals(provided)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void evalCheatOfAnswerSimilarity(TrainingRun run, Submission submission, List<VariantAnswer> answers,
