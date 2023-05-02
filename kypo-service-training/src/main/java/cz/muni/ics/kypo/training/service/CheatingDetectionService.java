@@ -266,7 +266,9 @@ public class CheatingDetectionService {
                 }
                 auditRunDetectionEvent(submission.getTrainingRun());
             }
-            auditLocationSimilarityEvent(group.get(0), cd, participants);
+            if (participants.size() > 1) {
+                auditLocationSimilarityEvent(group.get(0), cd, participants);
+            }
         }
     }
 
