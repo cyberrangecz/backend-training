@@ -141,9 +141,9 @@ public class CheatingDetectionService {
         if (cd.getNoCommandsState() == CheatingDetectionState.QUEUED) {
             executeCheatingDetectionOfNoCommands(cd);
         }
-        //if (cd.getForbiddenCommandsState() == CheatingDetectionState.QUEUED) {
-        //    executeCheatingDetectionOfForbiddenCommands(cd);
-        //}
+        if (cd.getForbiddenCommandsState() == CheatingDetectionState.QUEUED) {
+            executeCheatingDetectionOfForbiddenCommands(cd);
+        }
         cd.setResults(detectionEventRepository.getNumberOfDetections(cd.getId()));
         cd.setCurrentState(CheatingDetectionState.FINISHED);
         updateCheatingDetection(cd);
@@ -764,8 +764,6 @@ public class CheatingDetectionService {
         trainingRunRepository.save(run);
         ForbiddenCommandsDetectionEvent event = new ForbiddenCommandsDetectionEvent();
         event.setForbiddenCommands(forbiddenCommands);
-//        Set<DetectionEventParticipant> participants = new HashSet<>();
-//        participants.add(participant);
         event.setCheatingDetectionId(cd.getId());
         event.setDetectedAt(cd.getExecuteTime());
         event.setLevelId(submission.getLevel().getId());
