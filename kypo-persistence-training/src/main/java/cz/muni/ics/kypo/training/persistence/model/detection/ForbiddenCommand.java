@@ -16,10 +16,6 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
     @Column(name = "command_type", nullable = false)
     private CommandType type;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cheating_detection_id")
-    private CheatingDetection detection;
-
     public String getCommand() {
         return command;
     }
@@ -36,27 +32,18 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
         this.type = type;
     }
 
-    public CheatingDetection getDetection() {
-        return detection;
-    }
-
-    public void setDetection(CheatingDetection detection) {
-        this.detection = detection;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ForbiddenCommand that = (ForbiddenCommand) o;
         return Objects.equals(command, that.command) &&
-                type == that.type &&
-                Objects.equals(detection, that.detection);
+                type == that.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(command, type, detection);
+        return Objects.hash(command, type);
     }
 
     @Override
@@ -64,7 +51,6 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
         return "ForbiddenCommand{" +
                 "command='" + command + '\'' +
                 ", type=" + type +
-                ", detection=" + detection +
                 '}';
     }
 }

@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Encapsulates information about forbidden commands detection event.
@@ -14,13 +15,13 @@ import java.util.Objects;
 public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDTO {
 
     @ApiModelProperty(value = "List of forbidden commands.", example = "1")
-    private String[] forbiddenCommands;
+    private Set<ForbiddenCommandDTO> forbiddenCommands;
 
-    public String[] getForbiddenCommands() {
+    public Set<ForbiddenCommandDTO> getForbiddenCommands() {
         return forbiddenCommands;
     }
 
-    public void setForbiddenCommands(String[] forbiddenCommands) {
+    public void setForbiddenCommands(Set<ForbiddenCommandDTO> forbiddenCommands) {
         this.forbiddenCommands = forbiddenCommands;
     }
 

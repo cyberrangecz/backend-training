@@ -470,7 +470,7 @@ public class CheatingDetectionService {
         List<Map<String, Object>> submittedCommands;
         LocalDateTime from;
         Submission currentSubmission;
-        String[] forbiddenCommands;
+        Set<ForbiddenCommand> forbiddenCommands;
 
         for (var run : trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)) {
             submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
@@ -491,16 +491,16 @@ public class CheatingDetectionService {
         updateCheatingDetection(cd);
     }
 
-    private String[] evaluateForbiddenCommand(Set<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
+    private Set<ForbiddenCommand> evaluateForbiddenCommand(Set<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
         String command = commandMap.get("cmd").toString();
         String type = commandMap.get("cmd_type").toString();
-        List<String> commandsList = new ArrayList<>();
+        Set<ForbiddenCommand> commandsList = new HashSet<>();
         for (var forbiddenCommand : fc) {
             if (type.equals(forbiddenCommand.getType().toString()) && command != null && command.contains(forbiddenCommand.getCommand())) {
-                commandsList.add(command);
+                commandsList.add(forbiddenCommand);
             }
         }
-        return commandsList.toArray(new String[0]);
+        return commandsList;
     }
 
     public void deleteDetectionEvents(Long cheatingDetectionId) {
@@ -758,7 +758,7 @@ public class CheatingDetectionService {
     }
 
     private void auditForbiddenCommandsEvent(Submission submission, CheatingDetection cd, DetectionEventParticipant participant,
-                                             String[] forbiddenCommands) {
+                                             Set<ForbiddenCommand> forbiddenCommands) {
         TrainingRun run = submission.getTrainingRun();
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);

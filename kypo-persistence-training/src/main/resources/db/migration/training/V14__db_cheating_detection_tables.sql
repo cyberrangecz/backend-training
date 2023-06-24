@@ -68,6 +68,7 @@ create table cheating_detection (
     minimal_solve_time_state text not null,
     forbidden_commands_state text not null,
     no_commands_state text not null,
+    forbidden_commands text not null,
     primary key (id)
 );
 

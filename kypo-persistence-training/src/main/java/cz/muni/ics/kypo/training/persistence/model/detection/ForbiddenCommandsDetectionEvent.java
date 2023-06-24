@@ -4,6 +4,7 @@ import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 
 import javax.persistence.*;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "forbidden_commands_detection_event")
@@ -21,13 +22,13 @@ import java.util.Objects;
 public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 
     @Column(name = "forbidden_commands", nullable = false)
-    private String[] forbiddenCommands;
+    private Set<ForbiddenCommand> forbiddenCommands;
 
-    public String[] getForbiddenCommands() {
+    public Set<ForbiddenCommand> getForbiddenCommands() {
         return forbiddenCommands;
     }
 
-    public void setForbiddenCommands(String[] forbiddenCommands) {
+    public void setForbiddenCommands(Set<ForbiddenCommand> forbiddenCommands) {
         this.forbiddenCommands = forbiddenCommands;
     }
 

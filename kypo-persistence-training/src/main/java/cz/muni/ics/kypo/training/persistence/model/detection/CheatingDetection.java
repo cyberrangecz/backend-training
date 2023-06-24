@@ -67,12 +67,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
     @Enumerated(EnumType.STRING)
     @Column(name = "no_commands_state")
     private CheatingDetectionState noCommandsState;
-    @OneToMany(
-            mappedBy = "detection",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
+    @Column(name = "forbidden_commands")
     private Set<ForbiddenCommand> commands = new HashSet<>();
 
     public Long getTrainingInstanceId() {
