@@ -1,3 +1,5 @@
+2.3.8 Added a check for deletion of possible duplicate hints.
+2.3.7 Increase Assessment level instructions limit and lower limit for question title.
 2.3.6 Bugfix - Location similarity detection event single participants are no longer being detected. 
 2.3.5 Answer similarity detection event optimalization.
 2.3.4 Bugifx - fix location similarity detection event incorrect flagging of single user.
