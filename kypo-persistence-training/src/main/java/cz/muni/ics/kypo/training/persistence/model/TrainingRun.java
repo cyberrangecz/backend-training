@@ -122,6 +122,8 @@ public class TrainingRun extends AbstractEntity<Long> {
     private TrainingInstance trainingInstance;
     @Column(name = "sandbox_instance_ref_id", length = 36)
     private String sandboxInstanceRefId;
+    @Column(name = "sandbox_instance_allocation_id", nullable = false)
+    private int sandboxInstanceAllocationId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
     private UserRef participantRef;
@@ -284,7 +286,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets id of sandbox instance associated with Training run
+     * Gets id of sandbox instance reference associated with Training run
      *
      * @return the sandbox instance ref id
      */
@@ -293,12 +295,29 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Sets id of sandbox instance associated with Training run
+     * Sets id of sandbox instance reference associated with Training run
      *
      * @param sandboxInstanceRefId the sandbox instance ref id
      */
     public void setSandboxInstanceRefId(String sandboxInstanceRefId) {
         this.sandboxInstanceRefId = sandboxInstanceRefId;
+    }
+
+    /**
+     * Gets id of sandbox instance associated with Training run
+     *
+     * @return the sandbox instance ref id
+     */
+    public int getSandboxInstanceAllocationId() {
+        return sandboxInstanceId;
+    }
+
+    /**
+     * Sets id of sandbox instance associated with Training run
+     * @param sandboxInstanceId the sandbox instance id
+     */
+    public void setSandboxInstanceAllocationId(int sandboxInstanceId) {
+        this.sandboxInstanceId = sandboxInstanceId;
     }
 
     /**
@@ -639,6 +658,7 @@ public class TrainingRun extends AbstractEntity<Long> {
                 ", solutionTaken=" + solutionTaken +
                 ", currentLevel=" + currentLevel +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
+                ", sandboxInstanceId=" + sandboxInstanceId +
                 ", totalTrainingScore=" + totalTrainingScore +
                 ", totalAssessmentScore=" + totalAssessmentScore +
                 ", maxLevelScore=" + maxLevelScore +
