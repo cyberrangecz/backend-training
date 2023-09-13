@@ -304,20 +304,20 @@ public class TrainingRun extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets id of sandbox instance associated with Training run
+     * Gets sandbox instance allocation id associated with Training run
      *
-     * @return the sandbox instance ref id
+     * @return the sandbox instance allocation id
      */
     public int getSandboxInstanceAllocationId() {
-        return sandboxInstanceId;
+        return sandboxInstanceAllocationId;
     }
 
     /**
-     * Sets id of sandbox instance associated with Training run
-     * @param sandboxInstanceId the sandbox instance id
+     * Sets sandbox instance allocation id associated with Training run
+     * @param sandboxInstanceAllocationId the sandbox instance allocation id
      */
-    public void setSandboxInstanceAllocationId(int sandboxInstanceId) {
-        this.sandboxInstanceId = sandboxInstanceId;
+    public void setSandboxInstanceAllocationId(int sandboxInstanceAllocationId) {
+        this.sandboxInstanceAllocationId = sandboxInstanceAllocationId;
     }
 
     /**
@@ -658,7 +658,7 @@ public class TrainingRun extends AbstractEntity<Long> {
                 ", solutionTaken=" + solutionTaken +
                 ", currentLevel=" + currentLevel +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
-                ", sandboxInstanceId=" + sandboxInstanceId +
+                ", sandboxInstanceAllocationId=" + sandboxInstanceAllocationId +
                 ", totalTrainingScore=" + totalTrainingScore +
                 ", totalAssessmentScore=" + totalAssessmentScore +
                 ", maxLevelScore=" + maxLevelScore +
