@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.repository.detection;
 
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
-import cz.muni.ics.kypo.training.persistence.model.detection.CheatingDetection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
@@ -29,9 +29,11 @@ public interface AbstractDetectionEventRepository extends JpaRepository<Abstract
      * Finds all detection events by cheating detection id.
      *
      * @param cheatingDetectionId the cheating detection id
+     * @param predicate             represents a predicate (boolean-valued function) of one argument.
      * @param pageable            the pageable
      */
     Page<AbstractDetectionEvent> findAllByCheatingDetectionId(@Param("cheatingDetectionId") Long cheatingDetectionId,
+                                                              @Param("predicate") Predicate predicate,
                                                               @Param("pageable") Pageable pageable);
 
     /**

@@ -1,6 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository.detection;
 
-import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.persistence.model.detection.CheatingDetection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +16,10 @@ public interface CheatingDetectionRepository extends JpaRepository<CheatingDetec
      *
      * @param trainingInstanceId the training instance id
      * @param pageable           the pageable
+     * @param predicate          represents a predicate (boolean-valued function) of one argument.
      * @return the page of all {@link CheatingDetection}s occurred in a training instance
      */
-    Page<CheatingDetection> findAllByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
+    Page<CheatingDetection> findAllByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId, Predicate predicate, Pageable pageable);
 
     /**
      * Find all cheating detections of a training Instance
