@@ -206,8 +206,15 @@ public class CheatingDetectionService {
         for (var answer : answers) {
             if (answer.getAnswerContent().equals(submission.getProvided()) && answerVariable.equals(answer.getAnswerVariableName())) {
                 participants = new HashSet<>();
-                participants.add(extractParticipant(submission));
+                DetectionEventParticipant participant = extractParticipant(submission);
+                if (!checkIfContainsParticipant(participants, participant)) {
+                    participants.add(participant);
+                }
+                var answerOwnerRef = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId());
                 String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
+                if (!(participants.size() > 1)) {
+                    continue;
+                }
                 auditAnswerSimilarityEvent(submission, cd, participants, answerOwner);
                 run.setHasDetectionEvent(true);
                 trainingRunRepository.save(run);
@@ -262,7 +269,10 @@ public class CheatingDetectionService {
             for (var submission : group) {
                 Long submissionRunId = submission.getTrainingRun().getId();
                 if (!runIds.contains(submissionRunId)) {
-                    participants.add(extractParticipant(submission));
+                    DetectionEventParticipant participant = extractParticipant(submission);
+                    if (!checkIfContainsParticipant(participants, participant)) {
+                        participants.add(participant);
+                    }
                     runIds.add(submissionRunId);
                 }
                 auditRunDetectionEvent(submission.getTrainingRun());
@@ -289,7 +299,7 @@ public class CheatingDetectionService {
                 int j = i - 1;
                 var first = submissions.get(j);
                 var second = submissions.get(i);
-                Long timeProximity = Duration.between(first.getDate(), second.getDate()).toSeconds();
+                long timeProximity = Duration.between(first.getDate(), second.getDate()).toSeconds();
                 if (timeProximity < cd.getProximityThreshold()) {
                     if (detectedGroup.isEmpty()) {
                         detectedGroup.add(first);
@@ -305,10 +315,13 @@ public class CheatingDetectionService {
                 }
             }
             for (var sub : detectedGroup) {
-                participants.add(extractParticipant(sub));
+                DetectionEventParticipant participant = extractParticipant(sub);
+                if (!checkIfContainsParticipant(participants, participant)) {
+                    participants.add(participant);
+                }
                 auditRunDetectionEvent(sub.getTrainingRun());
             }
-            if (!detectedGroup.isEmpty()) {
+            if (!detectedGroup.isEmpty() && participants.size() > 1) {
                 auditTimeProximityEvent(detectedGroup.get(0), cd, participants);
                 detectedGroup.clear();
                 participants.clear();
@@ -322,6 +335,15 @@ public class CheatingDetectionService {
     private void auditRunDetectionEvent(TrainingRun run) {
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
+    }
+
+    private boolean checkIfContainsParticipant(Set<DetectionEventParticipant> participants, DetectionEventParticipant participant) {
+        for (var elem : participants ) {
+            if (elem.getUserId().equals(participant.getUserId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void executeCheatingDetectionOfMinimalSolveTime(CheatingDetection cd) {
