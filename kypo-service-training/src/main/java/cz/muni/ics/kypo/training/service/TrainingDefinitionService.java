@@ -691,6 +691,7 @@ public class TrainingDefinitionService {
     public TrainingDefinition auditAndSave(TrainingDefinition trainingDefinition) {
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         trainingDefinition.setLastEditedBy(userService.getUserRefFromUserAndGroup().getUserRefFullName());
+        trainingDefinition.setCreatedAt(getCurrentTimeInUTC());
         return trainingDefinitionRepository.save(trainingDefinition);
     }
 
