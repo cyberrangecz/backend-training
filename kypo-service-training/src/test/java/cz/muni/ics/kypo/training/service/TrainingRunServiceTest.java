@@ -137,6 +137,7 @@ public class TrainingRunServiceTest {
 
         sandboxInfo = new SandboxInfo();
         sandboxInfo.setId("7L");
+        sandboxInfo.setAllocationUnitId(7);
 
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
