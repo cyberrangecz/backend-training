@@ -436,15 +436,18 @@ public class TrainingRunServiceTest {
     @Test
     public void assignSandbox() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
+        trainingRun1.setSandboxInstanceAllocationId(null);
         given(sandboxApiService.getAndLockSandbox(anyLong())).willReturn(sandboxInfo);
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should().save(trainingRun1);
         assertEquals(sandboxInfo.getId(), trainingRun1.getSandboxInstanceRefId());
+        assertEquals(sandboxInfo.getAllocationUnitId(), trainingRun1.getSandboxInstanceAllocationId());
     }
 
     @Test
     public void assignSandboxNoAvailable() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
+        trainingRun1.setSandboxInstanceAllocationId(null);
         willThrow(new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.")).given(sandboxApiService).getAndLockSandbox(anyLong());
         assertThrows(ForbiddenException.class, () -> trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId()));
         then(trainingRunRepository).should(never()).save(trainingRun1);
@@ -453,6 +456,7 @@ public class TrainingRunServiceTest {
     @Test
     public void assignSandboxMicroserviceException() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
+        trainingRun1.setSandboxInstanceAllocationId(null);
         willThrow(new MicroserviceApiException("Error", new CustomWebClientException(HttpStatus.NOT_FOUND, PythonApiError.of("Some error")))).given(sandboxApiService).getAndLockSandbox(anyLong());
         assertThrows(MicroserviceApiException.class, () -> trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId()));
         then(trainingRunRepository).should(never()).save(trainingRun1);
@@ -470,6 +474,7 @@ public class TrainingRunServiceTest {
     @Test
     public void resumeTrainingRunWithNotFound() {
         trainingRun1.setSandboxInstanceRefId(null);
+        trainingRun1.setSandboxInstanceAllocationId(null);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> trainingRunService.resumeTrainingRun(trainingRun1.getId()));
     }
@@ -492,6 +497,7 @@ public class TrainingRunServiceTest {
     @Test
     public void resumeTrainingRunDeletedSandbox() {
         trainingRun1.setSandboxInstanceRefId(null);
+        trainingRun1.setSandboxInstanceAllocationId(null);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         assertThrows(EntityConflictException.class, () -> trainingRunService.resumeTrainingRun(trainingRun1.getId()));
     }
