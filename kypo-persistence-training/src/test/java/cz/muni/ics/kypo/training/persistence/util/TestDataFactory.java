@@ -655,7 +655,7 @@ public class TestDataFactory {
 
     private TrainingDefinition generateTrainingDefinition(String title, String description, String[] prerequisites,
                                                           String[] outcomes, TDState state, boolean showStepperBar,
-                                                          LocalDateTime lastEdited,  String lastEditedBy,
+                                                          LocalDateTime lastEdited, String lastEditedBy,
                                                           LocalDateTime createdAt){
         TrainingDefinition newTrainingDefinition = new TrainingDefinition();
         newTrainingDefinition.setTitle(title);
