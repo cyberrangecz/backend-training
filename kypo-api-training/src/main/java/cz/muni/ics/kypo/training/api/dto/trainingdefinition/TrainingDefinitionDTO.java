@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import cz.muni.ics.kypo.training.converters.LocalDateTimeUTCSerializer;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
