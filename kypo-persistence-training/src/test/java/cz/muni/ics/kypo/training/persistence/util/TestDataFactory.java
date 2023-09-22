@@ -149,7 +149,7 @@ public class TestDataFactory {
             new String[]{"ip1", "ip2"}, new String[]{"io1", "io2"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED, true);
     private TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = generateTrainingDefinitionByIdDTO("TDbyId", "Definition by id",  new String[]{"p8", "p9"},
             new String[]{"o8", "o9"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED,false, false,
-            20L, LocalDateTime.now(Clock.systemUTC()).minusHours(15));
+            20L, LocalDateTime.now(Clock.systemUTC()).minusHours(15), LocalDateTime.now(Clock.systemUTC()).minusHours(15));
 
     private TrainingInstance futureInstance = generateTrainingInstance(LocalDateTime.now(Clock.systemUTC()).plusHours(10),
             LocalDateTime.now(Clock.systemUTC()).plusHours(20), "Future Instance", 1L, "future-1111");
@@ -851,7 +851,7 @@ public class TestDataFactory {
     private TrainingDefinitionByIdDTO generateTrainingDefinitionByIdDTO(String title, String description, String[] prerequisites,
                                                                         String[] outcomes, cz.muni.ics.kypo.training.api.enums.TDState state,
                                                                         boolean showStepperBar, boolean canBeArchived, long estimatedDuration,
-                                                                        LocalDateTime lastEdited){
+                                                                        LocalDateTime lastEdited, LocalDateTime createdAt){
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = new TrainingDefinitionByIdDTO();
         trainingDefinitionByIdDTO.setTitle(title);
         trainingDefinitionByIdDTO.setDescription(description);
@@ -862,6 +862,7 @@ public class TestDataFactory {
         trainingDefinitionByIdDTO.setCanBeArchived(canBeArchived);
         trainingDefinitionByIdDTO.setEstimatedDuration(estimatedDuration);
         trainingDefinitionByIdDTO.setLastEdited(lastEdited);
+        trainingDefinitionByIdDTO.setCreatedAt(createdAt);
         return trainingDefinitionByIdDTO;
     }
 
