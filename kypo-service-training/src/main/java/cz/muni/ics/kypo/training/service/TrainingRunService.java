@@ -397,7 +397,7 @@ public class TrainingRunService {
      */
     public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
         String sandboxInstanceRef = sandboxApiService.getAndLockSandbox(poolId).getId();
-        Long sandboxInstanceAllocationId = sandboxApiService.getAndLockSandbox(poolId).getAllocationUnitId().longValue();
+        Integer sandboxInstanceAllocationId = sandboxApiService.getAndLockSandbox(poolId).getAllocationUnitId();
         trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
         trainingRun.setSandboxInstanceAllocationId(sandboxInstanceAllocationId);
         return trainingRunRepository.save(trainingRun);

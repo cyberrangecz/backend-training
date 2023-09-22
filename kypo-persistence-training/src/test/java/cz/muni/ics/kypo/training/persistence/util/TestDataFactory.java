@@ -701,7 +701,7 @@ public class TestDataFactory {
     }
 
     private TrainingRun generateTrainingRun(LocalDateTime startTime, LocalDateTime endTime, String eventLogReference, TRState state,
-                                            int incorrectAnswerCount, boolean solutionTaken, String SBIRefId, Long SBIAllocId, int totalTrainingScore,
+                                            int incorrectAnswerCount, boolean solutionTaken, String SBIRefId, Integer SBIAllocId, int totalTrainingScore,
                                             int totalAssessmentScore, int maxScore, boolean levelAnswered, String previousSBIRefId, int currentPenalty){
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setStartTime(startTime);
@@ -902,7 +902,7 @@ public class TestDataFactory {
     }
 
     private TrainingRunDTO generateTrainingRunDTO(LocalDateTime start, LocalDateTime end, String logReference, cz.muni.ics.kypo.training.api.enums.TRState state,
-                                                  String SBIRefId, Long SBIAllocId){
+                                                  String SBIRefId, Integer SBIAllocId){
         TrainingRunDTO trainingRunDTO = new TrainingRunDTO();
         trainingRunDTO.setStartTime(start);
         trainingRunDTO.setEndTime(end);

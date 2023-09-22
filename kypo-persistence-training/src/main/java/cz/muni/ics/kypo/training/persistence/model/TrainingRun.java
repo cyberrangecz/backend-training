@@ -123,7 +123,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     @Column(name = "sandbox_instance_ref_id", length = 36)
     private String sandboxInstanceRefId;
     @Column(name = "sandbox_instance_allocation_id", nullable = false)
-    private Long sandboxInstanceAllocationId;
+    private Integer sandboxInstanceAllocationId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
     private UserRef participantRef;
@@ -308,7 +308,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @return the sandbox instance allocation id
      */
-    public Long getSandboxInstanceAllocationId() {
+    public Integer getSandboxInstanceAllocationId() {
         return sandboxInstanceAllocationId;
     }
 
@@ -316,7 +316,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      * Sets sandbox instance allocation id associated with Training run
      * @param sandboxInstanceAllocationId the sandbox instance allocation id
      */
-    public void setSandboxInstanceAllocationId(Long sandboxInstanceAllocationId) {
+    public void setSandboxInstanceAllocationId(Integer sandboxInstanceAllocationId) {
         this.sandboxInstanceAllocationId = sandboxInstanceAllocationId;
     }
 

@@ -53,21 +53,21 @@ public class TrainingRunRepositoryTest {
         trainingRun2.setParticipantRef(entityManager.persist(participantRef));
         trainingRun2.setTrainingInstance(entityManager.persist(trainingInstance));
         trainingRun2.setSandboxInstanceRefId("1L");
-        trainingRun2.setSandboxInstanceAllocationId(1L);
+        trainingRun2.setSandboxInstanceAllocationId(1);
 
         trainingRun1 = testDataFactory.getFinishedRun();
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
         trainingRun1.setSandboxInstanceRefId("2L");
-        trainingRun1.setSandboxInstanceAllocationId(1L);
+        trainingRun1.setSandboxInstanceAllocationId(1);
 
         archivedRun = testDataFactory.getArchivedRun();
         archivedRun.setCurrentLevel(entityManager.persist(infoLevel));
         archivedRun.setParticipantRef(entityManager.persist(participantRef));
         archivedRun.setTrainingInstance(entityManager.persist(trainingInstance));
         archivedRun.setSandboxInstanceRefId("3L");
-        archivedRun.setSandboxInstanceAllocationId(1L);
+        archivedRun.setSandboxInstanceAllocationId(1);
 
 
         pageable = PageRequest.of(0, 4);
