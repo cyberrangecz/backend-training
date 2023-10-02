@@ -1,4 +1,4 @@
-2.3.9 Add createdBy to training definition. Modify TD import to drop 'uploaded' prefix.
+2.3.9 Add createdAt to training definition. Modify TD import to drop 'uploaded' prefix.
 2.3.8 Added a check for deletion of possible duplicate hints.
 2.3.7 Increase Assessment level instructions limit and lower limit for question title.
 2.3.6 Bugfix - Location similarity detection event single participants are no longer being detected. 
