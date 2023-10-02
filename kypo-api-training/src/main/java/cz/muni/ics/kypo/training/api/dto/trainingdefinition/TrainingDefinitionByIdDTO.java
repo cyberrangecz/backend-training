@@ -47,6 +47,7 @@ public class TrainingDefinitionByIdDTO {
     @ApiModelProperty(value = "Indicates if any of the training levels have defined reference solution.")
     private Boolean hasReferenceSolution;
     @ApiModelProperty(value = "Time of creation of definition.", example = "2017-10-19 10:23:54+02")
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime createdAt;
 
     /**

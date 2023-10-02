@@ -43,6 +43,7 @@ public class TrainingDefinitionDTO {
     @ApiModelProperty(value = "Name of the user who has done the last edit in definition.", example = "John Doe")
     private String lastEditedBy;
     @ApiModelProperty(value = "Time of creation of definition.", example = "2017-10-19 10:23:54+02")
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime createdAt;
 
 

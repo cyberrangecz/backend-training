@@ -181,7 +181,6 @@ public class TrainingDefinitionService {
      */
     public TrainingDefinition create(TrainingDefinition trainingDefinition, boolean createDefaultContent) {
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
-        trainingDefinition.setCreatedAt(getCurrentTimeInUTC());
         if(createDefaultContent) {
             this.createDefaultLevels(trainingDefinition);
         }
