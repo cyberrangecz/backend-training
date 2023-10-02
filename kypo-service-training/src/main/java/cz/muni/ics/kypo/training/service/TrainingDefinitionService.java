@@ -181,6 +181,7 @@ public class TrainingDefinitionService {
      */
     public TrainingDefinition create(TrainingDefinition trainingDefinition, boolean createDefaultContent) {
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
+        trainingDefinition.setCreatedAt(getCurrentTimeInUTC());
         if(createDefaultContent) {
             this.createDefaultLevels(trainingDefinition);
         }
@@ -691,7 +692,6 @@ public class TrainingDefinitionService {
     public TrainingDefinition auditAndSave(TrainingDefinition trainingDefinition) {
         trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         trainingDefinition.setLastEditedBy(userService.getUserRefFromUserAndGroup().getUserRefFullName());
-        trainingDefinition.setCreatedAt(getCurrentTimeInUTC());
         return trainingDefinitionRepository.save(trainingDefinition);
     }
 
