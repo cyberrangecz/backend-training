@@ -126,13 +126,13 @@ public class TestDataFactory {
 
     private TrainingDefinition unreleasedDefinition = generateTrainingDefinition("Unreleased definition", "Unreleased description",
             new String[]{"p1", "p2"}, new String[]{"o1", "o2"}, TDState.UNRELEASED, true,
-            LocalDateTime.now(Clock.systemUTC()).minusHours(1), "John Doe");
+            LocalDateTime.now(Clock.systemUTC()).minusHours(1), "John Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(1));
     private TrainingDefinition releasedDefinition = generateTrainingDefinition("Released definition", "Released description",
             new String[]{"p3", "p4"}, new String[]{"o3"}, TDState.RELEASED, true,
-            LocalDateTime.now(Clock.systemUTC()).minusHours(5), "John Doe");
+            LocalDateTime.now(Clock.systemUTC()).minusHours(5), "John Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(5));
     private TrainingDefinition archivedDefinition = generateTrainingDefinition("Archived definition", "Archived description",
             new String[]{"p5"}, new String[]{"o4", "o5", "o6"}, TDState.ARCHIVED, false,
-            LocalDateTime.now(Clock.systemUTC()).minusHours(10), "Jane Doe");
+            LocalDateTime.now(Clock.systemUTC()).minusHours(10),"Jane Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(10));
     private TrainingDefinitionDTO unreleasedDefinitionDTO = generateTrainingDefinitionDTO(unreleasedDefinition);
     private TrainingDefinitionDTO releasedDefinitionDTO = generateTrainingDefinitionDTO(releasedDefinition);
     private TrainingDefinitionDTO archivedDefinitionDTO = generateTrainingDefinitionDTO(archivedDefinition);
@@ -149,7 +149,7 @@ public class TestDataFactory {
             new String[]{"ip1", "ip2"}, new String[]{"io1", "io2"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED, true);
     private TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = generateTrainingDefinitionByIdDTO("TDbyId", "Definition by id",  new String[]{"p8", "p9"},
             new String[]{"o8", "o9"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED,false, false,
-            20L, LocalDateTime.now(Clock.systemUTC()).minusHours(15));
+            20L, LocalDateTime.now(Clock.systemUTC()).minusHours(15), LocalDateTime.now(Clock.systemUTC()).minusHours(15));
 
     private TrainingInstance futureInstance = generateTrainingInstance(LocalDateTime.now(Clock.systemUTC()).plusHours(10),
             LocalDateTime.now(Clock.systemUTC()).plusHours(20), "Future Instance", 1L, "future-1111");
@@ -655,7 +655,8 @@ public class TestDataFactory {
 
     private TrainingDefinition generateTrainingDefinition(String title, String description, String[] prerequisites,
                                                           String[] outcomes, TDState state, boolean showStepperBar,
-                                                          LocalDateTime lastEdited, String lastEditedBy){
+                                                          LocalDateTime lastEdited, String lastEditedBy,
+                                                          LocalDateTime createdAt){
         TrainingDefinition newTrainingDefinition = new TrainingDefinition();
         newTrainingDefinition.setTitle(title);
         newTrainingDefinition.setDescription(description);
@@ -665,6 +666,7 @@ public class TestDataFactory {
         newTrainingDefinition.setShowStepperBar(showStepperBar);
         newTrainingDefinition.setLastEdited(lastEdited);
         newTrainingDefinition.setLastEditedBy(lastEditedBy);
+        newTrainingDefinition.setCreatedAt(createdAt);
         return newTrainingDefinition;
     }
 
@@ -677,6 +679,7 @@ public class TestDataFactory {
         trainingDefinitionDTO.setState(mapToTDState(trainingDefinition.getState()));
         trainingDefinitionDTO.setShowStepperBar(trainingDefinition.isShowStepperBar());
         trainingDefinitionDTO.setLastEdited(trainingDefinition.getLastEdited());
+        trainingDefinitionDTO.setCreatedAt(trainingDefinitionDTO.getCreatedAt());
         return trainingDefinitionDTO;
     }
 
@@ -848,7 +851,7 @@ public class TestDataFactory {
     private TrainingDefinitionByIdDTO generateTrainingDefinitionByIdDTO(String title, String description, String[] prerequisites,
                                                                         String[] outcomes, cz.muni.ics.kypo.training.api.enums.TDState state,
                                                                         boolean showStepperBar, boolean canBeArchived, long estimatedDuration,
-                                                                        LocalDateTime lastEdited){
+                                                                        LocalDateTime lastEdited, LocalDateTime createdAt){
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = new TrainingDefinitionByIdDTO();
         trainingDefinitionByIdDTO.setTitle(title);
         trainingDefinitionByIdDTO.setDescription(description);
@@ -859,6 +862,7 @@ public class TestDataFactory {
         trainingDefinitionByIdDTO.setCanBeArchived(canBeArchived);
         trainingDefinitionByIdDTO.setEstimatedDuration(estimatedDuration);
         trainingDefinitionByIdDTO.setLastEdited(lastEdited);
+        trainingDefinitionByIdDTO.setCreatedAt(createdAt);
         return trainingDefinitionByIdDTO;
     }
 
