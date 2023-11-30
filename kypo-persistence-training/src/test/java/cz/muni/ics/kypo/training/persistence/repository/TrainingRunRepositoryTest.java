@@ -60,14 +60,14 @@ public class TrainingRunRepositoryTest {
         trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
         trainingRun1.setSandboxInstanceRefId("2L");
-        trainingRun1.setSandboxInstanceAllocationId(1);
+        trainingRun1.setSandboxInstanceAllocationId(2);
 
         archivedRun = testDataFactory.getArchivedRun();
         archivedRun.setCurrentLevel(entityManager.persist(infoLevel));
         archivedRun.setParticipantRef(entityManager.persist(participantRef));
         archivedRun.setTrainingInstance(entityManager.persist(trainingInstance));
         archivedRun.setSandboxInstanceRefId("3L");
-        archivedRun.setSandboxInstanceAllocationId(1);
+        archivedRun.setSandboxInstanceAllocationId(3);
 
 
         pageable = PageRequest.of(0, 4);
