@@ -169,8 +169,8 @@ public class ExportImportFacade {
     @TransactionalWO
     public TrainingDefinitionByIdDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
         importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
-        if (importTrainingDefinitionDTO.getTitle() != null && !importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {
-            importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());
+        if (importTrainingDefinitionDTO.getTitle() != null) {
+            importTrainingDefinitionDTO.setTitle(importTrainingDefinitionDTO.getTitle());
         }
 
         TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
