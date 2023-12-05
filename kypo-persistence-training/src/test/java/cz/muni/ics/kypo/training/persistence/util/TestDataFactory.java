@@ -167,16 +167,16 @@ public class TestDataFactory {
             LocalDateTime.now(Clock.systemUTC()).minusHours(10), "Archived instance", "archived-6666");
 
     private TrainingRun runningRun = generateTrainingRun(LocalDateTime.now(Clock.systemUTC()).minusHours(2), LocalDateTime.now(Clock.systemUTC()).plusHours(2),
-            "logReference1", TRState.RUNNING, 2, true, "1L", 55, 21,
+            "logReference1", TRState.RUNNING, 2, true, "1L", 1, 55, 21,
             200, false, "2L", 20);
     private TrainingRun finishedRun = generateTrainingRun(LocalDateTime.now(Clock.systemUTC()).minusHours(10), LocalDateTime.now(Clock.systemUTC()).minusHours(5),
-            "logReference2", TRState.FINISHED, 4, false, "3L", 80, 40, 300, true, "4L", 0);
+            "logReference2", TRState.FINISHED, 4, false, "3L", 3, 80, 40, 300, true, "4L", 0);
     private TrainingRun archivedRun = generateTrainingRun(LocalDateTime.now(Clock.systemUTC()).minusHours(20), LocalDateTime.now(Clock.systemUTC()).minusHours(10),
-            "logReference3", TRState.ARCHIVED, 0, false, "5L", 500, 100, 600, true, "6L", 0);
+            "logReference3", TRState.ARCHIVED, 0, false, "5L", 5, 500, 100, 600, true, "6L", 0);
     private TrainingRunByIdDTO trainingRunByIdDTO = generateTrainingRunByIdDTO(LocalDateTime.now(Clock.systemUTC()).minusHours(2), LocalDateTime.now(Clock.systemUTC()).plusHours(2),
             "logReference1", cz.muni.ics.kypo.training.api.enums.TRState.RUNNING, "5L");
     private TrainingRunDTO trainingRunDTO = generateTrainingRunDTO(LocalDateTime.now(Clock.systemUTC()).minusHours(9), LocalDateTime.now(Clock.systemUTC()).minusHours(5),
-            "logReference1", cz.muni.ics.kypo.training.api.enums.TRState.FINISHED, "7L");
+            "logReference1", cz.muni.ics.kypo.training.api.enums.TRState.FINISHED, "7L", 7);
     private AccessedTrainingRunDTO accessedTrainingRunDTO = generateAccessedTrainingRunDTO("Accessed run", LocalDateTime.now(Clock.systemUTC()).minusHours(8), LocalDateTime.now(Clock.systemUTC()).minusHours(4), 5,
             6, Actions.RESUME);
 
@@ -704,7 +704,7 @@ public class TestDataFactory {
     }
 
     private TrainingRun generateTrainingRun(LocalDateTime startTime, LocalDateTime endTime, String eventLogReference, TRState state,
-                                            int incorrectAnswerCount, boolean solutionTaken, String SBIRefId, int totalTrainingScore,
+                                            int incorrectAnswerCount, boolean solutionTaken, String SBIRefId, Integer SBIAllocId, int totalTrainingScore,
                                             int totalAssessmentScore, int maxScore, boolean levelAnswered, String previousSBIRefId, int currentPenalty){
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setStartTime(startTime);
@@ -712,8 +712,9 @@ public class TestDataFactory {
         newTrainingRun.setEventLogReference(eventLogReference);
         newTrainingRun.setState(state);
         newTrainingRun.setIncorrectAnswerCount(incorrectAnswerCount);
-//        newTrainingRun.setSolutionTaken(solutionTaken);
+//      newTrainingRun.setSolutionTaken(solutionTaken);
         newTrainingRun.setSandboxInstanceRefId(SBIRefId);
+        newTrainingRun.setSandboxInstanceAllocationId(SBIAllocId);
         newTrainingRun.setTotalTrainingScore(totalTrainingScore);
         newTrainingRun.setTotalAssessmentScore(totalAssessmentScore);
         newTrainingRun.setMaxLevelScore(maxScore);
@@ -905,13 +906,14 @@ public class TestDataFactory {
     }
 
     private TrainingRunDTO generateTrainingRunDTO(LocalDateTime start, LocalDateTime end, String logReference, cz.muni.ics.kypo.training.api.enums.TRState state,
-                                                  String SBIId){
+                                                  String SBIRefId, Integer SBIAllocId){
         TrainingRunDTO trainingRunDTO = new TrainingRunDTO();
         trainingRunDTO.setStartTime(start);
         trainingRunDTO.setEndTime(end);
         trainingRunDTO.setEventLogReference(logReference);
         trainingRunDTO.setState(state);
-        trainingRunDTO.setSandboxInstanceRefId(SBIId);
+        trainingRunDTO.setSandboxInstanceRefId(SBIRefId);
+        trainingRunDTO.setSandboxInstanceAllocationId(SBIAllocId);
         return trainingRunDTO;
     }
 
