@@ -186,11 +186,12 @@ public class TrainingRunService {
     /**
      * Finds all Training Runs of logged in user.
      *
+     * @param predicate represents a predicate (boolean-valued function) of one argument.
      * @param pageable pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of logged in user.
      */
-    public Page<TrainingRun> findAllByParticipantRefUserRefId(Pageable pageable) {
-        return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), pageable);
+    public Page<TrainingRun> findAllByParticipantRefUserRefId(Predicate predicate, Pageable pageable) {
+        return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), predicate, pageable);
     }
 
     /**

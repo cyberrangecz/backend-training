@@ -187,14 +187,15 @@ public class TrainingRunFacade {
     /**
      * Finds all Training Runs of logged in user.
      *
+     * @param predicate represents a predicate (boolean-valued function) of one argument.
      * @param pageable    pageable parameter with information about pagination.
      * @param sortByTitle optional parameter. "asc" for ascending sort, "desc" for descending and null if sort is not wanted
      * @return Page of all {@link AccessedTrainingRunDTO} of logged in user.
      */
     @IsTraineeOrAdmin
     @TransactionalRO
-    public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Pageable pageable, String sortByTitle) {
-        Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefUserRefId(pageable);
+    public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(Predicate predicate, Pageable pageable, String sortByTitle) {
+        Page<TrainingRun> trainingRuns = trainingRunService.findAllByParticipantRefUserRefId(predicate, pageable);
         return convertToAccessedRunDTO(trainingRuns, sortByTitle);
     }
 

@@ -204,6 +204,7 @@ public class TrainingRunsRestController {
     /**
      * Get all accessed Training Runs.
      *
+     * @param predicate   specifies query to database.
      * @param pageable    pageable parameter with information about pagination.
      * @param fields      attributes of the object to be returned as the result.
      * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending
@@ -222,12 +223,13 @@ public class TrainingRunsRestController {
     })
     @ApiPageableSwagger
     @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getAllAccessedTrainingRuns(@ApiParam(value = "Pagination support.", required = false) Pageable pageable,
+    public ResponseEntity<Object> getAllAccessedTrainingRuns(@QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
+                                                             @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
                                                              @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                              @RequestParam(value = "fields", required = false) String fields,
                                                              @ApiParam(value = "Sort by title attribute. As values us asc|desc", required = false, example = "asc")
                                                              @RequestParam(value = "sortByTitle", required = false) String sortByTitle) {
-        PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(pageable, sortByTitle);
+        PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(predicate, pageable, sortByTitle);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
     }
