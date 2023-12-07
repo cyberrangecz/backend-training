@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.repository;
 
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.PathBuilder;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
@@ -35,6 +37,7 @@ public class TrainingRunRepositoryTest {
     private InfoLevel infoLevel;
     private UserRef participantRef;
     private Pageable pageable;
+    private Predicate predicate;
 
     @BeforeEach
     public void init() {
@@ -103,7 +106,9 @@ public class TrainingRunRepositoryTest {
     public void findAllByParticipantRefLogin() {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
-        List<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefId(1L, pageable).getContent();
+        PathBuilder<TrainingRun> tR = new PathBuilder<>(TrainingRun.class, "trainingRun");
+        predicate = tR.isNotNull();
+        List<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefId(1L, predicate, pageable).getContent();
         assertTrue(trainingRuns.contains(trainingRun1));
         assertTrue(trainingRuns.contains(trainingRun2));
         assertEquals(2, trainingRuns.size());
@@ -220,11 +225,14 @@ public class TrainingRunRepositoryTest {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
         pageable = PageRequest.of(0, 1);
-        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefId(participantRef.getUserRefId(), pageable);
+        PathBuilder<TrainingRun> tR = new PathBuilder<>(TrainingRun.class, "trainingRun");
+        predicate = tR.isNotNull();
+
+        Page<TrainingRun> trainingRuns = trainingRunRepository.findAllByParticipantRefId(participantRef.getUserRefId(), predicate, pageable);
         assertEquals(1, trainingRuns.getContent().size());
 
         pageable = PageRequest.of(1, 1);
-        trainingRuns = trainingRunRepository.findAllByParticipantRefId(participantRef.getUserRefId(), pageable);
+        trainingRuns = trainingRunRepository.findAllByParticipantRefId(participantRef.getUserRefId(), predicate, pageable);
         assertEquals(1, trainingRuns.getContent().size());
     }
 
