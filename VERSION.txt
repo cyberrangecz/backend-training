@@ -1,3 +1,4 @@
+2.3.11 Fix nullability of allocation id in training run model.
 2.3.10 Add allocation id to training run.
 2.3.9 Add createdAt to training definition. Modify TD import to drop 'uploaded' prefix.
 2.3.8 Added a check for deletion of possible duplicate hints.

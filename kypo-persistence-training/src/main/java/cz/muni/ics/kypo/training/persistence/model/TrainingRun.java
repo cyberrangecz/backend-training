@@ -122,7 +122,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     private TrainingInstance trainingInstance;
     @Column(name = "sandbox_instance_ref_id", length = 36)
     private String sandboxInstanceRefId;
-    @Column(name = "sandbox_instance_allocation_id", nullable = false)
+    @Column(name = "sandbox_instance_allocation_id")
     private Integer sandboxInstanceAllocationId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
