@@ -1,1 +1,1 @@
-alter table training_run add column sandbox_instance_allocation_id int8 default 0;
+alter table training_run add column sandbox_instance_allocation_id int8;
