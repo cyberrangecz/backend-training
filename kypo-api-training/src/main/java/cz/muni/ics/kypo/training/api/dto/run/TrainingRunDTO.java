@@ -30,6 +30,8 @@ public class TrainingRunDTO {
     private TRState state;
     @ApiModelProperty(value = "Reference to the received sandbox.")
     private String sandboxInstanceRefId;
+    @ApiModelProperty(value = "Allocation id to the received sandbox.")
+    private Integer sandboxInstanceAllocationId;
     @ApiModelProperty(value = "Reference to participant of training run.")
     private UserRefDTO participantRef;
     @ApiModelProperty(value = "Boolean to check whether event logging works.", example = "true")
@@ -148,6 +150,24 @@ public class TrainingRunDTO {
     }
 
     /**
+     * Gets sandbox instance allocation id.
+     *
+     * @return the sandbox instance allocation id
+     */
+    public Integer getSandboxInstanceAllocationId() {
+        return sandboxInstanceAllocationId;
+    }
+
+    /**
+     * Sets sandbox instance allocation id.
+     *
+     * @param sandboxInstanceAllocationId the sandbox instance allocation id
+     */
+    public void setSandboxInstanceAllocationId(Integer sandboxInstanceAllocationId) {
+        this.sandboxInstanceAllocationId = sandboxInstanceAllocationId;
+    }
+
+    /**
      * Gets participant ref.
      *
      * @return the {@link UserRefDTO}
@@ -218,6 +238,7 @@ public class TrainingRunDTO {
                 ", eventLogReference='" + eventLogReference + '\'' +
                 ", state=" + state +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
+                ", sandboxInstanceAllocationId" + sandboxInstanceAllocationId +
                 ", participantRef=" + participantRef +
                 ", eventLoggingState=" + eventLoggingState +
                 ", commandLoggingState=" + commandLoggingState +
