@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 2.3.8"
+  version: "Version: 2.3.11"
   title: "KYPO Training - API Reference"
 host: "localhost:8083"
 basePath: "/kypo-rest-training/api/v1"
@@ -6704,6 +6704,11 @@ definitions:
         type: "boolean"
         description: "Indicates if any of the training levels have defined reference\
           \ solution."
+      created_at:
+        type: "string"
+        format: "date-time"
+        example: "2017-10-19 10:23:54+02"
+        description: "Time of creation of definition."
     description: "A blueprint of abstract levels."
   TrainingDefinitionCreateDTO:
     type: "object"
@@ -6818,6 +6823,11 @@ definitions:
         type: "string"
         example: "John Doe"
         description: "Name of the user who has done the last edit in definition."
+      created_at:
+        type: "string"
+        format: "date-time"
+        example: "2017-10-19 10:23:54+02"
+        description: "Time of creation of definition."
     description: "A blueprint of abstract levels."
   TrainingDefinitionInfoDTO:
     type: "object"
@@ -7809,6 +7819,10 @@ definitions:
       sandbox_instance_ref_id:
         type: "string"
         description: "Reference to the received sandbox."
+      sandbox_instance_allocation_id:
+        type: "integer"
+        format: "int32"
+        description: "Allocation id to the received sandbox."
       participant_ref:
         description: "Reference to participant of training run."
         $ref: "#/definitions/UserRefDTO"
