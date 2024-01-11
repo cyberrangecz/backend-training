@@ -4,6 +4,7 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
+import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -186,11 +187,12 @@ public class TrainingRunService {
     /**
      * Finds all Training Runs of logged in user.
      *
+     * @param predicate represents a predicate (boolean-valued function) of one argument.
      * @param pageable pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of logged in user.
      */
-    public Page<TrainingRun> findAllByParticipantRefUserRefId(Pageable pageable) {
-        return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), pageable);
+    public Page<TrainingRun> findAllByParticipantRefUserRefId(Predicate predicate, Pageable pageable) {
+        return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), predicate, pageable);
     }
 
     /**
@@ -396,8 +398,9 @@ public class TrainingRunService {
      * @throws MicroserviceApiException error calling OpenStack Sandbox Service API
      */
     public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
-        String sandboxInstanceRef = sandboxApiService.getAndLockSandbox(poolId).getId();
-        trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
+        SandboxInfo info = sandboxApiService.getAndLockSandbox(poolId);
+        trainingRun.setSandboxInstanceRefId(info.getId());
+        trainingRun.setSandboxInstanceAllocationId(info.getAllocationUnitId());
         return trainingRunRepository.save(trainingRun);
     }
 
@@ -668,6 +671,7 @@ public class TrainingRunService {
         trainingRun.setState(TRState.ARCHIVED);
         trainingRun.setPreviousSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
         trainingRun.setSandboxInstanceRefId(null);
+        trainingRun.setSandboxInstanceAllocationId(null);
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.save(trainingRun);
     }

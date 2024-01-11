@@ -3,7 +3,10 @@ package cz.muni.ics.kypo.training.persistence.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import cz.muni.ics.kypo.training.persistence.model.QTrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import org.springframework.data.domain.Page;
@@ -17,8 +20,11 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.NamedQuery;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,7 +32,7 @@ import java.util.Set;
  * The JPA repository interface to manage {@link TrainingRun} instances.
  */
 @Repository
-public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>, QuerydslPredicateExecutor<TrainingRun>, QuerydslBinderCustomizer<QTrainingRun> {
+public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>, TrainingRunRepositoryCustom, QuerydslPredicateExecutor<TrainingRun>, QuerydslBinderCustomizer<QTrainingRun> {
 
     /**
      * That method is used to make the query dsl string values case insensitive and also it supports partial matches in the database.

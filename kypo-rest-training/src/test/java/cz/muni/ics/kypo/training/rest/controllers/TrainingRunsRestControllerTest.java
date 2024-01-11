@@ -231,7 +231,7 @@ public class TrainingRunsRestControllerTest {
     public void getAllAccessedTrainingRuns() throws Exception {
         accessedTrainingRunDTOPage = trainingRunMapper.mapToPageResultResourceAccessed(pageAccessed);
 
-        given(trainingRunFacade.findAllAccessedTrainingRuns(any(Pageable.class), anyString())).willReturn(accessedTrainingRunDTOPage);
+        given(trainingRunFacade.findAllAccessedTrainingRuns(any(Predicate.class), any(Pageable.class), anyString())).willReturn(accessedTrainingRunDTOPage);
 
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessible")
                 .param("sortByTitle", ""))
