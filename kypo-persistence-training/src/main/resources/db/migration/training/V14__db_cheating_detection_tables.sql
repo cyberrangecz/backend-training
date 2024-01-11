@@ -7,6 +7,7 @@ create table abstract_detection_event (
     detected_at timestamp not null,
     participant_count int8 not null,
     detection_event_type text not null,
+    participants text not null,
     primary key (id)
 );
 
