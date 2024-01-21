@@ -737,6 +737,9 @@ public class CheatingDetectionService {
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
         ForbiddenCommandsDetectionEvent event = (ForbiddenCommandsDetectionEvent) setCommonDetectionEventParameters(submission, cd, DetectionEventType.FORBIDDEN_COMMANDS, 1);
+        for (var command : forbiddenCommands) {
+            command.setDetectionEvent(event);
+        }
         event.setForbiddenCommands(forbiddenCommands);
         Long eventId = forbiddenCommandsDetectionEventRepository.save(event).getId();
         participant.setDetectionEventId(eventId);

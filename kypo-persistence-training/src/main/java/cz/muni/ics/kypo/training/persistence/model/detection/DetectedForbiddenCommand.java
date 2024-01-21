@@ -34,6 +34,14 @@ public class DetectedForbiddenCommand extends AbstractEntity<Long> {
         this.type = type;
     }
 
+    public ForbiddenCommandsDetectionEvent getDetectionEvent() {
+        return detectionEvent;
+    }
+
+    public void setDetectionEvent(ForbiddenCommandsDetectionEvent detectionEvent) {
+        this.detectionEvent = detectionEvent;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
