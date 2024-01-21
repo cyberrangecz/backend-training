@@ -7,9 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Encapsulates information about cheating detection.
@@ -45,7 +43,7 @@ public class CheatingDetectionDTO {
     @ApiModelProperty(value = "state of detection run of no commands.", example = "RUNNING")
     private CheatingDetectionState noCommandsState;
     @ApiModelProperty(value = "list of forbidden commands.", example = "[]")
-    private Set<ForbiddenCommandDTO> forbiddenCommands;
+    private List<ForbiddenCommandDTO> forbiddenCommands;
 
     public Long getTrainingInstanceId() {
         return trainingInstanceId;
@@ -151,11 +149,11 @@ public class CheatingDetectionDTO {
         this.noCommandsState = noCommandsState;
     }
 
-    public Set<ForbiddenCommandDTO> getForbiddenCommands() {
+    public List<ForbiddenCommandDTO> getForbiddenCommands() {
         return forbiddenCommands;
     }
 
-    public void setForbiddenCommands(Set<ForbiddenCommandDTO> forbiddenCommands) {
+    public void setForbiddenCommands(List<ForbiddenCommandDTO> forbiddenCommands) {
         this.forbiddenCommands = forbiddenCommands;
     }
 

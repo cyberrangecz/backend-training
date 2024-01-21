@@ -494,7 +494,7 @@ public class CheatingDetectionService {
         List<Map<String, Object>> submittedCommands;
         LocalDateTime from;
         Submission currentSubmission;
-        Set<ForbiddenCommand> forbiddenCommands;
+        List<ForbiddenCommand> forbiddenCommands;
 
         for (var run : trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)) {
             submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
@@ -515,10 +515,10 @@ public class CheatingDetectionService {
         updateCheatingDetection(cd);
     }
 
-    private Set<ForbiddenCommand> evaluateForbiddenCommand(Set<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
+    private List<ForbiddenCommand> evaluateForbiddenCommand(List<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
         String command = commandMap.get("cmd").toString();
         String type = commandMap.get("cmd_type").toString();
-        Set<ForbiddenCommand> commandsList = new HashSet<>();
+        List<ForbiddenCommand> commandsList = new HashSet<>();
         for (var forbiddenCommand : fc) {
             if (type.equals(forbiddenCommand.getType().toString()) && command != null && command.contains(forbiddenCommand.getCommand())) {
                 commandsList.add(forbiddenCommand);
@@ -729,7 +729,7 @@ public class CheatingDetectionService {
     }
 
     private void auditForbiddenCommandsEvent(Submission submission, CheatingDetection cd, DetectionEventParticipant participant,
-                                             Set<ForbiddenCommand> forbiddenCommands) {
+                                             List<ForbiddenCommand> forbiddenCommands) {
         TrainingRun run = submission.getTrainingRun();
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
