@@ -8,16 +8,16 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "forbidden_command")
-public class ForbiddenCommand extends AbstractEntity<Long> {
+@Table(name = "detected_forbidden_command")
+public class DetectedForbiddenCommand extends AbstractEntity<Long> {
 
     @Column(name = "command", nullable = false)
     private String command;
     @Column(name = "command_type", nullable = false)
     private CommandType type;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cheating_detection_id")
-    private CheatingDetection cheatingDetection;
+    @JoinColumn(name = "detection_event_id")
+    private ForbiddenCommandsDetectionEvent detectionEvent;
     public String getCommand() {
         return command;
     }
@@ -38,7 +38,7 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ForbiddenCommand that = (ForbiddenCommand) o;
+        DetectedForbiddenCommand that = (DetectedForbiddenCommand) o;
         return Objects.equals(command, that.command) &&
                 type == that.type;
     }
@@ -50,7 +50,7 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
 
     @Override
     public String toString() {
-        return "ForbiddenCommand{" +
+        return "DetectedForbiddenCommand{" +
                 "command='" + command + '\'' +
                 ", type=" + type +
                 '}';

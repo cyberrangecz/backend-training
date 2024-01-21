@@ -15,13 +15,13 @@ import java.util.Set;
 public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDTO {
 
     @ApiModelProperty(value = "List of forbidden commands.", example = "1")
-    private Set<ForbiddenCommandDTO> forbiddenCommands;
+    private Set<DetectedForbiddenCommandDTO> forbiddenCommands;
 
-    public Set<ForbiddenCommandDTO> getForbiddenCommands() {
+    public Set<DetectedForbiddenCommandDTO> getForbiddenCommands() {
         return forbiddenCommands;
     }
 
-    public void setForbiddenCommands(Set<ForbiddenCommandDTO> forbiddenCommands) {
+    public void setForbiddenCommands(Set<DetectedForbiddenCommandDTO> forbiddenCommands) {
         this.forbiddenCommands = forbiddenCommands;
     }
 

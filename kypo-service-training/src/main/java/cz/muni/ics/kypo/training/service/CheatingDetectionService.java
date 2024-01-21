@@ -494,7 +494,7 @@ public class CheatingDetectionService {
         List<Map<String, Object>> submittedCommands;
         LocalDateTime from;
         Submission currentSubmission;
-        List<ForbiddenCommand> forbiddenCommands;
+        List<DetectedForbiddenCommand> forbiddenCommands;
 
         for (var run : trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)) {
             submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
@@ -515,13 +515,16 @@ public class CheatingDetectionService {
         updateCheatingDetection(cd);
     }
 
-    private List<ForbiddenCommand> evaluateForbiddenCommand(List<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
+    private List<DetectedForbiddenCommand> evaluateForbiddenCommand(List<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
         String command = commandMap.get("cmd").toString();
         String type = commandMap.get("cmd_type").toString();
-        List<ForbiddenCommand> commandsList = new ArrayList<>();
+        List<DetectedForbiddenCommand> commandsList = new ArrayList<>();
         for (var forbiddenCommand : fc) {
             if (type.equals(forbiddenCommand.getType().toString()) && command != null && command.contains(forbiddenCommand.getCommand())) {
-                commandsList.add(forbiddenCommand);
+                DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
+                detectedCommand.setCommand(forbiddenCommand.getCommand());
+                detectedCommand.setType(forbiddenCommand.getType());
+                commandsList.add(detectedCommand);
             }
         }
         return commandsList;
@@ -729,7 +732,7 @@ public class CheatingDetectionService {
     }
 
     private void auditForbiddenCommandsEvent(Submission submission, CheatingDetection cd, DetectionEventParticipant participant,
-                                             List<ForbiddenCommand> forbiddenCommands) {
+                                             List<DetectedForbiddenCommand> forbiddenCommands) {
         TrainingRun run = submission.getTrainingRun();
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);

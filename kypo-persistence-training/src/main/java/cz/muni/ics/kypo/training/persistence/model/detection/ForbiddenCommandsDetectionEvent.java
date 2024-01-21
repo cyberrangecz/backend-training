@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.persistence.model.detection;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.List;
 
@@ -21,14 +22,19 @@ import java.util.List;
 })
 public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 
-    @Column(name = "forbidden_commands", nullable = false)
-    private List<ForbiddenCommand> forbiddenCommands;
+    @OneToMany(
+            mappedBy = "forbiddenCommandsDetectionEvent",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<DetectedForbiddenCommand> forbiddenCommands = new ArrayList<>();
 
-    public List<ForbiddenCommand> getForbiddenCommands() {
+    public List<DetectedForbiddenCommand> getForbiddenCommands() {
         return forbiddenCommands;
     }
 
-    public void setForbiddenCommands(List<ForbiddenCommand> forbiddenCommands) {
+    public void setForbiddenCommands(List<DetectedForbiddenCommand> forbiddenCommands) {
         this.forbiddenCommands = forbiddenCommands;
     }
 

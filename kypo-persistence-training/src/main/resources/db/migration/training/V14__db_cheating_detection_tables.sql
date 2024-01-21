@@ -82,6 +82,15 @@ create table forbidden_command (
     foreign key (cheating_detection_id) references cheating_detection
 );
 
+create table detected_forbidden_command (
+   id  bigserial not null,
+    command varchar(255) not null,
+    command_type varchar(255) not null,
+    detection_event_id int8 not null,
+    primary key (id),
+    foreign key (detection_event_id) references forbidden_commands_detection_event
+)
+
 create table detection_event_participant (
    id  bigserial not null,
     user_id varchar(255) not null,
