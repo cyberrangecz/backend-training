@@ -218,6 +218,7 @@ public class TrainingDefinitionFacade {
     public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
         TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
+        mappedTrainingDefinition.setCreatedAt(trainingDefinition.getCreatedAt());
         mappedTrainingDefinition.setAuthors(new HashSet<>(trainingDefinition.getAuthors()));
         if (trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
             addOrganizersToTrainingDefinition(mappedTrainingDefinition, trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizersRefIds());
