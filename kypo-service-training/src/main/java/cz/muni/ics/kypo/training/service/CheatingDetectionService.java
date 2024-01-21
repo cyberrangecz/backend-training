@@ -518,7 +518,7 @@ public class CheatingDetectionService {
     private List<ForbiddenCommand> evaluateForbiddenCommand(List<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
         String command = commandMap.get("cmd").toString();
         String type = commandMap.get("cmd_type").toString();
-        List<ForbiddenCommand> commandsList = new HashSet<>();
+        List<ForbiddenCommand> commandsList = new ArrayList<>();
         for (var forbiddenCommand : fc) {
             if (type.equals(forbiddenCommand.getType().toString()) && command != null && command.contains(forbiddenCommand.getCommand())) {
                 commandsList.add(forbiddenCommand);
