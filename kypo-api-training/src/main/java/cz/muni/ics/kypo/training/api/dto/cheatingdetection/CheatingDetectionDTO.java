@@ -44,7 +44,7 @@ public class CheatingDetectionDTO {
     private CheatingDetectionState forbiddenCommandsState;
     @ApiModelProperty(value = "state of detection run of no commands.", example = "RUNNING")
     private CheatingDetectionState noCommandsState;
-    @ApiModelProperty(value = "state of detection run of no commands.", example = "RUNNING")
+    @ApiModelProperty(value = "list of forbidden commands.", example = "[]")
     private Set<ForbiddenCommandDTO> forbiddenCommands;
 
     public Long getTrainingInstanceId() {
