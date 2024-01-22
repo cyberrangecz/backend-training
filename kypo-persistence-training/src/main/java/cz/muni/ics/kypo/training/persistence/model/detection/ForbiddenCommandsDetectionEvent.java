@@ -22,20 +22,15 @@ import java.util.List;
 })
 public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 
-    @OneToMany(
-            mappedBy = "forbiddenCommandsDetectionEvent",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    private List<DetectedForbiddenCommand> forbiddenCommands = new ArrayList<>();
+    @Column(name = "command_count", nullable = false)
+    private int commandCount;
 
-    public List<DetectedForbiddenCommand> getForbiddenCommands() {
-        return forbiddenCommands;
+    public int getCommandCount() {
+        return commandCount;
     }
 
-    public void setForbiddenCommands(List<DetectedForbiddenCommand> forbiddenCommands) {
-        this.forbiddenCommands = forbiddenCommands;
+    public void setCommandCount(int commandCount) {
+        this.commandCount = commandCount;
     }
 
     @Override
@@ -44,18 +39,18 @@ public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
         if (!(o instanceof ForbiddenCommandsDetectionEvent)) return false;
         if (!super.equals(o)) return false;
         ForbiddenCommandsDetectionEvent other = (ForbiddenCommandsDetectionEvent) o;
-        return Objects.equals(getForbiddenCommands(), other.getForbiddenCommands());
+        return Objects.equals(getCommandCount(), other.getCommandCount());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getForbiddenCommands());
+        return Objects.hash(super.hashCode(), getCommandCount());
     }
 
     @Override
     public String toString() {
         return "ForbiddenCommandsDetectionEvent{" +
-                ", forbiddenCommands='" + forbiddenCommands +
+                ", commandCount='" + commandCount +
                 '}';
     }
 }

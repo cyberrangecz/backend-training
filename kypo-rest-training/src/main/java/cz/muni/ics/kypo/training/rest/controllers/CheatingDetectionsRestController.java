@@ -166,7 +166,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
-    @GetMapping(path = "/{cheatingDetectionId}/find-all-events", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{cheatingDetectionId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllDetectionEventsOfCheatingDetection(@ApiParam(value = "id of cheating detection", required = true)
                                                                             @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
                                                                             @ApiParam(value = "id of training instance", required = true)
@@ -186,7 +186,7 @@ public class CheatingDetectionsRestController {
      * @param eventId             id of detection event.
      * @param pageable            pageable parameter with information about pagination.
      * @param fields              attributes of the object to be returned as the result.
-     * @return all Detection Events occurred in a cheating detection.
+     * @return all participants of a detection event.
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get all participants of detection event.",
@@ -201,13 +201,45 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
-    @GetMapping(path = "/find-all-participants", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/participants", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllParticipantsOfDetectionEvent(@ApiParam(value = "the event id", required = true)
                                                                       @RequestParam(value = "eventId", required = true) Long eventId,
                                                                       @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
                                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                                       @RequestParam(value = "fields", required = false) String fields) {
         PageResultResource<DetectionEventParticipantDTO> participantsResource = cheatingDetectionFacade.findAllParticipantsOfDetectionEvent(eventId, pageable);
+        Squiggly.init(objectMapper, fields);
+        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
+    }
+
+    /**
+     * Get all forbidden commands of Detection Event.
+     *
+     * @param eventId             id of detection event.
+     * @param pageable            pageable parameter with information about pagination.
+     * @param fields              attributes of the object to be returned as the result.
+     * @return all detected forbidden commands occurred in a detection event.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all participants of detection event.",
+            response = DetectionEventParticipantRestResource.class,
+            nickname = "findAllForbiddenCommandsOfEvent",
+            notes = "This can only be done by organizer of training instance or administrator.",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Forbidden commands have been found.", response = DetectionEventRestResource.class),
+            @ApiResponse(code = 404, message = "The forbidden commands have not been found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @ApiPageableSwagger
+    @GetMapping(path = "/forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> findAllForbiddenCommandsOfDetectionEvent(@ApiParam(value = "the event id", required = true)
+                                                                      @RequestParam(value = "eventId", required = true) Long eventId,
+                                                                      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
+                                                                      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                                      @RequestParam(value = "fields", required = false) String fields) {
+        PageResultResource<DetectedForbiddenCommandDTO> participantsResource = cheatingDetectionFacade.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
     }

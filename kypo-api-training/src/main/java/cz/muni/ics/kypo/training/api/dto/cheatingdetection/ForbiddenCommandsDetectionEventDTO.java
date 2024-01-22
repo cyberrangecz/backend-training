@@ -14,15 +14,15 @@ import java.util.Set;
 @ApiModel(value = "ForbiddenCommandsDetectionEventDTO", description = "A detection event of type Forbidden Commands.", parent = AbstractDetectionEventDTO.class)
 public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDTO {
 
-    @ApiModelProperty(value = "List of forbidden commands.", example = "1")
-    private Set<DetectedForbiddenCommandDTO> forbiddenCommands;
+    @ApiModelProperty(value = "count of forbidden commands.", example = "10")
+    private int commandCount;
 
-    public Set<DetectedForbiddenCommandDTO> getForbiddenCommands() {
-        return forbiddenCommands;
+    public int getCommandCount() {
+        return commandCount;
     }
 
-    public void setForbiddenCommands(Set<DetectedForbiddenCommandDTO> forbiddenCommands) {
-        this.forbiddenCommands = forbiddenCommands;
+    public void setCommandCount(int commandCount) {
+        this.commandCount = commandCount;
     }
 
     @Override
@@ -31,18 +31,18 @@ public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDT
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ForbiddenCommandsDetectionEventDTO that = (ForbiddenCommandsDetectionEventDTO) o;
-        return Objects.equals(forbiddenCommands, that.forbiddenCommands);
+        return commandCount == that.commandCount;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), forbiddenCommands);
+        return Objects.hash(super.hashCode(), commandCount);
     }
 
     @Override
     public String toString() {
         return "ForbiddenCommandsDetectionEventDTO{" +
-                "forbiddenCommands=" + forbiddenCommands +
+                "commandCount=" + commandCount +
                 '}';
     }
 }

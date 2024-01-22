@@ -9,15 +9,21 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "detected_forbidden_command")
+@NamedQueries({
+        @NamedQuery(
+                name = "DetectedForbiddenCommand.findAllByEventId",
+                query = "SELECT dfc FROM DetectedForbiddenCommand dfc " +
+                        "WHERE dfc.detectionEventId = :eventId"
+        )
+})
 public class DetectedForbiddenCommand extends AbstractEntity<Long> {
 
     @Column(name = "command", nullable = false)
     private String command;
     @Column(name = "command_type", nullable = false)
     private CommandType type;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "detection_event_id")
-    private ForbiddenCommandsDetectionEvent detectionEvent;
+    @Column(name = "detection_event_id", nullable = false)
+    private Long detectionEventId;
     public String getCommand() {
         return command;
     }
@@ -34,12 +40,12 @@ public class DetectedForbiddenCommand extends AbstractEntity<Long> {
         this.type = type;
     }
 
-    public ForbiddenCommandsDetectionEvent getDetectionEvent() {
-        return detectionEvent;
+    public Long getDetectionEventId() {
+        return detectionEventId;
     }
 
-    public void setDetectionEvent(ForbiddenCommandsDetectionEvent detectionEvent) {
-        this.detectionEvent = detectionEvent;
+    public void setDetectionEventId(Long detectionEventId) {
+        this.detectionEventId = detectionEventId;
     }
 
     @Override
@@ -48,12 +54,13 @@ public class DetectedForbiddenCommand extends AbstractEntity<Long> {
         if (o == null || getClass() != o.getClass()) return false;
         DetectedForbiddenCommand that = (DetectedForbiddenCommand) o;
         return Objects.equals(command, that.command) &&
-                type == that.type;
+                type == that.type &&
+                Objects.equals(detectionEventId, that.detectionEventId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(command, type);
+        return Objects.hash(command, type, detectionEventId);
     }
 
     @Override
@@ -61,6 +68,7 @@ public class DetectedForbiddenCommand extends AbstractEntity<Long> {
         return "DetectedForbiddenCommand{" +
                 "command='" + command + '\'' +
                 ", type=" + type +
+                ", detectionEventId=" + detectionEventId +
                 '}';
     }
 }

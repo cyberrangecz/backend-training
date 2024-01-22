@@ -43,6 +43,8 @@ public class CheatingDetectionFacade {
     private final DetectionEventMapper detectionEventMapper;
     private final CheatingDetectionMapper cheatingDetectionMapper;
     private final DetectionEventParticipantMapper detectionEventParticipantMapper;
+
+    private final DetectedForbiddenCommandMapper detectedForbiddenCommandMapper;
     private final SecurityService securityService;
     private final ObjectMapper objectMapper;
 
@@ -52,6 +54,7 @@ public class CheatingDetectionFacade {
      * @param cheatingDetectionService the cheating detection service
      * @param detectionEventMapper     the cheating detection mapper
      * @param cheatingDetectionMapper  the cheating detection mapper
+     * @param forbiddenCommandMapper   the forbidden command mapper
      * @param securityService          the security service
      */
     @Autowired
@@ -59,12 +62,14 @@ public class CheatingDetectionFacade {
                                    DetectionEventMapper detectionEventMapper,
                                    CheatingDetectionMapper cheatingDetectionMapper,
                                    DetectionEventParticipantMapper detectionEventParticipantMapper,
+                                   DetectedForbiddenCommandMapper forbiddenCommandMapper,
                                    SecurityService securityService,
                                    ObjectMapper objectMapper) {
         this.cheatingDetectionService = cheatingDetectionService;
         this.detectionEventMapper = detectionEventMapper;
         this.cheatingDetectionMapper = cheatingDetectionMapper;
         this.detectionEventParticipantMapper = detectionEventParticipantMapper;
+        this.detectedForbiddenCommandMapper = forbiddenCommandMapper;
         this.securityService = securityService;
         this.objectMapper = objectMapper;
     }
@@ -142,6 +147,20 @@ public class CheatingDetectionFacade {
                                                                                                 Pageable pageable) {
         return detectionEventParticipantMapper.mapToPageResultResource(
                 this.cheatingDetectionService.findAllParticipantsOfEvent(eventId, pageable));
+    }
+
+    /**
+     * Finds all forbidden commands of detection event.
+     *
+     * @param eventId the detection event ID
+     * @param pageable            the pageable
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+    @TransactionalWO
+    public PageResultResource<DetectedForbiddenCommandDTO> findAllForbiddenCommandsOfDetectionEvent(Long eventId,
+                                                                                                Pageable pageable) {
+        return detectedForbiddenCommandMapper.mapToPageResultResource(
+                this.cheatingDetectionService.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable));
     }
 
     /**

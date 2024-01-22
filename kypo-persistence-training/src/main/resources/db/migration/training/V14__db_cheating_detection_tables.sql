@@ -50,7 +50,7 @@ create table no_commands_detection_event (
 
 create table forbidden_commands_detection_event (
    id  bigserial not null,
-    forbidden_commands text not null,
+    command_count int8 not null,
     primary key (id),
     foreign key (id) references abstract_detection_event
 );
@@ -88,7 +88,6 @@ create table detected_forbidden_command (
     command_type varchar(255) not null,
     detection_event_id int8 not null,
     primary key (id),
-    foreign key (detection_event_id) references forbidden_commands_detection_event
 )
 
 create table detection_event_participant (

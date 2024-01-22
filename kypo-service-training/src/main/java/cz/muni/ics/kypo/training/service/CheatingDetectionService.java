@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.api.dto.cheatingdetection.DetectedForbiddenCommandDTO;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.detection.*;
@@ -48,6 +49,7 @@ public class CheatingDetectionService {
     private final NoCommandsDetectionEventRepository noCommandsDetectionEventRepository;
     private final ForbiddenCommandsDetectionEventRepository forbiddenCommandsDetectionEventRepository;
     private final DetectionEventParticipantRepository detectionEventParticipantRepository;
+    private final DetectedForbiddenCommandRepository detectedForbiddenCommandRepository;
     private final TrainingRunRepository trainingRunRepository;
     private final AnswersStorageApiService answersStorageApiService;
     private final TrainingRunService trainingRunService;
@@ -71,6 +73,7 @@ public class CheatingDetectionService {
      * @param noCommandsDetectionEventRepository         the no commands detection event repository
      * @param forbiddenCommandsDetectionEventRepository  the forbidden commands detection event repository
      * @param detectionEventParticipantRepository        the detection event participant repository
+     * @param detectedForbiddenCommandRepository         the detected forbidden commands repository
      * @param trainingRunRepository                      the training run repository
      * @param answersStorageApiService                   the answers storage api service
      * @param trainingRunService                         the training run service
@@ -90,6 +93,7 @@ public class CheatingDetectionService {
                                     NoCommandsDetectionEventRepository noCommandsDetectionEventRepository,
                                     ForbiddenCommandsDetectionEventRepository forbiddenCommandsDetectionEventRepository,
                                     DetectionEventParticipantRepository detectionEventParticipantRepository,
+                                    DetectedForbiddenCommandRepository detectedForbiddenCommandRepository,
                                     TrainingRunRepository trainingRunRepository,
                                     AnswersStorageApiService answersStorageApiService,
                                     TrainingRunService trainingRunService,
@@ -107,6 +111,7 @@ public class CheatingDetectionService {
         this.noCommandsDetectionEventRepository = noCommandsDetectionEventRepository;
         this.forbiddenCommandsDetectionEventRepository = forbiddenCommandsDetectionEventRepository;
         this.detectionEventParticipantRepository = detectionEventParticipantRepository;
+        this.detectedForbiddenCommandRepository = detectedForbiddenCommandRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.answersStorageApiService = answersStorageApiService;
         this.trainingRunService = trainingRunService;
@@ -625,6 +630,14 @@ public class CheatingDetectionService {
         return detectionEventParticipantRepository.findAllByEventId(eventId);
     }
 
+    public Page<DetectedForbiddenCommand> findAllForbiddenCommandsOfDetectionEvent(Long eventId, Pageable pageable) {
+        return detectedForbiddenCommandRepository.findAllByEventId(eventId, pageable);
+    }
+
+    public List<DetectedForbiddenCommand> findAllForbiddenCommandsOfDetectionEvent(Long eventId) {
+        return detectedForbiddenCommandRepository.findAllByEventId(eventId);
+    }
+
     public AbstractDetectionEvent findDetectionEventById(Long eventId) {
         return detectionEventRepository.findDetectionEventById(eventId);
     }
@@ -732,20 +745,22 @@ public class CheatingDetectionService {
     }
 
     private void auditForbiddenCommandsEvent(Submission submission, CheatingDetection cd, DetectionEventParticipant participant,
-                                             List<DetectedForbiddenCommand> forbiddenCommands) {
+                                             List<DetectedForbiddenCommand> detectedForbiddenCommands) {
         TrainingRun run = submission.getTrainingRun();
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
         ForbiddenCommandsDetectionEvent event = (ForbiddenCommandsDetectionEvent) setCommonDetectionEventParameters(submission, cd, DetectionEventType.FORBIDDEN_COMMANDS, 1);
-        for (var command : forbiddenCommands) {
-            command.setDetectionEvent(event);
+        for (var command : detectedForbiddenCommands) {
+            detectedForbiddenCommandRepository.save(command);
+            event.setCommandCount(detectedForbiddenCommands.size());
         }
-        event.setForbiddenCommands(forbiddenCommands);
         Long eventId = forbiddenCommandsDetectionEventRepository.save(event).getId();
         participant.setDetectionEventId(eventId);
         detectionEventParticipantRepository.save(participant);
         event.setParticipants(participant.getParticipantName());
     }
+
+
 
     private AbstractDetectionEvent setCommonDetectionEventParameters(Submission submission,CheatingDetection cd, DetectionEventType type, int size) {
         AbstractDetectionEvent event = new AbstractDetectionEvent();
