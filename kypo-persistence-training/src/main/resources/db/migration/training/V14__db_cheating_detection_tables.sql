@@ -89,7 +89,7 @@ create table detected_forbidden_command (
     command_type varchar(255) not null,
     detection_event_id int8 not null,
     primary key (id)
-)
+);
 
 create table detection_event_participant (
    id  bigserial not null,
