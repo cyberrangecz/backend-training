@@ -434,7 +434,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/detected-forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ForbiddenCommandsDetectionEventDTO> findForbiddenCommandsDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                       @RequestParam(value = "eventId", required = true) Long eventId) {
         ForbiddenCommandsDetectionEventDTO forbiddenCommandsDetectionEventDTO = cheatingDetectionFacade.findForbiddenCommandsEventById(eventId);
