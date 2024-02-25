@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.model.detection;
 
 import cz.muni.ics.kypo.training.persistence.model.AbstractEntity;
+import cz.muni.ics.kypo.training.persistence.model.Submission;
 import cz.muni.ics.kypo.training.persistence.model.enums.DetectionEventType;
 import cz.muni.ics.kypo.training.persistence.model.enums.CommandType;
 
@@ -185,6 +186,16 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
 
     public void setParticipants(String participants) {
         this.participants = participants;
+    }
+
+    public void setCommonDetectionEventParameters(Submission submission,CheatingDetection cd, DetectionEventType type, int size) {
+        this.setCheatingDetectionId(cd.getId());
+        this.setDetectedAt(cd.getExecuteTime());
+        this.setLevelId(submission.getLevel().getId());
+        this.setLevelTitle(submission.getLevel().getTitle());
+        this.setTrainingInstanceId(cd.getTrainingInstanceId());
+        this.setDetectionEventType(type);
+        this.setParticipantCount(size);
     }
 
     @Override
