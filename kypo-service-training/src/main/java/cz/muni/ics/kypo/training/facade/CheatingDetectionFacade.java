@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.facade;
 
-import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.cheatingdetection.*;
@@ -121,7 +120,6 @@ public class CheatingDetectionFacade {
      *
      * @param cheatingDetectionId the cheating detection ID
      * @param trainingInstanceId id of training instance.
-     * @param predicate represents a predicate (boolean-valued function) of one argument.
      * @param pageable            the pageable
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -129,10 +127,9 @@ public class CheatingDetectionFacade {
     @TransactionalWO
     public PageResultResource<AbstractDetectionEventDTO> findAllDetectionEventsOfCheatingDetection(Long cheatingDetectionId,
                                                                                                    Long trainingInstanceId,
-                                                                                                   Predicate predicate,
                                                                                                    Pageable pageable) {
         return detectionEventMapper.mapToPageResultResource(
-                this.cheatingDetectionService.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, predicate, pageable));
+                this.cheatingDetectionService.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, pageable));
     }
 
     /**
@@ -335,16 +332,15 @@ public class CheatingDetectionFacade {
      * Find all cheating detections of a training instance
      *
      * @param trainingInstanceId    id of Training instance for cheating detection.
-     * @param predicate             represents a predicate (boolean-valued function) of one argument.
      * @param pageable              pageable parameter with information about pagination.
      */
     @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalWO
-    public PageResultResource<CheatingDetectionDTO> findAllCheatingDetectionsOfTrainingInstance(Long trainingInstanceId, Predicate predicate, Pageable pageable) {
+    public PageResultResource<CheatingDetectionDTO> findAllCheatingDetectionsOfTrainingInstance(Long trainingInstanceId, Pageable pageable) {
 
         return cheatingDetectionMapper.mapToPageResultResource(
-                this.cheatingDetectionService.findAllCheatingDetectionsOfTrainingInstance(trainingInstanceId, predicate, pageable));
+                this.cheatingDetectionService.findAllCheatingDetectionsOfTrainingInstance(trainingInstanceId, pageable));
     }
 }
 

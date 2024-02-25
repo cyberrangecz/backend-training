@@ -21,7 +21,6 @@ import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import io.swagger.annotations.*;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,7 +147,6 @@ public class CheatingDetectionsRestController {
      *
      * @param cheatingDetectionId id of cheating detection.
      * @param trainingInstanceId  id of training instance.
-     * @param predicate           specifies query to database.
      * @param pageable            pageable parameter with information about pagination.
      * @param fields              attributes of the object to be returned as the result.
      * @return all Detection Events occurred in a cheating detection.
@@ -171,11 +169,10 @@ public class CheatingDetectionsRestController {
                                                                             @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
                                                                             @ApiParam(value = "id of training instance", required = true)
                                                                             @RequestParam(value = "trainingInstanceId", required = true) Long trainingInstanceId,
-                                                                            @QuerydslPredicate(root = AbstractDetectionEvent.class) Predicate predicate,
                                                                             @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
                                                                             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                                             @RequestParam(value = "fields", required = false) String fields) {
-        PageResultResource<AbstractDetectionEventDTO> detectionEventResource = cheatingDetectionFacade.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, trainingInstanceId, predicate, pageable);
+        PageResultResource<AbstractDetectionEventDTO> detectionEventResource = cheatingDetectionFacade.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, trainingInstanceId, pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, detectionEventResource), HttpStatus.OK);
     }
@@ -445,7 +442,6 @@ public class CheatingDetectionsRestController {
      * Get all cheating detections of a training instance.
      *
      * @param trainingInstanceId id of training instance.
-     * @param predicate          specifies query to database.
      * @param pageable           pageable parameter with information about pagination.
      * @param fields             attributes of the object to be returned as the result.
      * @return all cheating Detections occurred in a training instance.
@@ -466,11 +462,10 @@ public class CheatingDetectionsRestController {
     @GetMapping(path = "/{trainingInstanceId}/detections", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllCheatingDetectionsOfInstance(@ApiParam(value = "id of training instance", required = true)
                                                                       @PathVariable("trainingInstanceId") Long trainingInstanceId,
-                                                                      @QuerydslPredicate(root = CheatingDetection.class) Predicate predicate,
                                                                       @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
                                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                                       @RequestParam(value = "fields", required = false) String fields) {
-        PageResultResource<CheatingDetectionDTO> cheatingDetectionResource = cheatingDetectionFacade.findAllCheatingDetectionsOfTrainingInstance(trainingInstanceId, predicate, pageable);
+        PageResultResource<CheatingDetectionDTO> cheatingDetectionResource = cheatingDetectionFacade.findAllCheatingDetectionsOfTrainingInstance(trainingInstanceId, pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, cheatingDetectionResource), HttpStatus.OK);
     }

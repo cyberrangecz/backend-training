@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.service;
 
-import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.cheatingdetection.DetectedForbiddenCommandDTO;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -618,8 +617,8 @@ public class CheatingDetectionService {
         return states;
     }
 
-    public Page<AbstractDetectionEvent> findAllDetectionEventsOfCheatingDetection(Long cheatingDetectionId, Predicate predicate, Pageable pageable) {
-        return detectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId, predicate, pageable);
+    public Page<AbstractDetectionEvent> findAllDetectionEventsOfCheatingDetection(Long cheatingDetectionId, Pageable pageable) {
+        return detectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId, pageable);
     }
 
     public Page<DetectionEventParticipant> findAllParticipantsOfEvent(Long eventId, Pageable pageable) {
@@ -666,8 +665,8 @@ public class CheatingDetectionService {
         return forbiddenCommandsDetectionEventRepository.findForbiddenCommandsEventById(eventId);
     }
 
-    public Page<CheatingDetection> findAllCheatingDetectionsOfTrainingInstance(Long trainingInstanceId, Predicate predicate, Pageable pageable) {
-        return cheatingDetectionRepository.findAllByTrainingInstanceId(trainingInstanceId, predicate, pageable);
+    public Page<CheatingDetection> findAllCheatingDetectionsOfTrainingInstance(Long trainingInstanceId, Pageable pageable) {
+        return cheatingDetectionRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
     }
 
     private boolean checkLocationSimilarity(String ip, String otherIp) {
