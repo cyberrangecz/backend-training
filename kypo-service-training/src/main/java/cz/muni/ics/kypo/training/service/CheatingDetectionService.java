@@ -691,8 +691,9 @@ public class CheatingDetectionService {
         event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.ANSWER_SIMILARITY, participants.size());
         event.setAnswer(submission.getProvided());
         event.setAnswerOwner(answerOwner);
-        event.setParticipants(evaluateParticipants(participants, event.getId()));
+        event.setParticipants(generateParticipantString(participants));
         answerSimilarityDetectionEventRepository.save(event);
+        saveParticipants(participants, event.getId());
     }
 
 
@@ -715,8 +716,8 @@ public class CheatingDetectionService {
         }
         event.setDns(submissionDomainName);
         event.setIpAddress(submission.getIpAddress());
-        event.setParticipants(evaluateParticipants(participants, event.getId()));
-        locationSimilarityDetectionEventRepository.save(event);
+        event.setParticipants(generateParticipantString(participants));
+        saveParticipants(participants, locationSimilarityDetectionEventRepository.save(event).getId());
     }
 
 
@@ -728,10 +729,8 @@ public class CheatingDetectionService {
         MinimalSolveTimeDetectionEvent event = new MinimalSolveTimeDetectionEvent();
         event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.MINIMAL_SOLVE_TIME, participants.size());
         event.setMinimalSolveTime(minimalSolveTime);
-
-
-        event.setParticipants(evaluateParticipants(participants, event.getId()));
-        minimalSolveTimeDetectionEventRepository.save(event);
+        event.setParticipants(generateParticipantString(participants));
+        saveParticipants(participants, minimalSolveTimeDetectionEventRepository.save(event).getId());
     }
 
     private void auditTimeProximityEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
@@ -741,8 +740,8 @@ public class CheatingDetectionService {
         TimeProximityDetectionEvent event = new TimeProximityDetectionEvent();
         event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.TIME_PROXIMITY, participants.size());
         event.setThreshold(cd.getProximityThreshold());
-        event.setParticipants(evaluateParticipants(participants, event.getId()));
-        timeProximityDetectionEventRepository.save(event);
+        event.setParticipants(generateParticipantString(participants));
+        saveParticipants(participants, timeProximityDetectionEventRepository.save(event).getId());
     }
 
     private void auditNoCommandsEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
@@ -751,8 +750,8 @@ public class CheatingDetectionService {
         trainingRunRepository.save(run);
         NoCommandsDetectionEvent event = new NoCommandsDetectionEvent();
         event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.NO_COMMANDS, participants.size());
-        event.setParticipants(evaluateParticipants(participants, event.getId()));
-        noCommandsDetectionEventRepository.save(event);
+        event.setParticipants(generateParticipantString(participants));
+        saveParticipants(participants, noCommandsDetectionEventRepository.save(event).getId());
     }
 
     private void auditForbiddenCommandsEvent(Submission submission, CheatingDetection cd, DetectionEventParticipant participant,
@@ -767,22 +766,26 @@ public class CheatingDetectionService {
         }
         event.setCommandCount(detectedForbiddenCommands.size());
         event.setTrainingRunId(submission.getTrainingRun().getId());
-        participant.setDetectionEventId(event.getId());
-        detectionEventParticipantRepository.save(participant);
         event.setParticipants(participant.getParticipantName());
-        forbiddenCommandsDetectionEventRepository.save(event);
+        participant.setDetectionEventId(forbiddenCommandsDetectionEventRepository.save(event).getId());
+        detectionEventParticipantRepository.save(participant);
     }
 
-    private String evaluateParticipants(Set<DetectionEventParticipant> participants, Long eventId) {
+    private String generateParticipantString(Set<DetectionEventParticipant> participants) {
         StringBuilder participantString = new StringBuilder();
         for (var participant : participants) {
-            participant.setDetectionEventId(eventId);
-            detectionEventParticipantRepository.save(participant);
             participantString.append(',');
             participantString.append(participant.getParticipantName());
         }
         participantString.delete(0, 1);
         return participantString.toString();
+    }
+
+    private void saveParticipants(Set<DetectionEventParticipant> participants, Long eventId) {
+        for (var participant : participants) {
+            participant.setDetectionEventId(eventId);
+            detectionEventParticipantRepository.save(participant);
+        }
     }
 
     private void updateCheatingDetection(CheatingDetection cd) {
