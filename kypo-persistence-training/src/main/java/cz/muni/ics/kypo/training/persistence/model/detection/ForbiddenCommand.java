@@ -15,9 +15,6 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
     private String command;
     @Column(name = "command_type", nullable = false)
     private CommandType type;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cheating_detection_id")
-    private CheatingDetection cheatingDetection;
     public String getCommand() {
         return command;
     }

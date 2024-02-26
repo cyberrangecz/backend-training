@@ -78,9 +78,7 @@ create table forbidden_command (
    id  bigserial not null,
     command varchar(255) not null,
     command_type varchar(255) not null,
-    cheating_detection_id int8 not null,
     primary key (id),
-    foreign key (cheating_detection_id) references cheating_detection
 );
 
 create table detected_forbidden_command (
