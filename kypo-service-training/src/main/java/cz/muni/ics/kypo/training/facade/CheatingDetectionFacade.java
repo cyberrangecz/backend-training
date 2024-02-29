@@ -290,7 +290,7 @@ public class CheatingDetectionFacade {
             ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/user-" +  username + AbstractFileExtensions.TXT_FILE_EXTENSION);
             zos.putNextEntry(participantResponseEntry);
             List<Long> participantDetectionEventIds = cheatingDetectionService.getAllDetectionEventsIdsOfparticipant(userId);
-            auditParticipantResponse(username, participantDetectionEventIds, zos);
+            auditParticipantResponse(userId, participantDetectionEventIds, zos);
         }
     }
 
