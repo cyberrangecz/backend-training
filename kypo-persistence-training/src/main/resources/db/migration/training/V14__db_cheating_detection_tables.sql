@@ -99,5 +99,6 @@ create table detection_event_participant (
     participant_name varchar(255),
     solved_in_time int8,
     detection_event_id int8 not null,
+    cheating_detection_id int8 not null,
     primary key (id)
 );

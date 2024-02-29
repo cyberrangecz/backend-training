@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.facade;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.cheatingdetection.*;
@@ -10,6 +11,8 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.detection.*;
 import cz.muni.ics.kypo.training.service.CheatingDetectionService;
 import cz.muni.ics.kypo.training.service.SecurityService;
+import cz.muni.ics.kypo.training.service.TrainingInstanceService;
+import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +41,10 @@ public class CheatingDetectionFacade {
     private static final String MINIMAL_SOLVE_TIME_FOLDER = "minimal_solve_time";
     private static final String NO_COMMANDS_FOLDER = "no_commands";
     private static final String FORBIDDEN_COMMANDS_FOLDER = "forbidden_commands";
+    private static final String PARTICIPANT_RESPONSE_FOLDER = "participant_responses";
     private final CheatingDetectionService cheatingDetectionService;
+    public final UserService userService;
+    private final TrainingInstanceService trainingInstanceService;
     private final DetectionEventMapper detectionEventMapper;
     private final CheatingDetectionMapper cheatingDetectionMapper;
     private final DetectionEventParticipantMapper detectionEventParticipantMapper;
@@ -51,6 +57,8 @@ public class CheatingDetectionFacade {
      * Instantiates a new Cheating detection facade.
      *
      * @param cheatingDetectionService the cheating detection service
+     * @param userService              the user service
+     * @param trainingInstanceService  the training instance service
      * @param detectionEventMapper     the cheating detection mapper
      * @param cheatingDetectionMapper  the cheating detection mapper
      * @param forbiddenCommandMapper   the forbidden command mapper
@@ -58,6 +66,8 @@ public class CheatingDetectionFacade {
      */
     @Autowired
     public CheatingDetectionFacade(CheatingDetectionService cheatingDetectionService,
+                                   UserService userService,
+                                   TrainingInstanceService trainingInstanceService,
                                    DetectionEventMapper detectionEventMapper,
                                    CheatingDetectionMapper cheatingDetectionMapper,
                                    DetectionEventParticipantMapper detectionEventParticipantMapper,
@@ -65,6 +75,8 @@ public class CheatingDetectionFacade {
                                    SecurityService securityService,
                                    ObjectMapper objectMapper) {
         this.cheatingDetectionService = cheatingDetectionService;
+        this.userService = userService;
+        this.trainingInstanceService = trainingInstanceService;
         this.detectionEventMapper = detectionEventMapper;
         this.cheatingDetectionMapper = cheatingDetectionMapper;
         this.detectionEventParticipantMapper = detectionEventParticipantMapper;
@@ -258,6 +270,7 @@ public class CheatingDetectionFacade {
             writeMinimalSolveTimeDetectionEvents(zos, cheatingDetectionId);
             writeNoCommandsDetectionEvents(zos, cheatingDetectionId);
             writeForbiddenCommandsDetectionEvents(zos, cheatingDetectionId);
+            writeTraineeEventMessages(zos, cheatingDetectionId);
 
             zos.closeEntry();
             zos.close();
@@ -270,6 +283,66 @@ public class CheatingDetectionFacade {
         }
     }
 
+    private void writeTraineeEventMessages(ZipOutputStream zos, Long cheatingDetectionId) throws IOException {
+        List<Long> participantUserIds = cheatingDetectionService.findAllParticipantsIdsOfCheatingDetection(cheatingDetectionId);
+        for (var userId: participantUserIds) {
+            var username = userService.getUserRefDTOByUserRefId(userId).getUserRefFullName().replace(' ', '-').toLowerCase();
+            ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/user-" +  username + AbstractFileExtensions.TXT_FILE_EXTENSION);
+            zos.putNextEntry(participantResponseEntry);
+            List<Long> participantDetectionEventIds = cheatingDetectionService.getAllDetectionEventsIdsOfparticipant(userId);
+            auditParticipantResponse(username, participantDetectionEventIds, zos);
+        }
+    }
+
+    private void auditParticipantResponse(Long userId, List<Long> eventIds, ZipOutputStream zos) throws IOException {
+        for (var eventId : eventIds) {
+            AbstractDetectionEvent event = cheatingDetectionService.findDetectionEventById(eventId);
+            var eventType = event.getDetectionEventType();
+            var username = userService.getUserRefDTOByUserRefId(userId).getUserRefFullName();
+            var definitionTitle = trainingInstanceService.findByIdIncludingDefinition(event.getTrainingInstanceId()).getTrainingDefinition().getTitle();
+            zos.write(objectMapper.writeValueAsBytes("During a training " + definitionTitle + " these suspicious activities were observed by User " + username + "."));
+            zos.write('\n');
+            switch (eventType) {
+                case ANSWER_SIMILARITY -> auditAnswerSimilarityResponse(userId, event, zos);
+                case LOCATION_SIMILARITY -> auditLocationSimilarityResponse(userId, event, zos);
+                case MINIMAL_SOLVE_TIME -> auditMinimalSolveTimeResponse(userId, event, zos);
+                case TIME_PROXIMITY -> auditTimeProximityResponse(userId, event, zos);
+                case NO_COMMANDS -> auditNoCommandsResponse(userId, event, zos);
+                case FORBIDDEN_COMMANDS -> auditForbiddenCommandsResponse(userId, event, zos);
+            }
+        }
+    }
+
+    private void auditAnswerSimilarityResponse(Long userId, AbstractDetectionEvent event, ZipOutputStream zos) throws IOException {
+        zos.write('\n');
+        zos.write(objectMapper.writeValueAsBytes("type of event: Answer Similarity"));
+    }
+
+    private void auditLocationSimilarityResponse(Long userId, AbstractDetectionEvent event, ZipOutputStream zos) throws IOException {
+        zos.write(objectMapper.writeValueAsBytes("type of event: Location Similarity"));
+        zos.write('\n');
+    }
+
+    private void auditMinimalSolveTimeResponse(Long userId, AbstractDetectionEvent event, ZipOutputStream zos) throws IOException {
+        zos.write(objectMapper.writeValueAsBytes("type of event: Minimal Solve Time"));
+        zos.write('\n');
+    }
+
+    private void auditTimeProximityResponse(Long userId, AbstractDetectionEvent event, ZipOutputStream zos) throws IOException {
+        zos.write(objectMapper.writeValueAsBytes("type of event: Time Proximity"));
+        zos.write('\n');
+    }
+
+    private void auditNoCommandsResponse(Long userId, AbstractDetectionEvent event, ZipOutputStream zos) throws IOException {
+        zos.write(objectMapper.writeValueAsBytes("type of event: Answer Similarity"));
+        zos.write('\n');
+    }
+
+    private void auditForbiddenCommandsResponse(Long userId, AbstractDetectionEvent event, ZipOutputStream zos) throws IOException {
+        zos.write(objectMapper.writeValueAsBytes("type of event: Answer Similarity"));
+        zos.write('\n');
+    }
+
     private void writeCheatingDetection(ZipOutputStream zos, Long cheatingDetectionId, CheatingDetectionDTO cheatingDetectionDTO) throws IOException {
         ZipEntry cheatingDetectionEntry = new ZipEntry("cheating-detection-id" + cheatingDetectionId + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(cheatingDetectionEntry);
@@ -279,11 +352,13 @@ public class CheatingDetectionFacade {
         ZipEntry detectionEventEntry = new ZipEntry(DETECTION_EVENTS_FOLDER + "/" + dirName + "/detection-event-id" + event.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(detectionEventEntry);
         List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfEvent(event.getId());
+        zos.write(objectMapper.writeValueAsBytes("{ Event: "));
         zos.write(objectMapper.writeValueAsBytes(event));
-        zos.write(objectMapper.writeValueAsBytes("\nParticipants\n"));
+        zos.write(objectMapper.writeValueAsBytes(" Participants: "));
         for (var participant : participants) {
             zos.write(objectMapper.writeValueAsBytes(participant));
         }
+        zos.write(objectMapper.writeValueAsBytes(" }"));
     }
 
     private void writeAnswerSimilarityDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId) throws IOException {

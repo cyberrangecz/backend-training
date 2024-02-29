@@ -629,6 +629,14 @@ public class CheatingDetectionService {
         return detectionEventParticipantRepository.findAllByEventId(eventId);
     }
 
+    public List<Long>  findAllParticipantsIdsOfCheatingDetection(Long cheatingDetectionId) {
+        return detectionEventParticipantRepository.findAllParticipantsIdsOfCheatingDetection(cheatingDetectionId);
+    }
+
+    public List<Long> getAllDetectionEventsIdsOfparticipant(Long userId) {
+        return detectionEventParticipantRepository.getAllDetectionEventsIdsOfParticipant(userId);
+    }
+
     public Page<DetectedForbiddenCommand> findAllForbiddenCommandsOfDetectionEvent(Long eventId, Pageable pageable) {
         return detectedForbiddenCommandRepository.findAllByEventId(eventId, pageable);
     }
@@ -693,7 +701,7 @@ public class CheatingDetectionService {
         event.setAnswerOwner(answerOwner);
         event.setParticipants(generateParticipantString(participants));
         answerSimilarityDetectionEventRepository.save(event);
-        saveParticipants(participants, event.getId());
+        saveParticipants(participants, event.getId(), cd.getId());
     }
 
 
@@ -717,7 +725,7 @@ public class CheatingDetectionService {
         event.setDns(submissionDomainName);
         event.setIpAddress(submission.getIpAddress());
         event.setParticipants(generateParticipantString(participants));
-        saveParticipants(participants, locationSimilarityDetectionEventRepository.save(event).getId());
+        saveParticipants(participants, locationSimilarityDetectionEventRepository.save(event).getId(), cd.getId());
     }
 
 
@@ -730,7 +738,7 @@ public class CheatingDetectionService {
         event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.MINIMAL_SOLVE_TIME, participants.size());
         event.setMinimalSolveTime(minimalSolveTime);
         event.setParticipants(generateParticipantString(participants));
-        saveParticipants(participants, minimalSolveTimeDetectionEventRepository.save(event).getId());
+        saveParticipants(participants, minimalSolveTimeDetectionEventRepository.save(event).getId(), cd.getId());
     }
 
     private void auditTimeProximityEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
@@ -741,7 +749,7 @@ public class CheatingDetectionService {
         event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.TIME_PROXIMITY, participants.size());
         event.setThreshold(cd.getProximityThreshold());
         event.setParticipants(generateParticipantString(participants));
-        saveParticipants(participants, timeProximityDetectionEventRepository.save(event).getId());
+        saveParticipants(participants, timeProximityDetectionEventRepository.save(event).getId(), cd.getId());
     }
 
     private void auditNoCommandsEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
@@ -751,7 +759,7 @@ public class CheatingDetectionService {
         NoCommandsDetectionEvent event = new NoCommandsDetectionEvent();
         event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.NO_COMMANDS, participants.size());
         event.setParticipants(generateParticipantString(participants));
-        saveParticipants(participants, noCommandsDetectionEventRepository.save(event).getId());
+        saveParticipants(participants, noCommandsDetectionEventRepository.save(event).getId(), cd.getId());
     }
 
     private void auditForbiddenCommandsEvent(Submission submission, CheatingDetection cd, DetectionEventParticipant participant,
@@ -768,6 +776,7 @@ public class CheatingDetectionService {
         event.setTrainingRunId(submission.getTrainingRun().getId());
         event.setParticipants(participant.getParticipantName());
         participant.setDetectionEventId(forbiddenCommandsDetectionEventRepository.save(event).getId());
+        participant.setCheatingDetectionId(cd.getId());
         detectionEventParticipantRepository.save(participant);
     }
 
@@ -781,9 +790,10 @@ public class CheatingDetectionService {
         return participantString.toString();
     }
 
-    private void saveParticipants(Set<DetectionEventParticipant> participants, Long eventId) {
+    private void saveParticipants(Set<DetectionEventParticipant> participants, Long eventId, Long cheatingDetectionId) {
         for (var participant : participants) {
             participant.setDetectionEventId(eventId);
+            participant.setCheatingDetectionId(cheatingDetectionId);
             detectionEventParticipantRepository.save(participant);
         }
     }

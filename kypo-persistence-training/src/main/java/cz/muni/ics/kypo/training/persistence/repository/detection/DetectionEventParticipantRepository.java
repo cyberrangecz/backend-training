@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.persistence.model.detection.DetectionEventParti
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
@@ -28,4 +29,19 @@ public interface DetectionEventParticipantRepository extends JpaRepository<Detec
      */
     List<DetectionEventParticipant> findAllByEventId(@Param("eventId") Long eventId);
 
+    /**
+     * Finds all participant userIds by cheating detection id.
+     *
+     * @param cheatingDetectionId the cheating detection id
+     */
+    @Query("SELECT DISTINCT dep.userId FROM DetectionEventParticipant dep WHERE dep.cheatingDetectionId = :cheatingDetectionId")
+    List<Long> findAllParticipantsIdsOfCheatingDetection(@Param("cheatingDetectionId") Long cheatingDetectionId);
+
+    /**
+     * Finds all detection event ids by user id.
+     *
+     * @param userId the user id
+     */
+    @Query("SELECT DISTINCT dep.detectionEventId FROM DetectionEventParticipant dep WHERE dep.userId = :userId")
+    List<Long> getAllDetectionEventsIdsOfParticipant(@Param("userId") Long userId);
 }
