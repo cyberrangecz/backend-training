@@ -34,8 +34,8 @@ public interface DetectionEventParticipantRepository extends JpaRepository<Detec
      *
      * @param cheatingDetectionId the cheating detection id
      */
-    @Query("SELECT DISTINCT dep.userId FROM DetectionEventParticipant dep WHERE dep.cheatingDetectionId = :cheatingDetectionId")
-    List<Long> findAllParticipantsIdsOfCheatingDetection(@Param("cheatingDetectionId") Long cheatingDetectionId);
+    @Query("SELECT dep FROM DetectionEventParticipant dep WHERE dep.cheatingDetectionId = :cheatingDetectionId")
+    List<DetectionEventParticipant> findAllParticipantsOfCheatingDetection(@Param("cheatingDetectionId") Long cheatingDetectionId);
 
     /**
      * Finds all detection event ids by user id.

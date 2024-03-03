@@ -629,8 +629,8 @@ public class CheatingDetectionService {
         return detectionEventParticipantRepository.findAllByEventId(eventId);
     }
 
-    public List<Long>  findAllParticipantsIdsOfCheatingDetection(Long cheatingDetectionId) {
-        return detectionEventParticipantRepository.findAllParticipantsIdsOfCheatingDetection(cheatingDetectionId);
+    public List<DetectionEventParticipant>  findAllParticipantsOfCheatingDetection(Long cheatingDetectionId) {
+        return detectionEventParticipantRepository.findAllParticipantsOfCheatingDetection(cheatingDetectionId);
     }
 
     public List<Long> getAllDetectionEventsIdsOfparticipant(Long userId) {
@@ -783,10 +783,10 @@ public class CheatingDetectionService {
     private String generateParticipantString(Set<DetectionEventParticipant> participants) {
         StringBuilder participantString = new StringBuilder();
         for (var participant : participants) {
-            participantString.append(',');
+            participantString.append(',').append(' ');
             participantString.append(participant.getParticipantName());
         }
-        participantString.delete(0, 1);
+        participantString.delete(0, 2);
         return participantString.toString();
     }
 
