@@ -1,23 +1,22 @@
-package cz.muni.ics.kypo.training.persistence.model.detection;
+package cz.muni.ics.kypo.training.api.dto.cheatingdetection;
 
-import cz.muni.ics.kypo.training.persistence.model.AbstractEntity;
-import cz.muni.ics.kypo.training.persistence.model.enums.CommandType;
+import cz.muni.ics.kypo.training.api.enums.CommandType;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Entity
-@Table(name = "forbidden_command")
-public class ForbiddenCommand extends AbstractEntity<Long> {
+/**
+ * Encapsulates information about forbidden command.
+ */
+@ApiModel(value = "DetectedForbiddenCommandDTO", description = "Basic information about detected forbidden command.")
+public class DetectedForbiddenCommandDTO {
 
-    @Column(name = "command", nullable = false)
+    @ApiModelProperty(value = "command.", example = "nmap")
     private String command;
-    @Column(name = "command_type", nullable = false)
+    @ApiModelProperty(value = "Type of command.", example = "BASH")
     private CommandType type;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cheating_detection_id")
-    private CheatingDetection cheatingDetection;
+
     public String getCommand() {
         return command;
     }
@@ -38,9 +37,8 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ForbiddenCommand that = (ForbiddenCommand) o;
-        return Objects.equals(command, that.command) &&
-                type == that.type;
+        DetectedForbiddenCommandDTO that = (DetectedForbiddenCommandDTO) o;
+        return Objects.equals(command, that.command) && type == that.type;
     }
 
     @Override
@@ -50,7 +48,7 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
 
     @Override
     public String toString() {
-        return "ForbiddenCommand{" +
+        return "DetectedForbiddenCommandDTO{" +
                 "command='" + command + '\'' +
                 ", type=" + type +
                 '}';

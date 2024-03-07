@@ -3,7 +3,9 @@ package cz.muni.ics.kypo.training.persistence.model.detection;
 import cz.muni.ics.kypo.training.persistence.model.AbstractLevel;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.List;
 
 @Entity
 @Table(name = "forbidden_commands_detection_event")
@@ -20,15 +22,25 @@ import java.util.Objects;
 })
 public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 
-    @Column(name = "forbidden_commands", nullable = false)
-    private String[] forbiddenCommands;
+    @Column(name = "command_count", nullable = false)
+    private int commandCount;
+    @Column(name = "training_run_id", nullable = false)
+    private Long trainingRunId;
 
-    public String[] getForbiddenCommands() {
-        return forbiddenCommands;
+    public int getCommandCount() {
+        return commandCount;
     }
 
-    public void setForbiddenCommands(String[] forbiddenCommands) {
-        this.forbiddenCommands = forbiddenCommands;
+    public void setCommandCount(int commandCount) {
+        this.commandCount = commandCount;
+    }
+
+    public Long getTrainingRunId() {
+        return trainingRunId;
+    }
+
+    public void setTrainingRunId(Long trainingRunId) {
+        this.trainingRunId = trainingRunId;
     }
 
     @Override
@@ -37,18 +49,19 @@ public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
         if (!(o instanceof ForbiddenCommandsDetectionEvent)) return false;
         if (!super.equals(o)) return false;
         ForbiddenCommandsDetectionEvent other = (ForbiddenCommandsDetectionEvent) o;
-        return Objects.equals(getForbiddenCommands(), other.getForbiddenCommands());
+        return Objects.equals(getCommandCount(), other.getCommandCount()) &&
+                Objects.equals(getTrainingRunId(), other.getTrainingRunId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getForbiddenCommands());
+        return Objects.hash(super.hashCode(), getCommandCount());
     }
 
     @Override
     public String toString() {
         return "ForbiddenCommandsDetectionEvent{" +
-                ", forbiddenCommands='" + forbiddenCommands +
+                ", commandCount='" + commandCount +
                 '}';
     }
 }

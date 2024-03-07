@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import cz.muni.ics.kypo.training.api.dto.cheatingdetection.DetectedForbiddenCommandDTO;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.detection.*;
@@ -11,6 +12,7 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.detection.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
+import org.apache.commons.math3.analysis.function.Abs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,7 @@ public class CheatingDetectionService {
     private final NoCommandsDetectionEventRepository noCommandsDetectionEventRepository;
     private final ForbiddenCommandsDetectionEventRepository forbiddenCommandsDetectionEventRepository;
     private final DetectionEventParticipantRepository detectionEventParticipantRepository;
+    private final DetectedForbiddenCommandRepository detectedForbiddenCommandRepository;
     private final TrainingRunRepository trainingRunRepository;
     private final AnswersStorageApiService answersStorageApiService;
     private final TrainingRunService trainingRunService;
@@ -69,6 +72,7 @@ public class CheatingDetectionService {
      * @param noCommandsDetectionEventRepository         the no commands detection event repository
      * @param forbiddenCommandsDetectionEventRepository  the forbidden commands detection event repository
      * @param detectionEventParticipantRepository        the detection event participant repository
+     * @param detectedForbiddenCommandRepository         the detected forbidden commands repository
      * @param trainingRunRepository                      the training run repository
      * @param answersStorageApiService                   the answers storage api service
      * @param trainingRunService                         the training run service
@@ -88,6 +92,7 @@ public class CheatingDetectionService {
                                     NoCommandsDetectionEventRepository noCommandsDetectionEventRepository,
                                     ForbiddenCommandsDetectionEventRepository forbiddenCommandsDetectionEventRepository,
                                     DetectionEventParticipantRepository detectionEventParticipantRepository,
+                                    DetectedForbiddenCommandRepository detectedForbiddenCommandRepository,
                                     TrainingRunRepository trainingRunRepository,
                                     AnswersStorageApiService answersStorageApiService,
                                     TrainingRunService trainingRunService,
@@ -105,6 +110,7 @@ public class CheatingDetectionService {
         this.noCommandsDetectionEventRepository = noCommandsDetectionEventRepository;
         this.forbiddenCommandsDetectionEventRepository = forbiddenCommandsDetectionEventRepository;
         this.detectionEventParticipantRepository = detectionEventParticipantRepository;
+        this.detectedForbiddenCommandRepository = detectedForbiddenCommandRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.answersStorageApiService = answersStorageApiService;
         this.trainingRunService = trainingRunService;
@@ -141,9 +147,9 @@ public class CheatingDetectionService {
         if (cd.getNoCommandsState() == CheatingDetectionState.QUEUED) {
             executeCheatingDetectionOfNoCommands(cd);
         }
-        //if (cd.getForbiddenCommandsState() == CheatingDetectionState.QUEUED) {
-        //    executeCheatingDetectionOfForbiddenCommands(cd);
-        //}
+        if (cd.getForbiddenCommandsState() == CheatingDetectionState.QUEUED) {
+            executeCheatingDetectionOfForbiddenCommands(cd);
+        }
         cd.setResults(detectionEventRepository.getNumberOfDetections(cd.getId()));
         cd.setCurrentState(CheatingDetectionState.FINISHED);
         updateCheatingDetection(cd);
@@ -205,8 +211,15 @@ public class CheatingDetectionService {
         for (var answer : answers) {
             if (answer.getAnswerContent().equals(submission.getProvided()) && answerVariable.equals(answer.getAnswerVariableName())) {
                 participants = new HashSet<>();
-                participants.add(extractParticipant(submission));
+                DetectionEventParticipant participant = extractParticipant(submission);
+                if (!checkIfContainsParticipant(participants, participant)) {
+                    participants.add(participant);
+                }
+                var answerOwnerRef = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId());
                 String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
+                if (!(participants.size() > 1)) {
+                    continue;
+                }
                 auditAnswerSimilarityEvent(submission, cd, participants, answerOwner);
                 run.setHasDetectionEvent(true);
                 trainingRunRepository.save(run);
@@ -261,7 +274,10 @@ public class CheatingDetectionService {
             for (var submission : group) {
                 Long submissionRunId = submission.getTrainingRun().getId();
                 if (!runIds.contains(submissionRunId)) {
-                    participants.add(extractParticipant(submission));
+                    DetectionEventParticipant participant = extractParticipant(submission);
+                    if (!checkIfContainsParticipant(participants, participant)) {
+                        participants.add(participant);
+                    }
                     runIds.add(submissionRunId);
                 }
                 auditRunDetectionEvent(submission.getTrainingRun());
@@ -288,7 +304,7 @@ public class CheatingDetectionService {
                 int j = i - 1;
                 var first = submissions.get(j);
                 var second = submissions.get(i);
-                Long timeProximity = Duration.between(first.getDate(), second.getDate()).toSeconds();
+                long timeProximity = Duration.between(first.getDate(), second.getDate()).toSeconds();
                 if (timeProximity < cd.getProximityThreshold()) {
                     if (detectedGroup.isEmpty()) {
                         detectedGroup.add(first);
@@ -304,10 +320,13 @@ public class CheatingDetectionService {
                 }
             }
             for (var sub : detectedGroup) {
-                participants.add(extractParticipant(sub));
+                DetectionEventParticipant participant = extractParticipant(sub);
+                if (!checkIfContainsParticipant(participants, participant)) {
+                    participants.add(participant);
+                }
                 auditRunDetectionEvent(sub.getTrainingRun());
             }
-            if (!detectedGroup.isEmpty()) {
+            if (!detectedGroup.isEmpty() && participants.size() > 1) {
                 auditTimeProximityEvent(detectedGroup.get(0), cd, participants);
                 detectedGroup.clear();
                 participants.clear();
@@ -321,6 +340,15 @@ public class CheatingDetectionService {
     private void auditRunDetectionEvent(TrainingRun run) {
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
+    }
+
+    private boolean checkIfContainsParticipant(Set<DetectionEventParticipant> participants, DetectionEventParticipant participant) {
+        for (var elem : participants ) {
+            if (elem.getUserId().equals(participant.getUserId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void executeCheatingDetectionOfMinimalSolveTime(CheatingDetection cd) {
@@ -470,7 +498,7 @@ public class CheatingDetectionService {
         List<Map<String, Object>> submittedCommands;
         LocalDateTime from;
         Submission currentSubmission;
-        String[] forbiddenCommands;
+        List<DetectedForbiddenCommand> forbiddenCommands;
 
         for (var run : trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)) {
             submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
@@ -491,16 +519,19 @@ public class CheatingDetectionService {
         updateCheatingDetection(cd);
     }
 
-    private String[] evaluateForbiddenCommand(Set<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
+    private List<DetectedForbiddenCommand> evaluateForbiddenCommand(List<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
         String command = commandMap.get("cmd").toString();
         String type = commandMap.get("cmd_type").toString();
-        List<String> commandsList = new ArrayList<>();
+        List<DetectedForbiddenCommand> commandsList = new ArrayList<>();
         for (var forbiddenCommand : fc) {
             if (type.equals(forbiddenCommand.getType().toString()) && command != null && command.contains(forbiddenCommand.getCommand())) {
-                commandsList.add(command);
+                DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
+                detectedCommand.setCommand(forbiddenCommand.getCommand());
+                detectedCommand.setType(forbiddenCommand.getType());
+                commandsList.add(detectedCommand);
             }
         }
-        return commandsList.toArray(new String[0]);
+        return commandsList;
     }
 
     public void deleteDetectionEvents(Long cheatingDetectionId) {
@@ -598,6 +629,22 @@ public class CheatingDetectionService {
         return detectionEventParticipantRepository.findAllByEventId(eventId);
     }
 
+    public List<DetectionEventParticipant>  findAllParticipantsOfCheatingDetection(Long cheatingDetectionId) {
+        return detectionEventParticipantRepository.findAllParticipantsOfCheatingDetection(cheatingDetectionId);
+    }
+
+    public List<Long> getAllDetectionEventsIdsOfparticipant(Long userId) {
+        return detectionEventParticipantRepository.getAllDetectionEventsIdsOfParticipant(userId);
+    }
+
+    public Page<DetectedForbiddenCommand> findAllForbiddenCommandsOfDetectionEvent(Long eventId, Pageable pageable) {
+        return detectedForbiddenCommandRepository.findAllByEventId(eventId, pageable);
+    }
+
+    public List<DetectedForbiddenCommand> findAllForbiddenCommandsOfDetectionEvent(Long eventId) {
+        return detectedForbiddenCommandRepository.findAllByEventId(eventId);
+    }
+
     public AbstractDetectionEvent findDetectionEventById(Long eventId) {
         return detectionEventRepository.findDetectionEventById(eventId);
     }
@@ -643,57 +690,42 @@ public class CheatingDetectionService {
         return false;
     }
 
+
     private void auditAnswerSimilarityEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants, String answerOwner) {
         TrainingRun run = submission.getTrainingRun();
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
         AnswerSimilarityDetectionEvent event = new AnswerSimilarityDetectionEvent();
+        event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.ANSWER_SIMILARITY, participants.size());
         event.setAnswer(submission.getProvided());
         event.setAnswerOwner(answerOwner);
-        event.setCheatingDetectionId(cd.getId());
-        event.setDetectedAt(cd.getExecuteTime());
-        event.setLevelId(submission.getLevel().getId());
-        event.setLevelTitle(submission.getLevel().getTitle());
-        event.setParticipantCount(participants.size());
-        event.setTrainingInstanceId(cd.getTrainingInstanceId());
-        event.setDetectionEventType(DetectionEventType.ANSWER_SIMILARITY);
-        Long eventId = answerSimilarityDetectionEventRepository.save(event).getId();
-        for (var participant : participants) {
-            participant.setDetectionEventId(eventId);
-            detectionEventParticipantRepository.save(participant);
-        }
+        event.setParticipants(generateParticipantString(participants));
+        answerSimilarityDetectionEventRepository.save(event);
+        saveParticipants(participants, event.getId(), cd.getId());
     }
+
+
+
 
     private void auditLocationSimilarityEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
         TrainingRun run = submission.getTrainingRun();
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
         LocationSimilarityDetectionEvent event = new LocationSimilarityDetectionEvent();
-        String domainName;
+        event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.LOCATION_SIMILARITY, participants.size());
         String submissionDomainName;
         try {
             InetAddress envAddress = InetAddress.getByName(environment.getProperty("server.address"));
-            domainName = envAddress.getHostName();
             submissionDomainName = InetAddress.getByName(submission.getIpAddress()).getHostName();
-            event.setIsAddressDeploy(domainName.equals(submissionDomainName));
+            event.setIsAddressDeploy(envAddress.getHostName().equals(submissionDomainName));
         } catch (UnknownHostException e) {
             submissionDomainName = "unspecified";
             event.setIsAddressDeploy(false);
         }
         event.setDns(submissionDomainName);
         event.setIpAddress(submission.getIpAddress());
-        event.setCheatingDetectionId(cd.getId());
-        event.setDetectedAt(cd.getExecuteTime());
-        event.setLevelId(submission.getLevel().getId());
-        event.setLevelTitle(submission.getLevel().getTitle());
-        event.setParticipantCount(participants.size());
-        event.setTrainingInstanceId(cd.getTrainingInstanceId());
-        event.setDetectionEventType(DetectionEventType.LOCATION_SIMILARITY);
-        Long eventId = locationSimilarityDetectionEventRepository.save(event).getId();
-        for (var participant : participants) {
-            participant.setDetectionEventId(eventId);
-            detectionEventParticipantRepository.save(participant);
-        }
+        event.setParticipants(generateParticipantString(participants));
+        saveParticipants(participants, locationSimilarityDetectionEventRepository.save(event).getId(), cd.getId());
     }
 
 
@@ -703,19 +735,10 @@ public class CheatingDetectionService {
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
         MinimalSolveTimeDetectionEvent event = new MinimalSolveTimeDetectionEvent();
+        event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.MINIMAL_SOLVE_TIME, participants.size());
         event.setMinimalSolveTime(minimalSolveTime);
-        event.setCheatingDetectionId(cd.getId());
-        event.setDetectedAt(cd.getExecuteTime());
-        event.setLevelId(submission.getLevel().getId());
-        event.setLevelTitle(submission.getLevel().getTitle());
-        event.setParticipantCount(participants.size());
-        event.setTrainingInstanceId(cd.getTrainingInstanceId());
-        event.setDetectionEventType(DetectionEventType.MINIMAL_SOLVE_TIME);
-        Long eventId = minimalSolveTimeDetectionEventRepository.save(event).getId();
-        for (var participant : participants) {
-            participant.setDetectionEventId(eventId);
-            detectionEventParticipantRepository.save(participant);
-        }
+        event.setParticipants(generateParticipantString(participants));
+        saveParticipants(participants, minimalSolveTimeDetectionEventRepository.save(event).getId(), cd.getId());
     }
 
     private void auditTimeProximityEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
@@ -723,19 +746,10 @@ public class CheatingDetectionService {
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
         TimeProximityDetectionEvent event = new TimeProximityDetectionEvent();
+        event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.TIME_PROXIMITY, participants.size());
         event.setThreshold(cd.getProximityThreshold());
-        event.setCheatingDetectionId(cd.getId());
-        event.setDetectedAt(cd.getExecuteTime());
-        event.setLevelId(submission.getLevel().getId());
-        event.setLevelTitle(submission.getLevel().getTitle());
-        event.setParticipantCount(participants.size());
-        event.setTrainingInstanceId(cd.getTrainingInstanceId());
-        event.setDetectionEventType(DetectionEventType.TIME_PROXIMITY);
-        Long eventId = timeProximityDetectionEventRepository.save(event).getId();
-        for (var participant : participants) {
-            participant.setDetectionEventId(eventId);
-            detectionEventParticipantRepository.save(participant);
-        }
+        event.setParticipants(generateParticipantString(participants));
+        saveParticipants(participants, timeProximityDetectionEventRepository.save(event).getId(), cd.getId());
     }
 
     private void auditNoCommandsEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
@@ -743,39 +757,45 @@ public class CheatingDetectionService {
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
         NoCommandsDetectionEvent event = new NoCommandsDetectionEvent();
-        event.setCheatingDetectionId(cd.getId());
-        event.setDetectedAt(cd.getExecuteTime());
-        event.setLevelId(submission.getLevel().getId());
-        event.setLevelTitle(submission.getLevel().getTitle());
-        event.setParticipantCount(participants.size());
-        event.setTrainingInstanceId(cd.getTrainingInstanceId());
-        event.setDetectionEventType(DetectionEventType.NO_COMMANDS);
-        Long eventId = noCommandsDetectionEventRepository.save(event).getId();
-        for (var participant : participants) {
-            participant.setDetectionEventId(eventId);
-            detectionEventParticipantRepository.save(participant);
-        }
+        event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.NO_COMMANDS, participants.size());
+        event.setParticipants(generateParticipantString(participants));
+        saveParticipants(participants, noCommandsDetectionEventRepository.save(event).getId(), cd.getId());
     }
 
     private void auditForbiddenCommandsEvent(Submission submission, CheatingDetection cd, DetectionEventParticipant participant,
-                                             String[] forbiddenCommands) {
+                                             List<DetectedForbiddenCommand> detectedForbiddenCommands) {
         TrainingRun run = submission.getTrainingRun();
         run.setHasDetectionEvent(true);
         trainingRunRepository.save(run);
         ForbiddenCommandsDetectionEvent event = new ForbiddenCommandsDetectionEvent();
-        event.setForbiddenCommands(forbiddenCommands);
-//        Set<DetectionEventParticipant> participants = new HashSet<>();
-//        participants.add(participant);
-        event.setCheatingDetectionId(cd.getId());
-        event.setDetectedAt(cd.getExecuteTime());
-        event.setLevelId(submission.getLevel().getId());
-        event.setLevelTitle(submission.getLevel().getTitle());
-        event.setParticipantCount(1);
-        event.setTrainingInstanceId(cd.getTrainingInstanceId());
-        event.setDetectionEventType(DetectionEventType.FORBIDDEN_COMMANDS);
-        Long eventId = forbiddenCommandsDetectionEventRepository.save(event).getId();
-        participant.setDetectionEventId(eventId);
+        event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.FORBIDDEN_COMMANDS, 1);
+        for (var command : detectedForbiddenCommands) {
+            detectedForbiddenCommandRepository.save(command);
+        }
+        event.setCommandCount(detectedForbiddenCommands.size());
+        event.setTrainingRunId(submission.getTrainingRun().getId());
+        event.setParticipants(participant.getParticipantName());
+        participant.setDetectionEventId(forbiddenCommandsDetectionEventRepository.save(event).getId());
+        participant.setCheatingDetectionId(cd.getId());
         detectionEventParticipantRepository.save(participant);
+    }
+
+    private String generateParticipantString(Set<DetectionEventParticipant> participants) {
+        StringBuilder participantString = new StringBuilder();
+        for (var participant : participants) {
+            participantString.append(',').append(' ');
+            participantString.append(participant.getParticipantName());
+        }
+        participantString.delete(0, 2);
+        return participantString.toString();
+    }
+
+    private void saveParticipants(Set<DetectionEventParticipant> participants, Long eventId, Long cheatingDetectionId) {
+        for (var participant : participants) {
+            participant.setDetectionEventId(eventId);
+            participant.setCheatingDetectionId(cheatingDetectionId);
+            detectionEventParticipantRepository.save(participant);
+        }
     }
 
     private void updateCheatingDetection(CheatingDetection cd) {
