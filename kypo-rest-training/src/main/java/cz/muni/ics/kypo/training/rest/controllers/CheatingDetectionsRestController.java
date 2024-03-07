@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bohnman.squiggly.Squiggly;
 import com.github.bohnman.squiggly.util.SquigglyUtils;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.cheatingdetection.*;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
@@ -11,6 +12,9 @@ import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.facade.CheatingDetectionFacade;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
+import cz.muni.ics.kypo.training.persistence.model.detection.CheatingDetection;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
@@ -80,7 +84,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 400, message = "The provided cheating detection is not valid", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @PostMapping(path = "/create-detection", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/detection", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createAndExecuteCheatingDetection(@ApiParam(value = "CheatingDetection to be created")
                                                                   @RequestBody @Valid CheatingDetectionDTO cheatingDetectionDTO) {
         cheatingDetectionFacade.createAndExecute(cheatingDetectionDTO);
@@ -142,7 +146,7 @@ public class CheatingDetectionsRestController {
      * Get all detection events of a CheatingDetection.
      *
      * @param cheatingDetectionId id of cheating detection.
-     * @param trainingInstanceId id of training instance.
+     * @param trainingInstanceId  id of training instance.
      * @param pageable            pageable parameter with information about pagination.
      * @param fields              attributes of the object to be returned as the result.
      * @return all Detection Events occurred in a cheating detection.
@@ -160,7 +164,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
-    @GetMapping(path = "/{cheatingDetectionId}/find-all-events", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{cheatingDetectionId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllDetectionEventsOfCheatingDetection(@ApiParam(value = "id of cheating detection", required = true)
                                                                             @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
                                                                             @ApiParam(value = "id of training instance", required = true)
@@ -179,7 +183,7 @@ public class CheatingDetectionsRestController {
      * @param eventId             id of detection event.
      * @param pageable            pageable parameter with information about pagination.
      * @param fields              attributes of the object to be returned as the result.
-     * @return all Detection Events occurred in a cheating detection.
+     * @return all participants of a detection event.
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get all participants of detection event.",
@@ -194,13 +198,45 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
-    @GetMapping(path = "/find-all-participants", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/participants", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllParticipantsOfDetectionEvent(@ApiParam(value = "the event id", required = true)
                                                                       @RequestParam(value = "eventId", required = true) Long eventId,
                                                                       @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
                                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                                       @RequestParam(value = "fields", required = false) String fields) {
         PageResultResource<DetectionEventParticipantDTO> participantsResource = cheatingDetectionFacade.findAllParticipantsOfDetectionEvent(eventId, pageable);
+        Squiggly.init(objectMapper, fields);
+        return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
+    }
+
+    /**
+     * Get all forbidden commands of Detection Event.
+     *
+     * @param eventId             id of detection event.
+     * @param pageable            pageable parameter with information about pagination.
+     * @param fields              attributes of the object to be returned as the result.
+     * @return all detected forbidden commands occurred in a detection event.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all participants of detection event.",
+            response = DetectionEventParticipantRestResource.class,
+            nickname = "findAllForbiddenCommandsOfEvent",
+            notes = "This can only be done by organizer of training instance or administrator.",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Forbidden commands have been found.", response = DetectionEventRestResource.class),
+            @ApiResponse(code = 404, message = "The forbidden commands have not been found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @ApiPageableSwagger
+    @GetMapping(path = "/forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> findAllForbiddenCommandsOfDetectionEvent(@ApiParam(value = "the event id", required = true)
+                                                                      @RequestParam(value = "eventId", required = true) Long eventId,
+                                                                      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
+                                                                      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                                      @RequestParam(value = "fields", required = false) String fields) {
+        PageResultResource<DetectedForbiddenCommandDTO> participantsResource = cheatingDetectionFacade.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
     }
@@ -251,7 +287,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/find-event", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AbstractDetectionEventDTO> findDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                   @RequestParam(value = "eventId", required = true) Long eventId) {
         AbstractDetectionEventDTO abstractDetectionEventDTO = cheatingDetectionFacade.findDetectionEventById(eventId);
@@ -275,7 +311,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/find-answer-similarity", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/answer-similarity", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AnswerSimilarityDetectionEventDTO> findAnswerSimilarityDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                     @RequestParam(value = "eventId", required = true) Long eventId) {
         AnswerSimilarityDetectionEventDTO answerSimilarityDetectionEventDTO = cheatingDetectionFacade.findAnswerSimilarityEventById(eventId);
@@ -299,7 +335,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/find-location-similarity", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/location-similarity", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LocationSimilarityDetectionEventDTO> findLocationSimilarityDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                         @RequestParam(value = "eventId", required = true) Long eventId) {
         LocationSimilarityDetectionEventDTO locationSimilarityDetectionEventDTO = cheatingDetectionFacade.findLocationSimilarityEventById(eventId);
@@ -323,7 +359,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/find-time-proximity", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/time-proximity", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TimeProximityDetectionEventDTO> findTimeProximityDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                               @RequestParam(value = "eventId", required = true) Long eventId) {
         TimeProximityDetectionEventDTO timeProximityDetectionEventDTO = cheatingDetectionFacade.findTimeProximityEventById(eventId);
@@ -347,7 +383,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/find-minimal-solve-time", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/minimal-solve-time", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MinimalSolveTimeDetectionEventDTO> findMinimalSolveTimeDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                     @RequestParam(value = "eventId", required = true) Long eventId) {
         MinimalSolveTimeDetectionEventDTO minimalSolveTimeDetectionEventDTO = cheatingDetectionFacade.findMinimalSolveTimeEventById(eventId);
@@ -371,7 +407,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/find-no-commands", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/no-commands", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NoCommandsDetectionEventDTO> findNoCommandsDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                         @RequestParam(value = "eventId", required = true) Long eventId) {
         NoCommandsDetectionEventDTO NoCommandsDetectionEventDTO = cheatingDetectionFacade.findNoCommandsEventById(eventId);
@@ -395,7 +431,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/find-forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/detected-forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ForbiddenCommandsDetectionEventDTO> findForbiddenCommandsDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                       @RequestParam(value = "eventId", required = true) Long eventId) {
         ForbiddenCommandsDetectionEventDTO forbiddenCommandsDetectionEventDTO = cheatingDetectionFacade.findForbiddenCommandsEventById(eventId);
@@ -423,7 +459,7 @@ public class CheatingDetectionsRestController {
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @ApiPageableSwagger
-    @GetMapping(path = "/{trainingInstanceId}/find-all-detections", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{trainingInstanceId}/detections", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllCheatingDetectionsOfInstance(@ApiParam(value = "id of training instance", required = true)
                                                                       @PathVariable("trainingInstanceId") Long trainingInstanceId,
                                                                       @ApiParam(value = "Pagination support.", required = false) Pageable pageable,

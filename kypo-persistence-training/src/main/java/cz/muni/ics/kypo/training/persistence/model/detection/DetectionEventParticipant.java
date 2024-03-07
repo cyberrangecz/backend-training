@@ -30,6 +30,8 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
     private Long userId;
     @Column(name = "detection_event_id", nullable = false)
     private Long detectionEventId;
+    @Column(name = "cheating_detection_id", nullable = false)
+    private Long cheatingDetectionId;
 
     public String getIpAddress() {
         return ipAddress;
@@ -79,6 +81,14 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
         this.detectionEventId = detectionEventId;
     }
 
+    public Long getCheatingDetectionId() {
+        return cheatingDetectionId;
+    }
+
+    public void setCheatingDetectionId(Long cheatingDetectionId) {
+        this.cheatingDetectionId = cheatingDetectionId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -89,12 +99,13 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
                 Objects.equals(participantName, that.participantName) &&
                 Objects.equals(solvedInTime, that.solvedInTime) &&
                 Objects.equals(userId, that.userId) &&
-                Objects.equals(detectionEventId, that.detectionEventId);
+                Objects.equals(detectionEventId, that.detectionEventId) &&
+                Objects.equals(cheatingDetectionId, that.cheatingDetectionId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ipAddress, occurredAt, participantName, solvedInTime, userId, detectionEventId);
+        return Objects.hash(ipAddress, occurredAt, participantName, solvedInTime, userId, detectionEventId, cheatingDetectionId);
     }
 
     @Override
@@ -106,6 +117,7 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
                 ", solvedInTime=" + solvedInTime +
                 ", userId=" + userId +
                 ", detectionEventId=" + detectionEventId +
+                ", cheatingDetectionId=" + cheatingDetectionId +
                 '}';
     }
 }

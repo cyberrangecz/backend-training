@@ -55,6 +55,8 @@ public class AbstractDetectionEventDTO {
     private Long participantCount;
     @ApiModelProperty(value = "type of the event.", example = "answer similarity")
     private DetectionEventType detectionEventType;
+    @ApiModelProperty(value = "participants of the event.", example = "John Doe,Jane Doe")
+    private String participants;
 
     /**
      * Gets training instance id.
@@ -182,6 +184,14 @@ public class AbstractDetectionEventDTO {
         this.detectionEventType = detectionEventType;
     }
 
+    public String getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(String participants) {
+        this.participants = participants;
+    }
+
     public Long getId() {
         return id;
     }
@@ -201,12 +211,13 @@ public class AbstractDetectionEventDTO {
                 Objects.equals(detectedAt, that.detectedAt) &&
                 Objects.equals(participantCount, that.participantCount) &&
                 Objects.equals(detectionEventType, that.detectionEventType) &&
+                Objects.equals(participants, that.participants) &&
                 Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelTitle, detectedAt, participantCount, detectionEventType, id);
+        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelTitle, detectedAt, participantCount, detectionEventType, id, participants);
     }
 
     @java.lang.Override
@@ -219,6 +230,7 @@ public class AbstractDetectionEventDTO {
                 ", detectedAt=" + detectedAt +
                 ", participantCount=" + participantCount +
                 ", detectionEventType=" + detectionEventType +
+                ", participants=" + participants +
                 ", id=" + id +
                 '}';
     }

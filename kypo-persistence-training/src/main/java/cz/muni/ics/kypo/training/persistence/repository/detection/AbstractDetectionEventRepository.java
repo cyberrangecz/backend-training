@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.persistence.repository.detection;
 
 import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
-import cz.muni.ics.kypo.training.persistence.model.detection.CheatingDetection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;

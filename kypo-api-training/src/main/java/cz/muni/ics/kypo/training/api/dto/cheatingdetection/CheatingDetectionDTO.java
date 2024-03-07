@@ -7,8 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Encapsulates information about cheating detection.
@@ -43,6 +42,8 @@ public class CheatingDetectionDTO {
     private CheatingDetectionState forbiddenCommandsState;
     @ApiModelProperty(value = "state of detection run of no commands.", example = "RUNNING")
     private CheatingDetectionState noCommandsState;
+    @ApiModelProperty(value = "list of forbidden commands.", example = "[]")
+    private List<ForbiddenCommandDTO> forbiddenCommands;
 
     public Long getTrainingInstanceId() {
         return trainingInstanceId;
@@ -148,6 +149,14 @@ public class CheatingDetectionDTO {
         this.noCommandsState = noCommandsState;
     }
 
+    public List<ForbiddenCommandDTO> getForbiddenCommands() {
+        return forbiddenCommands;
+    }
+
+    public void setForbiddenCommands(List<ForbiddenCommandDTO> forbiddenCommands) {
+        this.forbiddenCommands = forbiddenCommands;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -165,14 +174,15 @@ public class CheatingDetectionDTO {
                 timeProximityState == that.timeProximityState &&
                 minimalSolveTimeState == that.minimalSolveTimeState &&
                 forbiddenCommandsState == that.forbiddenCommandsState &&
-                noCommandsState == that.noCommandsState;
+                noCommandsState == that.noCommandsState &&
+                forbiddenCommands == that.forbiddenCommands;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(trainingInstanceId, executedBy, executeTime, proximityThreshold, id,
                 currentState, results, answerSimilarityState, locationSimilarityState, timeProximityState,
-                minimalSolveTimeState, forbiddenCommandsState, noCommandsState);
+                minimalSolveTimeState, forbiddenCommandsState, noCommandsState, forbiddenCommands);
     }
 
     @Override
@@ -191,6 +201,7 @@ public class CheatingDetectionDTO {
                 ", minimalSolveTimeState=" + minimalSolveTimeState +
                 ", forbiddenCommandsState=" + forbiddenCommandsState +
                 ", noCommandsState=" + noCommandsState +
+                ", forbiddenCommands=" + forbiddenCommands +
                 '}';
     }
 }

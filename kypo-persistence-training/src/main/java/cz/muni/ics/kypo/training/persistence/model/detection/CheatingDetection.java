@@ -68,12 +68,12 @@ public class CheatingDetection extends AbstractEntity<Long> {
     @Column(name = "no_commands_state")
     private CheatingDetectionState noCommandsState;
     @OneToMany(
-            mappedBy = "detection",
-            cascade = CascadeType.ALL,
+            mappedBy = "cheatingDetection",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private Set<ForbiddenCommand> commands = new HashSet<>();
+    private List<ForbiddenCommand> commands = new ArrayList<>();
 
     public Long getTrainingInstanceId() {
         return trainingInstanceId;
@@ -171,11 +171,11 @@ public class CheatingDetection extends AbstractEntity<Long> {
         this.noCommandsState = noCommandsState;
     }
 
-    public Set<ForbiddenCommand> getForbiddenCommands() {
+    public List<ForbiddenCommand> getForbiddenCommands() {
         return commands;
     }
 
-    public void setForbiddenCommands(Set<ForbiddenCommand> commands) {
+    public void setForbiddenCommands(List<ForbiddenCommand> commands) {
         this.commands = commands;
     }
 

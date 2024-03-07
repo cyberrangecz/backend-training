@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.persistence.repository.detection;
 
-import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
 import cz.muni.ics.kypo.training.persistence.model.detection.CheatingDetection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
