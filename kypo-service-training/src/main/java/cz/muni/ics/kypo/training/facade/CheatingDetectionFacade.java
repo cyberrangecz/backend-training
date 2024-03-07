@@ -339,23 +339,24 @@ public class CheatingDetectionFacade {
     }
 
     private void auditParticipantGroup(List<Long> eventIds, ZipOutputStream zos) throws IOException {
+        OutputStreamWriter writer = new OutputStreamWriter(zos);
         for (var eventId : eventIds) {
             AbstractDetectionEvent event = cheatingDetectionService.findDetectionEventById(eventId);
             var eventType = event.getDetectionEventType();
             List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfEvent(eventId);
             switch (eventType) {
-                case ANSWER_SIMILARITY -> auditAnswerSimilarityGroup(participants, cheatingDetectionService.findAnswerSimilarityEventById(eventId), zos);
-                case LOCATION_SIMILARITY -> auditLocationSimilarityGroup(participants, cheatingDetectionService.findLocationSimilarityEventById(eventId), zos);
-                case MINIMAL_SOLVE_TIME -> auditMinimalSolveTimeGroup(participants, cheatingDetectionService.findMinimalSolveTimeEventById(eventId), zos);
-                case TIME_PROXIMITY -> auditTimeProximityGroup(participants, cheatingDetectionService.findTimeProximityEventById(eventId), zos);
-                case NO_COMMANDS -> auditNoCommandsGroup(participants, cheatingDetectionService.findNoCommandsEventById(eventId), zos);
-                case FORBIDDEN_COMMANDS -> auditForbiddenCommandsGroup(participants, cheatingDetectionService.findForbiddenCommandsEventById(eventId), zos);
+                case ANSWER_SIMILARITY -> auditAnswerSimilarityGroup(participants, cheatingDetectionService.findAnswerSimilarityEventById(eventId), zos, writer);
+                case LOCATION_SIMILARITY -> auditLocationSimilarityGroup(participants, cheatingDetectionService.findLocationSimilarityEventById(eventId), zos, writer);
+                case MINIMAL_SOLVE_TIME -> auditMinimalSolveTimeGroup(participants, cheatingDetectionService.findMinimalSolveTimeEventById(eventId), zos, writer);
+                case TIME_PROXIMITY -> auditTimeProximityGroup(participants, cheatingDetectionService.findTimeProximityEventById(eventId), zos, writer);
+                case NO_COMMANDS -> auditNoCommandsGroup(participants, cheatingDetectionService.findNoCommandsEventById(eventId), zos, writer);
+                case FORBIDDEN_COMMANDS -> auditForbiddenCommandsGroup(participants, cheatingDetectionService.findForbiddenCommandsEventById(eventId), zos, writer);
             }
         }
+        writer.close();
     }
 
-    private void auditAnswerSimilarityGroup(List<DetectionEventParticipant> participants, AnswerSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(zos);
+    private void auditAnswerSimilarityGroup(List<DetectionEventParticipant> participants, AnswerSimilarityDetectionEvent event, ZipOutputStream zos, OutputStreamWriter writer) throws IOException {
         writer.write("participant,time\n");
         for (var participant : participants) {
             writer.write(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
@@ -364,11 +365,9 @@ public class CheatingDetectionFacade {
         writer.write("detection type,detected at,level title,answer,answer owner\n");
         writer.write(String.format("%s,%s,%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
         writer.write("\n\n");
-        writer.close();
     }
 
-    private void auditLocationSimilarityGroup(List<DetectionEventParticipant> participants, LocationSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(zos);
+    private void auditLocationSimilarityGroup(List<DetectionEventParticipant> participants, LocationSimilarityDetectionEvent event, ZipOutputStream zos, OutputStreamWriter writer) throws IOException {
         writer.write("participant,time,ip address\n");
         for (var participant : participants) {
             writer.write(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt(), participant.getIpAddress()));
@@ -377,11 +376,9 @@ public class CheatingDetectionFacade {
         writer.write("detection type,detected at,level title,dns,ip address\n");
         writer.write(String.format("%s,%s,%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle(), event.getDns(), event.getIpAddress()));
         writer.write("\n\n");
-        writer.close();
     }
 
-    private void auditMinimalSolveTimeGroup(List<DetectionEventParticipant> participants, MinimalSolveTimeDetectionEvent event, ZipOutputStream zos) throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(zos);
+    private void auditMinimalSolveTimeGroup(List<DetectionEventParticipant> participants, MinimalSolveTimeDetectionEvent event, ZipOutputStream zos, OutputStreamWriter writer) throws IOException {
         writer.write("participant,time,solved in(seconds)\n");
         for (var participant : participants) {
             writer.write(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt(), participant.getSolvedInTime()));
@@ -390,11 +387,9 @@ public class CheatingDetectionFacade {
         writer.write("detection type,detected at,level title,minimal solve time\n");
         writer.write(String.format("%s,%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle(), event.getMinimalSolveTime()));
         writer.write("\n\n");
-        writer.close();
     }
 
-    private void auditTimeProximityGroup(List<DetectionEventParticipant> participants, TimeProximityDetectionEvent event, ZipOutputStream zos) throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(zos);
+    private void auditTimeProximityGroup(List<DetectionEventParticipant> participants, TimeProximityDetectionEvent event, ZipOutputStream zos, OutputStreamWriter writer) throws IOException {
         writer.write("participant,time\n");
         for (var participant : participants) {
             writer.write(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
@@ -403,11 +398,9 @@ public class CheatingDetectionFacade {
         writer.write("detection type,detected at,level title,proximity\n");
         writer.write(String.format("%s,%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle(), event.getThreshold()));
         writer.write("\n\n");
-        writer.close();
     }
 
-    private void auditNoCommandsGroup(List<DetectionEventParticipant> participants, NoCommandsDetectionEvent event, ZipOutputStream zos) throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(zos);
+    private void auditNoCommandsGroup(List<DetectionEventParticipant> participants, NoCommandsDetectionEvent event, ZipOutputStream zos, OutputStreamWriter writer) throws IOException {
         writer.write("participant,time\n");
         for (var participant : participants) {
             writer.write(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
@@ -416,11 +409,9 @@ public class CheatingDetectionFacade {
         writer.write("detection type,detected at,level title\n");
         writer.write(String.format("%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle()));
         writer.write("\n\n");
-        writer.close();
     }
 
-    private void auditForbiddenCommandsGroup(List<DetectionEventParticipant> participants, ForbiddenCommandsDetectionEvent event, ZipOutputStream zos) throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(zos);
+    private void auditForbiddenCommandsGroup(List<DetectionEventParticipant> participants, ForbiddenCommandsDetectionEvent event, ZipOutputStream zos, OutputStreamWriter writer) throws IOException {
         writer.write("participant,time\n");
         for (var participant : participants) {
             writer.write(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
@@ -429,7 +420,6 @@ public class CheatingDetectionFacade {
         writer.write("detection type,detected at,level title,proximity\n");
         writer.write(String.format("%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle()));
         writer.write("\n\n");
-        writer.close();
     }
 
     private void writeCheatingDetection(ZipOutputStream zos, Long cheatingDetectionId, CheatingDetectionDTO cheatingDetectionDTO) throws IOException {
