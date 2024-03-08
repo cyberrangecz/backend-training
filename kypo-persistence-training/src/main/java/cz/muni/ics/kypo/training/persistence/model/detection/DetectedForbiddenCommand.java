@@ -8,16 +8,22 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "forbidden_command")
-public class ForbiddenCommand extends AbstractEntity<Long> {
+@Table(name = "detected_forbidden_command")
+@NamedQueries({
+        @NamedQuery(
+                name = "DetectedForbiddenCommand.findAllByEventId",
+                query = "SELECT dfc FROM DetectedForbiddenCommand dfc " +
+                        "WHERE dfc.detectionEventId = :eventId"
+        )
+})
+public class DetectedForbiddenCommand extends AbstractEntity<Long> {
 
     @Column(name = "command", nullable = false)
     private String command;
     @Column(name = "command_type", nullable = false)
     private CommandType type;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cheating_detection_id")
-    private CheatingDetection cheatingDetection;
+    @Column(name = "detection_event_id", nullable = false)
+    private Long detectionEventId;
     public String getCommand() {
         return command;
     }
@@ -34,25 +40,35 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
         this.type = type;
     }
 
+    public Long getDetectionEventId() {
+        return detectionEventId;
+    }
+
+    public void setDetectionEventId(Long detectionEventId) {
+        this.detectionEventId = detectionEventId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ForbiddenCommand that = (ForbiddenCommand) o;
+        DetectedForbiddenCommand that = (DetectedForbiddenCommand) o;
         return Objects.equals(command, that.command) &&
-                type == that.type;
+                type == that.type &&
+                Objects.equals(detectionEventId, that.detectionEventId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(command, type);
+        return Objects.hash(command, type, detectionEventId);
     }
 
     @Override
     public String toString() {
-        return "ForbiddenCommand{" +
+        return "DetectedForbiddenCommand{" +
                 "command='" + command + '\'' +
                 ", type=" + type +
+                ", detectionEventId=" + detectionEventId +
                 '}';
     }
 }
