@@ -345,8 +345,20 @@ public class CheatingDetectionFacade {
             }
             ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/" + usersString + AbstractFileExtensions.CSV_FILE_EXTENSION);
             zos.putNextEntry(participantResponseEntry);
+            List<MinimalSolveTimeDetectionEvent> minimalSolveTimeEvents = cheatingDetectionService.findAllMinimalSolveTimeEventsOfGroup(cheatingDetectionId, userGroup);
             auditParticipants(userGroup, zos);
             auditParticipantGroupEvents(eventGroup, zos);
+            for (var event : minimalSolveTimeEvents) {
+                List<DetectionEventParticipant> eventParticipants = cheatingDetectionService.findAllParticipantsOfEvent(event.getId());
+                List<DetectionEventParticipant> relevantParticipants = new ArrayList<>();
+                for (var participant : eventParticipants) {
+                    if (userGroup.contains(participant.getUserId())) {
+                        relevantParticipants.add(participant);
+                    }
+                }
+                auditMinimalSolveTimeGroup(relevantParticipants, event, zos);
+            }
+
         }
     }
 
@@ -431,8 +443,6 @@ public class CheatingDetectionFacade {
                         auditAnswerSimilarityGroup(participants, cheatingDetectionService.findAnswerSimilarityEventById(eventId), zos);
                 case LOCATION_SIMILARITY ->
                         auditLocationSimilarityGroup(participants, cheatingDetectionService.findLocationSimilarityEventById(eventId), zos);
-                case MINIMAL_SOLVE_TIME ->
-                        auditMinimalSolveTimeGroup(participants, cheatingDetectionService.findMinimalSolveTimeEventById(eventId), zos);
                 case TIME_PROXIMITY ->
                         auditTimeProximityGroup(participants, cheatingDetectionService.findTimeProximityEventById(eventId), zos);
                 case NO_COMMANDS ->
