@@ -19,7 +19,7 @@ import java.util.*;
                 name = "CheatingDetection.findAllByTrainingInstanceId",
                 query = "SELECT cd FROM CheatingDetection cd " +
                         "WHERE cd.trainingInstanceId = :trainingInstanceId " +
-                        "ORDER BY cd.executedAt"
+                        "ORDER BY cd.executeTime"
         ),
         @NamedQuery(
                 name = "CheatingDetection.findCheatingDetectionById",
