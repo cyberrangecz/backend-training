@@ -335,7 +335,7 @@ public class TrainingRunService {
         if (!trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() == null) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "At first organizer must allocate sandboxes for training instance."));
-        }
+        }zz
         return trainingInstance;
     }
 

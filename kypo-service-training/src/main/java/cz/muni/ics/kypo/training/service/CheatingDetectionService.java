@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The type Cheating detection service.
@@ -489,6 +490,24 @@ public class CheatingDetectionService {
         }
         return participant;
     }
+
+    public List<MinimalSolveTimeDetectionEvent> findAllMinimalSolveTimeEventsOfGroup(Long cheatingDetectionId, List<Long> participants) {
+        List<MinimalSolveTimeDetectionEvent> minimalSolveTimeEvents = findAllMinimalSolveTimeEventsOfDetection(cheatingDetectionId);
+        List<MinimalSolveTimeDetectionEvent> result = new ArrayList<>();
+
+        for (var event : minimalSolveTimeEvents) {
+            if (!Collections.disjoint(findAllParticipantsOfEvent(event
+                            .getId())
+                            .stream()
+                            .map(DetectionEventParticipant::getUserId)
+                            .toList(), participants)) {
+                result.add(event);
+            }
+        }
+
+        return result;
+    }
+
 
     /**
      * Executes a cheating detection of type FORBIDDEN_COMMANDS
