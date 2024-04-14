@@ -529,7 +529,7 @@ public class CheatingDetectionService {
         for (var run : trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)) {
             submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
             for (int i = 0; i < submissions.size() + 1; i++) {
-                if (i == submissions.size()) {
+                if (i == submissions.size() && submissions.size() != 0) {
                     currentSubmission = submissions.get(i - 1);
                     if (run.getState() == TRState.RUNNING) {
                         from = currentSubmission.getDate();
