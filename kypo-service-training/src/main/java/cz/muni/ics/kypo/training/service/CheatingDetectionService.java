@@ -564,6 +564,12 @@ public class CheatingDetectionService {
     private List<DetectedForbiddenCommand> evaluateForbiddenCommands(List<ForbiddenCommand> fc, List<Map<String, Object>> submittedCommands) {
         List<DetectedForbiddenCommand> commandsList = new ArrayList<>();
         for (var commandMap : submittedCommands) {
+            if (commandMap == null ||
+                    commandMap.get("cmd") == null ||
+                    commandMap.get("cmd_type") == null ||
+                    commandMap.get("hostname") == null) {
+                continue;
+            }
             String command = commandMap.get("cmd").toString();
             String type = commandMap.get("cmd_type").toString();
             String hostname = commandMap.get("hostname").toString();
