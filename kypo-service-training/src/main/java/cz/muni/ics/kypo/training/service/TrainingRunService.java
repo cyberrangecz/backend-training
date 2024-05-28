@@ -814,7 +814,14 @@ public class TrainingRunService {
         return question.getPoints();
     }
 
+    public void auditRunHasDetectionEvent(TrainingRun run) {
+        run.setHasDetectionEvent(true);
+        trainingRunRepository.save(run);
+    }
+
     public List<QuestionAnswer> getQuestionAnswersByTrainingRunId(Long runId) {
         return questionAnswerRepository.getAllByTrainingRunId(runId);
     }
+
+
 }

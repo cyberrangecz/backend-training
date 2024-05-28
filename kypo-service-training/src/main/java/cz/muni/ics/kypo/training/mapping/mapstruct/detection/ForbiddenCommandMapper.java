@@ -1,7 +1,8 @@
-package cz.muni.ics.kypo.training.mapping.mapstruct;
+package cz.muni.ics.kypo.training.mapping.mapstruct.detection;
 
 import cz.muni.ics.kypo.training.api.dto.cheatingdetection.ForbiddenCommandDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
+import cz.muni.ics.kypo.training.mapping.mapstruct.ParentMapper;
 import cz.muni.ics.kypo.training.persistence.model.detection.ForbiddenCommand;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

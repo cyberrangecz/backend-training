@@ -81,6 +81,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
     }
 
     public void setExecuteStates() {
+        this.setCurrentState(CheatingDetectionState.RUNNING);
         this.setAnswerSimilarityState(setExecuteState(this.getAnswerSimilarityState()));
         this.setLocationSimilarityState(setExecuteState(this.getLocationSimilarityState()));
         this.setMinimalSolveTimeState(setExecuteState(this.getMinimalSolveTimeState()));
