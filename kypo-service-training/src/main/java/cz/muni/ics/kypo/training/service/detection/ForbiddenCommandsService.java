@@ -20,6 +20,7 @@ import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ import java.util.Map;
 
 import static cz.muni.ics.kypo.training.utils.CheatingDetectionUtils.extractParticipant;
 
+@Service
 public class ForbiddenCommandsService {
     private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
     private final SubmissionRepository submissionRepository;
