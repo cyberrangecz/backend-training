@@ -27,9 +27,13 @@ import cz.muni.ics.kypo.training.service.detection.TimeProximityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Service
+@Transactional
 public class DetectionEventFacade {
     private final AnswerSimilarityService answerSimilarityService;
     private final LocationSimilarityService locationSimilarityService;
@@ -99,7 +103,8 @@ public class DetectionEventFacade {
     @TransactionalWO
     public PageResultResource<AbstractDetectionEventDTO> findAllDetectionEventsOfCheatingDetection(Long cheatingDetectionId,
                                                                                                    Pageable pageable,
-                                                                                                   Predicate predicate) {
+                                                                                                   Predicate predicate,
+                                                                                                   Long trainingInstanceId) {
         return detectionEventMapper.mapToPageResultResource(
                 this.detectionEventService.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, pageable, predicate));
     }

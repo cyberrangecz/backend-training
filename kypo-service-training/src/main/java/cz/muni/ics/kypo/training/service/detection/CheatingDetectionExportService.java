@@ -19,6 +19,7 @@ import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@Service
 public class CheatingDetectionExportService {
     private static final String DETECTION_EVENTS_FOLDER = "detection_events";
     private static final String ANSWER_SIMILARITY_FOLDER = "answer_similarity";
