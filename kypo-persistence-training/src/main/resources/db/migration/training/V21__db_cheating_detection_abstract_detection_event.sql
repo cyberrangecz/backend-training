@@ -1,1 +1,0 @@
-alter table abstract_detection_event add column level_order int4;
