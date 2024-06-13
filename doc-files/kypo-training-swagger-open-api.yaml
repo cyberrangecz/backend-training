@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 2.4.0"
+  version: "Version: 2.5.0"
   title: "KYPO Training - API Reference"
 host: "localhost:8083"
 basePath: "/kypo-rest-training/api/v1"
@@ -41,6 +41,37 @@ paths:
             $ref: "#/definitions/AccessTrainingRunDTO"
         404:
           description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/detected-commands/{eventId}:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Get all forbidden commands of detection event."
+      description: ""
+      operationId: "findAllForbiddenCommandsOfEvent"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "path"
+        description: "the event id"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Forbidden commands have been found."
+          schema:
+            $ref: "#/definitions/DetectionEventRestResource"
+        404:
+          description: "The forbidden commands have not been found."
           schema:
             $ref: "#/definitions/ApiError"
         500:
@@ -183,7 +214,7 @@ paths:
     get:
       tags:
       - "Cheating detection"
-      summary: "Get all participants of detection event."
+      summary: "Get all forbidden commands of detection event."
       description: "This can only be done by organizer of training instance or administrator."
       operationId: "findAllForbiddenCommandsOfEvent"
       produces:
@@ -4503,11 +4534,21 @@ definitions:
         format: "int64"
         example: 2
         description: "id of a cheating detection during which the event was detected."
+      training_run_id:
+        type: "integer"
+        format: "int64"
+        example: 2
+        description: "id of a training run in which the event was detected."
       level_id:
         type: "integer"
         format: "int64"
         example: 3
         description: "Training level id in which the event occurred."
+      level_order:
+        type: "integer"
+        format: "int32"
+        example: 3
+        description: "Training level order in which the event occurred."
       level_title:
         type: "string"
         example: "SQL injection"
@@ -5813,6 +5854,11 @@ definitions:
         enum:
         - "BASH"
         - "MSF"
+      cheating_detection_id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Id of cheating detection."
     description: "Basic information about forbidden command."
   ForbiddenCommandsDetectionEventDTO:
     allOf:
@@ -5824,11 +5870,6 @@ definitions:
           format: "int32"
           example: 10
           description: "count of forbidden commands."
-        training_run_id:
-          type: "integer"
-          format: "int64"
-          example: 1
-          description: "id of training run."
       description: "A detection event of type Forbidden Commands."
   HintDTO:
     type: "object"
