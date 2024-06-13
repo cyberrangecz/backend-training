@@ -18,7 +18,8 @@ import java.util.*;
         @NamedQuery(
                 name = "CheatingDetection.findAllByTrainingInstanceId",
                 query = "SELECT cd FROM CheatingDetection cd " +
-                        "WHERE cd.trainingInstanceId = :trainingInstanceId"
+                        "WHERE cd.trainingInstanceId = :trainingInstanceId " +
+                        "ORDER BY cd.executeTime"
         ),
         @NamedQuery(
                 name = "CheatingDetection.findCheatingDetectionById",
@@ -75,6 +76,19 @@ public class CheatingDetection extends AbstractEntity<Long> {
     )
     private List<ForbiddenCommand> commands = new ArrayList<>();
 
+    private CheatingDetectionState setExecuteState(CheatingDetectionState state) {
+        return state != CheatingDetectionState.DISABLED ? CheatingDetectionState.QUEUED : CheatingDetectionState.DISABLED;
+    }
+
+    public void setExecuteStates() {
+        this.setCurrentState(CheatingDetectionState.RUNNING);
+        this.setAnswerSimilarityState(setExecuteState(this.getAnswerSimilarityState()));
+        this.setLocationSimilarityState(setExecuteState(this.getLocationSimilarityState()));
+        this.setMinimalSolveTimeState(setExecuteState(this.getMinimalSolveTimeState()));
+        this.setTimeProximityState(setExecuteState(this.getTimeProximityState()));
+        this.setNoCommandsState(setExecuteState(this.getNoCommandsState()));
+        this.setForbiddenCommandsState(setExecuteState(this.getForbiddenCommandsState()));
+    }
     public Long getTrainingInstanceId() {
         return trainingInstanceId;
     }

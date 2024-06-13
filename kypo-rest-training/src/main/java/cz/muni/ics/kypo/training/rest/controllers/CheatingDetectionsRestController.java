@@ -11,16 +11,17 @@ import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.facade.CheatingDetectionFacade;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.facade.detection.CheatingDetectionExportFacade;
+import cz.muni.ics.kypo.training.facade.detection.CheatingDetectionFacade;
+import cz.muni.ics.kypo.training.facade.detection.DetectionEventFacade;
 import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
-import cz.muni.ics.kypo.training.persistence.model.detection.CheatingDetection;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import io.swagger.annotations.*;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.sql.Time;
 import java.util.List;
 
 /**
@@ -50,19 +50,27 @@ import java.util.List;
 @Validated
 public class CheatingDetectionsRestController {
 
-    private CheatingDetectionFacade cheatingDetectionFacade;
-    private ObjectMapper objectMapper;
+    private final CheatingDetectionFacade cheatingDetectionFacade;
+    private final DetectionEventFacade detectionEventFacade;
+    private final CheatingDetectionExportFacade cheatingDetectionExportFacade;
+    private final ObjectMapper objectMapper;
 
     /**
      * Instantiates a new Cheating detections rest controller.
      *
-     * @param cheatingDetectionFacade the cheating detection facade
-     * @param objectMapper            the object mapper
+     * @param cheatingDetectionFacade       the cheating detection facade
+     * @param detectionEventFacade          the detection event facade
+     * @param cheatingDetectionExportFacade the cheating detection export facade
+     * @param objectMapper                  the object mapper
      */
     @Autowired
     public CheatingDetectionsRestController(CheatingDetectionFacade cheatingDetectionFacade,
+                                            DetectionEventFacade detectionEventFacade,
+                                            CheatingDetectionExportFacade cheatingDetectionExportFacade,
                                             ObjectMapper objectMapper) {
         this.cheatingDetectionFacade = cheatingDetectionFacade;
+        this.cheatingDetectionExportFacade = cheatingDetectionExportFacade;
+        this.detectionEventFacade = detectionEventFacade;
         this.objectMapper = objectMapper;
     }
 
@@ -95,7 +103,7 @@ public class CheatingDetectionsRestController {
      * Reruns All Cheating Detections on cheating detection.
      *
      * @param cheatingDetectionId id of cheating detection.
-     * @param trainingInstanceId id of training instance.
+     * @param trainingInstanceId  id of training instance.
      * @return the response entity
      */
     @ApiOperation(httpMethod = "PATCH",
@@ -121,7 +129,7 @@ public class CheatingDetectionsRestController {
      * Delete a cheating detection and all its associated events.
      *
      * @param cheatingDetectionId id of cheating detection.
-     * @param trainingInstanceId id of training instance.
+     * @param trainingInstanceId  id of training instance.
      * @return the response entity
      */
     @ApiOperation(httpMethod = "DELETE",
@@ -137,7 +145,7 @@ public class CheatingDetectionsRestController {
     public ResponseEntity<Void> deleteDetectionEvents(@ApiParam(value = "Cheating detection ID", required = true)
                                                       @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
                                                       @ApiParam(value = "id of training instance", required = true)
-                                                      @RequestParam(value = "trainingInstanceId")  Long trainingInstanceId) {
+                                                      @RequestParam(value = "trainingInstanceId") Long trainingInstanceId) {
         cheatingDetectionFacade.deleteCheatingDetection(cheatingDetectionId, trainingInstanceId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -145,6 +153,7 @@ public class CheatingDetectionsRestController {
     /**
      * Get all detection events of a CheatingDetection.
      *
+     * @param predicate           specifies query to database.
      * @param cheatingDetectionId id of cheating detection.
      * @param trainingInstanceId  id of training instance.
      * @param pageable            pageable parameter with information about pagination.
@@ -165,14 +174,15 @@ public class CheatingDetectionsRestController {
     })
     @ApiPageableSwagger
     @GetMapping(path = "/{cheatingDetectionId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findAllDetectionEventsOfCheatingDetection(@ApiParam(value = "id of cheating detection", required = true)
+    public ResponseEntity<Object> findAllDetectionEventsOfCheatingDetection(@QuerydslPredicate(root = AbstractDetectionEvent.class) Predicate predicate,
+                                                                            @ApiParam(value = "id of cheating detection", required = true)
                                                                             @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
                                                                             @ApiParam(value = "id of training instance", required = true)
                                                                             @RequestParam(value = "trainingInstanceId", required = true) Long trainingInstanceId,
                                                                             @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
                                                                             @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                                             @RequestParam(value = "fields", required = false) String fields) {
-        PageResultResource<AbstractDetectionEventDTO> detectionEventResource = cheatingDetectionFacade.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, trainingInstanceId, pageable);
+        PageResultResource<AbstractDetectionEventDTO> detectionEventResource = detectionEventFacade.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, pageable, predicate, trainingInstanceId);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, detectionEventResource), HttpStatus.OK);
     }
@@ -180,9 +190,9 @@ public class CheatingDetectionsRestController {
     /**
      * Get all participants of Detection Event.
      *
-     * @param eventId             id of detection event.
-     * @param pageable            pageable parameter with information about pagination.
-     * @param fields              attributes of the object to be returned as the result.
+     * @param eventId  id of detection event.
+     * @param pageable pageable parameter with information about pagination.
+     * @param fields   attributes of the object to be returned as the result.
      * @return all participants of a detection event.
      */
     @ApiOperation(httpMethod = "GET",
@@ -204,7 +214,7 @@ public class CheatingDetectionsRestController {
                                                                       @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
                                                                       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                                       @RequestParam(value = "fields", required = false) String fields) {
-        PageResultResource<DetectionEventParticipantDTO> participantsResource = cheatingDetectionFacade.findAllParticipantsOfDetectionEvent(eventId, pageable);
+        PageResultResource<DetectionEventParticipantDTO> participantsResource = detectionEventFacade.findAllParticipantsOfDetectionEvent(eventId, pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
     }
@@ -212,13 +222,13 @@ public class CheatingDetectionsRestController {
     /**
      * Get all forbidden commands of Detection Event.
      *
-     * @param eventId             id of detection event.
-     * @param pageable            pageable parameter with information about pagination.
-     * @param fields              attributes of the object to be returned as the result.
+     * @param eventId  id of detection event.
+     * @param pageable pageable parameter with information about pagination.
+     * @param fields   attributes of the object to be returned as the result.
      * @return all detected forbidden commands occurred in a detection event.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get all participants of detection event.",
+            value = "Get all forbidden commands of detection event.",
             response = DetectionEventParticipantRestResource.class,
             nickname = "findAllForbiddenCommandsOfEvent",
             notes = "This can only be done by organizer of training instance or administrator.",
@@ -232,13 +242,37 @@ public class CheatingDetectionsRestController {
     @ApiPageableSwagger
     @GetMapping(path = "/forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllForbiddenCommandsOfDetectionEvent(@ApiParam(value = "the event id", required = true)
-                                                                      @RequestParam(value = "eventId", required = true) Long eventId,
-                                                                      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-                                                                      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                                                      @RequestParam(value = "fields", required = false) String fields) {
-        PageResultResource<DetectedForbiddenCommandDTO> participantsResource = cheatingDetectionFacade.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable);
+                                                                           @RequestParam(value = "eventId", required = true) Long eventId,
+                                                                           @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
+                                                                           @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                                           @RequestParam(value = "fields", required = false) String fields) {
+        PageResultResource<DetectedForbiddenCommandDTO> participantsResource = detectionEventFacade.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
+    }
+
+    /**
+     * Get all forbidden commands of Detection Event for visualization.
+     *
+     * @param eventId id of detection event.
+     * @return all detected forbidden commands occurred in a detection event for visualization.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all forbidden commands of detection event.",
+            response = Object.class,
+            nickname = "findAllForbiddenCommandsOfEvent",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Forbidden commands have been found.", response = DetectionEventRestResource.class),
+            @ApiResponse(code = 404, message = "The forbidden commands have not been found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/detected-commands/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<DetectedForbiddenCommandDTO>> findAllForbiddenCommandsOfDetectionEvent(@ApiParam(value = "the event id", required = true)
+                                                                                                      @PathVariable Long eventId) {
+        ;
+        return ResponseEntity.ok(detectionEventFacade.findAllForbiddenCommandsOfDetectionEvent(eventId));
     }
 
     /**
@@ -262,7 +296,7 @@ public class CheatingDetectionsRestController {
     public ResponseEntity<byte[]> archiveCheatingDetectionResults(
             @ApiParam(value = "Id of cheating detection", required = true)
             @PathVariable("cheatingDetectionId") Long cheatingDetectionId) {
-        FileToReturnDTO file = cheatingDetectionFacade.archiveCheatingDetectionResults(cheatingDetectionId);
+        FileToReturnDTO file = cheatingDetectionExportFacade.archiveCheatingDetectionResults(cheatingDetectionId);
         HttpHeaders header = new HttpHeaders();
         header.setContentType(new MediaType("application", "octet-stream"));
         header.set("Content-Disposition", "inline; filename=" + file.getTitle() + AbstractFileExtensions.ZIP_FILE_EXTENSION);
@@ -289,8 +323,8 @@ public class CheatingDetectionsRestController {
     })
     @GetMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AbstractDetectionEventDTO> findDetectionEventById(@ApiParam(value = "eventId", required = true)
-                                                                  @RequestParam(value = "eventId", required = true) Long eventId) {
-        AbstractDetectionEventDTO abstractDetectionEventDTO = cheatingDetectionFacade.findDetectionEventById(eventId);
+                                                                            @RequestParam(value = "eventId", required = true) Long eventId) {
+        AbstractDetectionEventDTO abstractDetectionEventDTO = detectionEventFacade.findDetectionEventById(eventId);
         return ResponseEntity.ok(abstractDetectionEventDTO);
     }
 
@@ -314,7 +348,7 @@ public class CheatingDetectionsRestController {
     @GetMapping(path = "/answer-similarity", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AnswerSimilarityDetectionEventDTO> findAnswerSimilarityDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                     @RequestParam(value = "eventId", required = true) Long eventId) {
-        AnswerSimilarityDetectionEventDTO answerSimilarityDetectionEventDTO = cheatingDetectionFacade.findAnswerSimilarityEventById(eventId);
+        AnswerSimilarityDetectionEventDTO answerSimilarityDetectionEventDTO = detectionEventFacade.findAnswerSimilarityEventById(eventId);
         return ResponseEntity.ok(answerSimilarityDetectionEventDTO);
     }
 
@@ -338,7 +372,7 @@ public class CheatingDetectionsRestController {
     @GetMapping(path = "/location-similarity", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LocationSimilarityDetectionEventDTO> findLocationSimilarityDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                         @RequestParam(value = "eventId", required = true) Long eventId) {
-        LocationSimilarityDetectionEventDTO locationSimilarityDetectionEventDTO = cheatingDetectionFacade.findLocationSimilarityEventById(eventId);
+        LocationSimilarityDetectionEventDTO locationSimilarityDetectionEventDTO = detectionEventFacade.findLocationSimilarityEventById(eventId);
         return ResponseEntity.ok(locationSimilarityDetectionEventDTO);
     }
 
@@ -362,7 +396,7 @@ public class CheatingDetectionsRestController {
     @GetMapping(path = "/time-proximity", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TimeProximityDetectionEventDTO> findTimeProximityDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                               @RequestParam(value = "eventId", required = true) Long eventId) {
-        TimeProximityDetectionEventDTO timeProximityDetectionEventDTO = cheatingDetectionFacade.findTimeProximityEventById(eventId);
+        TimeProximityDetectionEventDTO timeProximityDetectionEventDTO = detectionEventFacade.findTimeProximityEventById(eventId);
         return ResponseEntity.ok(timeProximityDetectionEventDTO);
     }
 
@@ -386,7 +420,7 @@ public class CheatingDetectionsRestController {
     @GetMapping(path = "/minimal-solve-time", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MinimalSolveTimeDetectionEventDTO> findMinimalSolveTimeDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                     @RequestParam(value = "eventId", required = true) Long eventId) {
-        MinimalSolveTimeDetectionEventDTO minimalSolveTimeDetectionEventDTO = cheatingDetectionFacade.findMinimalSolveTimeEventById(eventId);
+        MinimalSolveTimeDetectionEventDTO minimalSolveTimeDetectionEventDTO = detectionEventFacade.findMinimalSolveTimeEventById(eventId);
         return ResponseEntity.ok(minimalSolveTimeDetectionEventDTO);
     }
 
@@ -410,7 +444,7 @@ public class CheatingDetectionsRestController {
     @GetMapping(path = "/no-commands", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NoCommandsDetectionEventDTO> findNoCommandsDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                         @RequestParam(value = "eventId", required = true) Long eventId) {
-        NoCommandsDetectionEventDTO NoCommandsDetectionEventDTO = cheatingDetectionFacade.findNoCommandsEventById(eventId);
+        NoCommandsDetectionEventDTO NoCommandsDetectionEventDTO = detectionEventFacade.findNoCommandsEventById(eventId);
         return ResponseEntity.ok(NoCommandsDetectionEventDTO);
     }
 
@@ -434,7 +468,7 @@ public class CheatingDetectionsRestController {
     @GetMapping(path = "/detected-forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ForbiddenCommandsDetectionEventDTO> findForbiddenCommandsDetectionEventById(@ApiParam(value = "eventId", required = true)
                                                                                                       @RequestParam(value = "eventId", required = true) Long eventId) {
-        ForbiddenCommandsDetectionEventDTO forbiddenCommandsDetectionEventDTO = cheatingDetectionFacade.findForbiddenCommandsEventById(eventId);
+        ForbiddenCommandsDetectionEventDTO forbiddenCommandsDetectionEventDTO = detectionEventFacade.findForbiddenCommandsEventById(eventId);
         return ResponseEntity.ok(forbiddenCommandsDetectionEventDTO);
     }
 

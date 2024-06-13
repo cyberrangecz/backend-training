@@ -50,8 +50,12 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
     private Long trainingInstanceId;
     @Column(name = "cheating_detection_id", nullable = false)
     private Long cheatingDetectionId;
+    @Column(name = "training_run_id")
+    private Long trainingRunId;
     @Column(name = "level_id", nullable = false)
     private Long levelId;
+    @Column(name = "level_order", nullable = false)
+    private int levelOrder;
     @Column(name = "level_title", nullable = false)
     private String levelTitle;
     @Column(name = "detected_at", nullable = false)
@@ -188,10 +192,28 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
         this.participants = participants;
     }
 
-    public void setCommonDetectionEventParameters(Submission submission,CheatingDetection cd, DetectionEventType type, int size) {
+    public int getLevelOrder() {
+        return levelOrder;
+    }
+
+    public void setLevelOrder(int levelOrder) {
+        this.levelOrder = levelOrder;
+    }
+
+    public Long getTrainingRunId() {
+        return trainingRunId;
+    }
+
+    public void setTrainingRunId(Long trainingRunId) {
+        this.trainingRunId = trainingRunId;
+    }
+
+    public void setCommonDetectionEventParameters(Submission submission, CheatingDetection cd, DetectionEventType type, int size) {
         this.setCheatingDetectionId(cd.getId());
         this.setDetectedAt(cd.getExecuteTime());
+        this.setTrainingRunId(submission.getTrainingRun().getId());
         this.setLevelId(submission.getLevel().getId());
+        this.setLevelOrder(submission.getLevel().getOrder());
         this.setLevelTitle(submission.getLevel().getTitle());
         this.setTrainingInstanceId(cd.getTrainingInstanceId());
         this.setDetectionEventType(type);
@@ -206,28 +228,43 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
         return participantCount == that.participantCount &&
                 Objects.equals(trainingInstanceId, that.trainingInstanceId) &&
                 Objects.equals(cheatingDetectionId, that.cheatingDetectionId) &&
+                Objects.equals(trainingRunId, that.trainingRunId) &&
                 Objects.equals(levelId, that.levelId) &&
+                Objects.equals(levelOrder, that.levelOrder) &&
                 Objects.equals(levelTitle, that.levelTitle) &&
                 Objects.equals(detectedAt, that.detectedAt) &&
-                Objects.equals(detectionEventType, that.detectionEventType) &&
+                detectionEventType == that.detectionEventType &&
                 Objects.equals(participants, that.participants);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelTitle, detectedAt, participantCount, detectionEventType, participants);
+        return Objects.hash(
+                trainingInstanceId,
+                cheatingDetectionId,
+                trainingRunId,
+                levelId,
+                levelOrder,
+                levelTitle,
+                detectedAt,
+                participantCount,
+                detectionEventType,
+                participants);
     }
 
     @Override
     public String toString() {
-        return "Cheat{" +
+        return "AbstractDetectionEvent{" +
                 "trainingInstanceId=" + trainingInstanceId +
                 ", cheatingDetectionId=" + cheatingDetectionId +
+                ", trainingRunId=" + trainingRunId +
                 ", levelId=" + levelId +
-                ", levelTitle=" + levelTitle +
+                ", levelOrder=" + levelOrder +
+                ", levelTitle='" + levelTitle + '\'' +
                 ", detectedAt=" + detectedAt +
                 ", participantCount=" + participantCount +
-                ", detectionEventType=" + detectionEventType  +
-                ", participants=" + participants  + '}';
+                ", detectionEventType=" + detectionEventType +
+                ", participants='" + participants + '\'' +
+                '}';
     }
 }

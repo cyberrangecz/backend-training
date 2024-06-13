@@ -229,7 +229,7 @@ public class CommandVisualizationFacade {
     private CommandDTO elasticSearchCommandToCommandDTO(ElasticSearchCommand elasticSearchCommand, LocalDateTime runStartTime) {
         String[] commandSplit =  elasticSearchCommand.getCmd().split(" ", 2);
         String command = commandSplit[0];
-        if (AbstractCommandPrefixes.isPrefix(command)) {
+        if (AbstractCommandPrefixes.isPrefix(command) && commandSplit.length > 1) {
             commandSplit = commandSplit[1].split(" ", 2);
             command += " " + commandSplit[0];
         }
