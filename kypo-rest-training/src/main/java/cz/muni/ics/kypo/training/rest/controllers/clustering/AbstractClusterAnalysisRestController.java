@@ -56,7 +56,8 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
             @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
-            @ApiParam(value = "Normalization strategy", required = true) @RequestParam(value = "normalizationStrategy", required = true) NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
         List<ClusterDTO<EuclideanDoublePoint>> nDimensionalCluster = getClusterAnalysisFacade()
                 .getNDimensionalCluster(
@@ -86,7 +87,8 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
             @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
-            @ApiParam(value = "Normalization strategy", required = true) @RequestParam(value = "normalizationStrategy", required = true) NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
         List<ClusterDTO<WrongAnswersClusterableDTO>> wrongAnswers =
                 getClusterAnalysisFacade().getWrongAnswersCluster(
@@ -116,7 +118,8 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
             @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
-            @ApiParam(value = "Normalization strategy", required = true) @RequestParam(value = "normalizationStrategy", required = true) NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
         List<ClusterDTO<TimeAfterHintClusterableDTO>> timeAfterHint =
                 getClusterAnalysisFacade().getTimeAfterHintCluster(
@@ -134,7 +137,7 @@ public abstract class AbstractClusterAnalysisRestController<T> {
      * @param instanceIds         optional list of instance ids (all instances must be from the same definition)
      * @param levelId             optional level id
      * @param algorithmParameters algorithm specific parameters
-     * @return list of {@link Cluster}s of {@link TimeAfterSolutionClusterableDTO}
+     * @return list of {@link ClusterDTO}s of {@link TimeAfterSolutionClusterableDTO}
      */
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Time after solution shown cluster found.", response =
@@ -148,7 +151,8 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
             @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
-            @ApiParam(value = "Normalization strategy", required = true) @RequestParam(value = "normalizationStrategy", required = true) NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
         List<ClusterDTO<TimeAfterSolutionClusterableDTO>> timeAfterSolution =
                 getClusterAnalysisFacade().getTimeAfterSolutionCluster(

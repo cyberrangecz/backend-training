@@ -76,7 +76,8 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
             @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
             @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
-            @ApiParam(value = "Normalization strategy", required = true) @RequestParam(value = "normalizationStrategy", required = true) NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody KMeansParameters algorithmParameters) {
         List<Double> nDimensionalClusterSSE = clusterKMeansAnalysisFacade.getNDimensionalClusterSSE(
                 new EventsFilter(definitionId, instanceIds, levelId),
@@ -110,7 +111,8 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
             @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
             @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
-            @ApiParam(value = "Normalization strategy", required = true) @RequestParam(value = "normalizationStrategy", required = true) NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody KMeansParameters algorithmParameters) {
         List<Double> wrongAnswersSSE = clusterKMeansAnalysisFacade.getWrongAnswersClusterSEE(
                 new EventsFilter(definitionId, instanceIds, levelId),
@@ -145,9 +147,8 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
             @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
             @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
-            @ApiParam(value = "Normalization strategy", required = false) @RequestParam(value =
-                    "normalizationStrategy",
-                    required = true) NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody KMeansParameters algorithmParameters) {
         List<Double> timeAfterHintSSE = clusterKMeansAnalysisFacade.getTimeAfterHintClusterSSE(
                 new EventsFilter(definitionId, instanceIds, levelId),
