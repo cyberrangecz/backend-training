@@ -29,7 +29,12 @@ import java.util.List;
  */
 public abstract class AbstractClusterAnalysisRestController<T> {
 
-    abstract AbstractClusterAnalysisFacade<T> getClusterAnalysisFacade();
+    private final AbstractClusterAnalysisFacade<T> clusterAnalysisFacade;
+
+    protected AbstractClusterAnalysisRestController(AbstractClusterAnalysisFacade<T> clusterAnalysisFacade) {
+        this.clusterAnalysisFacade = clusterAnalysisFacade;
+    }
+
 
     /**
      * Get N-dimensional clusters
@@ -59,7 +64,7 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
             @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
-        List<ClusterDTO<EuclideanDoublePoint>> nDimensionalCluster = getClusterAnalysisFacade()
+        List<ClusterDTO<EuclideanDoublePoint>> nDimensionalCluster = clusterAnalysisFacade
                 .getNDimensionalCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),
                         algorithmParameters,
@@ -91,7 +96,7 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
         List<ClusterDTO<WrongAnswersClusterableDTO>> wrongAnswers =
-                getClusterAnalysisFacade().getWrongAnswersCluster(
+                clusterAnalysisFacade.getWrongAnswersCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),
                         algorithmParameters,
                         normalizationStrategy);
@@ -122,7 +127,7 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
         List<ClusterDTO<TimeAfterHintClusterableDTO>> timeAfterHint =
-                getClusterAnalysisFacade().getTimeAfterHintCluster(
+                clusterAnalysisFacade.getTimeAfterHintCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),
                         algorithmParameters,
                         normalizationStrategy);
@@ -155,7 +160,7 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
         List<ClusterDTO<TimeAfterSolutionClusterableDTO>> timeAfterSolution =
-                getClusterAnalysisFacade().getTimeAfterSolutionCluster(
+                clusterAnalysisFacade.getTimeAfterSolutionCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),
                         algorithmParameters,
                         normalizationStrategy

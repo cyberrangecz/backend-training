@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.rest.controllers.clustering;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.KMeansParameters;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.EventsFilter;
 import cz.muni.ics.kypo.training.api.enums.NormalizationStrategy;
-import cz.muni.ics.kypo.training.facade.clustering.AbstractClusterAnalysisFacade;
 import cz.muni.ics.kypo.training.facade.clustering.KmeansClusterAnalysisFacade;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import io.swagger.annotations.Api;
@@ -42,14 +41,10 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
     private final KmeansClusterAnalysisFacade clusterKMeansAnalysisFacade;
 
     public KmeansClusterAnalysisRestController(KmeansClusterAnalysisFacade clusterKMeansAnalysisFacade) {
-        super();
+        super(clusterKMeansAnalysisFacade);
         this.clusterKMeansAnalysisFacade = clusterKMeansAnalysisFacade;
     }
 
-    @Override
-    AbstractClusterAnalysisFacade<KMeansParameters> getClusterAnalysisFacade() {
-        return clusterKMeansAnalysisFacade;
-    }
 
     /**
      * Get sum of squared errors for n-dimensional clusters

@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.rest.controllers.clustering;
 
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.OPTICSParameters;
-import cz.muni.ics.kypo.training.facade.clustering.AbstractClusterAnalysisFacade;
 import cz.muni.ics.kypo.training.facade.clustering.OPTICSClusterAnalysisFacade;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import io.swagger.annotations.Api;
@@ -27,15 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/clusters/optics", produces = MediaType.APPLICATION_JSON_VALUE)
 public class OPTICSClusterAnalysisRestController extends AbstractClusterAnalysisRestController<OPTICSParameters> {
 
-    private final OPTICSClusterAnalysisFacade clusterOPTICSAnalysisFacade;
 
     public OPTICSClusterAnalysisRestController(OPTICSClusterAnalysisFacade clusterKMeansAnalysisFacade) {
-        super();
-        this.clusterOPTICSAnalysisFacade = clusterKMeansAnalysisFacade;
-    }
-
-    @Override
-    AbstractClusterAnalysisFacade<OPTICSParameters> getClusterAnalysisFacade() {
-        return clusterOPTICSAnalysisFacade;
+        super(clusterKMeansAnalysisFacade);
     }
 }
