@@ -23,6 +23,7 @@ import org.apache.commons.math3.stat.clustering.Clusterable;
 import org.apache.commons.math3.stat.clustering.EuclideanDoublePoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -53,6 +54,9 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
      * @param normalizationStrategy normalization strategy
      * @return list of SSEs
      */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<Double> getWrongAnswersClusterSEE(EventsFilter filter, KMeansParameters kMeansParameters,
                                                   NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
@@ -68,6 +72,9 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
      * @param normalizationStrategy normalization strategy
      * @return list of SSEs
      */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<Double> getTimeAfterHintClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
                                                    NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
@@ -83,6 +90,9 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
      * @param normalizationStrategy normalization strategy
      * @return list of SSEs
      */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<Double> getTimeAfterSolutionClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
                                                        NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
@@ -99,6 +109,9 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
      * @param normalizationStrategy normalization strategy
      * @return list of SSEs
      */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<Double> getNDimensionalClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
                                                   NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)

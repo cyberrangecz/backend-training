@@ -17,6 +17,7 @@ import cz.muni.ics.kypo.training.service.clustering.ELKIDataTransformer;
 import elki.database.Database;
 import org.apache.commons.math3.stat.clustering.Clusterable;
 import org.apache.commons.math3.stat.clustering.EuclideanDoublePoint;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.CollectionUtils;
 
 import java.util.LinkedHashMap;
@@ -59,6 +60,9 @@ public abstract class AbstractClusterAnalysisFacade<T> {
      * @param normalizationStrategy normalization strategy
      * @return list of clusters
      */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<ClusterDTO<EuclideanDoublePoint>> getNDimensionalCluster(EventsFilter filter,
                                                                          T algorithmParameters,
                                                                          NormalizationStrategy normalizationStrategy) {
@@ -81,6 +85,9 @@ public abstract class AbstractClusterAnalysisFacade<T> {
      * @param normalizationStrategy normalization strategy
      * @return list of clusters
      */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<ClusterDTO<WrongAnswersClusterableDTO>> getWrongAnswersCluster(EventsFilter filter,
                                                                                T algorithmParameters,
                                                                                NormalizationStrategy normalizationStrategy) {
@@ -103,6 +110,9 @@ public abstract class AbstractClusterAnalysisFacade<T> {
      * @param normalizationStrategy normalization strategy
      * @return list of clusters
      */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<ClusterDTO<TimeAfterHintClusterableDTO>> getTimeAfterHintCluster(EventsFilter filter,
                                                                                  T algorithmParameters,
                                                                                  NormalizationStrategy normalizationStrategy) {
@@ -125,6 +135,9 @@ public abstract class AbstractClusterAnalysisFacade<T> {
      * @param normalizationStrategy normalization strategy
      * @return list of clusters
      */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
+            "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
     public List<ClusterDTO<TimeAfterSolutionClusterableDTO>> getTimeAfterSolutionCluster(EventsFilter filter,
                                                                                          T algorithmParameters,
                                                                                          NormalizationStrategy normalizationStrategy) {
