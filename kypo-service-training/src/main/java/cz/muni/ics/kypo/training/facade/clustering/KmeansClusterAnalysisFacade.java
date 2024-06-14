@@ -23,10 +23,17 @@ import org.apache.commons.math3.stat.clustering.Clusterable;
 import org.apache.commons.math3.stat.clustering.EuclideanDoublePoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * Facade for K-Means clustering analysis.
+ */
+@Service
+@Transactional
 public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<KMeansParameters> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -38,29 +45,62 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
         super(elasticsearchApiService, trainingInstanceService, clusterableDataTransformer, elkiDataTransformer);
     }
 
-    public List<Double> wrongFlagsSSE(EventsFilter filter, KMeansParameters kMeansParameters,
-                                      NormalizationStrategy normalizationStrategy) {
+    /**
+     * Calculate the sum of squared errors for clusters of wrong answers.
+     *
+     * @param filter                events to be clustered
+     * @param kMeansParameters      parameters for clustering algorithm
+     * @param normalizationStrategy normalization strategy
+     * @return list of SSEs
+     */
+    public List<Double> getWrongAnswersClusterSEE(EventsFilter filter, KMeansParameters kMeansParameters,
+                                                  NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
                 .mapToObj(i -> calculateSSE(super.getWrongAnswersCluster(filter, new KMeansParameters(i), normalizationStrategy)))
                 .toList();
     }
 
-    public List<Double> hintsSSE(EventsFilter filter, KMeansParameters kMeansParameters,
-                                 NormalizationStrategy normalizationStrategy) {
+    /**
+     * Calculate the sum of squared errors for clusters of hints.
+     *
+     * @param filter                events to be clustered
+     * @param kMeansParameters      parameters for clustering algorithm
+     * @param normalizationStrategy normalization strategy
+     * @return list of SSEs
+     */
+    public List<Double> getTimeAfterHintClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
+                                                   NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
                 .mapToObj(i -> calculateSSE(super.getTimeAfterHintCluster(filter, new KMeansParameters(i), normalizationStrategy)))
                 .toList();
     }
 
-    public List<Double> solutionSSE(EventsFilter filter, KMeansParameters kMeansParameters,
-                                    NormalizationStrategy normalizationStrategy) {
+    /**
+     * Calculate the sum of squared errors for clusters of solutions.
+     *
+     * @param filter                events to be clustered
+     * @param kMeansParameters      parameters for clustering algorithm
+     * @param normalizationStrategy normalization strategy
+     * @return list of SSEs
+     */
+    public List<Double> getTimeAfterSolutionClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
+                                                       NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
                 .mapToObj(i -> calculateSSE(super.getTimeAfterSolutionCluster(filter, new KMeansParameters(i), normalizationStrategy)))
                 .toList();
     }
 
-    public List<Double> nDimensionalSSE(EventsFilter filter, KMeansParameters kMeansParameters,
-                                        NormalizationStrategy normalizationStrategy) {
+
+    /**
+     * Calculate the sum of squared errors for a collective cluster.
+     *
+     * @param filter                events to be clustered
+     * @param kMeansParameters      parameters for clustering algorithm
+     * @param normalizationStrategy normalization strategy
+     * @return list of SSEs
+     */
+    public List<Double> getNDimensionalClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
+                                                  NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
                 .mapToObj(i -> calculateSSE(super.getNDimensionalCluster(filter, new KMeansParameters(i), normalizationStrategy)))
                 .toList();

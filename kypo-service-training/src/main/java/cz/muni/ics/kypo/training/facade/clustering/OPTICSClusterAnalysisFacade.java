@@ -29,6 +29,9 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Facade for OPTICS clustering analysis.
+ */
 @Service
 @Transactional
 public class OPTICSClusterAnalysisFacade extends AbstractClusterAnalysisFacade<OPTICSParameters> {

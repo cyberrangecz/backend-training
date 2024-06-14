@@ -25,6 +25,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
+/**
+ * Abstract class for clustering analysis facade.
+ * Allows for clustering analysis with different algorithms.
+ *
+ * @param <T> type of algorithm parameters
+ */
 public abstract class AbstractClusterAnalysisFacade<T> {
 
 
@@ -43,6 +50,15 @@ public abstract class AbstractClusterAnalysisFacade<T> {
         this.elkiDataTransformer = elkiDataTransformer;
     }
 
+
+    /**
+     * Create collective cluster from training events.
+     *
+     * @param filter                events to be clustered
+     * @param algorithmParameters   parameters for clustering algorithm
+     * @param normalizationStrategy normalization strategy
+     * @return list of clusters
+     */
     public List<ClusterDTO<EuclideanDoublePoint>> getNDimensionalCluster(EventsFilter filter,
                                                                          T algorithmParameters,
                                                                          NormalizationStrategy normalizationStrategy) {
@@ -56,6 +72,15 @@ public abstract class AbstractClusterAnalysisFacade<T> {
         return getClusters(elkiDatabase, algorithmParameters, EuclideanDoublePoint.class);
     }
 
+
+    /**
+     * Create cluster from wrong answers.
+     *
+     * @param filter                events to be clustered
+     * @param algorithmParameters   parameters for clustering algorithm
+     * @param normalizationStrategy normalization strategy
+     * @return list of clusters
+     */
     public List<ClusterDTO<WrongAnswersClusterableDTO>> getWrongAnswersCluster(EventsFilter filter,
                                                                                T algorithmParameters,
                                                                                NormalizationStrategy normalizationStrategy) {
@@ -69,6 +94,15 @@ public abstract class AbstractClusterAnalysisFacade<T> {
         return getClusters(elkiDatabase, algorithmParameters, WrongAnswersClusterableDTO.class);
     }
 
+
+    /**
+     * Create cluster from time it took to solve after a hint.
+     *
+     * @param filter                events to be clustered
+     * @param algorithmParameters   parameters for clustering algorithm
+     * @param normalizationStrategy normalization strategy
+     * @return list of clusters
+     */
     public List<ClusterDTO<TimeAfterHintClusterableDTO>> getTimeAfterHintCluster(EventsFilter filter,
                                                                                  T algorithmParameters,
                                                                                  NormalizationStrategy normalizationStrategy) {
@@ -83,6 +117,14 @@ public abstract class AbstractClusterAnalysisFacade<T> {
     }
 
 
+    /**
+     * Create cluster from time it took to solve after displaying a solution.
+     *
+     * @param filter                events to be clustered
+     * @param algorithmParameters   parameters for clustering algorithm
+     * @param normalizationStrategy normalization strategy
+     * @return list of clusters
+     */
     public List<ClusterDTO<TimeAfterSolutionClusterableDTO>> getTimeAfterSolutionCluster(EventsFilter filter,
                                                                                          T algorithmParameters,
                                                                                          NormalizationStrategy normalizationStrategy) {
@@ -97,6 +139,19 @@ public abstract class AbstractClusterAnalysisFacade<T> {
     }
 
 
+    /**
+     * Retrieve clusters from database.
+     * <p>
+     * This method should be implemented in subclasses with specific clustering algorithm.
+     * <p>
+     * todo remove clazz parameter
+     *
+     * @param elkiDatabase        database with data
+     * @param algorithmParameters parameters for clustering algorithm
+     * @param clazz               class of clusterable
+     * @param <C>                 type of clusterable
+     * @return list of clusters
+     */
     protected abstract <C extends Clusterable<C>>
     List<ClusterDTO<C>> getClusters(Database elkiDatabase, T algorithmParameters, Class<C> clazz);
 
