@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.facade.clustering;
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.ClusterDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeAfterHintClusterableDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeAfterSolutionClusterableDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeSolutionDisplayedClusterableDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.WrongAnswersClusterableDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.EventsFilter;
 import cz.muni.ics.kypo.training.api.enums.NormalizationStrategy;
@@ -94,7 +94,7 @@ public abstract class AbstractClusterAnalysisFacade<T> {
         Database elkiDatabase = elkiDataTransformer
                 .transformWrongFlagsClusterableToElkiInputFormat(
                         clusterableDataTransformer
-                                .transformToWrongAnswersClusterableDTO(
+                                .transformToWrongAnswersAndTimePlayedClusterable(
                                         loadTrainingEvents(filter),
                                         normalizationStrategy));
 
@@ -119,7 +119,7 @@ public abstract class AbstractClusterAnalysisFacade<T> {
         Database elkiDatabase = elkiDataTransformer.
                 transformHintClusterableToElkiInputFormat(
                         clusterableDataTransformer
-                                .transformToTimeAfterHintClusterableDTO(
+                                .transformToTimeAfterHintAndWrongAnswers(
                                         loadTrainingEvents(filter),
                                         normalizationStrategy));
 
@@ -138,17 +138,17 @@ public abstract class AbstractClusterAnalysisFacade<T> {
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-    public List<ClusterDTO<TimeAfterSolutionClusterableDTO>> getTimeAfterSolutionCluster(EventsFilter filter,
-                                                                                         T algorithmParameters,
-                                                                                         NormalizationStrategy normalizationStrategy) {
+    public List<ClusterDTO<TimeSolutionDisplayedClusterableDTO>> getTimeAfterSolutionCluster(EventsFilter filter,
+                                                                                             T algorithmParameters,
+                                                                                             NormalizationStrategy normalizationStrategy) {
         Database elkiDatabase = elkiDataTransformer
                 .transformSolutionClusterableToElkiInputFormat(
                         clusterableDataTransformer
-                                .transformToTimeAfterSolutionClusterableDTO(
+                                .transformToTimeSolutionAndTimeAfterDisplayed(
                                         loadTrainingEvents(filter),
                                         normalizationStrategy));
 
-        return getClusters(elkiDatabase, algorithmParameters, TimeAfterSolutionClusterableDTO.class);
+        return getClusters(elkiDatabase, algorithmParameters, TimeSolutionDisplayedClusterableDTO.class);
     }
 
 

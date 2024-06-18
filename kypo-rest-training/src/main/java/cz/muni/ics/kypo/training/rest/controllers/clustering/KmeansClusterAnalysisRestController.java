@@ -151,4 +151,40 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
                 normalizationStrategy);
         return ResponseEntity.ok(timeAfterHintSSE);
     }
+
+    /**
+     * Get sum of squared errors for time-spent clusters
+     *
+     * @param definitionId        id of definition
+     * @param instanceIds         optional list of instance ids (all instances must be from the same definition)
+     * @param levelId             optional level id
+     * @param algorithmParameters algorithm specific parameters
+     * @return list of values
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get wrong answers SSE.",
+            response = Double[].class,
+            nickname = "getWrongAnswersClusterSSE",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Time after solution shown cluster SSE found.", response = Double[].class),
+            @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/training-definitions/{definitionId}/solution-shown-time/sse", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Double>> getTimeAfterSolutionSSE(
+            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody KMeansParameters algorithmParameters) {
+        List<Double> timeAfterHintSSE = clusterKMeansAnalysisFacade.getTimeAfterSolutionClusterSSE(
+                new EventsFilter(definitionId, instanceIds, levelId),
+                algorithmParameters,
+                normalizationStrategy);
+        return ResponseEntity.ok(timeAfterHintSSE);
+    }
 }

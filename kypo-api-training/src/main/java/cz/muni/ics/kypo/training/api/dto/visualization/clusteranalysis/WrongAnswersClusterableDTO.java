@@ -7,6 +7,9 @@ import org.apache.commons.math3.stat.clustering.Clusterable;
 
 import java.util.Collection;
 
+/**
+ * DTO for visualizing the clustering of wrong answers submitted and time played.
+ */
 @Data
 @AllArgsConstructor
 public class WrongAnswersClusterableDTO implements Clusterable<WrongAnswersClusterableDTO> {
@@ -33,8 +36,8 @@ public class WrongAnswersClusterableDTO implements Clusterable<WrongAnswersClust
 
     @Override
     public WrongAnswersClusterableDTO centroidOf(Collection<WrongAnswersClusterableDTO> p) {
-        return new WrongAnswersClusterableDTO(0L, 
-                computerWrongAnswersSubmitted(p), 
+        return new WrongAnswersClusterableDTO(0L,
+                computerWrongAnswersSubmitted(p),
                 computeTimePlayed(p));
     }
 

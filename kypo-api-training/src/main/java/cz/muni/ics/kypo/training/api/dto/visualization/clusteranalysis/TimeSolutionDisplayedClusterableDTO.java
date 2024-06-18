@@ -9,10 +9,13 @@ import org.apache.commons.math3.stat.clustering.Clusterable;
 
 import java.util.Collection;
 
+/**
+ * DTO for visualizing the clustering of time when solution was displayed and time spent after solution was displayed.
+ */
 @Data
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public class TimeAfterSolutionClusterableDTO implements Clusterable<TimeAfterSolutionClusterableDTO> {
+public class TimeSolutionDisplayedClusterableDTO implements Clusterable<TimeSolutionDisplayedClusterableDTO> {
 
     private final Long userRefId;
 
@@ -26,7 +29,7 @@ public class TimeAfterSolutionClusterableDTO implements Clusterable<TimeAfterSol
 
     private Double timeSpentAfterSolutionDisplayedNormalized;
 
-    public TimeAfterSolutionClusterableDTO(Long userRefId, Long level, Double solutionDisplayedAt, Double timeSpentAfterSolutionDisplayed) {
+    public TimeSolutionDisplayedClusterableDTO(Long userRefId, Long level, Double solutionDisplayedAt, Double timeSpentAfterSolutionDisplayed) {
         this.userRefId = userRefId;
         this.level = level;
         this.solutionDisplayedAt = solutionDisplayedAt;
@@ -36,26 +39,26 @@ public class TimeAfterSolutionClusterableDTO implements Clusterable<TimeAfterSol
     }
 
     @Override
-    public double distanceFrom(TimeAfterSolutionClusterableDTO p) {
+    public double distanceFrom(TimeSolutionDisplayedClusterableDTO p) {
         return ClusterMathUtils.calculateDistance2D(solutionDisplayedAtNormalized, p.getSolutionDisplayedAtNormalized(), timeSpentAfterSolutionDisplayedNormalized, p.getTimeSpentAfterSolutionDisplayedNormalized());
     }
 
     @Override
-    public TimeAfterSolutionClusterableDTO centroidOf(Collection<TimeAfterSolutionClusterableDTO> p) {
-        return new TimeAfterSolutionClusterableDTO(0L, 0L,
+    public TimeSolutionDisplayedClusterableDTO centroidOf(Collection<TimeSolutionDisplayedClusterableDTO> p) {
+        return new TimeSolutionDisplayedClusterableDTO(0L, 0L,
                 computerSolutionDisplayedAt(p),
                 computerTimeSpentAfterSolutionDisplayed(p));
     }
-    
-    private Double computerSolutionDisplayedAt(Collection<TimeAfterSolutionClusterableDTO> p) {
+
+    private Double computerSolutionDisplayedAt(Collection<TimeSolutionDisplayedClusterableDTO> p) {
         return p.stream().reduce(
                 0.0,
                 (value, featureOne) -> value + featureOne.getSolutionDisplayedAtNormalized() / p.size(),
                 Double::sum
         );
     }
-    
-    private Double computerTimeSpentAfterSolutionDisplayed(Collection<TimeAfterSolutionClusterableDTO> p) {
+
+    private Double computerTimeSpentAfterSolutionDisplayed(Collection<TimeSolutionDisplayedClusterableDTO> p) {
         return p.stream().reduce(
                 0.0,
                 (value, featureOne) -> value + featureOne.getTimeSpentAfterSolutionDisplayedNormalized() / p.size(),

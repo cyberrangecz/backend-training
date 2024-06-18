@@ -36,7 +36,9 @@ public class ClusterMathUtils {
                         + FastMath.pow(FastMath.abs(firstY - secondY), 2));
     }
 
-    public static <T extends Clusterable<T>> List<T> normalize(NormalizationStrategy strategy, List<T> sample, Pair<Function<T, Double>, BiConsumer<T, Double>>... suppliers) {
+    public static <T extends Clusterable<T>> List<T> normalize(NormalizationStrategy strategy,
+                                                               List<T> sample,
+                                                               Pair<Function<T, Double>, BiConsumer<T, Double>>... suppliers) {
         return switch (strategy) {
             case MIN_MAX -> normalizeClusterable(sample, ClusterMathUtils::minMaxNormalize, suppliers);
             case Z_SCORE -> normalizeClusterable(sample, ClusterMathUtils::zScoreNormalize, suppliers);

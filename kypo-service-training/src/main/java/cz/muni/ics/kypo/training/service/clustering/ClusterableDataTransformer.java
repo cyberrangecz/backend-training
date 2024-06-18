@@ -6,7 +6,7 @@ import cz.muni.csirt.kypo.events.trainings.HintTaken;
 import cz.muni.csirt.kypo.events.trainings.SolutionDisplayed;
 import cz.muni.csirt.kypo.events.trainings.WrongAnswerSubmitted;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeAfterHintClusterableDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeAfterSolutionClusterableDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeSolutionDisplayedClusterableDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.WrongAnswersClusterableDTO;
 import cz.muni.ics.kypo.training.api.enums.NormalizationStrategy;
 import cz.muni.ics.kypo.training.utils.ClusterMathUtils;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class ClusterableDataTransformer {
 
-    public List<WrongAnswersClusterableDTO> transformToWrongAnswersClusterableDTO(
+    public List<WrongAnswersClusterableDTO> transformToWrongAnswersAndTimePlayedClusterable(
             Map<Long, List<AbstractAuditPOJO>> eventsByUser,
             NormalizationStrategy normalizationStrategy) {
         List<WrongAnswersClusterableDTO> result = eventsByUser.entrySet().stream()
@@ -40,7 +40,7 @@ public class ClusterableDataTransformer {
                 Pair.of(WrongAnswersClusterableDTO::getWrongAnswersSubmitted, WrongAnswersClusterableDTO::setWrongAnswersSubmittedNormalized));
     }
 
-    public List<TimeAfterHintClusterableDTO> transformToTimeAfterHintClusterableDTO(
+    public List<TimeAfterHintClusterableDTO> transformToTimeAfterHintAndWrongAnswers(
             Map<Long, List<AbstractAuditPOJO>> eventsByUser,
             NormalizationStrategy normalizationStrategy) {
 
@@ -70,10 +70,10 @@ public class ClusterableDataTransformer {
                 Pair.of(TimeAfterHintClusterableDTO::getWrongFlagsAfterHint, TimeAfterHintClusterableDTO::setWrongFlagsAfterHintNormalized));
     }
 
-    public List<TimeAfterSolutionClusterableDTO> transformToTimeAfterSolutionClusterableDTO(Map<Long, List<AbstractAuditPOJO>> eventsByUser,
-                                                                                            NormalizationStrategy normalizationStrategy) {
+    public List<TimeSolutionDisplayedClusterableDTO> transformToTimeSolutionAndTimeAfterDisplayed(Map<Long, List<AbstractAuditPOJO>> eventsByUser,
+                                                                                                  NormalizationStrategy normalizationStrategy) {
 
-        List<TimeAfterSolutionClusterableDTO> result = new ArrayList<>();
+        List<TimeSolutionDisplayedClusterableDTO> result = new ArrayList<>();
         eventsByUser.forEach((userRefId, userEvs) -> {
             Map<Long, List<AbstractAuditPOJO>> collect = userEvs.stream()
                     .collect(Collectors.groupingBy(AbstractAuditPOJO::getLevel, Collectors.toList()));
@@ -88,13 +88,13 @@ public class ClusterableDataTransformer {
                             - solutionDisplayed.get().getTimestamp();                                               // timestamp of the solution displayed event
 
                     long solutionDisplayedAt = solutionDisplayed.get().getTimestamp() - trainingEvents.get(0).getTimestamp();
-                    result.add(new TimeAfterSolutionClusterableDTO(userRefId, level, (double) solutionDisplayedAt, (double) timeAfterSolutionDisplayed));
+                    result.add(new TimeSolutionDisplayedClusterableDTO(userRefId, level, (double) solutionDisplayedAt, (double) timeAfterSolutionDisplayed));
                 }
             });
         });
         return ClusterMathUtils.normalize(normalizationStrategy, result,
-                Pair.of(TimeAfterSolutionClusterableDTO::getSolutionDisplayedAt, TimeAfterSolutionClusterableDTO::setSolutionDisplayedAtNormalized),
-                Pair.of(TimeAfterSolutionClusterableDTO::getTimeSpentAfterSolutionDisplayed, TimeAfterSolutionClusterableDTO::setTimeSpentAfterSolutionDisplayedNormalized));
+                Pair.of(TimeSolutionDisplayedClusterableDTO::getSolutionDisplayedAt, TimeSolutionDisplayedClusterableDTO::setSolutionDisplayedAtNormalized),
+                Pair.of(TimeSolutionDisplayedClusterableDTO::getTimeSpentAfterSolutionDisplayed, TimeSolutionDisplayedClusterableDTO::setTimeSpentAfterSolutionDisplayedNormalized));
     }
 
     public List<EuclideanDoublePoint> transformToNDimensionalClusterables(Map<Long, List<AbstractAuditPOJO>> userEvents,

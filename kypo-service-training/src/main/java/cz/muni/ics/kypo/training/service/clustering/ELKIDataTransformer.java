@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.service.clustering;
 
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.ClusterDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeAfterHintClusterableDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeAfterSolutionClusterableDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeSolutionDisplayedClusterableDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.WrongAnswersClusterableDTO;
 import elki.data.DoubleVector;
 import elki.data.LabelList;
@@ -70,7 +70,7 @@ public class ELKIDataTransformer {
     }
 
 
-    public Database transformSolutionClusterableToElkiInputFormat(List<TimeAfterSolutionClusterableDTO> clusterables) {
+    public Database transformSolutionClusterableToElkiInputFormat(List<TimeSolutionDisplayedClusterableDTO> clusterables) {
         return initDatabase(clusterables.stream()
                 .map(clusterable -> {
                     List<String> axisValues = List.of(
@@ -183,7 +183,7 @@ public class ELKIDataTransformer {
                 clusterables.add((T) constructHintClusterable(vectors.get(it), labels.get(it)));
                 continue;
             }
-            if (clazz.equals(TimeAfterSolutionClusterableDTO.class)) {
+            if (clazz.equals(TimeSolutionDisplayedClusterableDTO.class)) {
                 clusterables.add((T) constructSolutionsClusterable(vectors.get(it), labels.get(it)));
                 continue;
             }
@@ -206,8 +206,8 @@ public class ELKIDataTransformer {
         if (clazz.equals(TimeAfterHintClusterableDTO.class)) {
             cluster.setCenter((T) new TimeAfterHintClusterableDTO(0L, 0L, center[0], center[1]));
         }
-        if (clazz.equals(TimeAfterSolutionClusterableDTO.class)) {
-            cluster.setCenter((T) new TimeAfterSolutionClusterableDTO(0L, 0L, center[0], center[1]));
+        if (clazz.equals(TimeSolutionDisplayedClusterableDTO.class)) {
+            cluster.setCenter((T) new TimeSolutionDisplayedClusterableDTO(0L, 0L, center[0], center[1]));
         }
         if (clazz.equals(EuclideanDoublePoint.class)) {
             cluster.setCenter((T) new EuclideanDoublePoint(center));
@@ -235,8 +235,8 @@ public class ELKIDataTransformer {
         );
     }
 
-    private TimeAfterSolutionClusterableDTO constructSolutionsClusterable(NumberVector vector, LabelList labelList) {
-        return new TimeAfterSolutionClusterableDTO(
+    private TimeSolutionDisplayedClusterableDTO constructSolutionsClusterable(NumberVector vector, LabelList labelList) {
+        return new TimeSolutionDisplayedClusterableDTO(
                 Long.parseLong(labelList.get(0).split("ID_")[1]),
                 Long.parseLong(labelList.get(1).split("Level_")[1]),
                 Double.parseDouble(labelList.get(2).split("solutionDisplayedAt_")[1]),

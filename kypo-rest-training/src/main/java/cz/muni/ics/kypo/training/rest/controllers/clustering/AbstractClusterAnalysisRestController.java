@@ -1,9 +1,8 @@
 package cz.muni.ics.kypo.training.rest.controllers.clustering;
 
-import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.ClusterDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeAfterHintClusterableDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeAfterSolutionClusterableDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.TimeSolutionDisplayedClusterableDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.WrongAnswersClusterableDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.EventsFilter;
 import cz.muni.ics.kypo.training.api.enums.NormalizationStrategy;
@@ -47,12 +46,12 @@ public abstract class AbstractClusterAnalysisRestController<T> {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get n-dimensional cluster.",
-            response = VisualizationInfoDTO.class,
+            response = ClusterDTO.class,
             nickname = "getNDimensionalCluster",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "N-dimensional cluster found.", response = VisualizationInfoDTO.class),
+            @ApiResponse(code = 200, message = "N-dimensional cluster found.", response = ClusterDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -82,7 +81,7 @@ public abstract class AbstractClusterAnalysisRestController<T> {
      * @return list of {@link ClusterDTO}s of {@link WrongAnswersClusterableDTO}
      */
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Wrong answers cluster found.", response = VisualizationInfoDTO.class),
+            @ApiResponse(code = 200, message = "Wrong answers cluster found.", response = ClusterDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -113,8 +112,7 @@ public abstract class AbstractClusterAnalysisRestController<T> {
      * @return list of {@link ClusterDTO}s of {@link TimeAfterHintClusterableDTO}
      */
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Time spent after hint cluster found.", response =
-                    VisualizationInfoDTO.class),
+            @ApiResponse(code = 200, message = "Time spent after hint cluster found.", response = ClusterDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -142,24 +140,23 @@ public abstract class AbstractClusterAnalysisRestController<T> {
      * @param instanceIds         optional list of instance ids (all instances must be from the same definition)
      * @param levelId             optional level id
      * @param algorithmParameters algorithm specific parameters
-     * @return list of {@link ClusterDTO}s of {@link TimeAfterSolutionClusterableDTO}
+     * @return list of {@link ClusterDTO}s of {@link TimeSolutionDisplayedClusterableDTO}
      */
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Time after solution shown cluster found.", response =
-                    VisualizationInfoDTO.class),
+            @ApiResponse(code = 200, message = "Time after solution shown cluster found.", response = ClusterDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
     @GetMapping(path = "/training-definitions/{definitionId}/solution-shown-time", produces =
             MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ClusterDTO<TimeAfterSolutionClusterableDTO>>> getTimeAfterSolutionCluster(
+    public ResponseEntity<List<ClusterDTO<TimeSolutionDisplayedClusterableDTO>>> getTimeAfterSolutionCluster(
             @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
             @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
             @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
             @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
             @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
-        List<ClusterDTO<TimeAfterSolutionClusterableDTO>> timeAfterSolution =
+        List<ClusterDTO<TimeSolutionDisplayedClusterableDTO>> timeAfterSolution =
                 clusterAnalysisFacade.getTimeAfterSolutionCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),
                         algorithmParameters,
