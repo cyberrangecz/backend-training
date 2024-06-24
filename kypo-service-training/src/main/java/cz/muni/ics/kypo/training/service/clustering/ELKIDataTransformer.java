@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class ELKIDataTransformer {
 
 
-    public Database transformWrongFlagsClusterableToElkiInputFormat(List<WrongAnswersClusterableDTO> clusterables) {
+    public Database transformWrongAnswersClusterableToElkiInputFormat(List<WrongAnswersClusterableDTO> clusterables) {
         return initDatabase(clusterables.stream()
                 .map(clusterable -> {
                     List<String> axisValues = List.of(
@@ -41,9 +41,9 @@ public class ELKIDataTransformer {
                             clusterable.getTimePlayedNormalized().toString()
                     );
                     List<String> labels = List.of(
-                            "ID_" + clusterable.getUserRefId().toString(),
-                            "wrongFlagsSubmitted_" + clusterable.getWrongAnswersSubmitted().toString(),
-                            "timePlayed_" + clusterable.getTimePlayed().toString()
+                            ELKILabels.ID.labelValue(clusterable.getUserRefId().toString()),
+                            ELKILabels.WRONG_ANSWERS.labelValue(clusterable.getWrongAnswersSubmitted().toString()),
+                            ELKILabels.TIME_PLAYED.labelValue(clusterable.getTimePlayed().toString())
                     );
 
                     return transformToElkiInputLine(axisValues, labels);
@@ -59,10 +59,11 @@ public class ELKIDataTransformer {
                             clusterable.getWrongAnswersAfterHintNormalized().toString()
                     );
                     List<String> labels = List.of(
-                            "ID_" + clusterable.getUserRefId().toString(),
-                            "Level_" + clusterable.getLevel().toString(),
-                            "timeSpentAfterHint_" + clusterable.getTimeSpentAfterHint().toString(),
-                            "wrongFlagsAfterHint_" + clusterable.getWrongAnswersAfterHint().toString()
+                            ELKILabels.ID.labelValue(clusterable.getUserRefId().toString()),
+                            ELKILabels.LEVEL.labelValue(clusterable.getLevel().toString()),
+                            ELKILabels.TIME_AFTER_HINT.labelValue(clusterable.getTimeSpentAfterHint().toString()),
+                            ELKILabels.WRONG_ANSWERS_AFTER_HINT.labelValue(clusterable
+                                    .getWrongAnswersAfterHint().toString())
                     );
 
                     return transformToElkiInputLine(axisValues, labels);
@@ -78,10 +79,11 @@ public class ELKIDataTransformer {
                             clusterable.getTimeSpentAfterSolutionDisplayedNormalized().toString()
                     );
                     List<String> labels = List.of(
-                            "ID_" + clusterable.getUserRefId().toString(),
-                            "Level_" + clusterable.getLevel().toString(),
-                            "solutionDisplayedAt_" + clusterable.getSolutionDisplayedAt().toString(),
-                            "timeSpentAfterSolutionDisplayed_" + clusterable.getTimeSpentAfterSolutionDisplayed().toString()
+                            ELKILabels.ID.labelValue(clusterable.getUserRefId().toString()),
+                            ELKILabels.LEVEL.labelValue(clusterable.getLevel().toString()),
+                            ELKILabels.SOLUTION_DISPLAYED_AT.labelValue(clusterable.getSolutionDisplayedAt().toString()),
+                            ELKILabels.TIME_AFTER_SOLUTION_DISPLAYED.labelValue(clusterable
+                                    .getTimeSpentAfterSolutionDisplayed().toString())
                     );
 
                     return transformToElkiInputLine(axisValues, labels);
@@ -176,7 +178,7 @@ public class ELKIDataTransformer {
         List<T> clusterables = new ArrayList<>();
         for (DBIDIter it = cluster.getIDs().iter(); it.valid(); it.advance()) {
             if (clazz.equals(WrongAnswersClusterableDTO.class)) {
-                clusterables.add((T) constructWrongFlagsClusterable(vectors.get(it), labels.get(it)));
+                clusterables.add((T) constructWrongAnswersClusterable(vectors.get(it), labels.get(it)));
                 continue;
             }
             if (clazz.equals(TimeAfterHintClusterableDTO.class)) {
@@ -214,11 +216,11 @@ public class ELKIDataTransformer {
         }
     }
 
-    private WrongAnswersClusterableDTO constructWrongFlagsClusterable(NumberVector vector, LabelList labelList) {
+    private WrongAnswersClusterableDTO constructWrongAnswersClusterable(NumberVector vector, LabelList labelList) {
         return new WrongAnswersClusterableDTO(
-                Long.parseLong(labelList.get(0).split("ID_")[1]),
-                Double.parseDouble(labelList.get(1).split("wrongFlagsSubmitted_")[1]),
-                Double.parseDouble(labelList.get(2).split("timePlayed_")[1]),
+                Long.parseLong(ELKILabels.ID.retrieveValue(labelList.get(0))),
+                Double.parseDouble(ELKILabels.WRONG_ANSWERS.retrieveValue(labelList.get(1))),
+                Double.parseDouble(ELKILabels.TIME_PLAYED.retrieveValue(labelList.get(2))),
                 vector.doubleValue(0),
                 vector.doubleValue(1)
         );
@@ -226,10 +228,10 @@ public class ELKIDataTransformer {
 
     private TimeAfterHintClusterableDTO constructHintClusterable(NumberVector vector, LabelList labelList) {
         return new TimeAfterHintClusterableDTO(
-                Long.parseLong(labelList.get(0).split("ID_")[1]),
-                Long.parseLong(labelList.get(1).split("Level_")[1]),
-                Double.parseDouble(labelList.get(2).split("timeSpentAfterHint_")[1]),
-                Double.parseDouble(labelList.get(3).split("wrongFlagsAfterHint_")[1]),
+                Long.parseLong(ELKILabels.ID.retrieveValue(labelList.get(0))),
+                Long.parseLong(ELKILabels.LEVEL.retrieveValue(labelList.get(1))),
+                Double.parseDouble(ELKILabels.TIME_AFTER_HINT.retrieveValue(labelList.get(2))),
+                Double.parseDouble(ELKILabels.WRONG_ANSWERS_AFTER_HINT.retrieveValue(labelList.get(3))),
                 vector.doubleValue(0),
                 vector.doubleValue(1)
         );
@@ -237,10 +239,10 @@ public class ELKIDataTransformer {
 
     private TimeSolutionDisplayedClusterableDTO constructSolutionsClusterable(NumberVector vector, LabelList labelList) {
         return new TimeSolutionDisplayedClusterableDTO(
-                Long.parseLong(labelList.get(0).split("ID_")[1]),
-                Long.parseLong(labelList.get(1).split("Level_")[1]),
-                Double.parseDouble(labelList.get(2).split("solutionDisplayedAt_")[1]),
-                Double.parseDouble(labelList.get(3).split("timeSpentAfterSolutionDisplayed_")[1]),
+                Long.parseLong(ELKILabels.ID.retrieveValue(labelList.get(0))),
+                Long.parseLong(ELKILabels.LEVEL.retrieveValue(labelList.get(1))),
+                Double.parseDouble(ELKILabels.SOLUTION_DISPLAYED_AT.retrieveValue(labelList.get(2))),
+                Double.parseDouble(ELKILabels.TIME_AFTER_SOLUTION_DISPLAYED.retrieveValue(labelList.get(3))),
                 vector.doubleValue(0),
                 vector.doubleValue(1)
         );
