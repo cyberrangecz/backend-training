@@ -92,7 +92,7 @@ public abstract class AbstractClusterAnalysisFacade<T> {
                                                                                T algorithmParameters,
                                                                                NormalizationStrategy normalizationStrategy) {
         Database elkiDatabase = elkiDataTransformer
-                .transformWrongFlagsClusterableToElkiInputFormat(
+                .transformWrongAnswersClusterableToElkiInputFormat(
                         clusterableDataTransformer
                                 .transformToWrongAnswersAndTimePlayedClusterable(
                                         loadTrainingEvents(filter),
@@ -155,9 +155,9 @@ public abstract class AbstractClusterAnalysisFacade<T> {
     /**
      * Retrieve clusters from database.
      * <p>
-     * This method should be implemented in subclasses with specific clustering algorithm.
+     * This method should be implemented in subclasses
+     * with specific clustering algorithm.
      * <p>
-     * todo remove clazz parameter
      *
      * @param elkiDatabase        database with data
      * @param algorithmParameters parameters for clustering algorithm
@@ -176,7 +176,7 @@ public abstract class AbstractClusterAnalysisFacade<T> {
             checkForInstancesOfDifferentDefinition(trainingInstances, filter.definitionId());
             events = trainingInstances.stream()
                     .flatMap(ti -> elasticsearchApiService.findAllEventsFromTrainingInstance(ti).stream())
-                    .collect(Collectors.toList());
+                    .toList();
         } else {
             events = elasticsearchApiService.findAllEventsFromTrainingDefinition(filter.definitionId());
         }
@@ -193,7 +193,8 @@ public abstract class AbstractClusterAnalysisFacade<T> {
         return events.stream().filter(event -> event.getLevel() == levelId).toList();
     }
 
-    private void checkForInstancesOfDifferentDefinition(List<TrainingInstance> trainingInstances, Long trainingDefinitionId) {
+    private void checkForInstancesOfDifferentDefinition(List<TrainingInstance> trainingInstances,
+                                                        Long trainingDefinitionId) {
         Optional<TrainingInstance> trainingInstance = trainingInstances.stream()
                 .filter(ti -> !ti.getTrainingDefinition().getId().equals(trainingDefinitionId))
                 .findFirst();
@@ -203,7 +204,8 @@ public abstract class AbstractClusterAnalysisFacade<T> {
                     "id",
                     trainingInstance.get().getId().getClass(),
                     trainingInstance.get().getId(),
-                    "Training instance has not assigned the correct training definition (ID: " + trainingDefinitionId + ").")
+                    "Training instance has not assigned the correct training definition (ID: " +
+                            trainingDefinitionId + ").")
             );
         }
     }

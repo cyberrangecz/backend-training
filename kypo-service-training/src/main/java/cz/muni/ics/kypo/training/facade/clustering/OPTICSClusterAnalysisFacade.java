@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.facade.clustering;
 
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.ClusterDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.OPTICSParameters;
+import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.OPTICSParametersDTO;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.clustering.ClusterableDataTransformer;
@@ -9,6 +9,7 @@ import cz.muni.ics.kypo.training.service.clustering.ELKIDataTransformer;
 import elki.clustering.ClusteringAlgorithm;
 import elki.clustering.optics.OPTICSHeap;
 import elki.clustering.optics.OPTICSXi;
+import elki.data.Cluster;
 import elki.data.Clustering;
 import elki.data.model.OPTICSModel;
 import elki.data.type.TypeUtil;
@@ -23,6 +24,7 @@ import org.apache.commons.math3.stat.clustering.Clusterable;
 import org.apache.commons.math3.stat.clustering.EuclideanDoublePoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -34,11 +36,12 @@ import java.util.List;
  */
 @Service
 @Transactional
-public class OPTICSClusterAnalysisFacade extends AbstractClusterAnalysisFacade<OPTICSParameters> {
+public class OPTICSClusterAnalysisFacade extends AbstractClusterAnalysisFacade<OPTICSParametersDTO> {
 
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Autowired
     public OPTICSClusterAnalysisFacade(ElasticsearchApiService elasticsearchApiService,
                                        TrainingInstanceService trainingInstanceService,
                                        ClusterableDataTransformer clusterableDataTransformer,
@@ -48,7 +51,7 @@ public class OPTICSClusterAnalysisFacade extends AbstractClusterAnalysisFacade<O
 
     @Override
     protected <C extends Clusterable<C>> List<ClusterDTO<C>> getClusters(Database elkiDatabase,
-                                                                         OPTICSParameters algorithmParameters,
+                                                                         OPTICSParametersDTO algorithmParameters,
                                                                          Class<C> clazz) {
         Clustering<OPTICSModel> clustering = executeAlgorithm(elkiDatabase, algorithmParameters);
 
@@ -63,39 +66,39 @@ public class OPTICSClusterAnalysisFacade extends AbstractClusterAnalysisFacade<O
                 );
     }
 
-    private List<elki.data.Cluster<OPTICSModel>> getFullClusters(Clustering<OPTICSModel> clustering) {
-        List<elki.data.Cluster<OPTICSModel>> fullClusters = new ArrayList<>();
+    private List<Cluster<OPTICSModel>> getFullClusters(Clustering<OPTICSModel> clustering) {
+        List<Cluster<OPTICSModel>> fullClusters = new ArrayList<>();
 
-        Hierarchy<elki.data.Cluster<OPTICSModel>> clusterHierarchy = clustering.getClusterHierarchy();
+        Hierarchy<Cluster<OPTICSModel>> clusterHierarchy = clustering.getClusterHierarchy();
 
-        for (elki.data.Cluster<OPTICSModel> topLevelCluster : clustering.getToplevelClusters()) {
+        for (Cluster<OPTICSModel> topLevelCluster : clustering.getToplevelClusters()) {
             fullClusters.addAll(getFullClusters(topLevelCluster, clusterHierarchy));
         }
 
         return fullClusters;
     }
 
-    private List<elki.data.Cluster<OPTICSModel>> getFullClusters(elki.data.Cluster<OPTICSModel> node,
-                                                                 Hierarchy<elki.data.Cluster<OPTICSModel>> clusterHierarchy) {
+    private List<Cluster<OPTICSModel>> getFullClusters(Cluster<OPTICSModel> node,
+                                                       Hierarchy<Cluster<OPTICSModel>> clusterHierarchy) {
 
         // Iterate through all children nodes
-        It<elki.data.Cluster<OPTICSModel>> clusterIterator = clusterHierarchy.iterChildren(node);
+        It<Cluster<OPTICSModel>> clusterIterator = clusterHierarchy.iterChildren(node);
         if (!clusterIterator.valid()) {
             return List.of(node); // leaf
         }
 
-        List<elki.data.Cluster<OPTICSModel>> childFullClusters = new ArrayList<>();
+        List<Cluster<OPTICSModel>> childFullClusters = new ArrayList<>();
         for (; clusterIterator.valid(); clusterIterator.advance()) {
-            elki.data.Cluster<OPTICSModel> childCluster = clusterIterator.get();
+            Cluster<OPTICSModel> childCluster = clusterIterator.get();
             childFullClusters.addAll(getFullClusters(childCluster, clusterHierarchy));
         }
 
         // Update DBIDs and create full OPTICS cluster
         DBIDs nodeDBIDs = node.getIDs();
-        for (elki.data.Cluster<OPTICSModel> childCluster : childFullClusters) {
+        for (Cluster<OPTICSModel> childCluster : childFullClusters) {
             nodeDBIDs = DBIDUtil.union(nodeDBIDs, childCluster.getIDs());
         }
-        elki.data.Cluster<OPTICSModel> fullCluster = new elki.data.Cluster<>(
+        Cluster<OPTICSModel> fullCluster = new Cluster<>(
                 node.getName(),
                 nodeDBIDs,
                 node.isNoise(),
@@ -107,10 +110,10 @@ public class OPTICSClusterAnalysisFacade extends AbstractClusterAnalysisFacade<O
         return childFullClusters;
     }
 
-    private Clustering<OPTICSModel> executeAlgorithm(Database db, OPTICSParameters opticsParameters) {
-        int minPts = opticsParameters.getMinPts();
-        double xi = opticsParameters.getXi();
-        Double epsilon = opticsParameters.getEpsilon();
+    private Clustering<OPTICSModel> executeAlgorithm(Database db, OPTICSParametersDTO opticsParameters) {
+        int minPts = opticsParameters.getMinimumPoints();
+        double xi = opticsParameters.getSteepnessThreshold();
+        Double epsilon = opticsParameters.getNoiseReduction();
 
         try {
             ClusteringAlgorithm<Clustering<OPTICSModel>> opticsXi = this.buildOpticsXi(minPts, xi, epsilon);

@@ -4,7 +4,7 @@ import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.ClusterDT
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.KMeansParametersDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.EventsFilter;
 import cz.muni.ics.kypo.training.api.enums.NormalizationStrategy;
-import cz.muni.ics.kypo.training.facade.clustering.KmeansClusterAnalysisFacade;
+import cz.muni.ics.kypo.training.facade.clustering.KMeansClusterAnalysisFacade;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,10 +40,10 @@ import java.util.List;
 @RequestMapping(value = "/clusters/kmeans", produces = MediaType.APPLICATION_JSON_VALUE)
 public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysisRestController<KMeansParametersDTO> {
 
-    private final KmeansClusterAnalysisFacade clusterKMeansAnalysisFacade;
+    private final KMeansClusterAnalysisFacade clusterKMeansAnalysisFacade;
 
     @Autowired
-    public KmeansClusterAnalysisRestController(KmeansClusterAnalysisFacade clusterKMeansAnalysisFacade) {
+    public KmeansClusterAnalysisRestController(KMeansClusterAnalysisFacade clusterKMeansAnalysisFacade) {
         super(clusterKMeansAnalysisFacade);
         this.clusterKMeansAnalysisFacade = clusterKMeansAnalysisFacade;
     }

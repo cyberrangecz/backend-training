@@ -1,7 +1,7 @@
 package cz.muni.ics.kypo.training.facade.clustering;
 
 import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.ClusterDTO;
-import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.KMeansParameters;
+import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.KMeansParametersDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.EventsFilter;
 import cz.muni.ics.kypo.training.api.enums.NormalizationStrategy;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
@@ -23,6 +23,7 @@ import org.apache.commons.math3.stat.clustering.Clusterable;
 import org.apache.commons.math3.stat.clustering.EuclideanDoublePoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -35,11 +36,12 @@ import java.util.stream.IntStream;
  */
 @Service
 @Transactional
-public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<KMeansParameters> {
+public class KMeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<KMeansParametersDTO> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public KmeansClusterAnalysisFacade(ElasticsearchApiService elasticsearchApiService,
+    @Autowired
+    public KMeansClusterAnalysisFacade(ElasticsearchApiService elasticsearchApiService,
                                        TrainingInstanceService trainingInstanceService,
                                        ClusterableDataTransformer clusterableDataTransformer,
                                        ELKIDataTransformer elkiDataTransformer) {
@@ -57,11 +59,12 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-    public List<Double> getWrongAnswersClusterSEE(EventsFilter filter, KMeansParameters kMeansParameters,
+    public List<Double> getWrongAnswersClusterSEE(EventsFilter filter, KMeansParametersDTO kMeansParameters,
                                                   NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
-                .mapToObj(i -> calculateSSE(super.getWrongAnswersCluster(filter, new KMeansParameters(i), normalizationStrategy)))
-                .toList();
+                .mapToObj(i -> calculateSSE(
+                        super.getWrongAnswersCluster(filter, new KMeansParametersDTO(i), normalizationStrategy)
+                )).toList();
     }
 
     /**
@@ -75,11 +78,12 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-    public List<Double> getTimeAfterHintClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
+    public List<Double> getTimeAfterHintClusterSSE(EventsFilter filter, KMeansParametersDTO kMeansParameters,
                                                    NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
-                .mapToObj(i -> calculateSSE(super.getTimeAfterHintCluster(filter, new KMeansParameters(i), normalizationStrategy)))
-                .toList();
+                .mapToObj(i -> calculateSSE(
+                        super.getTimeAfterHintCluster(filter, new KMeansParametersDTO(i), normalizationStrategy)
+                )).toList();
     }
 
     /**
@@ -93,11 +97,12 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-    public List<Double> getTimeAfterSolutionClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
+    public List<Double> getTimeAfterSolutionClusterSSE(EventsFilter filter, KMeansParametersDTO kMeansParameters,
                                                        NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
-                .mapToObj(i -> calculateSSE(super.getTimeAfterSolutionCluster(filter, new KMeansParameters(i), normalizationStrategy)))
-                .toList();
+                .mapToObj(i -> calculateSSE(
+                        super.getTimeAfterSolutionCluster(filter, new KMeansParametersDTO(i), normalizationStrategy)
+                )).toList();
     }
 
 
@@ -112,15 +117,18 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
             "T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)" +
             "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-    public List<Double> getNDimensionalClusterSSE(EventsFilter filter, KMeansParameters kMeansParameters,
+    public List<Double> getNDimensionalClusterSSE(EventsFilter filter, KMeansParametersDTO kMeansParameters,
                                                   NormalizationStrategy normalizationStrategy) {
         return IntStream.range(2, kMeansParameters.getNumberOfClusters() + 1)
-                .mapToObj(i -> calculateSSE(super.getNDimensionalCluster(filter, new KMeansParameters(i), normalizationStrategy)))
-                .toList();
+                .mapToObj(i -> calculateSSE(
+                        super.getNDimensionalCluster(filter, new KMeansParametersDTO(i), normalizationStrategy)
+                )).toList();
     }
 
     @Override
-    protected <C extends Clusterable<C>> List<ClusterDTO<C>> getClusters(Database elkiDatabase, KMeansParameters algorithmParameters, Class<C> clazz) {
+    protected <C extends Clusterable<C>> List<ClusterDTO<C>> getClusters(Database elkiDatabase,
+                                                                         KMeansParametersDTO algorithmParameters,
+                                                                         Class<C> clazz) {
         Clustering<KMeansModel> clustering = executeAlgorithm(elkiDatabase, algorithmParameters);
 
         return elkiDataTransformer
@@ -133,7 +141,7 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
                 );
     }
 
-    private Clustering<KMeansModel> executeAlgorithm(Database db, KMeansParameters algorithmParameters) {
+    private Clustering<KMeansModel> executeAlgorithm(Database db, KMeansParametersDTO algorithmParameters) {
         int numberOfClusters = algorithmParameters.getNumberOfClusters();
 
         try {
@@ -142,9 +150,11 @@ public class KmeansClusterAnalysisFacade extends AbstractClusterAnalysisFacade<K
         } catch (AbortException exception) {
             logger.error(exception.getMessage());
             logger.warn("K-Means parameters:");
-            logger.warn(String.format("\tnumberOfClusters: %d (should be greater equal than 1)", numberOfClusters));
+            logger.warn(String.format("\tnumberOfClusters: %d (should be greater equal than 1)",
+                    numberOfClusters));
         } catch (IllegalArgumentException exception) {
-            logger.warn(String.format("The number of clusters (%d) is greater than the number of objects!", numberOfClusters));
+            logger.warn(String.format("The number of clusters (%d) is greater than the number of objects!",
+                    numberOfClusters));
         }
         return new Clustering<>();
     }

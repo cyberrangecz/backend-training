@@ -28,10 +28,10 @@ public class ClusterableDataTransformer {
             NormalizationStrategy normalizationStrategy) {
         List<WrongAnswersClusterableDTO> result = eventsByUser.entrySet().stream()
                 .map(userEvs -> {
-                    long wrongFlags = userEvs.getValue().stream().filter(WrongAnswerSubmitted.class::isInstance).count();
+                    long wrongAnswers = userEvs.getValue().stream().filter(WrongAnswerSubmitted.class::isInstance).count();
                     List<Long> totalEvents = userEvs.getValue().stream()
                             .map(AbstractAuditPOJO::getTimestamp).toList();
-                    return new WrongAnswersClusterableDTO(userEvs.getKey(), (double) wrongFlags,
+                    return new WrongAnswersClusterableDTO(userEvs.getKey(), (double) wrongAnswers,
                             (double) (totalEvents.get(totalEvents.size() - 1) - totalEvents.get(0)));
                 }).toList();
 
@@ -58,10 +58,10 @@ public class ClusterableDataTransformer {
                     long timeAfterHint =
                             trainingEvents.get(trainingEvents.size() - 1).getTimestamp() - hint.get().getTimestamp();
 
-                    long wrongFlags = trainingEvents.stream()
+                    long wrongAnswers = trainingEvents.stream()
                             .filter(trainingEvent -> trainingEvent instanceof WrongAnswerSubmitted answerSubmitted
                                     && answerSubmitted.getTimestamp() <= hint.get().getTimestamp()).count();
-                    result.add(new TimeAfterHintClusterableDTO(userRefId, level, (double) timeAfterHint, (double) wrongFlags));
+                    result.add(new TimeAfterHintClusterableDTO(userRefId, level, (double) timeAfterHint, (double) wrongAnswers));
                 }
             });
         });
@@ -104,21 +104,21 @@ public class ClusterableDataTransformer {
 
         List<Double> maxTimeAfterHint = ClusterMathUtils.normalize(normalizationStrategy,
                 extractMaxTimeAfterHint(userEvents));
-        List<Double> wrongFlags = ClusterMathUtils.normalize(normalizationStrategy, extractNumberOf(WrongAnswerSubmitted.class, userEvents));
+        List<Double> wrongAnswers = ClusterMathUtils.normalize(normalizationStrategy, extractNumberOf(WrongAnswerSubmitted.class, userEvents));
         List<Double> totalScore = ClusterMathUtils.normalize(normalizationStrategy, extractTotalScore(userEvents));
         List<Double> playtime = ClusterMathUtils.normalize(normalizationStrategy, extractPlaytime(userEvents));
         List<Double> hintsTaken = ClusterMathUtils.normalize(normalizationStrategy, extractNumberOf(HintTaken.class, userEvents));
-        List<Double> wrongFlagsAfterHint = ClusterMathUtils.normalize(normalizationStrategy, extractWrongAnswersAfterHint(userEvents));
+        List<Double> wrongAnswersAfterHint = ClusterMathUtils.normalize(normalizationStrategy, extractWrongAnswersAfterHint(userEvents));
         List<Double> displayedSolutions = ClusterMathUtils.normalize(normalizationStrategy, extractNumberOf(SolutionDisplayed.class, userEvents));
 
         for (int i = 0; i < userEvents.size(); i++) {
             result.add(new EuclideanDoublePoint(new double[]{
                     maxTimeAfterHint.get(i),
-                    wrongFlags.get(i),
+                    wrongAnswers.get(i),
                     totalScore.get(i),
                     playtime.get(i),
                     hintsTaken.get(i),
-                    wrongFlagsAfterHint.get(i),
+                    wrongAnswersAfterHint.get(i),
                     displayedSolutions.get(i)
             }));
         }
