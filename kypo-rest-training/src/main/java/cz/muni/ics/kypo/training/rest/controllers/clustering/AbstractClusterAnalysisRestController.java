@@ -24,7 +24,8 @@ import java.util.List;
 
 /**
  * The abstract rest controller for clustering visualizations.
- * Allows for getting clusters with different clustering algorithm parameters and adding additional analysis methods.
+ * Allows for getting clusters with different clustering algorithm
+ * parameters and adding additional analysis methods.
  */
 public abstract class AbstractClusterAnalysisRestController<T> {
 
@@ -48,7 +49,9 @@ public abstract class AbstractClusterAnalysisRestController<T> {
             value = "Get n-dimensional cluster.",
             response = ClusterDTO.class,
             nickname = "getNDimensionalCluster",
-            produces = MediaType.APPLICATION_JSON_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            notes = "This can only be done by organizer, designer of the training definition or an admin."
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "N-dimensional cluster found.", response = ClusterDTO.class),
@@ -57,12 +60,21 @@ public abstract class AbstractClusterAnalysisRestController<T> {
     })
     @GetMapping(path = "/training-definitions/{definitionId}/n-dimensional", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ClusterDTO<EuclideanDoublePoint>>> getNDimensionalCluster(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
-            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId")
+            Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false)
+            @RequestParam(value = "instanceIds", required = false)
+            List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false)
+            @RequestParam(value = "levelId", required = false)
+            Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
-            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
-            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX")
+            NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true)
+            @RequestBody
+            T algorithmParameters) {
         List<ClusterDTO<EuclideanDoublePoint>> nDimensionalCluster = clusterAnalysisFacade
                 .getNDimensionalCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),
@@ -80,6 +92,14 @@ public abstract class AbstractClusterAnalysisRestController<T> {
      * @param algorithmParameters algorithm specific parameters
      * @return list of {@link ClusterDTO}s of {@link WrongAnswersClusterableDTO}
      */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get wrong answers / time played cluster.",
+            response = ClusterDTO.class,
+            nickname = "getWrongAnswersCluster",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            notes = "This can only be done by organizer, designer of the training definition or an admin."
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Wrong answers cluster found.", response = ClusterDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
@@ -88,12 +108,21 @@ public abstract class AbstractClusterAnalysisRestController<T> {
     @GetMapping(path = "/training-definitions/{definitionId}/wrong-answers", produces =
             MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ClusterDTO<WrongAnswersClusterableDTO>>> getWrongAnswersCluster(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
-            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId")
+            Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false)
+            @RequestParam(value = "instanceIds", required = false)
+            List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false)
+            @RequestParam(value = "levelId", required = false)
+            Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
-            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
-            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX")
+            NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true)
+            @RequestBody
+            T algorithmParameters) {
         List<ClusterDTO<WrongAnswersClusterableDTO>> wrongAnswers =
                 clusterAnalysisFacade.getWrongAnswersCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),
@@ -111,6 +140,14 @@ public abstract class AbstractClusterAnalysisRestController<T> {
      * @param algorithmParameters algorithm specific parameters
      * @return list of {@link ClusterDTO}s of {@link TimeAfterHintClusterableDTO}
      */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get time after hint / wrong answers after hint cluster.",
+            response = ClusterDTO.class,
+            nickname = "getTimeAfterHintCluster",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            notes = "This can only be done by organizer, designer of the training definition or an admin."
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Time spent after hint cluster found.", response = ClusterDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
@@ -118,12 +155,21 @@ public abstract class AbstractClusterAnalysisRestController<T> {
     })
     @GetMapping(path = "/training-definitions/{definitionId}/hint-time", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ClusterDTO<TimeAfterHintClusterableDTO>>> getTimeAfterHintCluster(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
-            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId")
+            Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false)
+            @RequestParam(value = "instanceIds", required = false)
+            List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false)
+            @RequestParam(value = "levelId", required = false)
+            Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
-            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
-            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX")
+            NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true)
+            @RequestBody
+            T algorithmParameters) {
         List<ClusterDTO<TimeAfterHintClusterableDTO>> timeAfterHint =
                 clusterAnalysisFacade.getTimeAfterHintCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),
@@ -142,6 +188,14 @@ public abstract class AbstractClusterAnalysisRestController<T> {
      * @param algorithmParameters algorithm specific parameters
      * @return list of {@link ClusterDTO}s of {@link TimeSolutionDisplayedClusterableDTO}
      */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get time when solution was displayed / time after solution displayed cluster.",
+            response = ClusterDTO.class,
+            nickname = "getTimeAfterSolutionCluster",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            notes = "This can only be done by organizer, designer of the training definition or an admin."
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Time after solution shown cluster found.", response = ClusterDTO.class),
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
@@ -150,12 +204,20 @@ public abstract class AbstractClusterAnalysisRestController<T> {
     @GetMapping(path = "/training-definitions/{definitionId}/solution-shown-time", produces =
             MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ClusterDTO<TimeSolutionDisplayedClusterableDTO>>> getTimeAfterSolutionCluster(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
-            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId") Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false)
+            @RequestParam(value = "instanceIds", required = false)
+            List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false)
+            @RequestParam(value = "levelId", required = false)
+            Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
-            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
-            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody T algorithmParameters) {
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX")
+            NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true)
+            @RequestBody
+            T algorithmParameters) {
         List<ClusterDTO<TimeSolutionDisplayedClusterableDTO>> timeAfterSolution =
                 clusterAnalysisFacade.getTimeAfterSolutionCluster(
                         new EventsFilter(definitionId, instanceIds, levelId),

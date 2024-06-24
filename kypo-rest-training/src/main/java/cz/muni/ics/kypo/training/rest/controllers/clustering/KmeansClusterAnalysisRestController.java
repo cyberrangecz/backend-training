@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.rest.controllers.clustering;
 
-import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.KMeansParameters;
+import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.ClusterDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis.KMeansParametersDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.clustering.EventsFilter;
 import cz.muni.ics.kypo.training.api.enums.NormalizationStrategy;
 import cz.muni.ics.kypo.training.facade.clustering.KmeansClusterAnalysisFacade;
@@ -11,6 +12,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,10 +38,11 @@ import java.util.List;
 })
 @RestController
 @RequestMapping(value = "/clusters/kmeans", produces = MediaType.APPLICATION_JSON_VALUE)
-public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysisRestController<KMeansParameters> {
+public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysisRestController<KMeansParametersDTO> {
 
     private final KmeansClusterAnalysisFacade clusterKMeansAnalysisFacade;
 
+    @Autowired
     public KmeansClusterAnalysisRestController(KmeansClusterAnalysisFacade clusterKMeansAnalysisFacade) {
         super(clusterKMeansAnalysisFacade);
         this.clusterKMeansAnalysisFacade = clusterKMeansAnalysisFacade;
@@ -56,10 +59,12 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
      * @return list of values
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get n-dimensional cluster SSE.",
-            response = Double[].class,
+            value = "Get SSE of n-dimensional cluster.",
+            response = ClusterDTO.class,
             nickname = "getNDimensionalClusterSSE",
-            produces = MediaType.APPLICATION_JSON_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            notes = "This can only be done by organizer, designer of the training definition or an admin."
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "N-dimensional cluster SSE found.", response = Double[].class),
@@ -68,12 +73,21 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
     })
     @GetMapping(path = "/training-definitions/{definitionId}/n-dimensional/sse", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Double>> getNDimensionalClusterSSE(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
-            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId")
+            Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false)
+            @RequestParam(value = "instanceIds", required = false)
+            List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false)
+            @RequestParam(value = "levelId", required = false)
+            Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
-            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
-            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody KMeansParameters algorithmParameters) {
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX")
+            NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true)
+            @RequestBody
+            KMeansParametersDTO algorithmParameters) {
         List<Double> nDimensionalClusterSSE = clusterKMeansAnalysisFacade.getNDimensionalClusterSSE(
                 new EventsFilter(definitionId, instanceIds, levelId),
                 algorithmParameters,
@@ -91,10 +105,12 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
      * @return list of values
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get wrong answers SSE.",
+            value = "Get SSE of wrong answers / time played cluster.",
             response = Double[].class,
             nickname = "getWrongAnswersClusterSSE",
-            produces = MediaType.APPLICATION_JSON_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            notes = "This can only be done by organizer, designer of the training definition or an admin."
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Wrong answers clusters SSE found.", response = Double[].class),
@@ -103,12 +119,21 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
     })
     @GetMapping(path = "/training-definitions/{definitionId}/wrong-answers/sse", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Double>> getWrongAnswersClusterSSE(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
-            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId")
+            Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false)
+            @RequestParam(value = "instanceIds", required = false)
+            List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false)
+            @RequestParam(value = "levelId", required = false)
+            Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
-            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
-            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody KMeansParameters algorithmParameters) {
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX")
+            NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true)
+            @RequestBody
+            KMeansParametersDTO algorithmParameters) {
         List<Double> wrongAnswersSSE = clusterKMeansAnalysisFacade.getWrongAnswersClusterSEE(
                 new EventsFilter(definitionId, instanceIds, levelId),
                 algorithmParameters,
@@ -127,10 +152,12 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
      * @return list of values
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get wrong answers SSE.",
+            value = "Get SSE of time after hint / wrong answers after hint cluster.",
             response = Double[].class,
-            nickname = "getWrongAnswersClusterSSE",
-            produces = MediaType.APPLICATION_JSON_VALUE
+            nickname = "getTimeAfterHintSSE",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            notes = "This can only be done by organizer, designer of the training definition or an admin."
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Time spent after hint cluster SSE found.", response = Double[].class),
@@ -139,12 +166,21 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
     })
     @GetMapping(path = "/training-definitions/{definitionId}/hint-time/sse", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Double>> getTimeAfterHintSSE(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
-            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId")
+            Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false)
+            @RequestParam(value = "instanceIds", required = false)
+            List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false)
+            @RequestParam(value = "levelId", required = false)
+            Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
-            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
-            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody KMeansParameters algorithmParameters) {
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX")
+            NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true)
+            @RequestBody
+            KMeansParametersDTO algorithmParameters) {
         List<Double> timeAfterHintSSE = clusterKMeansAnalysisFacade.getTimeAfterHintClusterSSE(
                 new EventsFilter(definitionId, instanceIds, levelId),
                 algorithmParameters,
@@ -162,10 +198,12 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
      * @return list of values
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get wrong answers SSE.",
+            value = "Get SSE of time when solution was displayed / time after solution displayed cluster.",
             response = Double[].class,
-            nickname = "getWrongAnswersClusterSSE",
-            produces = MediaType.APPLICATION_JSON_VALUE
+            nickname = "getTimeAfterSolutionSSE",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            notes = "This can only be done by organizer, designer of the training definition or an admin."
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Time after solution shown cluster SSE found.", response = Double[].class),
@@ -175,12 +213,21 @@ public class KmeansClusterAnalysisRestController extends AbstractClusterAnalysis
     @GetMapping(path = "/training-definitions/{definitionId}/solution-shown-time/sse", produces =
             MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Double>> getTimeAfterSolutionSSE(
-            @ApiParam(value = "Training definition ID", required = true) @PathVariable("definitionId") Long definitionId,
-            @ApiParam(value = "List of training instance IDs", required = false) @RequestParam(value = "instanceIds", required = false) List<Long> instanceIds,
-            @ApiParam(value = "Level id", required = false) @RequestParam(value = "levelId", required = false) Long levelId,
+            @ApiParam(value = "Training definition ID", required = true)
+            @PathVariable("definitionId")
+            Long definitionId,
+            @ApiParam(value = "List of training instance IDs", required = false)
+            @RequestParam(value = "instanceIds", required = false)
+            List<Long> instanceIds,
+            @ApiParam(value = "Level id", required = false)
+            @RequestParam(value = "levelId", required = false)
+            Long levelId,
             @ApiParam(value = "Normalization strategy", required = false, defaultValue = "MIN_MAX")
-            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX") NormalizationStrategy normalizationStrategy,
-            @ApiParam(value = "Algorithm parameters", required = true) @RequestBody KMeansParameters algorithmParameters) {
+            @RequestParam(value = "normalizationStrategy", required = false, defaultValue = "MIN_MAX")
+            NormalizationStrategy normalizationStrategy,
+            @ApiParam(value = "Algorithm parameters", required = true)
+            @RequestBody
+            KMeansParametersDTO algorithmParameters) {
         List<Double> timeAfterHintSSE = clusterKMeansAnalysisFacade.getTimeAfterSolutionClusterSSE(
                 new EventsFilter(definitionId, instanceIds, levelId),
                 algorithmParameters,
