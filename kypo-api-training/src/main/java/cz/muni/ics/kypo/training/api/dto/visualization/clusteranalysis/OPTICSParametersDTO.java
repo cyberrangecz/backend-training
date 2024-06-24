@@ -7,15 +7,13 @@ import org.springframework.lang.Nullable;
 
 @Data
 @AllArgsConstructor
-public class OPTICSParameters {
+public class OPTICSParametersDTO {
 
     @ApiModelProperty(value = "Minimum number of points in a cluster", example = "5")
-    private int minPts;
-
-    @ApiModelProperty(value = "Steepness threshold", example = "0.1")
-    private double xi;
-
+    private int minimumPoints;
+    @ApiModelProperty(value = "Steepness threshold (xi)", example = "0.1")
+    private double steepnessThreshold;
     @Nullable
-    @ApiModelProperty(value = "Optional parameter helping reduce noise", example = "0.5")
-    private Double epsilon;
+    @ApiModelProperty(value = "Optional parameter helping reduce noise (epsilon)", example = "0.5")
+    private Double noiseReduction;
 }

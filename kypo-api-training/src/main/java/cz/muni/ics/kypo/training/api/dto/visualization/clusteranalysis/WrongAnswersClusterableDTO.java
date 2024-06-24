@@ -8,7 +8,8 @@ import org.apache.commons.math3.stat.clustering.Clusterable;
 import java.util.Collection;
 
 /**
- * DTO for visualizing the clustering of wrong answers submitted and time played.
+ * DTO for visualizing the clustering of
+ * wrong answers submitted and time played.
  */
 @Data
 @AllArgsConstructor
@@ -30,29 +31,32 @@ public class WrongAnswersClusterableDTO implements Clusterable<WrongAnswersClust
 
 
     @Override
-    public double distanceFrom(WrongAnswersClusterableDTO p) {
-        return ClusterMathUtils.calculateDistance2D(wrongAnswersSubmittedNormalized, p.getWrongAnswersSubmittedNormalized(), timePlayedNormalized, p.getTimePlayedNormalized());
+    public double distanceFrom(WrongAnswersClusterableDTO otherClusterable) {
+        return ClusterMathUtils.calculateDistance2D(
+                wrongAnswersSubmittedNormalized, otherClusterable.getWrongAnswersSubmittedNormalized(),
+                timePlayedNormalized, otherClusterable.getTimePlayedNormalized()
+        );
     }
 
     @Override
-    public WrongAnswersClusterableDTO centroidOf(Collection<WrongAnswersClusterableDTO> p) {
+    public WrongAnswersClusterableDTO centroidOf(Collection<WrongAnswersClusterableDTO> clusterables) {
         return new WrongAnswersClusterableDTO(0L,
-                computerWrongAnswersSubmitted(p),
-                computeTimePlayed(p));
+                computerWrongAnswersSubmitted(clusterables),
+                computeTimePlayed(clusterables));
     }
 
-    private Double computerWrongAnswersSubmitted(Collection<WrongAnswersClusterableDTO> p) {
-        return p.stream().reduce(
+    private Double computerWrongAnswersSubmitted(Collection<WrongAnswersClusterableDTO> clusterables) {
+        return clusterables.stream().reduce(
                 0.0,
-                (value, featureOne) -> value + featureOne.getWrongAnswersSubmittedNormalized() / p.size(),
+                (accumulator, newValue) -> accumulator + newValue.getWrongAnswersSubmittedNormalized() / clusterables.size(),
                 Double::sum
         );
     }
 
-    private Double computeTimePlayed(Collection<WrongAnswersClusterableDTO> p) {
-        return p.stream().reduce(
+    private Double computeTimePlayed(Collection<WrongAnswersClusterableDTO> clusterables) {
+        return clusterables.stream().reduce(
                 0.0,
-                (value, featureOne) -> value + featureOne.getTimePlayedNormalized() / p.size(),
+                (accumulator, newValue) -> accumulator + newValue.getTimePlayedNormalized() / clusterables.size(),
                 Double::sum
         );
     }

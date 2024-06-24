@@ -10,7 +10,9 @@ import org.apache.commons.math3.stat.clustering.Clusterable;
 import java.util.Collection;
 
 /**
- * DTO for visualizing the clustering of time spent after hint was displayed and total wrong answers submitted after hint was displayed.
+ * DTO for visualizing the clustering of time spent after a
+ * hint was displayed and total wrong answers submitted after a
+ * hint was displayed.
  */
 @Data
 @AllArgsConstructor
@@ -18,50 +20,49 @@ import java.util.Collection;
 public class TimeAfterHintClusterableDTO implements Clusterable<TimeAfterHintClusterableDTO> {
 
     private final Long userRefId;
-
     private final Long level;
-
     private Double timeSpentAfterHint;
-
-    private Double wrongFlagsAfterHint;
-
+    private Double wrongAnswersAfterHint;
     private Double timeSpentAfterHintNormalized;
+    private Double wrongAnswersAfterHintNormalized;
 
-    private Double wrongFlagsAfterHintNormalized;
-
-    public TimeAfterHintClusterableDTO(Long userRefId, Long level, Double timeSpentAfterHint, Double wrongFlagsAfterHint) {
+    public TimeAfterHintClusterableDTO(Long userRefId, Long level,
+                                       Double timeSpentAfterHint, Double wrongAnswersAfterHint) {
         this.userRefId = userRefId;
         this.level = level;
         this.timeSpentAfterHint = timeSpentAfterHint;
-        this.wrongFlagsAfterHint = wrongFlagsAfterHint;
+        this.wrongAnswersAfterHint = wrongAnswersAfterHint;
         this.timeSpentAfterHintNormalized = timeSpentAfterHint;
-        this.wrongFlagsAfterHintNormalized = wrongFlagsAfterHint;
+        this.wrongAnswersAfterHintNormalized = wrongAnswersAfterHint;
     }
 
     @Override
-    public double distanceFrom(TimeAfterHintClusterableDTO p) {
-        return ClusterMathUtils.calculateDistance2D(timeSpentAfterHintNormalized, p.getTimeSpentAfterHintNormalized(), wrongFlagsAfterHintNormalized, p.getWrongFlagsAfterHintNormalized());
+    public double distanceFrom(TimeAfterHintClusterableDTO otherClusterable) {
+        return ClusterMathUtils.calculateDistance2D(
+                timeSpentAfterHintNormalized, otherClusterable.getTimeSpentAfterHintNormalized(),
+                wrongAnswersAfterHintNormalized, otherClusterable.getWrongAnswersAfterHintNormalized()
+        );
     }
 
     @Override
-    public TimeAfterHintClusterableDTO centroidOf(Collection<TimeAfterHintClusterableDTO> p) {
+    public TimeAfterHintClusterableDTO centroidOf(Collection<TimeAfterHintClusterableDTO> clusterables) {
         return new TimeAfterHintClusterableDTO(0L, 0L,
-                computerTimeSpentAfterHint(p),
-                computerWrongFlagsAfterHint(p));
+                computerTimeSpentAfterHint(clusterables),
+                computerWrongAnswersAfterHint(clusterables));
     }
 
-    private Double computerTimeSpentAfterHint(Collection<TimeAfterHintClusterableDTO> p) {
-        return p.stream().reduce(
+    private Double computerTimeSpentAfterHint(Collection<TimeAfterHintClusterableDTO> clusterables) {
+        return clusterables.stream().reduce(
                 0.0,
-                (value, featureOne) -> value + featureOne.getTimeSpentAfterHintNormalized() / p.size(),
+                (accumulator, newValue) -> accumulator + newValue.getTimeSpentAfterHintNormalized() / clusterables.size(),
                 Double::sum
         );
     }
 
-    private Double computerWrongFlagsAfterHint(Collection<TimeAfterHintClusterableDTO> p) {
-        return p.stream().reduce(
+    private Double computerWrongAnswersAfterHint(Collection<TimeAfterHintClusterableDTO> clusterables) {
+        return clusterables.stream().reduce(
                 0.0,
-                (value, featureOne) -> value + featureOne.getWrongFlagsAfterHintNormalized() / p.size(),
+                (accumulator, newValue) -> accumulator + newValue.getWrongAnswersAfterHintNormalized() / clusterables.size(),
                 Double::sum
         );
     }

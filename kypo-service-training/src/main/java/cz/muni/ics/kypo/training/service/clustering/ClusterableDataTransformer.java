@@ -67,7 +67,7 @@ public class ClusterableDataTransformer {
         });
         return ClusterMathUtils.normalize(normalizationStrategy, result,
                 Pair.of(TimeAfterHintClusterableDTO::getTimeSpentAfterHint, TimeAfterHintClusterableDTO::setTimeSpentAfterHintNormalized),
-                Pair.of(TimeAfterHintClusterableDTO::getWrongFlagsAfterHint, TimeAfterHintClusterableDTO::setWrongFlagsAfterHintNormalized));
+                Pair.of(TimeAfterHintClusterableDTO::getWrongAnswersAfterHint, TimeAfterHintClusterableDTO::setWrongAnswersAfterHintNormalized));
     }
 
     public List<TimeSolutionDisplayedClusterableDTO> transformToTimeSolutionAndTimeAfterDisplayed(Map<Long, List<AbstractAuditPOJO>> eventsByUser,

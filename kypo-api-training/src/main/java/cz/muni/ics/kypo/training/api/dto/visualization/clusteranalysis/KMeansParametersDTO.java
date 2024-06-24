@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class KMeansParameters {
+public class KMeansParametersDTO {
 
     @ApiModelProperty(value = "Number of clusters to create.", example = "3")
     private int numberOfClusters;

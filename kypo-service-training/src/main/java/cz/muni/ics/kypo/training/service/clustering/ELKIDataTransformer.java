@@ -56,13 +56,13 @@ public class ELKIDataTransformer {
                 .map(clusterable -> {
                     List<String> axisValues = List.of(
                             clusterable.getTimeSpentAfterHintNormalized().toString(),
-                            clusterable.getWrongFlagsAfterHintNormalized().toString()
+                            clusterable.getWrongAnswersAfterHintNormalized().toString()
                     );
                     List<String> labels = List.of(
                             "ID_" + clusterable.getUserRefId().toString(),
                             "Level_" + clusterable.getLevel().toString(),
                             "timeSpentAfterHint_" + clusterable.getTimeSpentAfterHint().toString(),
-                            "wrongFlagsAfterHint_" + clusterable.getWrongFlagsAfterHint().toString()
+                            "wrongFlagsAfterHint_" + clusterable.getWrongAnswersAfterHint().toString()
                     );
 
                     return transformToElkiInputLine(axisValues, labels);
