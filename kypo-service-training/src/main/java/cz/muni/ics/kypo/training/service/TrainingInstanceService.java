@@ -153,7 +153,7 @@ public class TrainingInstanceService {
     public String update(TrainingInstance trainingInstanceToUpdate) {
         validateStartAndEndTime(trainingInstanceToUpdate);
         TrainingInstance trainingInstance = findById(trainingInstanceToUpdate.getId());
-        validateNotRevivingAnExpiredInstance(trainingInstanceToUpdate, trainingInstance);
+        checkNotRevivingAnExpiredInstance(trainingInstanceToUpdate, trainingInstance);
         //add original organizers to update
         trainingInstanceToUpdate.setOrganizers(new HashSet<>(trainingInstance.getOrganizers()));
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
@@ -180,7 +180,7 @@ public class TrainingInstanceService {
         }
     }
 
-    private void validateNotRevivingAnExpiredInstance(TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
+    private void checkNotRevivingAnExpiredInstance(TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
         if (currentTrainingInstance.finished() && !trainingInstanceToUpdate.finished()) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id",
                     trainingInstanceToUpdate.getId().getClass(), trainingInstanceToUpdate.getId(),
