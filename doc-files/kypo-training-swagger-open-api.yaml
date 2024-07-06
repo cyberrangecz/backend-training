@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 2.3.6"
+  version: "Version: 2.5.0"
   title: "KYPO Training - API Reference"
 host: "localhost:8083"
 basePath: "/kypo-rest-training/api/v1"
@@ -18,7 +18,100 @@ schemes:
 - "http"
 - "https"
 paths:
-  /cheating-detections/create-detection:
+  /cheating-detections/answer-similarity:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Answer Similarity Detection event."
+      description: ""
+      operationId: "findDetectionEventOfAnswerSimilarityById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/detected-commands/{eventId}:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Get all forbidden commands of detection event."
+      description: ""
+      operationId: "findAllForbiddenCommandsOfEvent"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "path"
+        description: "the event id"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Forbidden commands have been found."
+          schema:
+            $ref: "#/definitions/DetectionEventRestResource"
+        404:
+          description: "The forbidden commands have not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/detected-forbidden-commands:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Forbidden Commands Detection event."
+      description: ""
+      operationId: "findDetectionEventOfForbiddenCommandsById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/detection:
     post:
       tags:
       - "Cheating detection"
@@ -43,6 +136,37 @@ paths:
             $ref: "#/definitions/CheatingDetectionDTO"
         400:
           description: "The provided cheating detection is not valid"
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/event:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Detection event."
+      description: ""
+      operationId: "findDetectionEventById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
           schema:
             $ref: "#/definitions/ApiError"
         500:
@@ -86,7 +210,165 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
-  /cheating-detections/find-all-participants:
+  /cheating-detections/forbidden-commands:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Get all forbidden commands of detection event."
+      description: "This can only be done by organizer of training instance or administrator."
+      operationId: "findAllForbiddenCommandsOfEvent"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "the event id"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Pagination support."
+        required: false
+        schema:
+          $ref: "#/definitions/Pageable"
+      - name: "fields"
+        in: "query"
+        description: "Fields which should be returned in REST API response"
+        required: false
+        type: "string"
+      - name: "page"
+        in: "query"
+        description: "Results page you want to retrieve (0..N)"
+        required: false
+        type: "integer"
+        x-example: 0
+      - name: "size"
+        in: "query"
+        description: "Number of records per page."
+        required: false
+        type: "integer"
+        x-example: 20
+      - name: "sort"
+        in: "query"
+        description: "Sorting criteria in the format: property(,asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+          example: "asc"
+        collectionFormat: "multi"
+        x-example: "asc"
+      responses:
+        200:
+          description: "Forbidden commands have been found."
+          schema:
+            $ref: "#/definitions/DetectionEventRestResource"
+        404:
+          description: "The forbidden commands have not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/location-similarity:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Location Similarity Detection event."
+      description: ""
+      operationId: "findDetectionEventOfLocationSimilarityById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/minimal-solve-time:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Minimal Solve Time Detection event."
+      description: ""
+      operationId: "findDetectionEventOfMinimalSolveTimeById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/no-commands:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "No Commands Detection event."
+      description: ""
+      operationId: "findDetectionEventOfNoCommandsById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/participants:
     get:
       tags:
       - "Cheating detection"
@@ -151,193 +433,7 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
-  /cheating-detections/find-answer-similarity:
-    get:
-      tags:
-      - "Cheating detection"
-      summary: "Answer Similarity Detection event."
-      description: ""
-      operationId: "findDetectionEventOfAnswerSimilarityById"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "eventId"
-        in: "query"
-        description: "eventId"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "The detection event has been found."
-          schema:
-            $ref: "#/definitions/AccessTrainingRunDTO"
-        404:
-          description: "The detection event has not been found."
-          schema:
-            $ref: "#/definitions/ApiError"
-        500:
-          description: "Unexpected condition was encountered."
-          schema:
-            $ref: "#/definitions/ApiError"
-      security:
-      - bearerAuth: []
-  /cheating-detections/find-event:
-    get:
-      tags:
-      - "Cheating detection"
-      summary: "Detection event."
-      description: ""
-      operationId: "findDetectionEventById"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "eventId"
-        in: "query"
-        description: "eventId"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "The detection event has been found."
-          schema:
-            $ref: "#/definitions/AccessTrainingRunDTO"
-        404:
-          description: "The detection event has not been found."
-          schema:
-            $ref: "#/definitions/ApiError"
-        500:
-          description: "Unexpected condition was encountered."
-          schema:
-            $ref: "#/definitions/ApiError"
-      security:
-      - bearerAuth: []
-  /cheating-detections/find-forbidden-commands:
-    get:
-      tags:
-      - "Cheating detection"
-      summary: "Forbidden Commands Detection event."
-      description: ""
-      operationId: "findDetectionEventOfForbiddenCommandsById"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "eventId"
-        in: "query"
-        description: "eventId"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "The detection event has been found."
-          schema:
-            $ref: "#/definitions/AccessTrainingRunDTO"
-        404:
-          description: "The detection event has not been found."
-          schema:
-            $ref: "#/definitions/ApiError"
-        500:
-          description: "Unexpected condition was encountered."
-          schema:
-            $ref: "#/definitions/ApiError"
-      security:
-      - bearerAuth: []
-  /cheating-detections/find-location-similarity:
-    get:
-      tags:
-      - "Cheating detection"
-      summary: "Location Similarity Detection event."
-      description: ""
-      operationId: "findDetectionEventOfLocationSimilarityById"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "eventId"
-        in: "query"
-        description: "eventId"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "The detection event has been found."
-          schema:
-            $ref: "#/definitions/AccessTrainingRunDTO"
-        404:
-          description: "The detection event has not been found."
-          schema:
-            $ref: "#/definitions/ApiError"
-        500:
-          description: "Unexpected condition was encountered."
-          schema:
-            $ref: "#/definitions/ApiError"
-      security:
-      - bearerAuth: []
-  /cheating-detections/find-minimal-solve-time:
-    get:
-      tags:
-      - "Cheating detection"
-      summary: "Minimal Solve Time Detection event."
-      description: ""
-      operationId: "findDetectionEventOfMinimalSolveTimeById"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "eventId"
-        in: "query"
-        description: "eventId"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "The detection event has been found."
-          schema:
-            $ref: "#/definitions/AccessTrainingRunDTO"
-        404:
-          description: "The detection event has not been found."
-          schema:
-            $ref: "#/definitions/ApiError"
-        500:
-          description: "Unexpected condition was encountered."
-          schema:
-            $ref: "#/definitions/ApiError"
-      security:
-      - bearerAuth: []
-  /cheating-detections/find-no-commands:
-    get:
-      tags:
-      - "Cheating detection"
-      summary: "No Commands Detection event."
-      description: ""
-      operationId: "findDetectionEventOfNoCommandsById"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "eventId"
-        in: "query"
-        description: "eventId"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "The detection event has been found."
-          schema:
-            $ref: "#/definitions/AccessTrainingRunDTO"
-        404:
-          description: "The detection event has not been found."
-          schema:
-            $ref: "#/definitions/ApiError"
-        500:
-          description: "Unexpected condition was encountered."
-          schema:
-            $ref: "#/definitions/ApiError"
-      security:
-      - bearerAuth: []
-  /cheating-detections/find-time-proximity:
+  /cheating-detections/time-proximity:
     get:
       tags:
       - "Cheating detection"
@@ -403,7 +499,7 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
-  /cheating-detections/{cheatingDetectionId}/find-all-events:
+  /cheating-detections/{cheatingDetectionId}/events:
     get:
       tags:
       - "Cheating detection"
@@ -511,7 +607,7 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
-  /cheating-detections/{trainingInstanceId}/find-all-detections:
+  /cheating-detections/{trainingInstanceId}/detections:
     get:
       tags:
       - "Cheating detection"
@@ -4438,11 +4534,21 @@ definitions:
         format: "int64"
         example: 2
         description: "id of a cheating detection during which the event was detected."
+      training_run_id:
+        type: "integer"
+        format: "int64"
+        example: 2
+        description: "id of a training run in which the event was detected."
       level_id:
         type: "integer"
         format: "int64"
         example: 3
         description: "Training level id in which the event occurred."
+      level_order:
+        type: "integer"
+        format: "int32"
+        example: 3
+        description: "Training level order in which the event occurred."
       level_title:
         type: "string"
         example: "SQL injection"
@@ -4468,6 +4574,10 @@ definitions:
         - "TIME_PROXIMITY"
         - "NO_COMMANDS"
         - "FORBIDDEN_COMMANDS"
+      participants:
+        type: "string"
+        example: "John Doe,Jane Doe"
+        description: "participants of the event."
     description: "Superclass for classes AnswerSimilarityDetectionEventDTO, ForbiddenCommandsDetectionEventDTO,\
       \ LocationSimilarityDetectionEventDTO,MinimalSolveTimeDetectionEventDTO, NoCommandsDetectionEventDTO\
       \ and TimeProximityDetectionEventDTO"
@@ -5343,6 +5453,12 @@ definitions:
         - "RUNNING"
         - "DISABLED"
         - "FINISHED"
+      forbidden_commands:
+        type: "array"
+        example: "[]"
+        description: "list of forbidden commands."
+        items:
+          $ref: "#/definitions/ForbiddenCommandDTO"
     description: "Basic information about cheating detection."
   CheatingDetectionRestResource:
     type: "object"
@@ -5724,17 +5840,36 @@ definitions:
         correct:
           type: "boolean"
       description: "Holds a data about the specific FFQ answer."
+  ForbiddenCommandDTO:
+    type: "object"
+    properties:
+      command:
+        type: "string"
+        example: "nmap"
+        description: "command."
+      type:
+        type: "string"
+        example: "BASH"
+        description: "Type of command."
+        enum:
+        - "BASH"
+        - "MSF"
+      cheating_detection_id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Id of cheating detection."
+    description: "Basic information about forbidden command."
   ForbiddenCommandsDetectionEventDTO:
     allOf:
     - $ref: "#/definitions/AbstractDetectionEventDTO"
     - type: "object"
       properties:
-        forbidden_commands:
-          type: "array"
-          example: "1"
-          description: "List of forbidden commands."
-          items:
-            type: "string"
+        command_count:
+          type: "integer"
+          format: "int32"
+          example: 10
+          description: "count of forbidden commands."
       description: "A detection event of type Forbidden Commands."
   HintDTO:
     type: "object"
@@ -6704,6 +6839,11 @@ definitions:
         type: "boolean"
         description: "Indicates if any of the training levels have defined reference\
           \ solution."
+      created_at:
+        type: "string"
+        format: "date-time"
+        example: "2017-10-19 10:23:54+02"
+        description: "Time of creation of definition."
     description: "A blueprint of abstract levels."
   TrainingDefinitionCreateDTO:
     type: "object"
@@ -6818,6 +6958,11 @@ definitions:
         type: "string"
         example: "John Doe"
         description: "Name of the user who has done the last edit in definition."
+      created_at:
+        type: "string"
+        format: "date-time"
+        example: "2017-10-19 10:23:54+02"
+        description: "Time of creation of definition."
     description: "A blueprint of abstract levels."
   TrainingDefinitionInfoDTO:
     type: "object"
@@ -7809,6 +7954,10 @@ definitions:
       sandbox_instance_ref_id:
         type: "string"
         description: "Reference to the received sandbox."
+      sandbox_instance_allocation_id:
+        type: "integer"
+        format: "int32"
+        description: "Allocation id to the received sandbox."
       participant_ref:
         description: "Reference to participant of training run."
         $ref: "#/definitions/UserRefDTO"
