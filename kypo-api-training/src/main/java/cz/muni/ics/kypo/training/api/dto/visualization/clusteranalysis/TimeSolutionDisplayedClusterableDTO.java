@@ -2,6 +2,7 @@ package cz.muni.ics.kypo.training.api.dto.visualization.clusteranalysis;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import cz.muni.ics.kypo.training.utils.ClusterMathUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.math3.stat.clustering.Clusterable;
