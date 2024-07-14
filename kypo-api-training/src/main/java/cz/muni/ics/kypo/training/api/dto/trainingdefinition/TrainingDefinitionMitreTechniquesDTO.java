@@ -3,8 +3,8 @@ package cz.muni.ics.kypo.training.api.dto.trainingdefinition;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @ApiModel(value = "TrainingDefinitionMitreTechniqueDTO", description = "Represent training definition and all used mitre techniques.")
 public class TrainingDefinitionMitreTechniquesDTO {
@@ -16,7 +16,7 @@ public class TrainingDefinitionMitreTechniquesDTO {
     @ApiModelProperty(value = "Indicates if the training definition has been played by user.", example = "true")
     private boolean played;
     @ApiModelProperty(value = "List of MITRE technique keys.", example = "[TA0043.T1595, TA0042.T1588.006]")
-    private Set<String> mitreTechniques;
+    private List<String> mitreTechniques;
 
     public Long getId() {
         return id;
@@ -42,11 +42,11 @@ public class TrainingDefinitionMitreTechniquesDTO {
         this.played = played;
     }
 
-    public Set<String> getMitreTechniques() {
+    public List<String> getMitreTechniques() {
         return mitreTechniques;
     }
 
-    public void setMitreTechniques(Set<String> mitreTechniques) {
+    public void setMitreTechniques(List<String> mitreTechniques) {
         this.mitreTechniques = mitreTechniques;
     }
 
