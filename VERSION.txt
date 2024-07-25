@@ -1,3 +1,4 @@
+2.5.2 Change mitre technique DTO type from Set to List.
 2.5.1 Add check to prevent reviving an expired training instance.
 2.5.0 Fix visualization command parser crashing edge case. Refactor cheating detection module.
 2.4.0 Update cheating detection models and export.
