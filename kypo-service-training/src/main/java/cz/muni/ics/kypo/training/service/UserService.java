@@ -1,14 +1,14 @@
 package cz.muni.ics.kypo.training.service;
 
-import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.enums.RoleType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
-import cz.muni.ics.kypo.training.exceptions.*;
+import cz.muni.ics.kypo.training.exceptions.CustomWebClientException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
 import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.UserRefRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageRequest;
@@ -28,8 +28,6 @@ import java.util.Set;
  */
 @Service
 public class UserService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     private final WebClient userManagementServiceWebClient;
     private final UserRefRepository userRefRepository;
@@ -56,6 +54,17 @@ public class UserService {
     public UserRef getUserByUserRefId(Long userRefId) {
         return userRefRepository.findUserByUserRefId(userRefId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId)));
+    }
+
+    /**
+     * If user reference with given user id does not exist, it is created and returned.
+     * Otherwise, the existing one is returned.
+     *
+     * @param userRefId id of the referenced user
+     * @return user reference with given referenced id
+     */
+    public UserRef createOrGetUserRef(Long userRefId) {
+        return userRefRepository.createOrGet(userRefId);
     }
 
     /**
@@ -200,18 +209,6 @@ public class UserService {
         }
     }
 
-    /**
-     * Create new user reference
-     *
-     * @param userRefToCreate user reference to be created
-     * @return created {@link UserRef}
-     */
-    @TransactionalWO
-    public UserRef createUserRef(UserRef userRefToCreate) {
-        UserRef userRef = userRefRepository.save(userRefToCreate);
-        LOG.info("User ref with user_ref_id: {} created.", userRef.getUserRefId());
-        return userRef;
-    }
 
     private void setCommonParams(String givenName, String familyName, Pageable pageable, UriBuilder builder) {
         if (givenName != null) {
