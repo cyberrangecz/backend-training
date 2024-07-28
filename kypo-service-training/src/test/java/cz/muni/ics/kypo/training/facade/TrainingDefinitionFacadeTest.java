@@ -364,8 +364,9 @@ public class TrainingDefinitionFacadeTest {
         PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(List.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
-        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        given(userService.createOrGetUserRef(author1.getUserRefId())).willReturn(author1);
+        given(userService.getUsersRefDTOByGivenUserIds(List.of(author3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
+        given(userService.createOrGetUserRef(author3.getUserRefId())).willReturn(author3);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author2.getUserRefId())));
         assertEquals(2, trainingDefinition1.getAuthors().size());
         assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author3)));
@@ -373,11 +374,12 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void editAuthorsRemoveLoggedInAuthor() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(List.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
-        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        given(userService.createOrGetUserRef(author1.getUserRefId())).willReturn(author1);
+        given(userService.getUsersRefDTOByGivenUserIds(List.of(author3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
+        given(userService.createOrGetUserRef(author3.getUserRefId())).willReturn(author3);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author1.getUserRefId())));
         assertEquals(3, trainingDefinition1.getAuthors().size());
         assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
@@ -385,11 +387,12 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void editAuthorsConcurrentlyRemoveAndAddOAuthorWhoIsNotInTrainingDefinition() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(List.of(author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
-        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        given(userService.createOrGetUserRef(author1.getUserRefId())).willReturn(author1);
+        given(userService.getUsersRefDTOByGivenUserIds(List.of(author3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3), pagination));
+        given(userService.createOrGetUserRef(author3.getUserRefId())).willReturn(author3);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author3.getUserRefId())), new HashSet<>(Set.of(author3.getUserRefId())));
         assertEquals(3, trainingDefinition1.getAuthors().size());
         assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
@@ -397,11 +400,12 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void editAuthorsConcurrentlyRemoveAndAddAuthorWhoIsInTrainingDefinition() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(List.of(author2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO2), pagination));
-        given(userService.getUserByUserRefId(author2.getUserRefId())).willReturn(author2);
+        given(userService.createOrGetUserRef(author1.getUserRefId())).willReturn(author1);
+        given(userService.getUsersRefDTOByGivenUserIds(List.of(author2.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO2), pagination));
+        given(userService.createOrGetUserRef(author2.getUserRefId())).willReturn(author2);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId())), new HashSet<>(Set.of(author2.getUserRefId())));
         assertEquals(2, trainingDefinition1.getAuthors().size());
         assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2)));
@@ -409,10 +413,10 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void editAuthorsWithEmptySetOfRemovalAndAdditionSets() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(List.of(author2.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO2), pagination));
+        given(userService.getUsersRefDTOByGivenUserIds(List.of(author2.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO2), pagination));
         given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author2);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(), new HashSet<>());
         assertEquals(2, trainingDefinition1.getAuthors().size());
@@ -421,7 +425,6 @@ public class TrainingDefinitionFacadeTest {
 
     @Test
     public void editAuthorsRemove() {
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(), new HashSet<>(Set.of(author1.getUserRefId(), author2.getUserRefId())));
@@ -432,12 +435,13 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void editAuthorsAdd() {
         trainingDefinition1.removeAuthorsByUserRefIds(Set.of(author2.getUserRefId()));
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(List.of(author2.getUserRefId(), author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3, authorDTO2), pagination));
-        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
-        given(userService.getUserByUserRefId(author2.getUserRefId())).willReturn(author2);
+        given(userService.createOrGetUserRef(author1.getUserRefId())).willReturn(author1);
+        given(userService.getUsersRefDTOByGivenUserIds(List.of(author2.getUserRefId(), author3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3, authorDTO2), pagination));
+        given(userService.createOrGetUserRef(author3.getUserRefId())).willReturn(author3);
+        given(userService.createOrGetUserRef(author2.getUserRefId())).willReturn(author2);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId(), author3.getUserRefId())), new HashSet<>());
         assertEquals(3, trainingDefinition1.getAuthors().size());
         assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));
@@ -446,13 +450,14 @@ public class TrainingDefinitionFacadeTest {
     @Test
     public void editAuthorsAddUserRefNotInDB() {
         trainingDefinition1.removeAuthorsByUserRefIds(Set.of(author2.getUserRefId()));
-        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0,1,999,1,1);
+        PageResultResource.Pagination pagination = new PageResultResource.Pagination(0, 1, 999, 1, 1);
         given(trainingDefinitionService.findById(trainingDefinition1.getId())).willReturn(trainingDefinition1);
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(author1.getUserRefId());
-        given(userService.getUsersRefDTOByGivenUserIds(List.of(author2.getUserRefId(), author3.getUserRefId()), PageRequest.of(0,999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3, authorDTO2), pagination));
-        given(userService.getUserByUserRefId(author3.getUserRefId())).willReturn(author3);
+        given(userService.createOrGetUserRef(author1.getUserRefId())).willReturn(author1);
+        given(userService.getUsersRefDTOByGivenUserIds(List.of(author2.getUserRefId(), author3.getUserRefId()), PageRequest.of(0, 999), null, null)).willReturn(new PageResultResource<>(List.of(authorDTO3, authorDTO2), pagination));
+        given(userService.createOrGetUserRef(author3.getUserRefId())).willReturn(author3);
         willThrow(EntityNotFoundException.class).given(userService).getUserByUserRefId(author2.getUserRefId());
-        given(userService.createUserRef(any(UserRef.class))).willReturn(author2);
+        given(userService.createOrGetUserRef(author2.getUserRefId())).willReturn(author2);
         trainingDefinitionFacade.editAuthors(trainingDefinition1.getId(), new HashSet<>(Set.of(author2.getUserRefId(), author3.getUserRefId())), new HashSet<>());
         assertEquals(3, trainingDefinition1.getAuthors().size());
         assertTrue(trainingDefinition1.getAuthors().containsAll(Set.of(author1, author2, author3)));

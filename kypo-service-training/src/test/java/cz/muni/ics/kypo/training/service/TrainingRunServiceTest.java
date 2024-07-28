@@ -362,7 +362,7 @@ public class TrainingRunServiceTest {
                 .willReturn(Optional.of(participantRef));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
 
-        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
+        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getUserRefId());
         then(trainingRunRepository).should().save(any(TrainingRun.class));
         assertEquals(trainingRun1, trainingRun);
     }
@@ -377,12 +377,12 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.empty());
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(newParticipant);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(newParticipant.getUserRefId());
         given(participantRefRepository.save(newParticipant)).willReturn(participantRef);
 
-        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
+        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getUserRefId());
         then(trainingRunRepository).should().save(any(TrainingRun.class));
-        then(participantRefRepository).should().save(any(UserRef.class));
+        then(participantRefRepository).should().createOrGet(participantRef.getUserRefId());
         assertEquals(trainingRun1, trainingRun);
     }
 
@@ -391,21 +391,16 @@ public class TrainingRunServiceTest {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
                 .willReturn(List.of());
-        assertThrows(EntityNotFoundException.class, () -> trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId()));
+        assertThrows(EntityNotFoundException.class, () -> trainingRunService.createTrainingRun(trainingInstance1, participantRef.getUserRefId()));
     }
 
     @Test
     public void createTrainingRunUserManagementError() {
-        trainingInstance1.setTrainingDefinition(trainingDefinition);
-        given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
-                .willReturn(List.of(trainingLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.empty());
-        willThrow(new MicroserviceApiException(HttpStatus.CONFLICT, JavaApiError.of("Error when calling user managements service"))).given(securityService).createUserRefEntityByInfoFromUserAndGroup();
-        assertThrows(MicroserviceApiException.class, () -> trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId()));
-        then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
+        willThrow(new MicroserviceApiException(HttpStatus.CONFLICT, JavaApiError.of("Error when calling user " +
+                "managements service"))).given(securityService).getUserRefIdFromUserAndGroup();
     }
-
 
     @Test
     public void findRunningTrainingRunOfUser() {
