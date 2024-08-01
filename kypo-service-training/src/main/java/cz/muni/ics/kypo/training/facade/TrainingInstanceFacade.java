@@ -222,11 +222,8 @@ public class TrainingInstanceFacade {
             if (actualOrganizersIds.contains(organizer.getUserRefId())) {
                 continue;
             }
-            try {
-                trainingInstance.addOrganizer(userService.getUserByUserRefId(organizer.getUserRefId()));
-            } catch (EntityNotFoundException ex) {
-                trainingInstance.addOrganizer(userService.createUserRef(createUserRefFromDTO(organizer)));
-            }
+            UserRef userRef = userService.createOrGetUserRef(organizer.getUserRefId());
+            trainingInstance.addOrganizer(userRef);
         }
     }
 
@@ -241,12 +238,6 @@ public class TrainingInstanceFacade {
         }
         while (page < usersPageResultResource.getPagination().getTotalPages());
         return users;
-    }
-
-    private UserRef createUserRefFromDTO(UserRefDTO userToBeCreated) {
-        UserRef userRef = new UserRef();
-        userRef.setUserRefId(userToBeCreated.getUserRefId());
-        return userRef;
     }
 
     /**

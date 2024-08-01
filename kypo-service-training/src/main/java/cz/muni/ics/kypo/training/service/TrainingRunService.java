@@ -374,12 +374,9 @@ public class TrainingRunService {
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setCurrentLevel(currentLevel);
 
-        Optional<UserRef> userRefOpt = participantRefRepository.findUserByUserRefId(participantRefId);
-        if (userRefOpt.isPresent()) {
-            newTrainingRun.setParticipantRef(userRefOpt.get());
-        } else {
-            newTrainingRun.setParticipantRef(participantRefRepository.save(securityService.createUserRefEntityByInfoFromUserAndGroup()));
-        }
+        UserRef userRef = participantRefRepository.createOrGet(participantRefId);
+        newTrainingRun.setParticipantRef(userRef);
+
         newTrainingRun.setAssessmentResponses("[]");
         newTrainingRun.setState(TRState.RUNNING);
         newTrainingRun.setTrainingInstance(trainingInstance);

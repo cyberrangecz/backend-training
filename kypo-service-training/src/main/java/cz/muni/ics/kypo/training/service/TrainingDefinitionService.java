@@ -852,15 +852,10 @@ public class TrainingDefinitionService {
         return LocalDateTime.now(Clock.systemUTC());
     }
 
+
     private void addLoggedInUserToTrainingDefinitionAsAuthor(TrainingDefinition trainingDefinition) {
-        Optional<UserRef> user = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
-        if (user.isPresent()) {
-            trainingDefinition.addAuthor(user.get());
-        } else {
-            UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
-            userRefRepository.saveAndFlush(newUser);
-            trainingDefinition.addAuthor(newUser);
-        }
+        UserRef user = userRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup());
+        trainingDefinition.addAuthor(user);
     }
 
     private void checkSumOfHintPenalties(TrainingLevel trainingLevel) {
