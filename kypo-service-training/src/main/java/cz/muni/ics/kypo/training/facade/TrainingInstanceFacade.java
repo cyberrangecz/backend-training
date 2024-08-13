@@ -109,6 +109,18 @@ public class TrainingInstanceFacade {
     }
 
     /**
+     * Finds specific Training Instance by pool id
+     *
+     * @param poolId ID of a pool
+     * @return specific {@link TrainingInstanceDTO} by pool id
+     */
+    @IsOrganizerOrAdmin
+    @TransactionalRO
+    public TrainingInstanceDTO findByPoolId(Long poolId) {
+        return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByPoolId(poolId));
+    }
+
+    /**
      * Find all Training Instances.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
@@ -148,7 +160,7 @@ public class TrainingInstanceFacade {
         Long oldPoolId = trainingInstance.getPoolId();
         String accessToken = trainingInstanceService.update(updatedTrainingInstance);
         if (isPoolIdChanged(oldPoolId, updatedTrainingInstance.getPoolId())) {
-            handlePoolIdModification(oldPoolId, updatedTrainingInstance.getPoolId());
+            handlePoolIdModification(oldPoolId, updatedTrainingInstance.getPoolId(), trainingInstance.getAccessToken());
         }
         return accessToken;
     }
@@ -174,16 +186,16 @@ public class TrainingInstanceFacade {
 
     }
 
-    private void handlePoolIdModification(Long currentPoolId, Long newPoolId) {
+    private void handlePoolIdModification(Long currentPoolId, Long newPoolId, String accessToken) {
         if(currentPoolId == null) {
-            sandboxApiService.lockPool(newPoolId);
+            sandboxApiService.lockPool(newPoolId, accessToken);
         } else if (newPoolId == null) {
             sandboxApiService.unlockPool(currentPoolId);
             deleteBashCommandsByPool(currentPoolId);
         } else {
             sandboxApiService.unlockPool(currentPoolId);
             deleteBashCommandsByPool(currentPoolId);
-            sandboxApiService.lockPool(newPoolId);
+            sandboxApiService.lockPool(newPoolId, accessToken);
         }
     }
 
@@ -207,7 +219,7 @@ public class TrainingInstanceFacade {
         trainingInstance.setId(null);
         TrainingInstance createdTrainingInstance = trainingInstanceService.create(trainingInstance);
         if(trainingInstance.getPoolId() != null) {
-            handlePoolIdModification(null, trainingInstance.getPoolId());
+            handlePoolIdModification(null, trainingInstance.getPoolId(), trainingInstance.getAccessToken());
         }
         return trainingInstanceMapper.mapToDTO(createdTrainingInstance);
     }
@@ -308,7 +320,7 @@ public class TrainingInstanceFacade {
                     "Training instance already contains pool Id. Please first unassign pool id and then assign another pool again."));
         }
         // lock pool and update pool
-        sandboxApiService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId());
+        sandboxApiService.lockPool(trainingInstanceAssignPoolIdDTO.getPoolId(), trainingInstance.getAccessToken());
         trainingInstance.setPoolId(trainingInstanceAssignPoolIdDTO.getPoolId());
         TrainingInstance updatedTrainingInstance = trainingInstanceService.auditAndSave(trainingInstance);
         return trainingInstanceMapper.mapEntityToTIBasicInfo(updatedTrainingInstance);

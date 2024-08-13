@@ -102,7 +102,15 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
      */
     Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
-    
+
+    /**
+     * Find training instance by pool id.
+     *
+     * @param poolId the pool id
+     * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
+     */
+    Optional<TrainingInstance> findByPoolId(@Param("poolId") Long poolId);
+
     /**
      * Checks if training instance finished.
      *
