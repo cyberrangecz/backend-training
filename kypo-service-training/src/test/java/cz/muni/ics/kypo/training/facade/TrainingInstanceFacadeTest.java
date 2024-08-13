@@ -118,6 +118,7 @@ public class TrainingInstanceFacadeTest {
         trainingInstance1 = testDataFactory.getConcludedInstance();
         trainingInstance1.setId(1L);
         trainingInstance1.setOrganizers(new HashSet<>(Set.of(organizer1, organizer2)));
+        trainingInstance1.setAccessToken("abc-1234");
 
         trainingInstance2 = testDataFactory.getFutureInstance();
         trainingInstance2.setId(2L);
@@ -223,15 +224,15 @@ public class TrainingInstanceFacadeTest {
     public void assignPoolToTrainingInstance() {
         trainingInstance1.setPoolId(null);
         given(trainingInstanceService.findById(trainingInstance1.getId())).willReturn(trainingInstance1);
-        given(sandboxApiService.lockPool(trainingInstance1.getPoolId())).willReturn(lockedPoolInfo);
+        given(sandboxApiService.lockPool(trainingInstance1.getPoolId(), trainingInstance1.getAccessToken())).willReturn(lockedPoolInfo);
         trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO);
-        then(sandboxApiService).should().lockPool(trainingInstance1.getId());
+        then(sandboxApiService).should().lockPool(trainingInstance1.getId(), trainingInstance1.getAccessToken());
     }
 
     @Test
     public void allocateSandboxesWithServiceException() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
-        willThrow(EntityConflictException.class).given(sandboxApiService).lockPool(anyLong());
+        willThrow(EntityConflictException.class).given(sandboxApiService).lockPool(anyLong(), eq(trainingInstance1.getAccessToken()));
         assertThrows(EntityConflictException.class, () -> trainingInstanceFacade.assignPoolToTrainingInstance(trainingInstance1.getId(), trainingInstanceAssignPoolIdDTO));
     }
 

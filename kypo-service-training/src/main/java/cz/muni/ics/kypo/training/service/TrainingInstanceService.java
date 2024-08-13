@@ -94,6 +94,17 @@ public class TrainingInstanceService {
     }
 
     /**
+     * Find specific Training instance by pool id.
+     *
+     * @param poolId the pool id
+     * @return the {@link TrainingInstance}
+     */
+    public TrainingInstance findByPoolId(Long poolId) {
+        return trainingInstanceRepository.findByPoolId(poolId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "poolId", poolId.getClass(), poolId)));
+    }
+
+    /**
      * Find all Training Instances.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
