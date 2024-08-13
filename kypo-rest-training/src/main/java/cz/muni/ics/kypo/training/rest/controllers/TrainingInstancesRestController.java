@@ -30,9 +30,9 @@ import java.util.Set;
  * The rest controller for Training instances.
  */
 @Api(value = "/training-instances",
-     tags = "Training instances",
-     consumes = MediaType.APPLICATION_JSON_VALUE,
-     authorizations = @Authorization(value = "bearerAuth"))
+        tags = "Training instances",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        authorizations = @Authorization(value = "bearerAuth"))
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiError.class),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
@@ -89,7 +89,7 @@ public class TrainingInstancesRestController {
     /**
      * Get requested Training Instance by pool id.
      *
-     * @param poolId     id of the assigned pool.
+     * @param poolId id of the assigned pool.
      * @return Requested Training Instance by pool id.
      */
     @ApiOperation(httpMethod = "GET",
@@ -113,6 +113,32 @@ public class TrainingInstancesRestController {
     }
 
     /**
+     * Get Training instance access token by pool id.
+     *
+     * @param poolId id of the assigned pool.
+     * @return Requested access token by pool id if it exists.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get training instance access token by pool id.",
+            response = String.class,
+            nickname = "findTrainingInstanceAccessTokenByPoolId",
+            notes = "Returns training instance access token by pool id.",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The access token has been found", response = TrainingInstanceDTO.class),
+            @ApiResponse(code = 404, message = "The access token has not been found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/access/{poolId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> findInstanceAccessTokenByPoolId(
+            @ApiParam(value = "Pool ID", required = true)
+            @PathVariable("poolId") Long poolId) {
+        String accessToken = trainingInstanceFacade.findInstanceAccessTokenByPoolId(poolId);
+        return ResponseEntity.ok(accessToken);
+    }
+
+    /**
      * Get all Training Instances.
      *
      * @param predicate specifies query to database.
@@ -133,7 +159,7 @@ public class TrainingInstancesRestController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> findAllTrainingInstances(@QuerydslPredicate(root = TrainingInstance.class) Predicate predicate,
                                                            @ApiParam(value = "Pagination support.", required = false)
-                                                                   Pageable pageable,
+                                                           Pageable pageable,
                                                            @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                            @RequestParam(value = "fields", required = false) String fields) {
         PageResultResource<TrainingInstanceFindAllResponseDTO> trainingInstanceResource = trainingInstanceFacade.findAll(predicate, pageable);
@@ -301,7 +327,7 @@ public class TrainingInstancesRestController {
                                                                           @ApiParam(value = "If only active or not active training runs should be returned.")
                                                                           @RequestParam(value = "isActive", required = false) Boolean isActive,
                                                                           @ApiParam(value = "Pagination support.")
-                                                                                  Pageable pageable,
+                                                                          Pageable pageable,
                                                                           @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                                                           @RequestParam(value = "fields", required = false) String fields) {
         PageResultResource<TrainingRunDTO> trainingRunResource = trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, isActive, pageable);
@@ -338,7 +364,7 @@ public class TrainingInstancesRestController {
                                                                   @ApiParam(value = "Family name filter.", required = true)
                                                                   @RequestParam(value = "familyName", required = false) String familyName,
                                                                   @ApiParam(value = "Pagination support.")
-                                                                          Pageable pageable) {
+                                                                  Pageable pageable) {
         PageResultResource<UserRefDTO> designers = trainingInstanceFacade.getOrganizersOfTrainingInstance(trainingInstanceId, pageable, givenName, familyName);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }
@@ -373,7 +399,7 @@ public class TrainingInstancesRestController {
                                                                           @ApiParam(value = "Family name filter.", required = false)
                                                                           @RequestParam(value = "familyName", required = false) String familyName,
                                                                           @ApiParam(value = "Pagination support.")
-                                                                                  Pageable pageable) {
+                                                                          Pageable pageable) {
         PageResultResource<UserRefDTO> designers = trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(trainingInstanceId, pageable, givenName, familyName);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
     }

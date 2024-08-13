@@ -1,4 +1,4 @@
-2.5.5 Add training access tokens to sandbox api calls.
+2.5.5 Add training access tokens to sandbox api calls. Add access token endpoints.
 2.5.4 Fix user ref creation failing on parallel requests.
 2.5.3 Add default sorting to training runs query.
 2.5.2 Change mitre technique DTO type from Set to List.
