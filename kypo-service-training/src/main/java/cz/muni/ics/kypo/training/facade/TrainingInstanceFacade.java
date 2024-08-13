@@ -121,6 +121,20 @@ public class TrainingInstanceFacade {
     }
 
     /**
+     * Get Training instance access token by pool id.
+     *
+     * @param poolId id of the assigned pool.
+     * @return Requested access token by pool id if it exists.
+     */
+    @IsOrganizerOrAdmin
+    @TransactionalRO
+    public String findInstanceAccessTokenByPoolId(Long poolId) {
+        return trainingInstanceService.findInstanceAccessTokenByPoolId(poolId);
+    }
+
+
+
+    /**
      * Find all Training Instances.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.

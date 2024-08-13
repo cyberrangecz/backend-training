@@ -105,6 +105,17 @@ public class TrainingInstanceService {
     }
 
     /**
+     * Find Training instance access token by pool id if exists.
+     *
+     * @param poolId the pool id
+     * @return the access token
+     */
+    public String findInstanceAccessTokenByPoolId(Long poolId) {
+        Optional<TrainingInstance> instance = trainingInstanceRepository.findByPoolId(poolId);
+        return instance.map(TrainingInstance::getAccessToken).orElse(null);
+    }
+
+    /**
      * Find all Training Instances.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
