@@ -94,17 +94,6 @@ public class TrainingInstanceService {
     }
 
     /**
-     * Find specific Training instance by pool id.
-     *
-     * @param poolId the pool id
-     * @return the {@link TrainingInstance}
-     */
-    public TrainingInstance findByPoolId(Long poolId) {
-        return trainingInstanceRepository.findByPoolId(poolId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "poolId", poolId.getClass(), poolId)));
-    }
-
-    /**
      * Find Training instance access token by pool id if exists.
      *
      * @param poolId the pool id

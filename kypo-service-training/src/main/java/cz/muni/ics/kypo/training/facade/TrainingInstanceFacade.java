@@ -109,18 +109,6 @@ public class TrainingInstanceFacade {
     }
 
     /**
-     * Finds specific Training Instance by pool id
-     *
-     * @param poolId ID of a pool
-     * @return specific {@link TrainingInstanceDTO} by pool id
-     */
-    @IsOrganizerOrAdmin
-    @TransactionalRO
-    public TrainingInstanceDTO findByPoolId(Long poolId) {
-        return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByPoolId(poolId));
-    }
-
-    /**
      * Get Training instance access token by pool id.
      *
      * @param poolId id of the assigned pool.

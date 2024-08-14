@@ -87,32 +87,6 @@ public class TrainingInstancesRestController {
     }
 
     /**
-     * Get requested Training Instance by pool id.
-     *
-     * @param poolId id of the assigned pool.
-     * @return Requested Training Instance by pool id.
-     */
-    @ApiOperation(httpMethod = "GET",
-            value = "Get training instance by pool id.",
-            response = TrainingInstanceDTO.class,
-            nickname = "findTrainingInstanceByPoolId",
-            notes = "Returns training instance by pool id.",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The training instance has been found", response = TrainingInstanceDTO.class),
-            @ApiResponse(code = 404, message = "The training instance has not been found.", response = ApiError.class),
-            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
-    })
-    @GetMapping(path = "/pool/{poolId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> findTrainingInstanceByPoolId(
-            @ApiParam(value = "Pool ID", required = true)
-            @PathVariable("poolId") Long poolId) {
-        TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.findByPoolId(poolId);
-        return ResponseEntity.ok(trainingInstanceResource);
-    }
-
-    /**
      * Get Training instance access token by pool id.
      *
      * @param poolId id of the assigned pool.
