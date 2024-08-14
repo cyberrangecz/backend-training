@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 2.5.0"
+  version: "Version: 2.5.5"
   title: "KYPO Training - API Reference"
 host: "localhost:8083"
 basePath: "/kypo-rest-training/api/v1"
@@ -2384,6 +2384,37 @@ paths:
             $ref: "#/definitions/ApiError"
         409:
           description: "The training instance start time and end time are not valid."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /training-instances/access/{poolId}:
+    get:
+      tags:
+      - "Training instances"
+      summary: "Get training instance access token by pool id."
+      description: "Returns training instance access token by pool id."
+      operationId: "findTrainingInstanceAccessTokenByPoolId"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "poolId"
+        in: "path"
+        description: "Pool ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The access token has been found"
+          schema:
+            $ref: "#/definitions/TrainingInstanceDTO"
+        404:
+          description: "The access token has not been found."
           schema:
             $ref: "#/definitions/ApiError"
         500:
@@ -7006,7 +7037,6 @@ definitions:
         type: "array"
         example: "[TA0043.T1595, TA0042.T1588.006]"
         description: "List of MITRE technique keys."
-        uniqueItems: true
         items:
           type: "string"
     description: "Represent training definition and all used mitre techniques."
