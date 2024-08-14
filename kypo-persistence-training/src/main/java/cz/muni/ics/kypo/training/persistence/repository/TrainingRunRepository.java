@@ -69,11 +69,13 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @param pageable           the pageable
      * @return the page of all {@link TrainingRun}s associated with {@link TrainingInstance}
      */
+    @Query("SELECT tr FROM TrainingRun tr WHERE tr.trainingInstance.id = :trainingInstanceId ORDER BY tr.startTime ASC")
     @EntityGraph(
             value = "TrainingRun.findAllParticipantRef",
             type = EntityGraph.EntityGraphType.FETCH
     )
-    Page<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId, Pageable pageable);
+    Page<TrainingRun> findAllByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
+
 
     /**
      * Find all training runs associated with training instance.

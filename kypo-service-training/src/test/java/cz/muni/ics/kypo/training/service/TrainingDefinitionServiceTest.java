@@ -157,7 +157,7 @@ public class TrainingDefinitionServiceTest {
 
     @Test
     public void cloneTrainingDefinition() {
-        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(new UserRef());
+        given(userRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup())).willReturn(new UserRef());
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(anyLong()))
                 .willReturn(List.of(infoLevel, trainingLevel));
@@ -251,7 +251,7 @@ public class TrainingDefinitionServiceTest {
     @Test
     public void updateTrainingDefinition() {
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
-        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(new UserRef());
+        given(userRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup())).willReturn(new UserRef());
         trainingDefinitionService.update(unreleasedDefinition);
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
         then(trainingDefinitionRepository).should().save(unreleasedDefinition);
@@ -565,18 +565,18 @@ public class TrainingDefinitionServiceTest {
     public void createTrainingDefinitionWithKnownUser() {
         UserRef user = new UserRef();
         given(trainingDefinitionRepository.save(unreleasedDefinition)).willReturn(unreleasedDefinition);
-        given(userRefRepository.findUserByUserRefId(anyLong())).willReturn(Optional.of(user));
+        given(userRefRepository.createOrGet(anyLong())).willReturn(user);
         TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition, false);
         assertEquals(unreleasedDefinition, tD);
         then(trainingDefinitionRepository).should(times(1)).save(unreleasedDefinition);
     }
 
     @Test
-    public void createTrainingDefinitionWithUnknownUser(){
+    public void createTrainingDefinitionWithUnknownUser() {
         UserRef user = new UserRef();
         given(trainingDefinitionRepository.save(unreleasedDefinition)).willReturn(unreleasedDefinition);
         given(userRefRepository.findUserByUserRefId(anyLong())).willReturn(Optional.empty());
-        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
+        given(userRefRepository.createOrGet(anyLong())).willReturn(user);
         TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition, false);
         assertEquals(unreleasedDefinition, tD);
         then(trainingDefinitionRepository).should(times(1)).save(unreleasedDefinition);

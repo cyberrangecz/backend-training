@@ -564,9 +564,9 @@ public class VisualizationFacade {
             TrainingDefinitionMitreTechniquesDTO definitionMitreTechniquesDTO = new TrainingDefinitionMitreTechniquesDTO();
             definitionMitreTechniquesDTO.setId(trainingDefinition.getId());
             definitionMitreTechniquesDTO.setTitle(trainingDefinition.getTitle());
-            Set<String> techniques = trainingLevelsOfDefinition.stream()
+            List<String> techniques = trainingLevelsOfDefinition.stream()
                     .flatMap(trainingLevel -> trainingLevel.getMitreTechniques().stream().map(MitreTechnique::getTechniqueKey))
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toList());
             definitionMitreTechniquesDTO.setMitreTechniques(techniques);
             definitionMitreTechniquesDTO.setPlayed(playedDefinitionIds.contains(trainingDefinition.getId()));
             result.add(definitionMitreTechniquesDTO);

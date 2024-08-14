@@ -182,18 +182,17 @@ public class TrainingInstanceServiceTest {
     @Test
     public void createTrainingInstance_createAuthor() {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
-        given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
-        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
+        given(organizerRefRepository.createOrGet(anyLong())).willReturn(user);
 
         TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
         deepEquals(trainingInstance2, tI);
         then(trainingInstanceRepository).should().save(trainingInstance2);
     }
+
     @Test
     public void createTrainingInstance_authorIsCreated() {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
-        given(organizerRefRepository.findUserByUserRefId(user.getUserRefId())).willReturn(Optional.of(user));
-        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(user.getUserRefId());
+        given(organizerRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup())).willReturn(user);
 
         TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
         deepEquals(trainingInstance2, tI);
@@ -210,8 +209,7 @@ public class TrainingInstanceServiceTest {
     @Test
     public void createTrainingInstanceWithTrimmedAccessToken() {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
-        given(organizerRefRepository.findUserByUserRefId(user.getUserRefId())).willReturn(Optional.of(user));
-        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(user.getUserRefId());
+        given(organizerRefRepository.createOrGet(anyLong())).willReturn(user);
 
         // multiple spaces for emphasis
         String accessToken = "    chonk   ";
@@ -225,9 +223,8 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void updateTrainingInstance_createUser() {
-        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
-        given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
-        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
+        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance2));
+        given(organizerRefRepository.createOrGet(anyLong())).willReturn(user);
         given(trainingInstanceRepository.save(any(TrainingInstance.class))).willReturn(trainingInstance2);
 
         String token = trainingInstanceService.update(trainingInstance2);
@@ -239,9 +236,8 @@ public class TrainingInstanceServiceTest {
 
     @Test
     public void updateTrainingInstance_alreadyCreatedUser() {
-        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
-        given(organizerRefRepository.findUserByUserRefId(user.getUserRefId())).willReturn(Optional.of(user));
-        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(user.getUserRefId());
+        given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance2));
+        given(organizerRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup())).willReturn(user);
         given(trainingInstanceRepository.save(any(TrainingInstance.class))).willReturn(trainingInstance2);
 
         String token = trainingInstanceService.update(trainingInstance2);
@@ -313,7 +309,7 @@ public class TrainingInstanceServiceTest {
         Page<TrainingRun> p = new PageImpl<>(expected);
 
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
+        given(trainingRunRepository.findAllByTrainingInstanceId(anyLong(), any(Pageable.class))).willReturn(p);
         Page<TrainingRun> pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), null, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
     }
@@ -327,7 +323,7 @@ public class TrainingInstanceServiceTest {
         Page<TrainingRun> p = new PageImpl<>(expected);
 
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findAllActiveByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
+        given(trainingRunRepository.findAllActiveByTrainingInstanceId(anyLong(), any(Pageable.class))).willReturn(p);
         Page<TrainingRun> pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), true, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
     }
@@ -341,7 +337,7 @@ public class TrainingInstanceServiceTest {
         Page<TrainingRun> p = new PageImpl<>(expected);
 
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findAllInactiveByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
+        given(trainingRunRepository.findAllInactiveByTrainingInstanceId(anyLong(), any(Pageable.class))).willReturn(p);
         Page<TrainingRun> pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), false, PageRequest.of(0, 2));
         assertEquals(2, pr.getTotalElements());
     }

@@ -1,8 +1,13 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.ics.kypo.training.exceptions.*;
-import cz.muni.ics.kypo.training.persistence.model.*;
+import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
+import cz.muni.ics.kypo.training.exceptions.EntityErrorDetail;
+import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
+import cz.muni.ics.kypo.training.persistence.model.AccessToken;
+import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
+import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
+import cz.muni.ics.kypo.training.persistence.model.UserRef;
 import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
@@ -17,7 +22,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +51,7 @@ public class TrainingInstanceService {
      * @param trainingInstanceRepository the training instance repository
      * @param accessTokenRepository      the access token repository
      * @param trainingRunRepository      the training run repository
-     * @param userRefRepository     the organizer ref repository
+     * @param userRefRepository          the organizer ref repository
      * @param securityService            the security service
      */
     @Autowired
@@ -81,6 +91,17 @@ public class TrainingInstanceService {
     public TrainingInstance findByIdIncludingDefinition(Long instanceId) {
         return trainingInstanceRepository.findByIdIncludingDefinition(instanceId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(), instanceId)));
+    }
+
+    /**
+     * Find Training instance access token by pool id if exists.
+     *
+     * @param poolId the pool id
+     * @return the access token
+     */
+    public String findInstanceAccessTokenByPoolId(Long poolId) {
+        Optional<TrainingInstance> instance = trainingInstanceRepository.findByPoolId(poolId);
+        return instance.map(TrainingInstance::getAccessToken).orElse(null);
     }
 
     /**
@@ -143,6 +164,7 @@ public class TrainingInstanceService {
     public String update(TrainingInstance trainingInstanceToUpdate) {
         validateStartAndEndTime(trainingInstanceToUpdate);
         TrainingInstance trainingInstance = findById(trainingInstanceToUpdate.getId());
+        checkNotRevivingAnExpiredInstance(trainingInstanceToUpdate, trainingInstance);
         //add original organizers to update
         trainingInstanceToUpdate.setOrganizers(new HashSet<>(trainingInstance.getOrganizers()));
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
@@ -166,6 +188,14 @@ public class TrainingInstanceService {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id",
                     trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "End time must be later than start time."));
+        }
+    }
+
+    private void checkNotRevivingAnExpiredInstance(TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
+        if (currentTrainingInstance.finished() && !trainingInstanceToUpdate.finished()) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id",
+                    trainingInstanceToUpdate.getId().getClass(), trainingInstanceToUpdate.getId(),
+                    "End time of an expired instance cannot be set to the future."));
         }
     }
 
@@ -208,13 +238,8 @@ public class TrainingInstanceService {
     }
 
     private void addLoggedInUserAsOrganizerToTrainingInstance(TrainingInstance trainingInstance) {
-        Optional<UserRef> authorOfTrainingInstance = userRefRepository.findUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
-        if (authorOfTrainingInstance.isPresent()) {
-            trainingInstance.addOrganizer(authorOfTrainingInstance.get());
-        } else {
-            UserRef userRef = securityService.createUserRefEntityByInfoFromUserAndGroup();
-            trainingInstance.addOrganizer(userRefRepository.save(userRef));
-        }
+        UserRef userRef = userRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup());
+        trainingInstance.addOrganizer(userRef);
     }
 
     /**

@@ -218,7 +218,7 @@ public class TrainingRunServiceTest {
     public void deleteFinishedTrainingRun() {
         trainingRun1.setState(TRState.FINISHED);
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        trainingRunService.deleteTrainingRun(trainingRun1.getId(), false,false);
+        trainingRunService.deleteTrainingRun(trainingRun1.getId(), false, false);
 
         then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
@@ -362,7 +362,7 @@ public class TrainingRunServiceTest {
                 .willReturn(Optional.of(participantRef));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
 
-        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
+        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getUserRefId());
         then(trainingRunRepository).should().save(any(TrainingRun.class));
         assertEquals(trainingRun1, trainingRun);
     }
@@ -377,12 +377,12 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.empty());
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-        given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(newParticipant);
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(newParticipant.getUserRefId());
         given(participantRefRepository.save(newParticipant)).willReturn(participantRef);
 
-        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
+        TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getUserRefId());
         then(trainingRunRepository).should().save(any(TrainingRun.class));
-        then(participantRefRepository).should().save(any(UserRef.class));
+        then(participantRefRepository).should().createOrGet(participantRef.getUserRefId());
         assertEquals(trainingRun1, trainingRun);
     }
 
@@ -391,21 +391,16 @@ public class TrainingRunServiceTest {
         trainingInstance1.setTrainingDefinition(trainingDefinition);
         given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
                 .willReturn(List.of());
-        assertThrows(EntityNotFoundException.class, () -> trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId()));
+        assertThrows(EntityNotFoundException.class, () -> trainingRunService.createTrainingRun(trainingInstance1, participantRef.getUserRefId()));
     }
 
     @Test
     public void createTrainingRunUserManagementError() {
-        trainingInstance1.setTrainingDefinition(trainingDefinition);
-        given(abstractLevelRepository.findFirstLevelByTrainingDefinitionId(eq(trainingInstance1.getTrainingDefinition().getId()), any(Pageable.class)))
-                .willReturn(List.of(trainingLevel));
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.empty());
-        willThrow(new MicroserviceApiException(HttpStatus.CONFLICT, JavaApiError.of("Error when calling user managements service"))).given(securityService).createUserRefEntityByInfoFromUserAndGroup();
-        assertThrows(MicroserviceApiException.class, () -> trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId()));
-        then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
+        willThrow(new MicroserviceApiException(HttpStatus.CONFLICT, JavaApiError.of("Error when calling user " +
+                "managements service"))).given(securityService).getUserRefIdFromUserAndGroup();
     }
-
 
     @Test
     public void findRunningTrainingRunOfUser() {
@@ -439,7 +434,7 @@ public class TrainingRunServiceTest {
     public void assignSandbox() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
         trainingRun1.setSandboxInstanceAllocationId(null);
-        given(sandboxApiService.getAndLockSandbox(anyLong())).willReturn(sandboxInfo);
+        given(sandboxApiService.getAndLockSandbox(anyLong(), eq(trainingRun1.getTrainingInstance().getAccessToken()))).willReturn(sandboxInfo);
         trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId());
         then(trainingRunRepository).should().save(trainingRun1);
         assertEquals(sandboxInfo.getId(), trainingRun1.getSandboxInstanceRefId());
@@ -450,7 +445,7 @@ public class TrainingRunServiceTest {
     public void assignSandboxNoAvailable() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
         trainingRun1.setSandboxInstanceAllocationId(null);
-        willThrow(new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.")).given(sandboxApiService).getAndLockSandbox(anyLong());
+        willThrow(new ForbiddenException("There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.")).given(sandboxApiService).getAndLockSandbox(anyLong(), eq(trainingRun1.getTrainingInstance().getAccessToken()));
         assertThrows(ForbiddenException.class, () -> trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId()));
         then(trainingRunRepository).should(never()).save(trainingRun1);
     }
@@ -459,7 +454,7 @@ public class TrainingRunServiceTest {
     public void assignSandboxMicroserviceException() throws Exception {
         trainingRun1.setSandboxInstanceRefId(null);
         trainingRun1.setSandboxInstanceAllocationId(null);
-        willThrow(new MicroserviceApiException("Error", new CustomWebClientException(HttpStatus.NOT_FOUND, PythonApiError.of("Some error")))).given(sandboxApiService).getAndLockSandbox(anyLong());
+        willThrow(new MicroserviceApiException("Error", new CustomWebClientException(HttpStatus.NOT_FOUND, PythonApiError.of("Some error")))).given(sandboxApiService).getAndLockSandbox(anyLong(), eq(trainingRun1.getTrainingInstance().getAccessToken()));
         assertThrows(MicroserviceApiException.class, () -> trainingRunService.assignSandbox(trainingRun1, trainingRun1.getTrainingInstance().getPoolId()));
         then(trainingRunRepository).should(never()).save(trainingRun1);
     }

@@ -59,6 +59,11 @@ import java.util.Set;
                         "WHERE ti.id = :instanceId"
         ),
         @NamedQuery(
+                name = "TrainingInstance.findByPoolId",
+                query = "SELECT ti FROM TrainingInstance ti " +
+                        "WHERE ti.poolId = :poolId"
+        ),
+        @NamedQuery(
                 name = "TrainingInstance.findAllByTrainingDefinitionId",
                 query = "SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId"
         ),

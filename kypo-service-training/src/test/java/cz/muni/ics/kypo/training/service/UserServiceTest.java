@@ -153,9 +153,9 @@ public class UserServiceTest {
     public void createUserRef() {
         UserRef userRef = new UserRef();
         userRef.setUserRefId(userRef1.getUserRefId());
-        given(userRefRepository.save(userRef)).willReturn(userRef1);
-        userService.createUserRef(userRef);
-        then(userRefRepository).should().save(userRef);
+        given(userRefRepository.createOrGet(userRef.getUserRefId())).willReturn(userRef1);
+        userService.createOrGetUserRef(userRef.getUserRefId());
+        then(userRefRepository).should().createOrGet(userRef.getUserRefId());
     }
 
     private Mono<ClientResponse> buildMockResponse(Object body) throws IOException{

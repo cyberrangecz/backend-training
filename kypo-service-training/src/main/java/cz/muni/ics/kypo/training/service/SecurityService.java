@@ -163,27 +163,6 @@ public class SecurityService {
         }
     }
 
-    /**
-     * Create user ref entity by info from user and group user ref.
-     *
-     * @return the user ref
-     */
-    public UserRef createUserRefEntityByInfoFromUserAndGroup() {
-        try {
-            UserRefDTO userRefDTO = userManagementWebClient
-                    .get()
-                    .uri("/users/info")
-                    .retrieve()
-                    .bodyToMono(UserRefDTO.class)
-                    .block();
-            UserRef userRef = new UserRef();
-            userRef.setUserRefId(userRefDTO.getUserRefId());
-            return userRef;
-        } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex);
-        }
-    }
-
     public String getBearerToken() {
         JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         return authentication.getToken().getTokenValue();

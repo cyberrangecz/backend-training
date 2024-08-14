@@ -236,18 +236,9 @@ public class TrainingDefinitionFacade {
         trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
         PageResultResource<UserRefDTO> organizers = userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(userRefIds), PageRequest.of(0, 999), null, null);
         for (UserRefDTO organizer : organizers.getContent()) {
-            try {
-                trainingDefinition.getBetaTestingGroup().addOrganizer(userService.getUserByUserRefId(organizer.getUserRefId()));
-            } catch (EntityNotFoundException ex) {
-                trainingDefinition.getBetaTestingGroup().addOrganizer(userService.createUserRef(createUserRefFromDTO(organizer)));
-            }
+            UserRef userRef = userService.createOrGetUserRef(organizer.getUserRefId());
+            trainingDefinition.getBetaTestingGroup().addOrganizer(userRef);
         }
-    }
-
-    private UserRef createUserRefFromDTO(UserRefDTO userToBeCreated) {
-        UserRef userRef = new UserRef();
-        userRef.setUserRefId(userToBeCreated.getUserRefId());
-        return userRef;
     }
 
     /**
@@ -662,11 +653,8 @@ public class TrainingDefinitionFacade {
             if (actualAuthorsIds.contains(author.getUserRefId())) {
                 continue;
             }
-            try {
-                trainingDefinition.addAuthor(userService.getUserByUserRefId(author.getUserRefId()));
-            } catch (EntityNotFoundException ex) {
-                trainingDefinition.addAuthor(userService.createUserRef(createUserRefFromDTO(author)));
-            }
+            UserRef userRef = userService.createOrGetUserRef(author.getUserRefId());
+            trainingDefinition.addAuthor(userRef);
         }
     }
 
