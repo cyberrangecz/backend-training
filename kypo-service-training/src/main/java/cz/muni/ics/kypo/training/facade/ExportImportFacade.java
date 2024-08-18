@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.events.trainings.LevelStarted;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
-import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
-import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
@@ -48,6 +46,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -368,10 +367,13 @@ public class ExportImportFacade {
     private void writeTrainingRunsInfo(ZipOutputStream zos, TrainingInstance trainingInstance) throws IOException {
         Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstance.getId());
         Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails = new HashMap<>();
+        Set<Pair<Long,Long>> alreadyLoggedUserAndSandbox = new HashSet<>();
         for (TrainingRun run : runs) {
             TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
+            long participantRefId = run.getParticipantRef().getUserRefId();
+            
             archivedRun.setInstanceId(trainingInstance.getId());
-            archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
+            archivedRun.setParticipantRefId(participantRefId);
             ZipEntry runEntry = new ZipEntry(RUNS_FOLDER + "/training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
@@ -381,13 +383,17 @@ public class ExportImportFacade {
             if (events.isEmpty()) {
                 continue;
             }
-            Map<Long, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
             writeEventsByLevels(zos, run, events);
+            Map<Long, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
 
             List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
             String sandboxId = events.get(0).getSandboxId() == null ?
-                    run.getParticipantRef().getUserRefId().toString() : events.get(0).getSandboxId();
-            writeConsoleCommands(zos, sandboxId, consoleCommands);
+                    Long.toString(participantRefId) : events.get(0).getSandboxId();
+            
+            if (!alreadyLoggedUserAndSandbox.contains(Pair.of(participantRefId, Long.parseLong(sandboxId)))) {
+                writeConsoleCommands(zos, participantRefId, sandboxId, consoleCommands);
+                alreadyLoggedUserAndSandbox.add(Pair.of(participantRefId, Long.parseLong(sandboxId)));
+            }
             writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
         writeAssessmentsDetails(zos, assessmentsDetails);
@@ -472,8 +478,8 @@ public class ExportImportFacade {
                 + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText()+ "' }";
     }
 
-    private void writeConsoleCommands(ZipOutputStream zos, String sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
-        ZipEntry consoleCommandsEntry = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+    private void writeConsoleCommands(ZipOutputStream zos, Long userId, String sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
+        ZipEntry consoleCommandsEntry = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-user-id-" + userId + "-commands" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(consoleCommandsEntry);
         for (Map<String, Object> command : consoleCommands) {
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
@@ -487,8 +493,8 @@ public class ExportImportFacade {
         levelTimestampRanges.add(Long.MAX_VALUE);
 
         for (int i = 0; i < levelIds.size(); i++) {
-            List<Map<String, Object>> consoleCommandsByLevel = getConsoleCommandsWithinTimeRange(instance, run, sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i+1));
-            ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-details" + "/level" + (i + 1) + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            List<Map<String, Object>> consoleCommandsByLevel = getConsoleCommandsWithinTimeRange(instance, run, sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i + 1));
+            ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-run-id-" + run.getId() + "-details" + "/level" + (i + 1) + "-commands" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(consoleCommandsEntryDetails);
             for (Map<String, Object> command : consoleCommandsByLevel) {
                 zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
