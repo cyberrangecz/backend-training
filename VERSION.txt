@@ -1,3 +1,4 @@
+2.5.6 Add detection event id and cheating detection id to participant table.
 2.5.5 Add training access tokens to sandbox api calls. Add access token endpoint.
 2.5.4 Fix user ref creation failing on parallel requests.
 2.5.3 Add default sorting to training runs query.
