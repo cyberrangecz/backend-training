@@ -14,6 +14,7 @@
         <swagger-codegen.version>2.3.1</swagger-codegen.version>
         <swagger-codegen-cli.version>2.3.1</swagger-codegen-cli.version>
         <swagger-codegen-plugin.version>2.2.3</swagger-codegen-plugin.version>
+        <elki-project.version>0.8.0</elki-project.version>
     </properties>
 
     <dependencies>
@@ -61,6 +62,41 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.elki-project</groupId>
+            <artifactId>elki</artifactId>
+            <version>${elki-project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.elki-project</groupId>
+            <artifactId>elki-core-api</artifactId>
+            <version>${elki-project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.elki-project</groupId>
+            <artifactId>elki-input</artifactId>
+            <version>${elki-project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.elki-project</groupId>
+            <artifactId>elki-database</artifactId>
+            <version>${elki-project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.elki-project</groupId>
+            <artifactId>elki-core-util</artifactId>
+            <version>${elki-project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.elki-project</groupId>
+            <artifactId>elki-outlier</artifactId>
+            <version>${elki-project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.elki-project</groupId>
+            <artifactId>elki-clustering</artifactId>
+            <version>${elki-project.version}</version>
         </dependency>
     </dependencies>
 
