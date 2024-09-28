@@ -1,3 +1,4 @@
+2.6.0 Move show stepper bar from training definition to training instance.
 2.5.7 Revert detection event id addition.
 2.5.6 Add detection event id and cheating detection id to participant table.
 2.5.5 Add training access tokens to sandbox api calls. Add access token endpoint.
