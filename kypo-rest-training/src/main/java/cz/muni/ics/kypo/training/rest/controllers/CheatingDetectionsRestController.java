@@ -8,7 +8,6 @@ import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.muni.ics.kypo.training.api.dto.cheatingdetection.*;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
-import cz.muni.ics.kypo.training.api.dto.run.AccessTrainingRunDTO;
 import cz.muni.ics.kypo.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.facade.detection.CheatingDetectionExportFacade;
@@ -317,7 +316,7 @@ public class CheatingDetectionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The detection event has been found.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "The detection event has been found.", response = AbstractDetectionEventDTO.class),
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -341,7 +340,7 @@ public class CheatingDetectionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The detection event has been found.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "The detection event has been found.", response = AnswerSimilarityDetectionEventDTO.class),
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -365,7 +364,7 @@ public class CheatingDetectionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The detection event has been found.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "The detection event has been found.", response = LocationSimilarityDetectionEventDTO.class),
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -389,7 +388,7 @@ public class CheatingDetectionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The detection event has been found.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "The detection event has been found.", response = TimeProximityDetectionEventDTO.class),
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -413,7 +412,7 @@ public class CheatingDetectionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The detection event has been found.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "The detection event has been found.", response = MinimalSolveTimeDetectionEventDTO.class),
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -437,7 +436,7 @@ public class CheatingDetectionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The detection event has been found.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "The detection event has been found.", response = NoCommandsDetectionEventDTO.class),
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
@@ -461,7 +460,7 @@ public class CheatingDetectionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "The detection event has been found.", response = AccessTrainingRunDTO.class),
+            @ApiResponse(code = 200, message = "The detection event has been found.", response = ForbiddenCommandsDetectionEventDTO.class),
             @ApiResponse(code = 404, message = "The detection event has not been found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
