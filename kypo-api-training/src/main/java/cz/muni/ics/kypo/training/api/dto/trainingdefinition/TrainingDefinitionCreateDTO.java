@@ -32,9 +32,6 @@ public class TrainingDefinitionCreateDTO {
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     @Valid
     private BetaTestingGroupCreateDTO betaTestingGroup;
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
-    @NotNull(message = "{trainingDefinition.showStepperBar.NotNull.message}")
-    private boolean showStepperBar;
     @ApiModelProperty(value = "Sign if default levels should be created.", example = "false")
     private boolean defaultContent;
 
@@ -146,23 +143,6 @@ public class TrainingDefinitionCreateDTO {
         this.betaTestingGroup = betaTestingGroup;
     }
 
-    /**
-     * Gets if stepper bar is shown while in run.
-     *
-     * @return true if bar is shown
-     */
-    public boolean isShowStepperBar() {
-        return showStepperBar;
-    }
-
-    /**
-     * Sets if stepper bar is shown while in run.
-     *
-     * @param showStepperBar true if bar is shown
-     */
-    public void setShowStepperBar(boolean showStepperBar) {
-        this.showStepperBar = showStepperBar;
-    }
 
     /**
      * Gets if he default levels are created along with the new training definition.
@@ -188,7 +168,6 @@ public class TrainingDefinitionCreateDTO {
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", state=" + state +
-                ", showStepperBar=" + showStepperBar +
                 ", defaultContent=" + defaultContent +
                 '}';
     }

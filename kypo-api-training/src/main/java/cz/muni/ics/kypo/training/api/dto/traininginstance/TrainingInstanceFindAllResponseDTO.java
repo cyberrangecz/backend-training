@@ -35,6 +35,8 @@ public class TrainingInstanceFindAllResponseDTO {
     private String lastEditedBy;
     @ApiModelProperty(value = "Indicates if local sandboxes are used for training runs.", example = "true")
     private boolean localEnvironment;
+    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", required = true, example = "true")
+    private boolean showStepperBar;
     @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
     private boolean backwardMode;
 
@@ -225,6 +227,24 @@ public class TrainingInstanceFindAllResponseDTO {
     }
 
     /**
+     * Gets if stepper bar is shown while in run.
+     *
+     * @return true if bar is shown
+     */
+    public boolean isShowStepperBar() {
+        return showStepperBar;
+    }
+
+    /**
+     * Sets if stepper bar is shown while in run.
+     *
+     * @param showStepperBar true if bar is shown
+     */
+    public void setShowStepperBar(boolean showStepperBar) {
+        this.showStepperBar = showStepperBar;
+    }
+
+    /**
      * Gets if trainee can during training run move back to the previous levels.
      *
      * @return true if backward mode is enabled.
@@ -254,6 +274,7 @@ public class TrainingInstanceFindAllResponseDTO {
                 ", lastEditedBy='" + lastEditedBy + '\'' +
                 ", poolId=" + poolId +
                 ", localEnvironment=" + localEnvironment +
+                ", showStepperBar=" + showStepperBar +
                 ", backwardMode=" + backwardMode +
                 '}';
     }

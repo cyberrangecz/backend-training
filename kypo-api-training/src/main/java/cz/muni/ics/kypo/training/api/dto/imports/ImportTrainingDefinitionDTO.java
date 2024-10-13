@@ -29,9 +29,6 @@ public class ImportTrainingDefinitionDTO {
 	@ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
 	@NotNull(message = "{trainingDefinition.state.NotNull.message}")
 	private TDState state;
-	@ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
-	@NotNull(message = "{trainingDefinition.showStepperBar.NotNull.message}")
-	private boolean showStepperBar;
 	@Valid
 	@ApiModelProperty(value = "Information about all levels in training definition.")
 	private List<AbstractLevelImportDTO> levels = new ArrayList<>();
@@ -137,24 +134,6 @@ public class ImportTrainingDefinitionDTO {
 	}
 
 	/**
-	 * Gets if stepper bar is shown while in run.
-	 *
-	 * @return true if bar is shown
-	 */
-	public boolean isShowStepperBar() {
-		return showStepperBar;
-	}
-
-	/**
-	 * Gets if stepper bar is shown while in run.
-	 *
-	 * @param showStepperBar true if bar is shown
-	 */
-	public void setShowStepperBar(boolean showStepperBar) {
-		this.showStepperBar = showStepperBar;
-	}
-
-	/**
 	 * Gets levels.
 	 *
 	 * @return the list of {@link AbstractLevelImportDTO}
@@ -216,7 +195,6 @@ public class ImportTrainingDefinitionDTO {
 				"title='" + title + '\'' +
 				", description='" + description + '\'' +
 				", state=" + state +
-				", showStepperBar=" + showStepperBar +
 				", estimatedDuration=" + estimatedDuration +
 				", variantSandboxes=" + variantSandboxes +
 				'}';
