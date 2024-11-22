@@ -33,8 +33,6 @@ public class TrainingDefinitionByIdDTO {
     private Long betaTestingGroupId;
     @ApiModelProperty(value = "Information about all levels in training definition.")
     private List<AbstractLevelDTO> levels = new ArrayList<>();
-    @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
-    private boolean showStepperBar;
     @ApiModelProperty(value = "Sign if training definition can be archived or not.", example = "true")
     private boolean canBeArchived;
     @ApiModelProperty(value = "Estimated time it takes to finish runs created from this definition.", example = "5")
@@ -195,24 +193,6 @@ public class TrainingDefinitionByIdDTO {
     }
 
     /**
-     * Gets if stepper bar is shown while in run.
-     *
-     * @return true if bar is shown
-     */
-    public boolean isShowStepperBar() {
-        return showStepperBar;
-    }
-
-    /**
-     * Sets if stepper bar is shown while in run.
-     *
-     * @param showStepperBar true if bar is shown
-     */
-    public void setShowStepperBar(boolean showStepperBar) {
-        this.showStepperBar = showStepperBar;
-    }
-
-    /**
      * Definition can be archived if no associated instances are active.
      *
      * @return true if definition can be archived
@@ -332,7 +312,6 @@ public class TrainingDefinitionByIdDTO {
                 ", description='" + description + '\'' +
                 ", state=" + state +
                 ", betaTestingGroupId=" + betaTestingGroupId +
-                ", showStepperBar=" + showStepperBar +
                 ", canBeArchived=" + canBeArchived +
                 ", estimatedDuration=" + estimatedDuration +
                 ", lastEdited=" + lastEdited +
