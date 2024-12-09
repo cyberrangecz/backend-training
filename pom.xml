@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>cz.muni.ics.kypo</groupId>
-    <artifactId>kypo-training</artifactId>
+    <groupId>cyberrangecz</groupId>
+    <artifactId>training</artifactId>
     <version>2.5.7</version>
     <packaging>pom</packaging>
 
-    <name>KYPO Training</name>
+    <name>Training</name>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <proprietary-repo-id>gitlab-maven</proprietary-repo-id>
+        <!-- <proprietary-repo-id>gitlab-maven</proprietary-repo-id> -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <kypo-security-commons.version>2.0.0</kypo-security-commons.version>
@@ -50,12 +50,12 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>cz.muni.ics.kypo</groupId>
+                <groupId>cyberrangecz</groupId>
                 <artifactId>kypo-elasticsearch-documents</artifactId>
                 <version>${kypo-elasticsearch-documents.version}</version>
             </dependency>
             <dependency>
-                <groupId>cz.muni.ics.kypo</groupId>
+                <groupId>cyberrangecz</groupId>
                 <artifactId>kypo-security-commons</artifactId>
                 <version>${kypo-security-commons.version}</version>
             </dependency>

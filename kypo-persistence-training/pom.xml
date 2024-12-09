@@ -3,17 +3,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>cz.muni.ics.kypo</groupId>
-        <artifactId>kypo-training</artifactId>
+        <groupId>cyberrangecz</groupId>
+        <artifactId>training</artifactId>
         <version>2.5.7</version>
     </parent>
-    <artifactId>kypo-persistence-training</artifactId>
+    <artifactId>persistence-training</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo-api-training</artifactId>
+            <groupId>cyberrangecz</groupId>
+            <artifactId>api-training</artifactId>
             <version>2.5.7</version>
         </dependency>
         <!--SPRING BOOT STARTERS-->
