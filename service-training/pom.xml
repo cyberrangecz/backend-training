@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>cz.muni.ics.kypo</groupId>
-        <artifactId>kypo-training</artifactId>
+        <groupId>cyberrangecz</groupId>
+        <artifactId>training</artifactId>
         <version>2.5.7</version>
     </parent>
-    <artifactId>kypo-service-training</artifactId>
+    <artifactId>service-training</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -18,25 +18,25 @@
 
     <dependencies>
         <dependency> <!-- reuse src/test/java code from persistence module! -->
-            <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo-persistence-training</artifactId>
+            <groupId>cyberrangecz</groupId>
+            <artifactId>persistence-training</artifactId>
             <version>2.5.7</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
         <dependency>
-            <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo-persistence-training</artifactId>
+            <groupId>cyberrangecz</groupId>
+            <artifactId>persistence-training</artifactId>
             <version>2.5.7</version>
         </dependency>
         <dependency>
-            <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo-elasticsearch-training</artifactId>
+            <groupId>cyberrangecz</groupId>
+            <artifactId>elasticsearch-training</artifactId>
             <version>2.5.7</version>
         </dependency>
         <dependency>
-            <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo-security-commons</artifactId>
+            <groupId>cyberrangecz</groupId>
+            <artifactId>security-commons</artifactId>
         </dependency>
         <!--SPRING BOOT STARTERS-->
         <dependency>

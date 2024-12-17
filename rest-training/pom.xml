@@ -3,22 +3,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>cz.muni.ics.kypo</groupId>
-        <artifactId>kypo-training</artifactId>
+        <groupId>cyberrangecz</groupId>
+        <artifactId>training</artifactId>
         <version>2.5.7</version>
     </parent>
-    <artifactId>kypo-rest-training</artifactId>
+    <artifactId>rest-training</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo-service-training</artifactId>
+            <groupId>cyberrangecz</groupId>
+            <artifactId>service-training</artifactId>
             <version>2.5.7</version>
         </dependency>
         <dependency> <!-- reuse src/test/java code from persistence module! -->
-            <groupId>cz.muni.ics.kypo</groupId>
-            <artifactId>kypo-persistence-training</artifactId>
+            <groupId>cyberrangecz</groupId>
+            <artifactId>persistence-training</artifactId>
             <version>2.5.7</version>
             <scope>test</scope>
             <classifier>tests</classifier>
@@ -91,9 +91,9 @@
                             </locations>
                             <schemes>http,https</schemes>
                             <host>${swagger.host}</host>
-                            <basePath>/kypo-rest-training/api/v1</basePath>
+                            <basePath>/rest-training/api/v1</basePath>
                             <info>
-                                <title>KYPO Training - API Reference</title>
+                                <title>Training - API Reference</title>
                                 <version>Version: ${project.version}</version>
                             </info>
                             <securityDefinitions>
@@ -103,7 +103,7 @@
                                 </securityDefinition>
                             </securityDefinitions>
                             <swaggerDirectory>${swagger.directory}</swaggerDirectory>
-                            <swaggerFileName>kypo-training-swagger-open-api</swaggerFileName>
+                            <swaggerFileName>training-swagger-open-api</swaggerFileName>
                             <outputFormats>yaml</outputFormats>
                             <swaggerApiReader>cz.muni.ics.kypo.training.rest.utils.reader.SnakeCaseSwaggerReader</swaggerApiReader>
                         </apiSource>
