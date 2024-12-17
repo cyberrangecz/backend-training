@@ -1,4 +1,4 @@
-ARG PROJECT_ARTIFACT_ID=training
+ARG PROJECT_ARTIFACT_ID=rest-training
 
 ############ BUILD STAGE ############
 FROM maven:3.8.4-openjdk-17-slim AS build
@@ -14,15 +14,15 @@ ARG MAVEN_CLI_OPTS=EXTRA-OPTIONS
 COPY pom.xml /app/pom.xml
 COPY etc/ci_settings.xml /app/etc/ci_settings.xml
 
-COPY kypo-api-training /app/kypo-api-training
-COPY kypo-elasticsearch-training /app/kypo-elasticsearch-training
-COPY kypo-persistence-training /app/kypo-persistence-training
-COPY kypo-service-training /app/kypo-service-training
+COPY api-training /app/api-training
+COPY elasticsearch-training /app/elasticsearch-training
+COPY persistence-training /app/persistence-training
+COPY service-training /app/service-training
 COPY $PROJECT_ARTIFACT_ID /app/$PROJECT_ARTIFACT_ID
 
 # Build JAR file
 RUN mvn clean install -DskipTests $MAVEN_CLI_OPTS -Dproprietary-repo-url=$PROPRIETARY_REPO_URL && \
-    cp /app/target/$PROJECT_ARTIFACT_ID-*.jar /app/$PROJECT_ARTIFACT_ID.jar
+    cp /app/$PROJECT_ARTIFACT_ID/target/$PROJECT_ARTIFACT_ID-*.jar /app/$PROJECT_ARTIFACT_ID.jar
 
 ############ RUNNABLE STAGE ############
 FROM eclipse-temurin:17-jre-jammy
