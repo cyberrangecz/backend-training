@@ -19,8 +19,8 @@
         <!-- <proprietary-repo-id>gitlab-maven</proprietary-repo-id> -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <kypo-security-commons.version>2.0.0</kypo-security-commons.version>
-        <kypo-elasticsearch-documents.version>2.1.0-rc.1</kypo-elasticsearch-documents.version>
+        <security-commons.version>2.0.0</security-commons.version>
+        <elasticsearch-documents.version>2.1.0-rc.1</elasticsearch-documents.version>
         <swagger.version>2.9.2</swagger.version>
         <swagger-annotations.version>1.5.22</swagger-annotations.version>
         <swagger.directory>${basedir}/../doc-files</swagger.directory>
