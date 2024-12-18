@@ -11,18 +11,18 @@ on:
       - master
   workflow_dispatch:
 
-# env:
-#   READ_PACKAGES_TOKEN: ${{ secrets.READ_PACKAGES }}
-#   READ_PACKAGES_USERNAME: ${{ github.repository_owner }}
+env:
+  READ_PACKAGES_USERNAME: ${{ github.repository_owner }}
+  READ_PACKAGES_TOKEN: ${{ secrets.READ_PACKAGES }}
 
 
 jobs:
   # This will create docker image as well
   java_template:
     uses: cyberrangecz/actions-templates/.github/workflows/java_template.yml@master
-    env:
-      READ_PACKAGES_USERNAME: ${{ github.repository_owner }}
-      READ_PACKAGES_TOKEN: ${{ secrets.READ_PACKAGES }}
+    # env:
+    #   READ_PACKAGES_USERNAME: ${{ github.repository_owner }}
+    #   READ_PACKAGES_TOKEN: ${{ secrets.READ_PACKAGES }}
     secrets:
       READ_PACKAGES: ${{ secrets.READ_PACKAGES }}
     with:
