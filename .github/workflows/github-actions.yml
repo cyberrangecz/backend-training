@@ -18,7 +18,7 @@ jobs:
     secrets:
       READ_PACKAGES: ${{ secrets.READ_PACKAGES }}
     with:
-      MAVEN_CLI_OPTS: "-s etc/ci_settings.xml -DrepositoryHost=https://maven.pkg.github.com/${{ github.repository_owner }} -DrepositoryId=${proprietary-repo-id} -DrepositoryUsername=${{ github.actor }} -DrepositoryPassword={{ secrets.GITHUB_TOKEN }}"
+      MAVEN_CLI_OPTS: "-s etc/ci_settings.xml -DrepositoryHost=https://maven.pkg.github.com/${{ github.repository_owner }} -DrepositoryId=${proprietary-repo-id} -DrepositoryUsername=${{ github.actor }} -DrepositoryPassword=${{ secrets.GITHUB_TOKEN }}"
 
   create_tag:
     uses: cyberrangecz/actions-templates/.github/workflows/tag_template.yml@master
