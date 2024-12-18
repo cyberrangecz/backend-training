@@ -5,28 +5,20 @@ on:
     branches:
       - master
       - develop
-      - cicd-test
   pull_request:
     branches:
       - master
   workflow_dispatch:
 
-env:
-  READ_PACKAGES_USERNAME: ${{ github.repository_owner }}
-  READ_PACKAGES_TOKEN: ${{ secrets.READ_PACKAGES }}
-
-
 jobs:
   # This will create docker image as well
   java_template:
     uses: cyberrangecz/actions-templates/.github/workflows/java_template.yml@master
-    # env:
-    #   READ_PACKAGES_USERNAME: ${{ github.repository_owner }}
-    #   READ_PACKAGES_TOKEN: ${{ secrets.READ_PACKAGES }}
     secrets:
       READ_PACKAGES: ${{ secrets.READ_PACKAGES }}
     with:
       MAVEN_CLI_OPTS: "-s etc/ci_settings.xml"
+      IMAGE_NAME: "training"
 
   create_tag:
     uses: cyberrangecz/actions-templates/.github/workflows/tag_template.yml@master
