@@ -1,21 +1,19 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
-import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
-import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.model.enums.AssessmentType;
 import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 import cz.muni.ics.kypo.training.persistence.model.enums.SubmissionType;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionChoice;
-import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.repository.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
@@ -25,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -775,6 +772,7 @@ public class TrainingRunService {
         QuestionAnswer questionAnswer = new QuestionAnswer(question, trainingRun);
         if (question.getQuestionType() == QuestionType.EMI) {
             Set<String> answers = question.getExtendedMatchingStatements().stream()
+                    .filter(statement -> answersToQuestion.getExtendedMatchingPairs().containsKey(statement.getOrder()))
                     .map(statement -> "{ \"statementOrder\": " + statement.getOrder() + ", \"optionOrder\": " + answersToQuestion.getExtendedMatchingPairs().get(statement.getOrder()) + " }")
                     .collect(Collectors.toSet());
             questionAnswer.setAnswers(answers);
@@ -787,7 +785,7 @@ public class TrainingRunService {
     private int evaluateFFQ(Question question, QuestionAnswerDTO userAnswer) {
         List<String> correctAnswers = question.getChoices().stream()
                 .map(QuestionChoice::getText)
-                .collect(Collectors.toList());
+                .toList();
         return correctAnswers.containsAll(userAnswer.getAnswers()) ? question.getPoints() : (-1) * question.getPenalty();
     }
 
@@ -795,7 +793,7 @@ public class TrainingRunService {
         List<String> correctAnswers = question.getChoices().stream()
                 .filter(QuestionChoice::isCorrect)
                 .map(QuestionChoice::getText)
-                .collect(Collectors.toList());
+                .toList();
         return userAnswer.getAnswers().size() == correctAnswers.size() &&
                 userAnswer.getAnswers().containsAll(correctAnswers) ? question.getPoints() : (-1) * question.getPenalty();
     }
