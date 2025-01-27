@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.api.dto.imports;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import cz.muni.ics.kypo.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -36,6 +37,15 @@ public class ImportTrainingDefinitionDTO {
 	private Integer estimatedDuration;
 	@ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
 	private boolean variantSandboxes;
+
+	/**
+	 * @deprecated Not used in the current version of the application, kept for backwards compatibility with older content. 
+	 * Stepper bar is now a property of {@link cz.muni.ics.kypo.training.api.dto.traininginstance.TrainingInstanceDTO}.
+	 * @since 1.0.0
+	 */
+	@Deprecated(forRemoval = false, since = "1.0.0")
+	@JsonProperty("show_stepper_bar")
+	private boolean showStepperBar;
 
 	/**
 	 * Instantiates a new Import training definition dto.
