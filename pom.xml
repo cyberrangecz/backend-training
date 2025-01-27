@@ -37,6 +37,8 @@
         <log4j2.version>2.15.0</log4j2.version>
         <commons-math3.version>3.1.1</commons-math3.version>
         <spring-data-commons.version>2.6.2</spring-data-commons.version>
+        <swagger-annotations.version>1.6.4</swagger-annotations.version>
+        <lombok.version>1.18.36</lombok.version>
     </properties>
 
     <repositories>
