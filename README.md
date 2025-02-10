@@ -1,5 +1,5 @@
-# KYPO Training
-This project represents back-end for managing trainings in KYPO platform.
+# CyberRangeCZ Platform Training
+This project represents back-end for managing trainings in CyberRangeCZ platform.
 
 ## Content
 
@@ -8,34 +8,33 @@ This project represents back-end for managing trainings in KYPO platform.
 
 ### 1. Project Modules
 This project is divided into several modules:
-* `kypo-rest`
+* `training-rest`
   * Provides REST layer for communication with front-end.
   * Based on HTTP REST without HATEOAS.
   * Documented with Swagger.
-* `kypo-api`
+* `training-api`
   * Contains API (DTO classes)
     * These are annotated with proprietary converters for DateTime processing.
     * Localized Bean validations are set (messages are localized).
     * Annotations for Swagger documentation are included.
   * Map Entities to DTO classes and vice versa with MapStruct framework.
   * Contains @Transactional annotations.
-* `kypo-service`
+* `training-service`
     * Provides business logic of the application:
       * Calls persistence layer for database queries and combining the results as necessary.
       * Calls another microservices.
-* `kypo-persistence`
+* `training-persistence`
   * Provides data layer of the application (Database queries).
   * Uses Spring Data JPA (Spring wrapper layer over JPA implemented with Hibernate framework).
   * Communicates with PostgreSQL database.
   * Uses QueryDSL for filtering the data.
-* `kypo-elasticsearch`
+* `training-elasticsearch`
   * Used for auditing and retrieving data from Elasticsearch storage.
   * Contains Event classes describing particular events.
 
 And the main project (parent maven project with packaging pom):
-* `kypo-training`
+* `training`
   * Contains configurations for all modules as dependency versions, dependency for spring boot parent project etc.
-  
 
 
 ### Build and Start the Project Using Docker
@@ -50,9 +49,9 @@ Docker           | https://docs.docker.com/install/
 #### 1. Preparation of Configuration Files
 To build and run the project in docker it is necessary to prepare several configurations.
 
-* Set the [OpenID Connect configuration](https://docs.crp.kypo.muni.cz/installation-guide/setting-up-oidc-provider/) which is available on the provided hyperlink.
+* Set the [OpenID Connect configuration](https://docs.platform.cyberrange.cz/installation-guide/setting-up-oidc-provider/) which is available on the provided hyperlink.
 
-* Fill OIDC credentials gained from the previous step and set additional settings in the [training.properties](https://gitlab.ics.muni.cz/muni-kypo-crp/backend-java/kypo-training/-/blob/master/etc/training.properties) file and save it.
+* Fill OIDC credentials gained from the previous step and set additional settings in the [training.properties](https://github.com/cyberrangecz/backend-training/blob/master/etc/training.properties) file and save it.
 
 #### 2. Build Docker Image
 In the project root folder (folder with Dockerfile), run the following command:
@@ -63,12 +62,11 @@ $ sudo docker build \
   .
 ```
 
-
 Dockefile contains several default arguments:
 * USERNAME=postgres - the name of the user to connect to the database. 
 * PASSWORD=postgres - user password.
 * POSRGRES_DB=training - the name of the created database.
-* PROJECT_ARTIFACT_ID=kypo-rest-training - the name of the project artifact.
+* PROJECT_ARTIFACT_ID=training - the name of the project artifact.
 * PROPRIETARY_REPO_URL=YOUR-PATH-TO-PROPRIETARY_REPO.
 
 Those arguments can be overwritten during the build of the image, by adding the following option for each argument: 
@@ -77,7 +75,7 @@ Those arguments can be overwritten during the build of the image, by adding the 
 ``` 
 
 #### 3. Start the Project
-Start the project by running docker container, but at first make sure that your ***OIDC Provider*** and [kypo-user-and-group](https://gitlab.ics.muni.cz/muni-kypo-crp/backend-java/kypo-user-and-group) service is running. Instead of usage of the PostgreSQL database, you can use the in-memory database H2. It just depends on the provided configuration. To run a docker container, run the following command: 
+Start the project by running docker container, but at first make sure that your ***OIDC Provider*** and [user-and-group](https://github.com/cyberrangecz/backend-user-and-group) service is running. Instead of usage of the PostgreSQL database, you can use the in-memory database H2. It just depends on the provided configuration. To run a docker container, run the following command: 
 ```shell
 $  sudo docker run \
    --name training-container -it \

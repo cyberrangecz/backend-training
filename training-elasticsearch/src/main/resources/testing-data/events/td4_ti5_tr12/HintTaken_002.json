@@ -1,0 +1,18 @@
+{
+  "type": "cz.cyberrange.platform.events.trainings.HintTaken",
+  "timestamp": 1552652100000,
+  "sandbox_id": 1,
+  "training_definition_id": 4,
+  "training_instance_id": 5,
+  "training_run_id": 12,
+  "player_login": "Participant2",
+  "total_score": 1,
+  "actual_score_in_level": 10,
+  "level": 13,
+  "hint_id": 4,
+  "hint_penalty_points": 10,
+  "hint_title": "Hint1",
+  "game_time": 4500000,
+  "full_name": "Ing. John Doe",
+  "full_name_without_titles": "John Doe"
+}

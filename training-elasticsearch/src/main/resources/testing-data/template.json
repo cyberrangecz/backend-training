@@ -1,0 +1,25 @@
+{
+  "template": "*",
+  "index_patterns": ["crczp*"],
+  "mappings": {
+    "default": {
+      "properties": {
+        "timestamp": {
+          "type": "date",
+          "format": "epoch_millis"
+        },
+        "start_time": {
+          "type": "date",
+          "format": "epoch_millis"
+        },
+        "end_time": {
+          "type": "date",
+          "format": "epoch_millis"
+        }
+      }
+    }
+  },
+  "settings": {
+    "index.refresh_interval": "5s"
+  }
+}

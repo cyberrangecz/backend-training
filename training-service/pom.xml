@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cz.cyberrange.platform</groupId>
+        <artifactId>training</artifactId>
+        <version>0.0.1</version>
+    </parent>
+    <artifactId>training-service</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <swagger-codegen.version>2.3.1</swagger-codegen.version>
+        <swagger-codegen-cli.version>2.3.1</swagger-codegen-cli.version>
+        <swagger-codegen-plugin.version>2.2.3</swagger-codegen-plugin.version>
+    </properties>
+
+    <dependencies>
+        <dependency> <!-- reuse src/test/java code from persistence module! -->
+            <groupId>cz.cyberrange.platform</groupId>
+            <artifactId>training-persistence</artifactId>
+            <version>0.0.1</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>cz.cyberrange.platform</groupId>
+            <artifactId>training-persistence</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>cz.cyberrange.platform</groupId>
+            <artifactId>training-elasticsearch</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>cz.cyberrange.platform</groupId>
+            <artifactId>security-commons</artifactId>
+        </dependency>
+        <!--SPRING BOOT STARTERS-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>${java.version}</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${org.mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

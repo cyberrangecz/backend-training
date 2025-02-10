@@ -1,0 +1,16 @@
+{
+  "type": "cz.cyberrange.platform.events.trainings.CorrectFlagSubmitted",
+  "timestamp": 1552649580000,
+  "sandbox_id": 1,
+  "training_definition_id": 4,
+  "training_instance_id": 5,
+  "training_run_id": 13,
+  "player_login": "Participant3",
+  "total_score": 100,
+  "actual_score_in_level": 25,
+  "level": 17,
+  "flag_content": "SSHKeys",
+  "game_time": 1980000,
+  "full_name": "Ing. John Doe",
+  "full_name_without_titles": "John Doe"
+}
