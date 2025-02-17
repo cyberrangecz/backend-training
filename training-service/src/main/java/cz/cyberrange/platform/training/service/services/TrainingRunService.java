@@ -789,6 +789,7 @@ public class TrainingRunService {
         QuestionAnswer questionAnswer = new QuestionAnswer(question, trainingRun);
         if (question.getQuestionType() == QuestionType.EMI) {
             Set<String> answers = question.getExtendedMatchingStatements().stream()
+                    .filter(statement -> answersToQuestion.getExtendedMatchingPairs().containsKey(statement.getOrder()))
                     .map(statement -> "{ \"statementOrder\": " + statement.getOrder() + ", \"optionOrder\": " + answersToQuestion.getExtendedMatchingPairs().get(statement.getOrder()) + " }")
                     .collect(Collectors.toSet());
             questionAnswer.setAnswers(answers);
@@ -801,7 +802,7 @@ public class TrainingRunService {
     private int evaluateFFQ(Question question, QuestionAnswerDTO userAnswer) {
         List<String> correctAnswers = question.getChoices().stream()
                 .map(QuestionChoice::getText)
-                .collect(Collectors.toList());
+                .toList();
         return correctAnswers.containsAll(userAnswer.getAnswers()) ? question.getPoints() : (-1) * question.getPenalty();
     }
 
@@ -809,7 +810,7 @@ public class TrainingRunService {
         List<String> correctAnswers = question.getChoices().stream()
                 .filter(QuestionChoice::isCorrect)
                 .map(QuestionChoice::getText)
-                .collect(Collectors.toList());
+                .toList();
         return userAnswer.getAnswers().size() == correctAnswers.size() &&
                 userAnswer.getAnswers().containsAll(correctAnswers) ? question.getPoints() : (-1) * question.getPenalty();
     }
