@@ -14,8 +14,7 @@ import javax.persistence.*;
 public class ExtendedMatchingStatement {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "extendedMatchingStatementGenerator")
-    @SequenceGenerator(name = "extendedMatchingStatementGenerator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "extended_matching_statement_id", nullable = false, unique = true)
     private Long id;
     @Column(name = "text")

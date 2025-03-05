@@ -14,8 +14,7 @@ import javax.persistence.*;
 public class ExtendedMatchingOption {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "extendedMatchingOptionGenerator")
-    @SequenceGenerator(name = "extendedMatchingOptionGenerator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "extend_matching_option_id", nullable = false, unique = true)
     private Long id;
     @Column(name = "text")

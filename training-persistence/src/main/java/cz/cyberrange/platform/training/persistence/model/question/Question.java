@@ -21,8 +21,7 @@ import java.util.List;
 public class Question implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "questionGenerator")
-    @SequenceGenerator(name = "questionGenerator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "question_id", nullable = false, unique = true)
     private Long id;
     @Enumerated(EnumType.STRING)
