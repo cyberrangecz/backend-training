@@ -5,7 +5,8 @@
     <parent>
         <groupId>cz.cyberrange.platform</groupId>
         <artifactId>training</artifactId>
-        <version>0.0.1</version>
+        <version>${app-version}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>training-elasticsearch</artifactId>
     <packaging>jar</packaging>
