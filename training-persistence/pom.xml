@@ -5,7 +5,8 @@
     <parent>
         <groupId>cz.cyberrange.platform</groupId>
         <artifactId>training</artifactId>
-        <version>0.0.1</version>
+        <version>${app-version}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>training-persistence</artifactId>
     <packaging>jar</packaging>
@@ -14,7 +15,7 @@
         <dependency>
             <groupId>cz.cyberrange.platform</groupId>
             <artifactId>training-api</artifactId>
-            <version>0.0.1</version>
+            <version>${app-version}</version>
         </dependency>
         <!--SPRING BOOT STARTERS-->
         <dependency>
