@@ -15,7 +15,7 @@ public class ExtendedMatchingStatement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "extendedMatchingStatementGenerator")
-    @SequenceGenerator(name = "extendedMatchingStatementGenerator")
+    @SequenceGenerator(name = "extendedMatchingStatementGenerator", sequenceName = "extended_matching_statement_seq")
     @Column(name = "extended_matching_statement_id", nullable = false, unique = true)
     private Long id;
     @Column(name = "text")

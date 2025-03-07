@@ -22,7 +22,7 @@ public class Question implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "questionGenerator")
-    @SequenceGenerator(name = "questionGenerator")
+    @SequenceGenerator(name = "questionGenerator", sequenceName = "question_seq")
     @Column(name = "question_id", nullable = false, unique = true)
     private Long id;
     @Enumerated(EnumType.STRING)
