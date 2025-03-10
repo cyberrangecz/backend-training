@@ -16,7 +16,7 @@ public class QuestionChoice implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "questionChoiceGenerator")
-    @SequenceGenerator(name = "questionChoiceGenerator")
+    @SequenceGenerator(name = "questionChoiceGenerator", sequenceName = "question_choice_seq")
     @Column(name = "question_choice_id", nullable = false, unique = true)
     private Long id;
     @Column(name = "text")

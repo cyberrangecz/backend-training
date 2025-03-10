@@ -15,7 +15,7 @@ public class ExtendedMatchingOption {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "extendedMatchingOptionGenerator")
-    @SequenceGenerator(name = "extendedMatchingOptionGenerator")
+    @SequenceGenerator(name = "extendedMatchingOptionGenerator", sequenceName = "extended_matching_option_seq")
     @Column(name = "extend_matching_option_id", nullable = false, unique = true)
     private Long id;
     @Column(name = "text")
