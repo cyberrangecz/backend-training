@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,7 +18,6 @@ import java.util.Set;
 /**
  * Class representing mitre technique used in Training Level.
  */
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString

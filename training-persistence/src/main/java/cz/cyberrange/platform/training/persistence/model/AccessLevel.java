@@ -1,6 +1,5 @@
 package cz.cyberrange.platform.training.persistence.model;
 
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.Column;
@@ -13,7 +12,6 @@ import javax.persistence.Table;
  * Class specifying Abstract level as access level.
  * Access levels contain instructions on how to connect to the virtual machines.
  */
-@EqualsAndHashCode
 @ToString
 @Entity
 @Table(name = "access_level")

@@ -4,7 +4,6 @@ package cz.cyberrange.platform.training.persistence.model;
 import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,7 +18,6 @@ import java.util.List;
  * Class specifying Abstract level as assessment level.
  * Assessment levels contain questions for trainees to answer.
  */
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString

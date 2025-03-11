@@ -2,17 +2,17 @@ package cz.cyberrange.platform.training.persistence.model.question;
 
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.enums.QuestionType;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString
@@ -87,5 +87,21 @@ public class Question implements Serializable {
     public void setExtendedMatchingOptions(List<ExtendedMatchingOption> extendedMatchingOptions) {
         this.extendedMatchingOptions = extendedMatchingOptions;
         this.extendedMatchingOptions.forEach(option -> option.setQuestion(this));
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        Question question = (Question) o;
+        return getId() != null && Objects.equals(getId(), question.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
