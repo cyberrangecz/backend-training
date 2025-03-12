@@ -6,6 +6,7 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -325,4 +326,33 @@ public class TrainingLevel extends AbstractLevel {
     public void setCommandsRequired(boolean commandsRequired) {
         this.commandsRequired = commandsRequired;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TrainingLevel)) return false;
+        if (!super.equals(o)) return false;
+        TrainingLevel trainingLevel = (TrainingLevel) o;
+        return Objects.equals(getContent(), trainingLevel.getContent()) &&
+                Objects.equals(getSolution(), trainingLevel.getSolution());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getContent(), getSolution());
+    }
+
+    @Override
+    public String toString() {
+        return "TrainingLevel{" +
+                "answer='" + answer + '\'' +
+                ", content='" + content + '\'' +
+                ", solution='" + solution + '\'' +
+                ", solutionPenalized=" + solutionPenalized +
+                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
+                ", variantAnswers=" + variantAnswers +
+                ", commandsRequired=" + commandsRequired +
+                '}';
+    }
+
 }

@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -51,18 +50,30 @@ public class Hint extends AbstractEntity<Long> {
     private int order;
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null) return false;
-        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass) return false;
+        if (!(o instanceof Hint)) return false;
         Hint hint = (Hint) o;
-        return getId() != null && Objects.equals(getId(), hint.getId());
+        return Objects.equals(getTitle(), hint.getTitle()) &&
+                Objects.equals(getContent(), hint.getContent()) &&
+                Objects.equals(getHintPenalty(), hint.getHintPenalty()) &&
+                getOrder() == getOrder();
     }
 
     @Override
-    public final int hashCode() {
-        return Objects.hashCode(this.getId());
+    public int hashCode() {
+        return Objects.hash(getTitle(), getContent(), getHintPenalty(), getOrder());
     }
+
+    @Override
+    public String toString() {
+        return "Hint{" +
+                "id=" + super.getId() +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", hintPenalty=" + hintPenalty +
+                ", order=" + order +
+                '}';
+    }
+
 }

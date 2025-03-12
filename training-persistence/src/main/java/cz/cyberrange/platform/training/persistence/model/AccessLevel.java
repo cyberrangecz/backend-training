@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+import java.util.Objects;
 
 /**
  * Class specifying Abstract level as access level.
@@ -81,4 +82,29 @@ public class AccessLevel extends AbstractLevel {
     public void setLocalContent(String localContent) {
         this.localContent = localContent;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AccessLevel)) return false;
+        if (!super.equals(o)) return false;
+        AccessLevel trainingLevel = (AccessLevel) o;
+        return Objects.equals(getCloudContent(), trainingLevel.getCloudContent()) &&
+                Objects.equals(getLocalContent(), trainingLevel.getLocalContent());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getCloudContent(), getLocalContent());
+    }
+
+    @Override
+    public String toString() {
+        return "AccessLevel{" +
+                "passkey='" + passkey + '\'' +
+                ", cloudContent='" + cloudContent + '\'' +
+                ", localContent='" + localContent + '\'' +
+                '}';
+    }
+
 }

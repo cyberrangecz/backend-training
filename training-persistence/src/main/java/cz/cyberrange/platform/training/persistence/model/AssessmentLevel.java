@@ -13,6 +13,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class specifying Abstract level as assessment level.
@@ -52,4 +53,30 @@ public class AssessmentLevel extends AbstractLevel {
         this.questions.forEach(question -> question.setAssessmentLevel(this));
         this.questions.sort(Comparator.comparingInt(Question::getOrder));
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AssessmentLevel)) return false;
+        if (!super.equals(o)) return false;
+        AssessmentLevel that = (AssessmentLevel) o;
+        return Objects.equals(getQuestions(), that.getQuestions()) &&
+                Objects.equals(getInstructions(), that.getInstructions()) &&
+                getAssessmentType() == that.getAssessmentType();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getQuestions(), getInstructions(), getAssessmentType());
+    }
+
+    @Override
+    public String toString() {
+        return "AssessmentLevel{" +
+                "questions='" + questions + '\'' +
+                ", instructions='" + instructions + '\'' +
+                ", assessmentType=" + assessmentType +
+                '}';
+    }
+
 }

@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.proxy.HibernateProxy;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -74,18 +73,28 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
     private TrainingDefinition trainingDefinition;
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null) return false;
-        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass) return false;
+        if (!(o instanceof AbstractLevel)) return false;
         AbstractLevel that = (AbstractLevel) o;
-        return getId() != null && Objects.equals(getId(), that.getId());
+        return getMaxScore() == that.getMaxScore() &&
+                Objects.equals(getId(), that.getId());
     }
 
     @Override
-    public final int hashCode() {
-        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+    public int hashCode() {
+        return Objects.hash(getId(), getMaxScore());
     }
+
+    @Override
+    public String toString() {
+        return "AbstractLevel{" +
+                "id=" + super.getId() +
+                "title='" + title + '\'' +
+                ", maxScore=" + maxScore +
+                ", estimatedDuration=" + estimatedDuration +
+                ", order=" + order +
+                '}';
+    }
+
 }
