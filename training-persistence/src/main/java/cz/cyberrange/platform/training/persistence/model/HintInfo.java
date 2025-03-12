@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,11 +8,11 @@ import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import java.util.Objects;
 
 /**
  * Class represents information of hint associated with current level of training run
  */
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString
@@ -31,4 +30,30 @@ public class HintInfo {
     private String hintContent;
     @Column(name = "order_in_level", nullable = false)
     private int order;
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof HintInfo)) return false;
+        HintInfo hintInfo = (HintInfo) object;
+        return Objects.equals(getTrainingLevelId(), hintInfo.getTrainingLevelId()) &&
+                Objects.equals(getHintId(), hintInfo.getHintId()) &&
+                Objects.equals(getHintTitle(), hintInfo.getHintTitle());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTrainingLevelId(), getHintId(), getHintTitle());
+    }
+
+    @Override
+    public String toString() {
+        return "HintInfo{" +
+                "trainingLevelId=" + trainingLevelId +
+                ", hintId=" + hintId +
+                ", hintTitle='" + hintTitle + '\'' +
+                ", hintContent='" + hintContent + '\'' +
+                ", order=" + order +
+                '}';
+    }
+
 }

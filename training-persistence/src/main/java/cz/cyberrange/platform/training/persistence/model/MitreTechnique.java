@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,12 +13,12 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Class representing mitre technique used in Training Level.
  */
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString
@@ -47,4 +46,28 @@ public class MitreTechnique extends AbstractEntity<Long> {
     public void removeTrainingLevel(TrainingLevel trainingLevel) {
         this.trainingLevels.remove(trainingLevel);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof MitreTechnique))
+            return false;
+        MitreTechnique accessToken = (MitreTechnique) o;
+        return Objects.equals(this.techniqueKey, accessToken.getTechniqueKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(techniqueKey);
+    }
+
+    @Override
+    public String toString() {
+        return "MitreTechnique{" +
+                "id=" + super.getId() +
+                ", techniqueKey='" + techniqueKey + '\'' +
+                '}';
+    }
+
 }

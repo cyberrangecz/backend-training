@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,11 +13,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * Class representing attachments of Training Level
  */
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString
@@ -35,5 +34,29 @@ public class Attachment extends AbstractEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "training_level_id")
     private TrainingLevel trainingLevel;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Attachment that = (Attachment) o;
+        return Objects.equals(content, that.content) &&
+                Objects.equals(creationTime, that.creationTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(content, creationTime);
+    }
+
+    @Override
+    public String toString() {
+        return "Attachment{" +
+                "id=" + super.getId() +
+                ", content='" + content + '\'' +
+                ", creationTime=" + creationTime +
+                '}';
+    }
+
 }
 

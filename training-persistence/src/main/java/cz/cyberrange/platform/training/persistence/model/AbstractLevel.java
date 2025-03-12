@@ -1,18 +1,17 @@
 package cz.cyberrange.platform.training.persistence.model;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 /**
  * Class representing levels from Training definition.
  * This class is extended by TrainingLevel, InfoLevel and AssessmentLevel.
  */
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString
@@ -72,4 +71,30 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "training_definition_id")
     private TrainingDefinition trainingDefinition;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractLevel)) return false;
+        AbstractLevel that = (AbstractLevel) o;
+        return getMaxScore() == that.getMaxScore() &&
+                Objects.equals(getId(), that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getMaxScore());
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractLevel{" +
+                "id=" + super.getId() +
+                "title='" + title + '\'' +
+                ", maxScore=" + maxScore +
+                ", estimatedDuration=" + estimatedDuration +
+                ", order=" + order +
+                '}';
+    }
+
 }

@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,12 +15,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import java.util.Objects;
 
 /**
  * Class representing hints associated with training level that can be displayed by trainee if they are in need of help with
  * solving given level
  */
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString
@@ -49,4 +48,32 @@ public class Hint extends AbstractEntity<Long> {
     private TrainingLevel trainingLevel;
     @Column(name = "order_in_level", nullable = false)
     private int order;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Hint)) return false;
+        Hint hint = (Hint) o;
+        return Objects.equals(getTitle(), hint.getTitle()) &&
+                Objects.equals(getContent(), hint.getContent()) &&
+                Objects.equals(getHintPenalty(), hint.getHintPenalty()) &&
+                getOrder() == getOrder();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTitle(), getContent(), getHintPenalty(), getOrder());
+    }
+
+    @Override
+    public String toString() {
+        return "Hint{" +
+                "id=" + super.getId() +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", hintPenalty=" + hintPenalty +
+                ", order=" + order +
+                '}';
+    }
+
 }

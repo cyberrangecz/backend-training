@@ -1,19 +1,18 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.converters.ReferenceSolutionConverter;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Class specifying Abstract level as training level.
  * Training levels contain tasks for trainees to solve.
  */
-@EqualsAndHashCode
 @ToString
 @Entity
 @Table(name = "training_level")
@@ -50,11 +49,11 @@ public class TrainingLevel extends AbstractLevel {
     private int incorrectAnswerLimit;
     @Column(name = "variant_answers", nullable = false)
     private boolean variantAnswers;
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE} , fetch = FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(
             name = "training_level_mitre_technique",
-            joinColumns = { @JoinColumn(name = "training_level_id") },
-            inverseJoinColumns = { @JoinColumn(name = "mitre_technique_id")}
+            joinColumns = {@JoinColumn(name = "training_level_id")},
+            inverseJoinColumns = {@JoinColumn(name = "mitre_technique_id")}
     )
     private Set<MitreTechnique> mitreTechniques = new HashSet<>();
     @ElementCollection(fetch = FetchType.EAGER)
@@ -327,4 +326,33 @@ public class TrainingLevel extends AbstractLevel {
     public void setCommandsRequired(boolean commandsRequired) {
         this.commandsRequired = commandsRequired;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TrainingLevel)) return false;
+        if (!super.equals(o)) return false;
+        TrainingLevel trainingLevel = (TrainingLevel) o;
+        return Objects.equals(getContent(), trainingLevel.getContent()) &&
+                Objects.equals(getSolution(), trainingLevel.getSolution());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getContent(), getSolution());
+    }
+
+    @Override
+    public String toString() {
+        return "TrainingLevel{" +
+                "answer='" + answer + '\'' +
+                ", content='" + content + '\'' +
+                ", solution='" + solution + '\'' +
+                ", solutionPenalized=" + solutionPenalized +
+                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
+                ", variantAnswers=" + variantAnswers +
+                ", commandsRequired=" + commandsRequired +
+                '}';
+    }
+
 }
