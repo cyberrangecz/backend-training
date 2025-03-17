@@ -36,4 +36,6 @@ public class AbstractEntity<PK extends Serializable> implements Serializable {
         }
         return false;
     }
+
+
 }

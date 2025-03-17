@@ -1,5 +1,8 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -109,6 +112,11 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private boolean showStepperBar;
     @Column(name = "backward_mode", nullable = false)
     private boolean backwardMode;
+
+    @Getter
+    @Setter
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Team> teams = new HashSet<>();
 
     /**
      * Gets unique identification number of Training instance

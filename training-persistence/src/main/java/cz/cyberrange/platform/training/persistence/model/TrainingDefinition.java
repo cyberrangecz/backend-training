@@ -1,6 +1,9 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
+import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -87,6 +90,11 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     private String lastEditedBy;
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Getter
+    @Setter
+    @Column(name = "training_type", nullable = false)
+    private TrainingType trainingType = TrainingType.Linear;
 
     /**
      * Gets unique identification number of Training definition
@@ -311,6 +319,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
     /**
      * Gets the time the Training Definition was created at
+     *
      * @return the time of Training Definition creation
      */
     public LocalDateTime getCreatedAt() {
@@ -319,6 +328,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
     /**
      * Sets the creation time of the Training Definition
+     *
      * @param createdAt time of Training Definition creation
      */
     public void setCreatedAt(LocalDateTime createdAt) {
