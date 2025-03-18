@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.converters.ReferenceSolutionConverter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.Collections;
@@ -13,7 +12,6 @@ import java.util.Set;
  * Class specifying Abstract level as training level.
  * Training levels contain tasks for trainees to solve.
  */
-@ToString
 @Entity
 @Table(name = "training_level")
 @PrimaryKeyJoinColumn(name = "id")
