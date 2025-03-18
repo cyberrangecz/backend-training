@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.persistence.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -14,7 +13,6 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-@ToString
 @Embeddable
 public class ExpectedCommand {
 
