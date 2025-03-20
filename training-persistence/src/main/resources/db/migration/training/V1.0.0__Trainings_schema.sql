@@ -60,7 +60,7 @@ CREATE TABLE training_instance (
 );
 
 CREATE TABLE training_instance_user_ref (
-    training_instance_id int8 NOT NULL UNIQUE,
+    training_instance_id int8 NOT NULL,
     user_ref_id          int8 NOT NULL,
     PRIMARY KEY (training_instance_id, user_ref_id),
     FOREIGN KEY (training_instance_id) REFERENCES training_instance,
@@ -181,7 +181,7 @@ CREATE TABLE attachment (
 
 CREATE TABLE training_run_acquisition_lock (
     id                   bigserial NOT NULL,
-    participant_ref_id   bigserial NOT NULL UNIQUE,
+    participant_ref_id   bigserial NOT NULL,
     training_instance_id bigserial NOT NULL,
     creation_time        timestamp NOT NULL,
     PRIMARY KEY (id),
