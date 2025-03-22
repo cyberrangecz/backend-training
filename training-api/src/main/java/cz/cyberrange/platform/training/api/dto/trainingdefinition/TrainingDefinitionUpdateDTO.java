@@ -2,6 +2,7 @@ package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
 import cz.cyberrange.platform.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.TDState;
+import cz.cyberrange.platform.training.api.enums.TrainingType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -14,7 +15,6 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Encapsulates information about Training Definition, intended for edit of the definition.
- *
  */
 @Getter
 @Setter
@@ -37,6 +37,8 @@ public class TrainingDefinitionUpdateDTO {
     @ApiModelProperty(value = "Current state of training definition.", required = true, example = "UNRELEASED")
     @NotNull(message = "{trainingDefinition.state.NotNull.message}")
     private TDState state;
+    @ApiModelProperty(value = "Type of training instance.", notes = "Defaults to LINEAR", example = "COOP")
+    private TrainingType type;
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     @Valid
     private BetaTestingGroupUpdateDTO betaTestingGroup;

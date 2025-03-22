@@ -7,6 +7,8 @@ import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelDT
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.JeopardyLevelUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.sublevel.JeopardySublevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
@@ -23,7 +25,6 @@ import javax.validation.constraints.NotNull;
 /**
  * Encapsulates information about abstract level.
  * Extended by {@link AssessmentLevelDTO}, {@link TrainingLevelDTO}, {@link AccessLevelUpdateDTO} and {@link InfoLevelDTO}
- *
  */
 @EqualsAndHashCode
 @Getter
@@ -37,7 +38,10 @@ import javax.validation.constraints.NotNull;
         @JsonSubTypes.Type(value = TrainingLevelUpdateDTO.class, name = "GAME_LEVEL"),
         @JsonSubTypes.Type(value = AccessLevelUpdateDTO.class, name = "ACCESS_LEVEL"),
         @JsonSubTypes.Type(value = AssessmentLevelUpdateDTO.class, name = "ASSESSMENT_LEVEL"),
-        @JsonSubTypes.Type(value = InfoLevelUpdateDTO.class, name = "INFO_LEVEL")})
+        @JsonSubTypes.Type(value = InfoLevelUpdateDTO.class, name = "INFO_LEVEL"),
+        @JsonSubTypes.Type(value = JeopardyLevelUpdateDTO.class, name = "JEOPARDY_LEVEL"),
+        @JsonSubTypes.Type(value = JeopardySublevelUpdateDTO.class, name = "JEOPARDY_SUBLEVEL")
+})
 public abstract class AbstractLevelUpdateDTO {
 
     @ApiModelProperty(value = "Main identifier of level.", required = true, example = "1")

@@ -94,7 +94,8 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     @Getter
     @Setter
     @Column(name = "training_type", nullable = false)
-    private TrainingType trainingType = TrainingType.Linear;
+    @Enumerated(EnumType.STRING)
+    private TrainingType type = TrainingType.LINEAR;
 
     /**
      * Gets unique identification number of Training definition

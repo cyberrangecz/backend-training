@@ -22,9 +22,18 @@ import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.HintImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
+import cz.cyberrange.platform.training.api.dto.imports.JeopardyCategoryImportDTO;
+import cz.cyberrange.platform.training.api.dto.imports.JeopardyLevelImportDTO;
+import cz.cyberrange.platform.training.api.dto.imports.JeopardySublevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.JeopardyLevelDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.JeopardyLevelUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.category.JeopardyCategoryDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.category.JeopardyCategoryUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.sublevel.JeopardySublevelDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.sublevel.JeopardySublevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
@@ -66,7 +75,7 @@ import java.util.List;
 public class TestDataFactory {
 
     private SimpleModule simpleModule = new SimpleModule("SimpleModule").addSerializer(new LocalDateTimeUTCSerializer());
-    private ObjectMapper mapper = new ObjectMapper().registerModule( new JavaTimeModule())
+    private ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .registerModule(simpleModule)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -76,7 +85,7 @@ public class TestDataFactory {
     private AssessmentLevel questionnaire = generateAssessmentLevel("Questionnaire", 0, 15L,
             2, "List of some instructions", AssessmentType.QUESTIONNAIRE);
     private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO = generateAssessmentLevelUpdateDTO("New Assessment Title",
-             "New instructions", cz.cyberrange.platform.training.api.enums.AssessmentType.QUESTIONNAIRE, 9);
+            "New instructions", cz.cyberrange.platform.training.api.enums.AssessmentType.QUESTIONNAIRE, 9);
     private AssessmentLevelImportDTO assessmentLevelImportDTO = generateAssessmentLevelImportDTO("Assessment level import", 15,
             "Questions import", "Instructions import", cz.cyberrange.platform.training.api.enums.AssessmentType.TEST);
     private AssessmentLevelDTO assessmentLevelDTO = generateAssessmentLevelDTO("Assessment DTO", 100, 12, "DTO questions",
@@ -102,6 +111,89 @@ public class TestDataFactory {
             "import solution", true, 9, 100);
     private TrainingLevelDTO trainingLevelDTO = generateTrainingLevelDTO("DTO answer", "DTO training content", "DTO soulution", true, 8, "DTO training level",
             80, 25);
+
+    private JeopardyCategory jeopardyCategory = generateJeopardyCategory(
+            "Category 1",
+            0xFF000000, //black, solid
+            List.of(
+                    generateJeopardySublevelLevel(
+                            "Jeopardy Sublevel 1", 100, 20L, 0,
+                            "SecretAnswer1", "Content of Sublevel 1", "Solution of Sublevel 1",
+                            true, 5, "A short description of Sublevel 1"),
+                    generateJeopardySublevelLevel(
+                            "Jeopardy Sublevel 2", 50, 15L, 0,
+                            "SecretAnswer2", "Content of Sublevel 2", "Solution of Sublevel 2",
+                            false, 2, "A short description of Sublevel 2")
+            )
+    );
+
+    private JeopardyCategory jeopardyCategoryEmpty = generateJeopardyCategory(
+            "Empty category",
+            0x7700FF00, //half opaque green
+            List.of()
+    );
+
+    private JeopardyLevel jeopardyLevel = generateJeopardyLevel(
+            "Jeopardy level title",
+            150,
+            35L,
+            0,
+            List.of(jeopardyCategory, jeopardyCategoryEmpty)
+    );
+
+    private JeopardyLevel jeopardyLevelEmpty = generateJeopardyLevel("Empty jeopardy",
+            0, 0, 0, new ArrayList<>());
+    private JeopardyLevelUpdateDTO jeopardyLevelUpdateDTO = generateJeopardyLevelUpdateDTO(
+            "Jeopardy update",
+            List.of(
+                    generateJeopardyCategoryUpdateDTO("Jeopardy category update", 0x00000000,
+                            List.of(generateJeopardySublevelUpdateDTO(
+                                    "Jeopardy Sublevel Update", 100, "Answer update", "Sublevel content updated",
+                                    "Updated solution", false, 10, 1, "Short updated description"
+                            ))
+                    )
+            )
+
+    );
+    private JeopardyLevelImportDTO jeopardyLevelImportDTO = generateJeopardyLevelImportDTO(
+            "Import Jeopardy",
+            List.of(
+                    generateJeopardyCategoryImport(
+                            "Jeopardy category import", 0x00000000,
+                            List.of(generateJeopardySublevelImportDTO(
+                                            "Jeopardy Sublevel Import", 100, "Answer import", "Sublevel content import",
+                                            "Imported solution", false, 10, 20, "Short import description"
+                                    ),
+                                    generateJeopardySublevelImportDTO(
+                                            "Jeopardy Sublevel Import 2", 50, "Answer import 2", "Sublevel content import 2",
+                                            "Imported solution 2", true, 5, 10, "Short import description 2"
+                                    )
+                            )
+                    ),
+                    generateJeopardyCategoryImport("Empty category import", 0xFFFFFFFF, List.of())
+            )
+    );
+    private JeopardyLevelDTO jeopardyLevelDTO = generateJeopardyLevelDTO(
+            "Jeopardy DTO",
+            List.of(
+                    generateJeopardyCategoryDTO(
+                            "Jeopardy category DTO",
+                            0x00000000,
+                            List.of(
+                                    generateJeopardySublevelDTO(
+                                            "Answer DTO", "Sublevel content DTO",
+                                            "DTO solution", false, 5, "Jeopardy sublevel DTO title", 50, 5, "Short DTO description"
+                                    ),
+                                    generateJeopardySublevelDTO(
+                                            "Answer DTO 2", "Sublevel content DTO 2",
+                                            "DTO solution 2", true, 10, "Jeopardy sublevel DTO title 2", 25, 2, "Short DTO description 2"
+                                    )
+                            )
+                    ),
+                    generateJeopardyCategoryDTO("Empty category DTO", 0xFFFFFFFF, List.of())
+            )
+    );
+
 
     private InfoLevel infoLevel1 = generateInfoLevel("Info level 1", 7L, 5, "Information");
     private InfoLevel infoLevel2 = generateInfoLevel("Info level 2", 9L, 6, "Content");
@@ -137,7 +229,7 @@ public class TestDataFactory {
             LocalDateTime.now(Clock.systemUTC()).minusHours(5), "John Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(5));
     private TrainingDefinition archivedDefinition = generateTrainingDefinition("Archived definition", "Archived description",
             new String[]{"p5"}, new String[]{"o4", "o5", "o6"}, TDState.ARCHIVED,
-            LocalDateTime.now(Clock.systemUTC()).minusHours(10),"Jane Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(10));
+            LocalDateTime.now(Clock.systemUTC()).minusHours(10), "Jane Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(10));
     private TrainingDefinitionDTO unreleasedDefinitionDTO = generateTrainingDefinitionDTO(unreleasedDefinition);
     private TrainingDefinitionDTO releasedDefinitionDTO = generateTrainingDefinitionDTO(releasedDefinition);
     private TrainingDefinitionDTO archivedDefinitionDTO = generateTrainingDefinitionDTO(archivedDefinition);
@@ -148,11 +240,11 @@ public class TestDataFactory {
             "Creation of definition", new String[]{"p8", "p9"}, new String[]{"o8", "o9"}, cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED);
     private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO = generateTrainingDefinitionUpdateDTO("Training definition updaet DTO",
             "Update of definition", new String[]{"p6", "p7"}, new String[]{"o6", "o7"}, cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED,
-             7L);
+            7L);
     private ImportTrainingDefinitionDTO importTrainingDefinitionDTO = generateImportTrainingDefinitionDTO("Imported definition", "Imported description",
             new String[]{"ip1", "ip2"}, new String[]{"io1", "io2"}, cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED);
-    private TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = generateTrainingDefinitionByIdDTO("TDbyId", "Definition by id",  new String[]{"p8", "p9"},
-            new String[]{"o8", "o9"}, cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED,false,
+    private TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = generateTrainingDefinitionByIdDTO("TDbyId", "Definition by id", new String[]{"p8", "p9"},
+            new String[]{"o8", "o9"}, cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED, false,
             20L, LocalDateTime.now(Clock.systemUTC()).minusHours(15), LocalDateTime.now(Clock.systemUTC()).minusHours(15));
 
     private TrainingInstance futureInstance = generateTrainingInstance(LocalDateTime.now(Clock.systemUTC()).plusHours(10),
@@ -194,43 +286,48 @@ public class TestDataFactory {
     private UserRefDTO userRefDTO3 = generateUserRefDTO(14L, "John Nevel", "Nevel", "John", "mail38@test.cz", "https://oidc.provider.cz/oidc", null);
     private UserRefDTO userRefDTO4 = generateUserRefDTO(17L, "Ted Mosby", "Mosby", "Ted", "mail4@test.cz", "https://oidc.provider.cz/oidc", null);
 
-    private UserRef userRef1 = generateUserRef( 10L);
+    private UserRef userRef1 = generateUserRef(10L);
     private UserRef userRef2 = generateUserRef(12L);
     private UserRef userRef3 = generateUserRef(14L);
     private UserRef userRef4 = generateUserRef(17L);
 
-    public AssessmentLevel getTest(){
+    public AssessmentLevel getTest() {
         return clone(test, AssessmentLevel.class);
     }
 
-    public AssessmentLevel getQuestionnaire(){
+    public AssessmentLevel getQuestionnaire() {
         return clone(questionnaire, AssessmentLevel.class);
     }
 
-    public Question getFreeFormQuestion(){
+    public Question getFreeFormQuestion() {
         return clone(freeFormQuestion, Question.class);
     }
-    public Question getMultipleChoiceQuestion(){
+
+    public Question getMultipleChoiceQuestion() {
         return clone(multipleChoiceQuestion, Question.class);
     }
-    public Question getExtendedMatchingStatements(){
+
+    public Question getExtendedMatchingStatements() {
         return clone(extendedMatchingItems, Question.class);
     }
-    public List<ExtendedMatchingStatement> getExtendedMatchingStatements(int numberOfItems, String itemPrefix, Question question){
+
+    public List<ExtendedMatchingStatement> getExtendedMatchingStatements(int numberOfItems, String itemPrefix, Question question) {
         List<ExtendedMatchingStatement> extendedMatchingStatements = new ArrayList<>();
         for (int i = 0; i < numberOfItems; i++) {
             extendedMatchingStatements.add(generateExtendedMatchingStatement(i, itemPrefix + " " + i, question));
         }
         return extendedMatchingStatements;
     }
-    public List<ExtendedMatchingOption> getExtendedMatchingOptions(int numberOfOptions, String optionPrefix, Question question){
+
+    public List<ExtendedMatchingOption> getExtendedMatchingOptions(int numberOfOptions, String optionPrefix, Question question) {
         List<ExtendedMatchingOption> extendedMatchingOptions = new ArrayList<>();
         for (int i = 0; i < numberOfOptions; i++) {
             extendedMatchingOptions.add(generateExtendedMatchingOption(i, optionPrefix + " " + i, question));
         }
         return extendedMatchingOptions;
     }
-    public List<QuestionChoice> getQuestionChoices(int numberOfOptions, String choicePrefix, List<Boolean> correctness, Question question){
+
+    public List<QuestionChoice> getQuestionChoices(int numberOfOptions, String choicePrefix, List<Boolean> correctness, Question question) {
         List<QuestionChoice> questionChoices = new ArrayList<>();
         for (int i = 0; i < numberOfOptions; i++) {
             questionChoices.add(generateQuestionChoice(i, choicePrefix + " " + i, correctness.get(i), question));
@@ -238,30 +335,35 @@ public class TestDataFactory {
         return questionChoices;
     }
 
-    public QuestionDTO getFreeFormQuestionDTO(){
+    public QuestionDTO getFreeFormQuestionDTO() {
         return clone(freeFormQuestionDTO, QuestionDTO.class);
     }
-    public QuestionDTO getExtendedMatchingItemsDTO(){
+
+    public QuestionDTO getExtendedMatchingItemsDTO() {
         return clone(multipleChoiceQuestionDTO, QuestionDTO.class);
     }
-    public QuestionDTO getMultipleChoiceQuestionDTO(){
+
+    public QuestionDTO getMultipleChoiceQuestionDTO() {
         return clone(extendedMatchingItemsDTO, QuestionDTO.class);
     }
-    public List<ExtendedMatchingStatementDTO> getExtendedMatchingItemDTOs(int numberOfItems, String itemPrefix, List<Integer> optionsMapping){
+
+    public List<ExtendedMatchingStatementDTO> getExtendedMatchingItemDTOs(int numberOfItems, String itemPrefix, List<Integer> optionsMapping) {
         List<ExtendedMatchingStatementDTO> extendedMatchingItems = new ArrayList<>();
         for (int i = 0; i < numberOfItems; i++) {
             extendedMatchingItems.add(generateExtendedMatchingItemDTO(i, itemPrefix + " " + i, optionsMapping.get(i)));
         }
         return extendedMatchingItems;
     }
-    public List<ExtendedMatchingOptionDTO> getExtendedMatchingOptionDTOs(int numberOfOptions, String optionPrefix){
+
+    public List<ExtendedMatchingOptionDTO> getExtendedMatchingOptionDTOs(int numberOfOptions, String optionPrefix) {
         List<ExtendedMatchingOptionDTO> extendedMatchingOptions = new ArrayList<>();
         for (int i = 0; i < numberOfOptions; i++) {
             extendedMatchingOptions.add(generateExtendedMatchingOptionDTO(i, optionPrefix + " " + i));
         }
         return extendedMatchingOptions;
     }
-    public List<QuestionChoiceDTO> getQuestionChoiceDTOs(int numberOfOptions, String choicePrefix, List<Boolean> correctness){
+
+    public List<QuestionChoiceDTO> getQuestionChoiceDTOs(int numberOfOptions, String choicePrefix, List<Boolean> correctness) {
         List<QuestionChoiceDTO> questionChoices = new ArrayList<>();
         for (int i = 0; i < numberOfOptions; i++) {
             questionChoices.add(generateQuestionChoiceDTO(i, choicePrefix + " " + i, correctness.get(i)));
@@ -269,51 +371,59 @@ public class TestDataFactory {
         return questionChoices;
     }
 
-    public TrainingLevel getPenalizedLevel(){
+    public TrainingLevel getPenalizedLevel() {
         return clone(penalizedLevel, TrainingLevel.class);
     }
 
-    public TrainingLevel getNonPenalizedLevel(){
+    public TrainingLevel getNonPenalizedLevel() {
         return clone(nonPenalizedLevel, TrainingLevel.class);
     }
 
-    public InfoLevel getInfoLevel1(){
+    public JeopardyLevel getJeopardyLevel() {
+        return clone(jeopardyLevel, JeopardyLevel.class);
+    }
+
+    public JeopardyLevel getJeopardyLevelEmpty() {
+        return clone(jeopardyLevelEmpty, JeopardyLevel.class);
+    }
+
+    public InfoLevel getInfoLevel1() {
         return clone(infoLevel1, InfoLevel.class);
     }
 
-    public InfoLevel getInfoLevel2(){
+    public InfoLevel getInfoLevel2() {
         return clone(infoLevel2, InfoLevel.class);
     }
 
-    public AccessLevel getAccessLevel(){
+    public AccessLevel getAccessLevel() {
         return clone(accessLevel, AccessLevel.class);
     }
 
-    public MitreTechnique getMitreTechnique1(){
+    public MitreTechnique getMitreTechnique1() {
         return clone(mitreTechnique1, MitreTechnique.class);
     }
 
-    public MitreTechnique getMitreTechnique2(){
+    public MitreTechnique getMitreTechnique2() {
         return clone(mitreTechnique2, MitreTechnique.class);
     }
 
-    public Hint getHint1(){
+    public Hint getHint1() {
         return clone(hint1, Hint.class);
     }
 
-    public Hint getHint2(){
+    public Hint getHint2() {
         return clone(hint2, Hint.class);
     }
 
-    public Hint getHint3(){
+    public Hint getHint3() {
         return clone(hint3, Hint.class);
     }
 
-    public TrainingDefinition getUnreleasedDefinition(){
+    public TrainingDefinition getUnreleasedDefinition() {
         return clone(unreleasedDefinition, TrainingDefinition.class);
     }
 
-    public TrainingDefinition getReleasedDefinition(){
+    public TrainingDefinition getReleasedDefinition() {
         return clone(releasedDefinition, TrainingDefinition.class);
     }
 
@@ -321,51 +431,51 @@ public class TestDataFactory {
         return clone(archivedDefinition, TrainingDefinition.class);
     }
 
-    public TrainingDefinitionDTO getUnreleasedDefinitionDTO(){
+    public TrainingDefinitionDTO getUnreleasedDefinitionDTO() {
         return clone(unreleasedDefinitionDTO, TrainingDefinitionDTO.class);
     }
 
-    public TrainingDefinitionDTO getReleasedDefinitionDTO(){
+    public TrainingDefinitionDTO getReleasedDefinitionDTO() {
         return clone(releasedDefinitionDTO, TrainingDefinitionDTO.class);
     }
 
-    public TrainingDefinitionDTO getArchivedDefinitionDTO(){
+    public TrainingDefinitionDTO getArchivedDefinitionDTO() {
         return clone(archivedDefinitionDTO, TrainingDefinitionDTO.class);
     }
 
-    public TrainingDefinitionInfoDTO getUnreleasedDefinitionInfoDTO(){
+    public TrainingDefinitionInfoDTO getUnreleasedDefinitionInfoDTO() {
         return clone(unreleasedDefinitionInfoDTO, TrainingDefinitionInfoDTO.class);
     }
 
-    public TrainingDefinitionInfoDTO getReleasedDefinitionInfoDTO(){
+    public TrainingDefinitionInfoDTO getReleasedDefinitionInfoDTO() {
         return clone(releasedDefinitionInfoDTO, TrainingDefinitionInfoDTO.class);
     }
 
-    public TrainingDefinitionInfoDTO getArchivedDefinitionInfoDTO(){
+    public TrainingDefinitionInfoDTO getArchivedDefinitionInfoDTO() {
         return clone(archivedDefinitionInfoDTO, TrainingDefinitionInfoDTO.class);
     }
 
-    public TrainingInstance getFutureInstance(){
+    public TrainingInstance getFutureInstance() {
         return clone(futureInstance, TrainingInstance.class);
     }
 
-    public TrainingInstance getOngoingInstance(){
+    public TrainingInstance getOngoingInstance() {
         return clone(ongoingInstance, TrainingInstance.class);
     }
 
-    public TrainingInstance getConcludedInstance(){
+    public TrainingInstance getConcludedInstance() {
         return clone(concludedInstance, TrainingInstance.class);
     }
 
-    public TrainingRun getRunningRun(){
+    public TrainingRun getRunningRun() {
         return clone(runningRun, TrainingRun.class);
     }
 
-    public TrainingRun getFinishedRun(){
+    public TrainingRun getFinishedRun() {
         return clone(finishedRun, TrainingRun.class);
     }
 
-    public TrainingRun getArchivedRun(){
+    public TrainingRun getArchivedRun() {
         return clone(archivedRun, TrainingRun.class);
     }
 
@@ -389,40 +499,40 @@ public class TestDataFactory {
         return clone(assessmentLevelUpdateDTO, AssessmentLevelUpdateDTO.class);
     }
 
-    public TrainingRunByIdDTO getTrainingRunByIdDTO(){
+    public TrainingRunByIdDTO getTrainingRunByIdDTO() {
         return clone(trainingRunByIdDTO, TrainingRunByIdDTO.class);
     }
 
 
-    public TrainingRunDTO getTrainingRunDTO(){
+    public TrainingRunDTO getTrainingRunDTO() {
         return clone(trainingRunDTO, TrainingRunDTO.class);
     }
 
-    public TrainingLevelUpdateDTO getTrainingLevelUpdateDTO(){
+    public TrainingLevelUpdateDTO getTrainingLevelUpdateDTO() {
         return clone(trainingLevelUpdateDTO, TrainingLevelUpdateDTO.class);
     }
 
-    public InfoLevelUpdateDTO getInfoLevelUpdateDTO(){
+    public InfoLevelUpdateDTO getInfoLevelUpdateDTO() {
         return clone(infoLevelUpdateDTO, InfoLevelUpdateDTO.class);
     }
 
-    public InfoLevelImportDTO getInfoLevelImportDTO(){
+    public InfoLevelImportDTO getInfoLevelImportDTO() {
         return clone(infoLevelImportDTO, InfoLevelImportDTO.class);
     }
 
-    public TrainingLevelImportDTO getTrainingLevelImportDTO(){
+    public TrainingLevelImportDTO getTrainingLevelImportDTO() {
         return clone(trainingLevelImportDTO, TrainingLevelImportDTO.class);
     }
 
-    public AssessmentLevelImportDTO getAssessmentLevelImportDTO(){
+    public AssessmentLevelImportDTO getAssessmentLevelImportDTO() {
         return clone(assessmentLevelImportDTO, AssessmentLevelImportDTO.class);
     }
 
-    public ImportTrainingDefinitionDTO getImportTrainingDefinitionDTO(){
+    public ImportTrainingDefinitionDTO getImportTrainingDefinitionDTO() {
         return clone(importTrainingDefinitionDTO, ImportTrainingDefinitionDTO.class);
     }
 
-    public TrainingDefinitionByIdDTO getTrainingDefinitionByIdDTO(){
+    public TrainingDefinitionByIdDTO getTrainingDefinitionByIdDTO() {
         return clone(trainingDefinitionByIdDTO, TrainingDefinitionByIdDTO.class);
     }
 
@@ -430,82 +540,109 @@ public class TestDataFactory {
         return clone(abstractLevelDTO, AbstractLevelDTO.class);
     }
 
-    public BasicLevelInfoDTO getBasicTrainingLevelInfoDTO(){
+    public BasicLevelInfoDTO getBasicTrainingLevelInfoDTO() {
         return clone(basicTrainingLevelInfoDTO, BasicLevelInfoDTO.class);
     }
-    public BasicLevelInfoDTO getBasicInfoLevelInfoDTO(){
+
+    public BasicLevelInfoDTO getBasicInfoLevelInfoDTO() {
         return clone(basicInfoLevelInfoDTO, BasicLevelInfoDTO.class);
     }
 
-    public TrainingInstanceDTO getTrainingInstanceDTO(){
+    public TrainingInstanceDTO getTrainingInstanceDTO() {
         return clone(trainingInstanceDTO, TrainingInstanceDTO.class);
     }
 
-    public InfoLevelDTO getInfoLevelDTO(){
+    public InfoLevelDTO getInfoLevelDTO() {
         return clone(infoLevelDTO, InfoLevelDTO.class);
     }
 
-    public TrainingLevelDTO getTrainingLevelDTO(){
+    public TrainingLevelDTO getTrainingLevelDTO() {
         return clone(trainingLevelDTO, TrainingLevelDTO.class);
     }
 
-    public AssessmentLevelDTO getAssessmentLevelDTO(){
+    public JeopardyLevelDTO getJeopardyLevelDTO() {
+        return clone(jeopardyLevelDTO, JeopardyLevelDTO.class);
+    }
+
+    public AssessmentLevelDTO getAssessmentLevelDTO() {
         return clone(assessmentLevelDTO, AssessmentLevelDTO.class);
     }
 
-    public AccessedTrainingRunDTO getAccessedTrainingRunDTO(){
+    public AccessedTrainingRunDTO getAccessedTrainingRunDTO() {
         return clone(accessedTrainingRunDTO, AccessedTrainingRunDTO.class);
     }
 
-    public HintDTO getHintDTO(){
+    public HintDTO getHintDTO() {
         return clone(hintDTO, HintDTO.class);
     }
 
-    public HintImportDTO getHintImportDTO(){
+    public HintImportDTO getHintImportDTO() {
         return clone(hintImportDTO, HintImportDTO.class);
     }
 
-    public TrainingInstanceArchiveDTO getTrainingInstanceArchiveDTO(){
+    public TrainingInstanceArchiveDTO getTrainingInstanceArchiveDTO() {
         return clone(trainingInstanceArchiveDTO, TrainingInstanceArchiveDTO.class);
     }
 
-    public PoolInfoDTO getPoolInfoDTO(){
+    public PoolInfoDTO getPoolInfoDTO() {
         return clone(poolInfoDTO, PoolInfoDTO.class);
     }
 
-    public SandboxInfo getSandboxInfo(){
+    public SandboxInfo getSandboxInfo() {
         return clone(sandboxInfo, SandboxInfo.class);
     }
 
-    public SandboxPoolInfo getSandboxPoolInfo(){
+    public SandboxPoolInfo getSandboxPoolInfo() {
         return clone(sandboxPoolInfo, SandboxPoolInfo.class);
     }
 
-    public LockedPoolInfo getLockedPoolInfo(){
+    public LockedPoolInfo getLockedPoolInfo() {
         return clone(lockedPoolInfo, LockedPoolInfo.class);
     }
 
-    public MitreTechniqueDTO getMitreTechniqueDTO1(){
+    public MitreTechniqueDTO getMitreTechniqueDTO1() {
         return clone(mitreTechniqueDTO1, MitreTechniqueDTO.class);
     }
 
-    public MitreTechniqueDTO getMitreTechniqueDTO2(){
+    public MitreTechniqueDTO getMitreTechniqueDTO2() {
         return clone(mitreTechniqueDTO2, MitreTechniqueDTO.class);
     }
 
-    public UserRefDTO getUserRefDTO1() { return clone(userRefDTO1, UserRefDTO.class);}
-    public UserRefDTO getUserRefDTO2() { return clone(userRefDTO2, UserRefDTO.class);}
-    public UserRefDTO getUserRefDTO3() { return clone(userRefDTO3, UserRefDTO.class);}
-    public UserRefDTO getUserRefDTO4() { return clone(userRefDTO4, UserRefDTO.class);}
+    public UserRefDTO getUserRefDTO1() {
+        return clone(userRefDTO1, UserRefDTO.class);
+    }
+
+    public UserRefDTO getUserRefDTO2() {
+        return clone(userRefDTO2, UserRefDTO.class);
+    }
+
+    public UserRefDTO getUserRefDTO3() {
+        return clone(userRefDTO3, UserRefDTO.class);
+    }
+
+    public UserRefDTO getUserRefDTO4() {
+        return clone(userRefDTO4, UserRefDTO.class);
+    }
 
 
-    public UserRef getUserRef1() { return clone(userRef1, UserRef.class);}
-    public UserRef getUserRef2() { return clone(userRef2, UserRef.class);}
-    public UserRef getUserRef3() { return clone(userRef3, UserRef.class);}
-    public UserRef getUserRef4() { return clone(userRef4, UserRef.class);}
+    public UserRef getUserRef1() {
+        return clone(userRef1, UserRef.class);
+    }
+
+    public UserRef getUserRef2() {
+        return clone(userRef2, UserRef.class);
+    }
+
+    public UserRef getUserRef3() {
+        return clone(userRef3, UserRef.class);
+    }
+
+    public UserRef getUserRef4() {
+        return clone(userRef4, UserRef.class);
+    }
 
     private AssessmentLevel generateAssessmentLevel(String title, int maxScore, long estimatedDuration, int order,
-                                                    String instructions, AssessmentType assessmentType){
+                                                    String instructions, AssessmentType assessmentType) {
         AssessmentLevel newAssessmentLevel = new AssessmentLevel();
         newAssessmentLevel.setTitle(title);
         newAssessmentLevel.setMaxScore(maxScore);
@@ -516,7 +653,7 @@ public class TestDataFactory {
         return newAssessmentLevel;
     }
 
-    private Question generateQuestion(int order, int penalty, int points, QuestionType questionType, String text){
+    private Question generateQuestion(int order, int penalty, int points, QuestionType questionType, String text) {
         Question newQuestion = new Question();
         newQuestion.setOrder(order);
         newQuestion.setPenalty(penalty);
@@ -526,15 +663,15 @@ public class TestDataFactory {
         return newQuestion;
     }
 
-    private ExtendedMatchingOption generateExtendedMatchingOption(int optionOrder, String text, Question question){
-            ExtendedMatchingOption extendedMatchingOption = new ExtendedMatchingOption();
-            extendedMatchingOption.setOrder(optionOrder);
-            extendedMatchingOption.setText(text);
-            extendedMatchingOption.setQuestion(question);
-            return extendedMatchingOption;
+    private ExtendedMatchingOption generateExtendedMatchingOption(int optionOrder, String text, Question question) {
+        ExtendedMatchingOption extendedMatchingOption = new ExtendedMatchingOption();
+        extendedMatchingOption.setOrder(optionOrder);
+        extendedMatchingOption.setText(text);
+        extendedMatchingOption.setQuestion(question);
+        return extendedMatchingOption;
     }
 
-    private ExtendedMatchingStatement generateExtendedMatchingStatement(int itemOrder, String itemText, Question question){
+    private ExtendedMatchingStatement generateExtendedMatchingStatement(int itemOrder, String itemText, Question question) {
         ExtendedMatchingStatement extendedMatchingStatement = new ExtendedMatchingStatement();
         extendedMatchingStatement.setOrder(itemOrder);
         extendedMatchingStatement.setText(itemText);
@@ -542,7 +679,7 @@ public class TestDataFactory {
         return extendedMatchingStatement;
     }
 
-    private QuestionChoice generateQuestionChoice(int choiceOrder, String choiceText, boolean isCorrect, Question question){
+    private QuestionChoice generateQuestionChoice(int choiceOrder, String choiceText, boolean isCorrect, Question question) {
         QuestionChoice questionChoice = new QuestionChoice();
         questionChoice.setOrder(choiceOrder);
         questionChoice.setText(choiceText);
@@ -551,7 +688,7 @@ public class TestDataFactory {
         return questionChoice;
     }
 
-    private QuestionDTO generateQuestionDTO(int order, int penalty, int points, cz.cyberrange.platform.training.api.enums.QuestionType questionType, String text){
+    private QuestionDTO generateQuestionDTO(int order, int penalty, int points, cz.cyberrange.platform.training.api.enums.QuestionType questionType, String text) {
         QuestionDTO newQuestion = new QuestionDTO();
         newQuestion.setOrder(order);
         newQuestion.setPenalty(penalty);
@@ -561,14 +698,14 @@ public class TestDataFactory {
         return newQuestion;
     }
 
-    private ExtendedMatchingOptionDTO generateExtendedMatchingOptionDTO(int optionOrder, String text){
+    private ExtendedMatchingOptionDTO generateExtendedMatchingOptionDTO(int optionOrder, String text) {
         ExtendedMatchingOptionDTO extendedMatchingOption = new ExtendedMatchingOptionDTO();
         extendedMatchingOption.setOrder(optionOrder);
         extendedMatchingOption.setText(text);
         return extendedMatchingOption;
     }
 
-    private ExtendedMatchingStatementDTO generateExtendedMatchingItemDTO(int itemOrder, String text, int correctOptionOrder){
+    private ExtendedMatchingStatementDTO generateExtendedMatchingItemDTO(int itemOrder, String text, int correctOptionOrder) {
         ExtendedMatchingStatementDTO extendedMatchingItem = new ExtendedMatchingStatementDTO();
         extendedMatchingItem.setOrder(itemOrder);
         extendedMatchingItem.setText(text);
@@ -576,7 +713,7 @@ public class TestDataFactory {
         return extendedMatchingItem;
     }
 
-    private QuestionChoiceDTO generateQuestionChoiceDTO(int choiceOrder, String text, boolean isCorrect){
+    private QuestionChoiceDTO generateQuestionChoiceDTO(int choiceOrder, String text, boolean isCorrect) {
         QuestionChoiceDTO questionChoice = new QuestionChoiceDTO();
         questionChoice.setOrder(choiceOrder);
         questionChoice.setText(text);
@@ -584,22 +721,79 @@ public class TestDataFactory {
         return questionChoice;
     }
 
-    private TrainingLevel generateTrainingLevel(String title, int maxScore, long estimatedDuration, int order, String answer,
-                                            String content, String solution, boolean solutionPenalized, int incorrectAnswerLimit){
-        TrainingLevel newTrainingLevel = new TrainingLevel();
-        newTrainingLevel.setTitle(title);
-        newTrainingLevel.setMaxScore(maxScore);
-        newTrainingLevel.setEstimatedDuration(estimatedDuration);
-        newTrainingLevel.setOrder(order);
-        newTrainingLevel.setAnswer(answer);
-        newTrainingLevel.setContent(content);
-        newTrainingLevel.setSolution(solution);
-        newTrainingLevel.setSolutionPenalized(solutionPenalized);
-        newTrainingLevel.setIncorrectAnswerLimit(incorrectAnswerLimit);
-        return newTrainingLevel;
+    private <T extends TrainingLevel> T fillTrainingLevel(T level, String title, int maxScore, long estimatedDuration, int order, String answer,
+                                                          String content, String solution, boolean solutionPenalized, int incorrectAnswerLimit) {
+        level.setTitle(title);
+        level.setMaxScore(maxScore);
+        level.setEstimatedDuration(estimatedDuration);
+        level.setOrder(order);
+        level.setAnswer(answer);
+        level.setContent(content);
+        level.setSolution(solution);
+        level.setSolutionPenalized(solutionPenalized);
+        level.setIncorrectAnswerLimit(incorrectAnswerLimit);
+        return level;
     }
 
-    private InfoLevel generateInfoLevel(String title, long estimatedDuration, int order, String content){
+    private TrainingLevel generateTrainingLevel(String title, int maxScore, long estimatedDuration, int order, String answer,
+                                                String content, String solution, boolean solutionPenalized, int incorrectAnswerLimit) {
+        return fillTrainingLevel(
+                new TrainingLevel(),
+                title,
+                maxScore,
+                estimatedDuration,
+                order,
+                answer,
+                content,
+                solution,
+                solutionPenalized,
+                incorrectAnswerLimit
+        );
+    }
+
+
+    private JeopardyLevel generateJeopardyLevel(
+            String title,
+            int maxScore,
+            long estimatedDuration,
+            int order,
+            List<JeopardyCategory> categories) {
+        JeopardyLevel jeopardyLevel = new JeopardyLevel();
+        jeopardyLevel.setTitle(title);
+        jeopardyLevel.setMaxScore(maxScore);
+        jeopardyLevel.setEstimatedDuration(estimatedDuration);
+        jeopardyLevel.setOrder(order);
+        jeopardyLevel.setCategories(categories);
+        return jeopardyLevel;
+    }
+
+    private JeopardyCategory generateJeopardyCategory(String title, int color, List<JeopardySublevel> sublevels) {
+        JeopardyCategory category = new JeopardyCategory();
+        category.setTitle(title);
+        category.setColor(color);
+        category.setSublevels(sublevels);
+        return category;
+    }
+
+    private JeopardySublevel generateJeopardySublevelLevel(String title, int maxScore, long estimatedDuration, int order, String answer,
+                                                           String content, String solution, boolean solutionPenalized, int incorrectAnswerLimit, String description) {
+        JeopardySublevel newJeopardySublevel = fillTrainingLevel(
+                new JeopardySublevel(),
+                title,
+                maxScore,
+                estimatedDuration,
+                order,
+                answer,
+                content,
+                solution,
+                solutionPenalized,
+                incorrectAnswerLimit
+        );
+        newJeopardySublevel.setDescription(description);
+        return newJeopardySublevel;
+    }
+
+    private InfoLevel generateInfoLevel(String title, long estimatedDuration, int order, String content) {
         InfoLevel newInfoLevel = new InfoLevel();
         newInfoLevel.setTitle(title);
         newInfoLevel.setMaxScore(0);
@@ -610,7 +804,7 @@ public class TestDataFactory {
     }
 
     private AccessLevel generateAccessLevel(String title, long estimatedDuration, int order, String cloudContent,
-                                            String localContent, String passkey){
+                                            String localContent, String passkey) {
         AccessLevel newAccessLevel = new AccessLevel();
         newAccessLevel.setTitle(title);
         newAccessLevel.setMaxScore(0);
@@ -622,20 +816,20 @@ public class TestDataFactory {
         return newAccessLevel;
     }
 
-    private MitreTechnique generateMitreTechnique(String techniqueKey){
+    private MitreTechnique generateMitreTechnique(String techniqueKey) {
         MitreTechnique newMitreTechnique = new MitreTechnique();
         newMitreTechnique.setTechniqueKey(techniqueKey);
         return newMitreTechnique;
     }
 
-    private MitreTechniqueDTO generateMitreTechniqueDTO(String techniqueKey){
+    private MitreTechniqueDTO generateMitreTechniqueDTO(String techniqueKey) {
         MitreTechniqueDTO mitreTechniqueDTO = new MitreTechniqueDTO();
         mitreTechniqueDTO.setTechniqueKey(techniqueKey);
         return mitreTechniqueDTO;
     }
 
 
-    private Hint generateHint(String title, String content, Integer hintPenalty, int order){
+    private Hint generateHint(String title, String content, Integer hintPenalty, int order) {
         Hint newHint = new Hint();
         newHint.setTitle(title);
         newHint.setContent(content);
@@ -647,7 +841,7 @@ public class TestDataFactory {
     private TrainingDefinition generateTrainingDefinition(String title, String description, String[] prerequisites,
                                                           String[] outcomes, TDState state,
                                                           LocalDateTime lastEdited, String lastEditedBy,
-                                                          LocalDateTime createdAt){
+                                                          LocalDateTime createdAt) {
         TrainingDefinition newTrainingDefinition = new TrainingDefinition();
         newTrainingDefinition.setTitle(title);
         newTrainingDefinition.setDescription(description);
@@ -660,7 +854,7 @@ public class TestDataFactory {
         return newTrainingDefinition;
     }
 
-    private TrainingDefinitionDTO generateTrainingDefinitionDTO(TrainingDefinition trainingDefinition){
+    private TrainingDefinitionDTO generateTrainingDefinitionDTO(TrainingDefinition trainingDefinition) {
         TrainingDefinitionDTO trainingDefinitionDTO = new TrainingDefinitionDTO();
         trainingDefinitionDTO.setTitle(trainingDefinition.getTitle());
         trainingDefinitionDTO.setDescription(trainingDefinition.getDescription());
@@ -672,7 +866,7 @@ public class TestDataFactory {
         return trainingDefinitionDTO;
     }
 
-    private TrainingDefinitionInfoDTO generateTrainingDefinitionInfoDTO(TrainingDefinition trainingDefinition){
+    private TrainingDefinitionInfoDTO generateTrainingDefinitionInfoDTO(TrainingDefinition trainingDefinition) {
         TrainingDefinitionInfoDTO trainingDefinitionInfoDTO = new TrainingDefinitionInfoDTO();
         trainingDefinitionInfoDTO.setTitle(trainingDefinition.getTitle());
         trainingDefinitionInfoDTO.setState(mapToTDState(trainingDefinition.getState()));
@@ -680,7 +874,7 @@ public class TestDataFactory {
     }
 
     private TrainingInstance generateTrainingInstance(LocalDateTime starTime, LocalDateTime endTime, String title,
-                                                      Long poolId, String accessToken){
+                                                      Long poolId, String accessToken) {
         TrainingInstance newTrainingInstance = new TrainingInstance();
         newTrainingInstance.setStartTime(starTime);
         newTrainingInstance.setEndTime(endTime);
@@ -694,7 +888,7 @@ public class TestDataFactory {
 
     private TrainingRun generateTrainingRun(LocalDateTime startTime, LocalDateTime endTime, String eventLogReference, TRState state,
                                             int incorrectAnswerCount, boolean solutionTaken, String SBIRefId, Integer SBIAllocId, int totalTrainingScore,
-                                            int totalAssessmentScore, int maxScore, boolean levelAnswered, String previousSBIRefId, int currentPenalty){
+                                            int totalAssessmentScore, int maxScore, boolean levelAnswered, String previousSBIRefId, int currentPenalty) {
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setStartTime(startTime);
         newTrainingRun.setEndTime(endTime);
@@ -714,7 +908,7 @@ public class TestDataFactory {
     }
 
     private TrainingDefinitionCreateDTO generateTrainingDefinitionCreateDTO(String title, String description, String[] prerequisites,
-                                                                      String[] outcomes, cz.cyberrange.platform.training.api.enums.TDState state){
+                                                                            String[] outcomes, cz.cyberrange.platform.training.api.enums.TDState state) {
         TrainingDefinitionCreateDTO trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreateDTO.setTitle(title);
         trainingDefinitionCreateDTO.setDescription(description);
@@ -726,7 +920,7 @@ public class TestDataFactory {
 
     private TrainingDefinitionUpdateDTO generateTrainingDefinitionUpdateDTO(String title, String description, String[] prerequisites,
                                                                             String[] outcomes, cz.cyberrange.platform.training.api.enums.TDState state,
-                                                                            Long SDRefId){
+                                                                            Long SDRefId) {
         TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdateDTO.setTitle(title);
         trainingDefinitionUpdateDTO.setDescription(description);
@@ -737,7 +931,7 @@ public class TestDataFactory {
     }
 
     private TrainingInstanceCreateDTO generateTrainingInstanceCreateDTO(LocalDateTime startTime, LocalDateTime endTime,
-                                                                        String title, String accessToken){
+                                                                        String title, String accessToken) {
         TrainingInstanceCreateDTO trainingInstanceCreateDTO = new TrainingInstanceCreateDTO();
         trainingInstanceCreateDTO.setStartTime(startTime);
         trainingInstanceCreateDTO.setEndTime(endTime);
@@ -747,7 +941,7 @@ public class TestDataFactory {
     }
 
     private TrainingInstanceUpdateDTO generateTrainingInstanceUpdateDTO(LocalDateTime startTime, LocalDateTime endTime,
-                                                                        String title, String accessToken){
+                                                                        String title, String accessToken) {
         TrainingInstanceUpdateDTO trainingInstanceUpdateDTO = new TrainingInstanceUpdateDTO();
         trainingInstanceUpdateDTO.setStartTime(startTime);
         trainingInstanceUpdateDTO.setEndTime(endTime);
@@ -756,22 +950,58 @@ public class TestDataFactory {
         return trainingInstanceUpdateDTO;
     }
 
+    private <T extends TrainingLevelUpdateDTO> T fillTrainingLevelUpdateDTO(T updateDTO,
+                                                                            String title, int maxScore, String answer, String content, String solution,
+                                                                            boolean solutionPenalized, int estimatedDuration, int incorrectAnswerLimit
+    ) {
+        updateDTO.setTitle(title);
+        updateDTO.setMaxScore(maxScore);
+        updateDTO.setAnswer(answer);
+        updateDTO.setContent(content);
+        updateDTO.setSolution(solution);
+        updateDTO.setSolutionPenalized(solutionPenalized);
+        updateDTO.setEstimatedDuration(estimatedDuration);
+        updateDTO.setIncorrectAnswerLimit(incorrectAnswerLimit);
+        return updateDTO;
+    }
+
+
+    private JeopardySublevelUpdateDTO generateJeopardySublevelUpdateDTO(String title, int maxScore, String answer, String content, String solution,
+                                                                        boolean solutionPenalized, int estimatedDuration, int incorrectAnswerLimit, String description) {
+        JeopardySublevelUpdateDTO jeopardyLevelUpdateDTO = new JeopardySublevelUpdateDTO();
+        fillTrainingLevelUpdateDTO(jeopardyLevelUpdateDTO, title, maxScore, answer, content, solution,
+                solutionPenalized, estimatedDuration, incorrectAnswerLimit
+        );
+        jeopardyLevelUpdateDTO.setDescription(description);
+        return jeopardyLevelUpdateDTO;
+    }
+
+    private JeopardyCategoryUpdateDTO generateJeopardyCategoryUpdateDTO(String title, int color, List<JeopardySublevelUpdateDTO> sublevels) {
+        JeopardyCategoryUpdateDTO categoryUpdateDTO = new JeopardyCategoryUpdateDTO();
+        categoryUpdateDTO.setTitle(title);
+        categoryUpdateDTO.setColor(color);
+        categoryUpdateDTO.setSublevels(sublevels);
+        return categoryUpdateDTO;
+    }
+
+    private JeopardyLevelUpdateDTO generateJeopardyLevelUpdateDTO(String title, List<JeopardyCategoryUpdateDTO> categories) {
+        JeopardyLevelUpdateDTO levelUpdateDTO = new JeopardyLevelUpdateDTO();
+        levelUpdateDTO.setTitle(title);
+        levelUpdateDTO.setCategories(categories);
+        return levelUpdateDTO;
+    }
+
     private TrainingLevelUpdateDTO generateTrainingLevelUpdateDTO(String title, int maxScore, String answer, String content, String solution,
-                                                              boolean solutionPenalized, int estimatedDuration, int incorrectAnswerLimit){
-        TrainingLevelUpdateDTO trainingLevelUpdateDTO = new TrainingLevelUpdateDTO();
-        trainingLevelUpdateDTO.setTitle(title);
-        trainingLevelUpdateDTO.setMaxScore(maxScore);
-        trainingLevelUpdateDTO.setAnswer(answer);
-        trainingLevelUpdateDTO.setContent(content);
-        trainingLevelUpdateDTO.setSolution(solution);
-        trainingLevelUpdateDTO.setSolutionPenalized(solutionPenalized);
-        trainingLevelUpdateDTO.setEstimatedDuration(estimatedDuration);
-        trainingLevelUpdateDTO.setIncorrectAnswerLimit(incorrectAnswerLimit);
-        return trainingLevelUpdateDTO;
+                                                                  boolean solutionPenalized, int estimatedDuration, int incorrectAnswerLimit) {
+        return fillTrainingLevelUpdateDTO(
+                new TrainingLevelUpdateDTO(),
+                title, maxScore, answer, content, solution,
+                solutionPenalized, estimatedDuration, incorrectAnswerLimit
+        );
     }
 
     private AssessmentLevelUpdateDTO generateAssessmentLevelUpdateDTO(String title, String instructions,
-                                                                      cz.cyberrange.platform.training.api.enums.AssessmentType type, int estimatedDuration){
+                                                                      cz.cyberrange.platform.training.api.enums.AssessmentType type, int estimatedDuration) {
         AssessmentLevelUpdateDTO assessmentLevelUpdateDTO = new AssessmentLevelUpdateDTO();
         assessmentLevelUpdateDTO.setTitle(title);
         assessmentLevelUpdateDTO.setInstructions(instructions);
@@ -780,14 +1010,14 @@ public class TestDataFactory {
         return assessmentLevelUpdateDTO;
     }
 
-    private InfoLevelUpdateDTO generateInfoLevelUpdateDTO(String title, String content){
+    private InfoLevelUpdateDTO generateInfoLevelUpdateDTO(String title, String content) {
         InfoLevelUpdateDTO infoLevelUpdateDTO = new InfoLevelUpdateDTO();
         infoLevelUpdateDTO.setTitle(title);
         infoLevelUpdateDTO.setContent(content);
         return infoLevelUpdateDTO;
     }
 
-    private InfoLevelImportDTO generateInfoLevelImportDTO(String title, Integer estimatedDuration, String content){
+    private InfoLevelImportDTO generateInfoLevelImportDTO(String title, Integer estimatedDuration, String content) {
         InfoLevelImportDTO infoLevelImportDTO = new InfoLevelImportDTO();
         infoLevelImportDTO.setTitle(title);
         infoLevelImportDTO.setContent(content);
@@ -797,7 +1027,7 @@ public class TestDataFactory {
     }
 
     private AssessmentLevelImportDTO generateAssessmentLevelImportDTO(String title, Integer estimatedDuration, String questions, String instructions,
-                                                                      cz.cyberrange.platform.training.api.enums.AssessmentType type){
+                                                                      cz.cyberrange.platform.training.api.enums.AssessmentType type) {
         AssessmentLevelImportDTO assessmentLevelImportDTO = new AssessmentLevelImportDTO();
         assessmentLevelImportDTO.setTitle(title);
         assessmentLevelImportDTO.setEstimatedDuration(estimatedDuration);
@@ -807,23 +1037,59 @@ public class TestDataFactory {
         return assessmentLevelImportDTO;
     }
 
-    private TrainingLevelImportDTO generateTrainingLevelImportDTO(String title, Integer estimatedDuration, String answer, String content, String solution, boolean solutionPenalized,
-                                                              int incorrectAnswerLimit, int maxScore){
-        TrainingLevelImportDTO trainingLevelImportDTO = new TrainingLevelImportDTO();
+    private <T extends TrainingLevelImportDTO> T fillTrainingLevelImportDTO(
+            T trainingLevelImportDTO, String title, Integer estimatedDuration, String answer, String content, String solution, boolean solutionPenalized,
+            int incorrectAnswerLimit, int maxScore) {
         trainingLevelImportDTO.setTitle(title);
         trainingLevelImportDTO.setEstimatedDuration(estimatedDuration);
-        trainingLevelImportDTO.setLevelType(LevelType.TRAINING_LEVEL);
         trainingLevelImportDTO.setAnswer(answer);
         trainingLevelImportDTO.setContent(content);
         trainingLevelImportDTO.setSolution(solution);
         trainingLevelImportDTO.setSolutionPenalized(solutionPenalized);
         trainingLevelImportDTO.setIncorrectAnswerLimit(incorrectAnswerLimit);
         trainingLevelImportDTO.setMaxScore(maxScore);
+        trainingLevelImportDTO.setLevelType(LevelType.TRAINING_LEVEL);
         return trainingLevelImportDTO;
     }
 
+    private TrainingLevelImportDTO generateTrainingLevelImportDTO(String title, Integer estimatedDuration, String answer, String content, String solution, boolean solutionPenalized,
+                                                                  int incorrectAnswerLimit, int maxScore) {
+        return fillTrainingLevelImportDTO(
+                new TrainingLevelImportDTO(),
+                title, estimatedDuration, answer, content, solution,
+                solutionPenalized, incorrectAnswerLimit, maxScore
+        );
+    }
+
+    private JeopardyLevelImportDTO generateJeopardyLevelImportDTO(String title, List<JeopardyCategoryImportDTO> categories) {
+        JeopardyLevelImportDTO jeopardyLevelImportDTO = new JeopardyLevelImportDTO();
+        jeopardyLevelImportDTO.setTitle(title);
+        jeopardyLevelImportDTO.setCategories(categories);
+        jeopardyLevelImportDTO.setLevelType(LevelType.JEOPARDY_LEVEL);
+        return jeopardyLevelImportDTO;
+    }
+
+    private JeopardyCategoryImportDTO generateJeopardyCategoryImport(String title, int color, List<JeopardySublevelImportDTO> sublevels) {
+        JeopardyCategoryImportDTO jeopardyCategoryImportDTO = new JeopardyCategoryImportDTO();
+        jeopardyCategoryImportDTO.setTitle(title);
+        jeopardyCategoryImportDTO.setColor(color);
+        jeopardyCategoryImportDTO.setSublevels(sublevels);
+        return jeopardyCategoryImportDTO;
+    }
+
+    private JeopardySublevelImportDTO generateJeopardySublevelImportDTO(
+            String title, Integer estimatedDuration, String answer, String content, String solution, boolean solutionPenalized,
+            int incorrectAnswerLimit, int maxScore, String description
+    ) {
+        return fillTrainingLevelImportDTO(
+                new JeopardySublevelImportDTO(),
+                title, estimatedDuration, answer, content, solution,
+                solutionPenalized, incorrectAnswerLimit, maxScore
+        );
+    }
+
     private ImportTrainingDefinitionDTO generateImportTrainingDefinitionDTO(String title, String description, String[] prerequisites,
-                                                                            String[] outcomes, cz.cyberrange.platform.training.api.enums.TDState state){
+                                                                            String[] outcomes, cz.cyberrange.platform.training.api.enums.TDState state) {
         ImportTrainingDefinitionDTO importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
         importTrainingDefinitionDTO.setTitle(title);
         importTrainingDefinitionDTO.setDescription(description);
@@ -836,7 +1102,7 @@ public class TestDataFactory {
     private TrainingDefinitionByIdDTO generateTrainingDefinitionByIdDTO(String title, String description, String[] prerequisites,
                                                                         String[] outcomes, cz.cyberrange.platform.training.api.enums.TDState state,
                                                                         boolean canBeArchived, long estimatedDuration,
-                                                                        LocalDateTime lastEdited, LocalDateTime createdAt){
+                                                                        LocalDateTime lastEdited, LocalDateTime createdAt) {
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = new TrainingDefinitionByIdDTO();
         trainingDefinitionByIdDTO.setTitle(title);
         trainingDefinitionByIdDTO.setDescription(description);
@@ -850,7 +1116,7 @@ public class TestDataFactory {
         return trainingDefinitionByIdDTO;
     }
 
-    private AbstractLevelDTO generateAbstractLevelDTO(String title, int maxScore, LevelType type, int estimatedDuration){
+    private AbstractLevelDTO generateAbstractLevelDTO(String title, int maxScore, LevelType type, int estimatedDuration) {
         AbstractLevelDTO abstractLevelDTO = new AbstractLevelDTO();
         abstractLevelDTO.setTitle(title);
         abstractLevelDTO.setMaxScore(maxScore);
@@ -859,7 +1125,7 @@ public class TestDataFactory {
         return abstractLevelDTO;
     }
 
-    private BasicLevelInfoDTO generateBasicLevelInfoDTO(String title, LevelType levelType){
+    private BasicLevelInfoDTO generateBasicLevelInfoDTO(String title, LevelType levelType) {
         BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
         basicLevelInfoDTO.setTitle(title);
         basicLevelInfoDTO.setLevelType(levelType);
@@ -867,7 +1133,7 @@ public class TestDataFactory {
     }
 
     private TrainingInstanceDTO generateTrainingInstanceDTO(LocalDateTime start, LocalDateTime end, String title,
-                                                            String accessToken, Long poolId){
+                                                            String accessToken, Long poolId) {
         TrainingInstanceDTO trainingInstanceDTO = new TrainingInstanceDTO();
         trainingInstanceDTO.setStartTime(start);
         trainingInstanceDTO.setEndTime(end);
@@ -878,7 +1144,7 @@ public class TestDataFactory {
     }
 
     private TrainingRunByIdDTO generateTrainingRunByIdDTO(LocalDateTime start, LocalDateTime end, String logReference, cz.cyberrange.platform.training.api.enums.TRState state,
-                                                          String SBIId){
+                                                          String SBIId) {
         TrainingRunByIdDTO trainingRunByIdDTO = new TrainingRunByIdDTO();
         trainingRunByIdDTO.setStartTime(start);
         trainingRunByIdDTO.setEndTime(end);
@@ -889,7 +1155,7 @@ public class TestDataFactory {
     }
 
     private TrainingRunDTO generateTrainingRunDTO(LocalDateTime start, LocalDateTime end, String logReference, cz.cyberrange.platform.training.api.enums.TRState state,
-                                                  String SBIRefId, Integer SBIAllocId){
+                                                  String SBIRefId, Integer SBIAllocId) {
         TrainingRunDTO trainingRunDTO = new TrainingRunDTO();
         trainingRunDTO.setStartTime(start);
         trainingRunDTO.setEndTime(end);
@@ -900,7 +1166,7 @@ public class TestDataFactory {
         return trainingRunDTO;
     }
 
-    private InfoLevelDTO generateInfoLevelDTO(String title, int estimatedDuration, String content){
+    private InfoLevelDTO generateInfoLevelDTO(String title, int estimatedDuration, String content) {
         InfoLevelDTO infoLevelDTO = new InfoLevelDTO();
         infoLevelDTO.setTitle(title);
         infoLevelDTO.setMaxScore(0);
@@ -911,7 +1177,7 @@ public class TestDataFactory {
     }
 
     private AssessmentLevelDTO generateAssessmentLevelDTO(String title, int maxScore, int estimatedDuration,
-                                                          String questions, String instructions, cz.cyberrange.platform.training.api.enums.AssessmentType assessmentType){
+                                                          String questions, String instructions, cz.cyberrange.platform.training.api.enums.AssessmentType assessmentType) {
         AssessmentLevelDTO assessmentLevelDTO = new AssessmentLevelDTO();
         assessmentLevelDTO.setTitle(title);
         assessmentLevelDTO.setMaxScore(maxScore);
@@ -922,8 +1188,7 @@ public class TestDataFactory {
         return assessmentLevelDTO;
     }
 
-    private TrainingLevelDTO generateTrainingLevelDTO(String answer, String content, String solution, boolean solutionPenalized, int answerLimit, String title, int maxScore, int estimatedDuration){
-        TrainingLevelDTO trainingLevelDTO = new TrainingLevelDTO();
+    private <T extends TrainingLevelDTO> T fillTrainingLevelDTO(T trainingLevelDTO, String answer, String content, String solution, boolean solutionPenalized, int answerLimit, String title, int maxScore, int estimatedDuration) {
         trainingLevelDTO.setAnswer(answer);
         trainingLevelDTO.setContent(content);
         trainingLevelDTO.setSolution(solution);
@@ -931,13 +1196,48 @@ public class TestDataFactory {
         trainingLevelDTO.setIncorrectAnswerLimit(answerLimit);
         trainingLevelDTO.setTitle(title);
         trainingLevelDTO.setMaxScore(maxScore);
-        trainingLevelDTO.setLevelType(LevelType.TRAINING_LEVEL);
         trainingLevelDTO.setEstimatedDuration(estimatedDuration);
         return trainingLevelDTO;
     }
 
+    private TrainingLevelDTO generateTrainingLevelDTO(String answer, String content, String solution, boolean solutionPenalized, int answerLimit, String title, int maxScore, int estimatedDuration) {
+        TrainingLevelDTO dto = fillTrainingLevelDTO(
+                new TrainingLevelDTO(),
+                answer, content, solution, solutionPenalized, answerLimit, title, maxScore, estimatedDuration
+        );
+        dto.setLevelType(LevelType.TRAINING_LEVEL);
+        return dto;
+    }
+
+    private JeopardySublevelDTO generateJeopardySublevelDTO(String answer, String content, String solution,
+                                                            boolean solutionPenalized, int answerLimit, String title, int maxScore,
+                                                            int estimatedDuration, String description) {
+        JeopardySublevelDTO jeopardySublevelDTO = new JeopardySublevelDTO();
+        fillTrainingLevelDTO(jeopardySublevelDTO, answer, content, solution, solutionPenalized, answerLimit, title, maxScore, estimatedDuration);
+        jeopardySublevelDTO.setDescription(description);
+        jeopardySublevelDTO.setLevelType(LevelType.JEOPARDY_SUBLEVEL);
+        return jeopardySublevelDTO;
+    }
+
+    private JeopardyCategoryDTO<JeopardySublevelDTO> generateJeopardyCategoryDTO(String title, int color, List<JeopardySublevelDTO> sublevels) {
+        JeopardyCategoryDTO<JeopardySublevelDTO> jeopardyCategoryDTO = new JeopardyCategoryDTO<>();
+        jeopardyCategoryDTO.setTitle(title);
+        jeopardyCategoryDTO.setColor(color);
+        jeopardyCategoryDTO.setSublevels(sublevels);
+        return jeopardyCategoryDTO;
+    }
+
+    private JeopardyLevelDTO generateJeopardyLevelDTO(String title, List<JeopardyCategoryDTO<JeopardySublevelDTO>> categories) {
+        JeopardyLevelDTO jeopardyLevelDTO = new JeopardyLevelDTO();
+        jeopardyLevelDTO.setTitle(title);
+        jeopardyLevelDTO.setLevelType(LevelType.JEOPARDY_LEVEL);
+        jeopardyLevelDTO.setCategories(categories);
+        return jeopardyLevelDTO;
+    }
+
+
     private AccessedTrainingRunDTO generateAccessedTrainingRunDTO(String title, LocalDateTime start, LocalDateTime end, int currentLevelOrder,
-                                                                  int numberOfLevels, Actions possibleAction){
+                                                                  int numberOfLevels, Actions possibleAction) {
         AccessedTrainingRunDTO accessedTrainingRunDTO = new AccessedTrainingRunDTO();
         accessedTrainingRunDTO.setTitle(title);
         accessedTrainingRunDTO.setTrainingInstanceStartDate(start);
@@ -948,7 +1248,7 @@ public class TestDataFactory {
         return accessedTrainingRunDTO;
     }
 
-    private HintDTO generateHintDTO(String title, String content, Integer penalty){
+    private HintDTO generateHintDTO(String title, String content, Integer penalty) {
         HintDTO hintDTO = new HintDTO();
         hintDTO.setTitle(title);
         hintDTO.setContent(content);
@@ -956,7 +1256,7 @@ public class TestDataFactory {
         return hintDTO;
     }
 
-    private HintImportDTO generateHintImportDTO(String title, String content, Integer penalty){
+    private HintImportDTO generateHintImportDTO(String title, String content, Integer penalty) {
         HintImportDTO hintImportDTO = new HintImportDTO();
         hintImportDTO.setTitle(title);
         hintImportDTO.setContent(content);
@@ -964,7 +1264,7 @@ public class TestDataFactory {
         return hintImportDTO;
     }
 
-    private TrainingInstanceArchiveDTO generateTrainingInstanceArchiveDTO(LocalDateTime start, LocalDateTime end, String title, String accessToken){
+    private TrainingInstanceArchiveDTO generateTrainingInstanceArchiveDTO(LocalDateTime start, LocalDateTime end, String title, String accessToken) {
         TrainingInstanceArchiveDTO trainingInstanceArchiveDTO = new TrainingInstanceArchiveDTO();
         trainingInstanceArchiveDTO.setStartTime(start);
         trainingInstanceArchiveDTO.setEndTime(end);
@@ -973,7 +1273,7 @@ public class TestDataFactory {
         return trainingInstanceArchiveDTO;
     }
 
-    private PoolInfoDTO generatePoolInfoDTO(Long id, Long definitionId, Long lockId, Long maxSize, Long size, String sha, String revSha){
+    private PoolInfoDTO generatePoolInfoDTO(Long id, Long definitionId, Long lockId, Long maxSize, Long size, String sha, String revSha) {
         PoolInfoDTO poolInfoDTO = new PoolInfoDTO();
         poolInfoDTO.setId(id);
         poolInfoDTO.setDefinitionId(definitionId);
@@ -985,7 +1285,7 @@ public class TestDataFactory {
         return poolInfoDTO;
     }
 
-    private SandboxInfo generateSandboxInfo(String id, Integer lockId, Integer allocationUnit){
+    private SandboxInfo generateSandboxInfo(String id, Integer lockId, Integer allocationUnit) {
         SandboxInfo sandboxInfo = new SandboxInfo();
         sandboxInfo.setId(id);
         sandboxInfo.setAllocationUnitId(allocationUnit);
@@ -993,7 +1293,7 @@ public class TestDataFactory {
         return sandboxInfo;
     }
 
-    private SandboxPoolInfo generateSandboxPoolInfo(Long id, Long definitionId, Long maxSize, Long size){
+    private SandboxPoolInfo generateSandboxPoolInfo(Long id, Long definitionId, Long maxSize, Long size) {
         SandboxPoolInfo sandboxPoolInfo = new SandboxPoolInfo();
         sandboxPoolInfo.setId(id);
         sandboxPoolInfo.setDefinitionId(definitionId);
@@ -1002,7 +1302,7 @@ public class TestDataFactory {
         return sandboxPoolInfo;
     }
 
-    private LockedPoolInfo generateLockedPoolInfo(Long id, Long poolId){
+    private LockedPoolInfo generateLockedPoolInfo(Long id, Long poolId) {
         LockedPoolInfo lockedPoolInfo = new LockedPoolInfo();
         lockedPoolInfo.setId(id);
         lockedPoolInfo.setPoolId(poolId);
@@ -1027,7 +1327,7 @@ public class TestDataFactory {
         return userRefDTO;
     }
 
-    private <T> T clone(Object object, Class<T> tClass){
+    private <T> T clone(Object object, Class<T> tClass) {
         try {
             mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
             String json = mapper.writeValueAsString(object);
@@ -1039,11 +1339,16 @@ public class TestDataFactory {
 
     private cz.cyberrange.platform.training.api.enums.TDState mapToTDState(TDState state) {
         switch (state) {
-            case UNRELEASED: return cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED;
-            case RELEASED: return cz.cyberrange.platform.training.api.enums.TDState.RELEASED;
-            case ARCHIVED: return cz.cyberrange.platform.training.api.enums.TDState.ARCHIVED;
-            case PRIVATED: return cz.cyberrange.platform.training.api.enums.TDState.PRIVATED;
+            case UNRELEASED:
+                return cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED;
+            case RELEASED:
+                return cz.cyberrange.platform.training.api.enums.TDState.RELEASED;
+            case ARCHIVED:
+                return cz.cyberrange.platform.training.api.enums.TDState.ARCHIVED;
+            case PRIVATED:
+                return cz.cyberrange.platform.training.api.enums.TDState.PRIVATED;
         }
         return null;
     }
+
 }

@@ -60,6 +60,7 @@ public class TrainingDefinitionService {
 
     private static final String ARCHIVED_OR_RELEASED = "Cannot edit released or archived training definition.";
     private static final String LEVEL_NOT_FOUND = "Level not found.";
+    private final JeopardyLevelRepository jeopardyLevelRepository;
 
     /**
      * Instantiates a new Training definition service.
@@ -86,7 +87,8 @@ public class TrainingDefinitionService {
                                      SecurityService securityService,
                                      UserService userService,
                                      DefaultLevelsLoader defaultLevelsLoader,
-                                     CloneMapper cloneMapper) {
+                                     CloneMapper cloneMapper,
+                                     JeopardyLevelRepository jeopardyLevelRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.abstractLevelRepository = abstractLevelRepository;
         this.trainingLevelRepository = trainingLevelRepository;
@@ -101,6 +103,7 @@ public class TrainingDefinitionService {
         this.userService = userService;
         this.defaultLevelsLoader = defaultLevelsLoader;
         this.cloneMapper = cloneMapper;
+        this.jeopardyLevelRepository = jeopardyLevelRepository;
     }
 
     /**
@@ -190,7 +193,7 @@ public class TrainingDefinitionService {
     public TrainingDefinition create(TrainingDefinition trainingDefinition, boolean createDefaultContent) {
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
         trainingDefinition.setCreatedAt(getCurrentTimeInUTC());
-        if(createDefaultContent) {
+        if (createDefaultContent) {
             this.createDefaultLevels(trainingDefinition);
         }
         LOG.info("Training definition with id: {} created.", trainingDefinition.getId());
@@ -340,7 +343,7 @@ public class TrainingDefinitionService {
     /**
      * Updates training level in training definition
      *
-     * @param definitionId - id of training definition containing level to be updated.
+     * @param definitionId         - id of training definition containing level to be updated.
      * @param updatedTrainingLevel - training level with updated data
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
@@ -356,14 +359,15 @@ public class TrainingDefinitionService {
     /**
      * Updates training level in training definition
      *
-     * @param updatedTrainingLevel - training level with updated data
+     * @param updatedTrainingLevel   - training level with updated data
      * @param persistedTrainingLevel - training level from database with old data.
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
      */
     public TrainingLevel updateTrainingLevel(TrainingLevel updatedTrainingLevel, TrainingLevel persistedTrainingLevel) {
         this.updateCommonLevelData(updatedTrainingLevel, persistedTrainingLevel);
-        this.updateMitreTechniques(updatedTrainingLevel, persistedTrainingLevel);
+        this.removePersistedMitreTechniques(persistedTrainingLevel);
+        this.persistMitreTechniques(updatedTrainingLevel);
         this.checkSumOfHintPenalties(updatedTrainingLevel);
         this.checkAnswerAndAnswerVariableName(updatedTrainingLevel);
         for (Hint hint : (updatedTrainingLevel).getHints()) {
@@ -373,9 +377,53 @@ public class TrainingDefinitionService {
     }
 
     /**
+     * Updates training level in training definition
+     *
+     * @param updatedJeopardyLevel   - training level with updated data
+     * @param persistedJeopardyLevel - training level from database with old data.
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be updated in released or archived training definition.
+     */
+    public JeopardyLevel updateJeopardyLevel(JeopardyLevel updatedJeopardyLevel, JeopardyLevel persistedJeopardyLevel) {
+        checkIfCanBeUpdated(persistedJeopardyLevel.getTrainingDefinition());
+        this.checkSumOfScore(updatedJeopardyLevel);
+        this.checkSumOfEstimatedDuration(updatedJeopardyLevel);
+        this.checkSublevels(updatedJeopardyLevel.getSublevels(), persistedJeopardyLevel.getSublevels());
+        this.updateCommonLevelData(updatedJeopardyLevel, persistedJeopardyLevel);
+        return jeopardyLevelRepository.save(updatedJeopardyLevel);
+    }
+
+    private void checkSublevels(List<JeopardySublevel> updatedSublevels, List<JeopardySublevel> persistedSublevels) {
+        persistedSublevels.forEach(this::removePersistedMitreTechniques);
+        updatedSublevels.forEach(this::persistMitreTechniques);
+        updatedSublevels.forEach(this::checkSumOfHintPenalties);
+        updatedSublevels.forEach(this::checkAnswerAndAnswerVariableName);
+        updatedSublevels.forEach(sublevel -> sublevel.getHints().forEach(hint -> hint.setTrainingLevel(sublevel)));
+    }
+
+    /**
+     * Update the estimated duration to be the sum of sublevel expected durations
+     *
+     * @param updatedJeopardyLevel updated level
+     */
+    private void checkSumOfEstimatedDuration(JeopardyLevel updatedJeopardyLevel) {
+        updatedJeopardyLevel.setEstimatedDuration(updatedJeopardyLevel.sumSublevelsTotalDuration());
+    }
+
+    /**
+     * Update the maximum score to be the sum of sublevel scores
+     *
+     * @param updatedJeopardyLevel updated level
+     */
+    private void checkSumOfScore(JeopardyLevel updatedJeopardyLevel) {
+        updatedJeopardyLevel.setMaxScore(updatedJeopardyLevel.sumSublevelsTotalScore());
+    }
+
+
+    /**
      * Updates access level in training definition
      *
-     * @param updatedAccessLevel - access level with updated data
+     * @param updatedAccessLevel   - access level with updated data
      * @param persistedAccessLevel - access level from database with old data.
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
@@ -388,7 +436,7 @@ public class TrainingDefinitionService {
     /**
      * Updates info level in training definition
      *
-     * @param definitionId - id of training definition containing level to be updated.
+     * @param definitionId     - id of training definition containing level to be updated.
      * @param updatedInfoLevel - info level with updated data
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
@@ -404,7 +452,7 @@ public class TrainingDefinitionService {
     /**
      * Updates info level in training definition
      *
-     * @param updatedInfoLevel - info level with updated data
+     * @param updatedInfoLevel   - info level with updated data
      * @param persistedInfoLevel - info level from database with old data
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
@@ -417,7 +465,7 @@ public class TrainingDefinitionService {
     /**
      * Updates assessment level in training definition
      *
-     * @param definitionId - - id of training definition containing level to be updated
+     * @param definitionId           - - id of training definition containing level to be updated
      * @param updatedAssessmentLevel - assessment level with updated data
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
@@ -433,7 +481,7 @@ public class TrainingDefinitionService {
     /**
      * Updates assessment level in training definition
      *
-     * @param updatedAssessmentLevel - assessment level with updated data
+     * @param updatedAssessmentLevel   - assessment level with updated data
      * @param persistedAssessmentLevel - assessment level from database with old data
      * @throws EntityNotFoundException training definition is not found.
      * @throws EntityConflictException level cannot be updated in released or archived training definition.
@@ -454,11 +502,13 @@ public class TrainingDefinitionService {
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - persistedLevel.getEstimatedDuration() + updatedLevel.getEstimatedDuration());
     }
 
-    private void updateMitreTechniques(TrainingLevel updatedLevel, TrainingLevel persistedLevel) {
+    private void removePersistedMitreTechniques(TrainingLevel persistedTrainingLevel) {
         // Removing training level from persisted MITRE techniques
-        persistedLevel.getMitreTechniques()
-                .forEach(t -> t.getTrainingLevels().removeIf(tl -> tl.getId().equals(persistedLevel.getId())));
+        persistedTrainingLevel.getMitreTechniques()
+                .forEach(t -> t.getTrainingLevels().removeIf(tl -> tl.getId().equals(persistedTrainingLevel.getId())));
+    }
 
+    private void persistMitreTechniques(TrainingLevel updatedLevel) {
         Set<String> techniqueKeys = updatedLevel.getMitreTechniques().stream()
                 .map(MitreTechnique::getTechniqueKey)
                 .collect(Collectors.toSet());
@@ -480,7 +530,8 @@ public class TrainingDefinitionService {
     public TrainingLevel createTrainingLevel(Long definitionId) {
         TrainingDefinition trainingDefinition = findById(definitionId);
         checkIfCanBeUpdated(trainingDefinition);
-        TrainingLevel newTrainingLevel = initializeNewTrainingLevel();
+        TrainingLevel newTrainingLevel = new TrainingLevel();
+        initializeNewTrainingLevel(newTrainingLevel);
         newTrainingLevel.setOrder(getNextOrder(definitionId));
         newTrainingLevel.setTrainingDefinition(trainingDefinition);
         TrainingLevel trainingLevel = trainingLevelRepository.save(newTrainingLevel);
@@ -488,6 +539,46 @@ public class TrainingDefinitionService {
         auditAndSave(trainingDefinition);
         LOG.info("Training level with id: {} created", trainingLevel.getId());
         return trainingLevel;
+    }
+
+    /**
+     * Creates new training level
+     *
+     * @param definitionId - id of definition in which level will be created
+     * @return new {@link TrainingLevel}
+     * @throws EntityNotFoundException training definition is not found.
+     * @throws EntityConflictException level cannot be created in released or archived training definition.
+     */
+    public JeopardyLevel createJeopardyLevel(Long definitionId) {
+        TrainingDefinition trainingDefinition = findById(definitionId);
+        checkIfCanBeUpdated(trainingDefinition);
+        JeopardyLevel newTrainingLevel = initializeNewJeopardyLevel(new JeopardyLevel());
+        newTrainingLevel.setOrder(getNextOrder(definitionId));
+        newTrainingLevel.setTrainingDefinition(trainingDefinition);
+        JeopardyLevel trainingLevel = jeopardyLevelRepository.save(newTrainingLevel);
+        trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() + newTrainingLevel.getEstimatedDuration());
+        auditAndSave(trainingDefinition);
+        LOG.info("Training level with id: {} created", trainingLevel.getId());
+        return trainingLevel;
+    }
+
+    private JeopardyLevel initializeNewJeopardyLevel(JeopardyLevel level) {
+        level.setMaxScore(100);
+        level.setTitle("Title of jeopardy level");
+        level.setEstimatedDuration(1);
+        level.setCategories(List.of(initializeNewCategory(new JeopardyCategory())));
+        return level;
+    }
+
+    private JeopardyCategory initializeNewCategory(JeopardyCategory category) {
+        category.addSublevel(initializeNewSublevel(new JeopardySublevel()));
+        return category;
+    }
+
+    private JeopardySublevel initializeNewSublevel(JeopardySublevel jeopardySublevel) {
+        initializeNewTrainingLevel(jeopardySublevel);
+        jeopardySublevel.setDescription("Short preview of the task");
+        return jeopardySublevel;
     }
 
     /**
@@ -514,17 +605,15 @@ public class TrainingDefinitionService {
         return accessLevel;
     }
 
-    private TrainingLevel initializeNewTrainingLevel() {
-        TrainingLevel newTrainingLevel = new TrainingLevel();
-        newTrainingLevel.setMaxScore(100);
-        newTrainingLevel.setTitle("Title of training level");
-        newTrainingLevel.setIncorrectAnswerLimit(100);
-        newTrainingLevel.setAnswer("Secret answer");
-        newTrainingLevel.setSolutionPenalized(true);
-        newTrainingLevel.setSolution("Solution of the training should be here");
-        newTrainingLevel.setContent("The test entry should be here");
-        newTrainingLevel.setEstimatedDuration(1);
-        return newTrainingLevel;
+    private void initializeNewTrainingLevel(TrainingLevel emptyLevel) {
+        emptyLevel.setMaxScore(100);
+        emptyLevel.setTitle("Title of training level");
+        emptyLevel.setIncorrectAnswerLimit(100);
+        emptyLevel.setAnswer("Secret answer");
+        emptyLevel.setSolutionPenalized(true);
+        emptyLevel.setSolution("Solution of the training should be here");
+        emptyLevel.setContent("The test entry should be here");
+        emptyLevel.setEstimatedDuration(1);
     }
 
     private int getNextOrder(Long definitionId) {
@@ -745,7 +834,6 @@ public class TrainingDefinitionService {
     }
 
 
-
     private void cloneLevelsFromTrainingDefinition(Long trainingDefinitionId, TrainingDefinition clonedTrainingDefinition) {
         List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingDefinitionId);
         if (levels == null || levels.isEmpty()) {
@@ -785,7 +873,7 @@ public class TrainingDefinitionService {
         newAssessmentLevel.setQuestions(cloneQuestions(level.getQuestions()));
         assessmentLevelRepository.save(newAssessmentLevel);
 
-        for (Question question: level.getQuestions().stream()
+        for (Question question : level.getQuestions().stream()
                 .filter(question -> question.getQuestionType() == QuestionType.EMI)
                 .collect(Collectors.toList())) {
             List<ExtendedMatchingStatement> extendedMatchingStatements = question.getExtendedMatchingStatements();
@@ -871,7 +959,7 @@ public class TrainingDefinitionService {
         for (Hint hint : trainingLevel.getHints()) {
             sumHintPenalty += hint.getHintPenalty();
         }
-        if(sumHintPenalty > trainingLevel.getMaxScore()) {
+        if (sumHintPenalty > trainingLevel.getMaxScore()) {
             throw new UnprocessableEntityException(new EntityErrorDetail(TrainingLevel.class, "id", Long.class, trainingLevel.getId(), "Sum of hint penalties cannot be greater than maximal score of the training level."));
         }
     }

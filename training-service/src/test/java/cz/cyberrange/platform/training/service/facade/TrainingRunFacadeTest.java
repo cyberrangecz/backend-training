@@ -7,15 +7,7 @@ import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.responses.SandboxAnswersInfo;
 import cz.cyberrange.platform.training.api.responses.VariantAnswer;
-import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
-import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.Hint;
-import cz.cyberrange.platform.training.persistence.model.InfoLevel;
-import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
-import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
-import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
-import cz.cyberrange.platform.training.persistence.model.TrainingRun;
-import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.model.*;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.*;
 import cz.cyberrange.platform.training.service.services.SecurityService;
@@ -83,6 +75,7 @@ public class TrainingRunFacadeTest {
     private TrainingRun trainingRun1, trainingRun2;
     private Hint hint;
     private TrainingLevel trainingLevel;
+    private JeopardyLevel jeopardyLevel;
     private InfoLevel infoLevel;
     private AssessmentLevel assessmentLevel;
     private UserRefDTO participantRefDTO;
@@ -132,6 +125,11 @@ public class TrainingRunFacadeTest {
         infoLevel.setId(3L);
         infoLevel.setOrder(2);
         infoLevel.setTrainingDefinition(trainingDefinition);
+
+        jeopardyLevel = testDataFactory.getJeopardyLevel();
+        jeopardyLevel.setId(4L);
+        jeopardyLevel.setOrder(3);
+        jeopardyLevel.setTrainingDefinition(trainingDefinition);
 
         trainingInstance = testDataFactory.getConcludedInstance();
         trainingInstance.setId(1L);
@@ -200,7 +198,7 @@ public class TrainingRunFacadeTest {
     }
 
     @Test
-    public void deleteTrainingRun(){
+    public void deleteTrainingRun() {
         given(trainingRunService.deleteTrainingRun(trainingRun1.getId(), true, true)).willReturn(trainingRun1);
         trainingRunFacade.deleteTrainingRun(trainingRun1.getId(), true);
         then(trainingRunService).should().deleteTrainingRun(trainingRun1.getId(), true, true);
@@ -267,8 +265,8 @@ public class TrainingRunFacadeTest {
 
         assertEquals(2, correctAnswers.size());
         assertTrue(correctAnswers.containsAll(List.of(
-                getCorrectAnswerDTO(trainingLevel, null),
-                getCorrectAnswerDTO(trainingLevelVariantAnswer, variantAnswer.getAnswerContent()))
+                        getCorrectAnswerDTO(trainingLevel, null),
+                        getCorrectAnswerDTO(trainingLevelVariantAnswer, variantAnswer.getAnswerContent()))
                 )
         );
     }

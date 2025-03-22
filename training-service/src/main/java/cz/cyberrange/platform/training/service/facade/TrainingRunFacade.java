@@ -22,15 +22,7 @@ import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.api.responses.VariantAnswer;
-import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
-import cz.cyberrange.platform.training.persistence.model.AccessLevel;
-import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.InfoLevel;
-import cz.cyberrange.platform.training.persistence.model.SolutionInfo;
-import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
-import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
-import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
-import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import cz.cyberrange.platform.training.persistence.model.*;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionAnswer;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
@@ -170,7 +162,7 @@ public class TrainingRunFacade {
     @IsOrganizerOrAdmin
     @TransactionalWO
     public void deleteTrainingRuns(List<Long> trainingRunIds, boolean forceDelete) {
-        if(trainingRunIds.isEmpty()) {
+        if (trainingRunIds.isEmpty()) {
             return;
         }
 
@@ -198,7 +190,7 @@ public class TrainingRunFacade {
      * @param forceDelete   indicates if this training run should be force deleted.
      */
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-        "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
+            "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
         TrainingRun deletedTrainingRun = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true);
@@ -212,7 +204,7 @@ public class TrainingRunFacade {
     /**
      * Finds all Training Runs of logged in user.
      *
-     * @param predicate represents a predicate (boolean-valued function) of one argument.
+     * @param predicate   represents a predicate (boolean-valued function) of one argument.
      * @param pageable    pageable parameter with information about pagination.
      * @param sortByTitle optional parameter. "asc" for ascending sort, "desc" for descending and null if sort is not wanted
      * @return Page of all {@link AccessedTrainingRunDTO} of logged in user.
@@ -297,7 +289,7 @@ public class TrainingRunFacade {
         accessTrainingRunDTO.setBackwardMode(trainingRun.getTrainingInstance().isBackwardMode());
         accessTrainingRunDTO.setSandboxDefinitionId(trainingRun.getTrainingInstance().getSandboxDefinitionId());
         accessTrainingRunDTO.setLevelAnswered(trainingRun.isLevelAnswered());
-        if(trainingRun.getCurrentLevel().getClass() == AccessLevel.class) {
+        if (trainingRun.getCurrentLevel().getClass() == AccessLevel.class) {
             replacePlaceholders(
                     (AccessLevelViewDTO) accessTrainingRunDTO.getAbstractLevelDTO(),
                     trainingRun.getTrainingInstance().getAccessToken(),
@@ -414,7 +406,7 @@ public class TrainingRunFacade {
      * Check given answer of given Training Run.
      *
      * @param trainingRunId id of Training Run to check answer.
-     * @param answer          string which player submit.
+     * @param answer        string which player submit.
      * @return true if answer is correct, false if answer is wrong.
      */
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -434,7 +426,7 @@ public class TrainingRunFacade {
      * Check given passkey of given Training Run.
      *
      * @param trainingRunId id of Training Run to check passkey.
-     * @param passkey          string which player submit.
+     * @param passkey       string which player submit.
      * @return true if passkey is correct, false if passkey is wrong.
      */
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -467,7 +459,7 @@ public class TrainingRunFacade {
             isAnyReferenceSolution = isAnyReferenceSolution || !level.getReferenceSolution().isEmpty();
             referenceSolution.add(createLevelReferenceSolutionDTO(level));
         }
-        if(isAnyReferenceSolution) {
+        if (isAnyReferenceSolution) {
             this.trainingFeedbackApiService.createTraineeGraph(definition.getId(), instance.getId(), run.getId(), referenceSolution,
                     run.getTrainingInstance().isLocalEnvironment() ? run.getTrainingInstance().getAccessToken() : null);
             this.trainingFeedbackApiService.deleteSummaryGraph(instance.getId());
@@ -498,7 +490,7 @@ public class TrainingRunFacade {
     /**
      * Evaluate and store responses to assessment.
      *
-     * @param trainingRunId     id of Training Run to be finish.
+     * @param trainingRunId        id of Training Run to be finish.
      * @param responsesToQuestions responses to assessment
      */
     @IsTrainee
@@ -526,7 +518,7 @@ public class TrainingRunFacade {
      * Gets visited level of given Training Run.
      *
      * @param trainingRunId id of Training Run whose visited level should be returned.
-     * @param levelId ID of the visited level.
+     * @param levelId       ID of the visited level.
      * @return {@link AbstractLevelDTO}
      */
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -577,8 +569,8 @@ public class TrainingRunFacade {
         correctAnswerDTO.setLevelId(trainingLevel.getId());
         correctAnswerDTO.setLevelTitle(trainingLevel.getTitle());
         correctAnswerDTO.setLevelOrder(trainingLevel.getOrder());
-        if(trainingLevel.isVariantAnswers()) {
-            correctAnswerDTO.setCorrectAnswer(variantAnswers.get(trainingLevel.getAnswerVariableName()) );
+        if (trainingLevel.isVariantAnswers()) {
+            correctAnswerDTO.setCorrectAnswer(variantAnswers.get(trainingLevel.getAnswerVariableName()));
             correctAnswerDTO.setVariableName(trainingLevel.getAnswerVariableName());
         } else {
             correctAnswerDTO.setCorrectAnswer(trainingLevel.getAnswer());
@@ -644,14 +636,17 @@ public class TrainingRunFacade {
             abstractLevelDTO = levelMapper.mapToViewDTO(trainingLevel);
         } else if (abstractLevel instanceof AccessLevel accessLevel) {
             abstractLevelDTO = levelMapper.mapToViewDTO(accessLevel);
-        } else {
-            InfoLevel infoLevel = (InfoLevel) abstractLevel;
+        } else if (abstractLevel instanceof InfoLevel infoLevel) {
             abstractLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel);
+        } else if (abstractLevel instanceof JeopardyLevel jeopardyLevel) {
+            abstractLevelDTO = levelMapper.mapToViewDTO(jeopardyLevel);
+        } else {
+            throw new IllegalStateException("Unknown level type: " + abstractLevel.getClass().getName());
         }
         return abstractLevelDTO;
     }
 
-    private AbstractLevelDTO getAbstractLevelPreviewDTO (AbstractLevel abstractLevel, TrainingRun trainingRun) {
+    private AbstractLevelDTO getAbstractLevelPreviewDTO(AbstractLevel abstractLevel, TrainingRun trainingRun) {
         if (abstractLevel instanceof InfoLevel infoLevel) {
             return levelMapper.mapToInfoLevelDTO(infoLevel);
         } else if (abstractLevel instanceof TrainingLevel trainingLevel) {
@@ -666,7 +661,7 @@ public class TrainingRunFacade {
     private TrainingLevelPreviewDTO mapToTrainingLevelPreviewDTO(TrainingLevel trainingLevel, TrainingRun trainingRun) {
         TrainingLevelPreviewDTO trainingLevelPreviewDTO = levelMapper.mapToPreviewDTO(trainingLevel);
         trainingLevelPreviewDTO.setHints(hintMapper.mapToSetInfoDTO(trainingRun.getHintInfoList().stream()
-                .filter(hintInfo ->  hintInfo.getTrainingLevelId().equals(trainingLevel.getId()))
+                .filter(hintInfo -> hintInfo.getTrainingLevelId().equals(trainingLevel.getId()))
                 .toList())
         );
         String takenSolution = trainingRun.getSolutionInfoList().stream()
@@ -714,8 +709,8 @@ public class TrainingRunFacade {
 
     private Map<String, Integer> convertEmiAnswerToMap(String emiAnswer) {
         emiAnswer = emiAnswer.replaceAll("\"", "");
-        emiAnswer = emiAnswer.substring(1, emiAnswer.length() -1);
-        return Arrays.stream( emiAnswer.split(",") )
+        emiAnswer = emiAnswer.substring(1, emiAnswer.length() - 1);
+        return Arrays.stream(emiAnswer.split(","))
                 .map(s -> s.split(":"))
                 .collect(Collectors.toMap(s -> s[0].trim(), s -> Integer.parseInt(s[1].trim())));
     }
@@ -740,7 +735,7 @@ public class TrainingRunFacade {
     private void waitToPropagateEvents() {
         try {
             TimeUnit.SECONDS.sleep(TIME_TO_PROPAGATE_EVENTS);
-        } catch(InterruptedException ex) {
+        } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
     }

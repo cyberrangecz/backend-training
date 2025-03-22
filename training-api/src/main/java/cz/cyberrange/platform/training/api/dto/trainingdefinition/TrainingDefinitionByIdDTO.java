@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.enums.TDState;
+import cz.cyberrange.platform.training.api.enums.TrainingType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
@@ -17,7 +18,6 @@ import java.util.List;
 
 /**
  * Encapsulates information about Training Definition.
- *
  */
 @EqualsAndHashCode
 @Getter
@@ -38,6 +38,8 @@ public class TrainingDefinitionByIdDTO {
     private String[] outcomes;
     @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
     private TDState state;
+    @ApiModelProperty(value = "Type of training instance.", example = "COOP")
+    private TrainingType type;
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", example = "2")
     private Long betaTestingGroupId;
     @ApiModelProperty(value = "Information about all levels in training definition.")

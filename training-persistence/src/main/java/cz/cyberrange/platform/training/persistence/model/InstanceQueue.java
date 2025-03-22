@@ -26,14 +26,14 @@ public class InstanceQueue extends AbstractEntity<Long> {
     private Set<UserRef> waitingUsers = new HashSet<>();
 
     @OneToMany
-    private Set<Team> teams = new HashSet<>();
+    private Set<Team> preparedTeams = new HashSet<>();
 
     public void setWaitingUsers(Set<UserRef> queue) {
         this.waitingUsers = Collections.unmodifiableSet(queue);
     }
 
-    public void setTeams(Set<Team> queue) {
-        this.teams = Collections.unmodifiableSet(queue);
+    public void setPreparedTeams(Set<Team> queue) {
+        this.preparedTeams = Collections.unmodifiableSet(queue);
     }
 
     @Override
@@ -49,6 +49,6 @@ public class InstanceQueue extends AbstractEntity<Long> {
         return Objects.hash(
                 Objects.hashCode(trainingInstance),
                 Arrays.deepHashCode(waitingUsers.toArray()),
-                Arrays.deepHashCode(teams.toArray()));
+                Arrays.deepHashCode(preparedTeams.toArray()));
     }
 }

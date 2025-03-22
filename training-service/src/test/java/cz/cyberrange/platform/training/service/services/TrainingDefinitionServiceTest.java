@@ -8,6 +8,7 @@ import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
+import cz.cyberrange.platform.training.persistence.model.JeopardyLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
@@ -69,6 +70,8 @@ public class TrainingDefinitionServiceTest {
     private TrainingInstanceRepository trainingInstanceRepository;
     @MockBean
     private MitreTechniqueRepository mitreTechniqueRepository;
+    @MockBean
+    private JeopardyLevelRepository jeopardyLevelRepository;
 
     private HintRepository hintRepository;
     @MockBean
@@ -86,6 +89,7 @@ public class TrainingDefinitionServiceTest {
     private AssessmentLevel assessmentLevel;
     private TrainingLevel trainingLevel;
     private InfoLevel infoLevel;
+    private JeopardyLevel jeopardyLevel;
     private UserRefDTO userRefDTO;
 
 
@@ -97,7 +101,8 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.openMocks(this);
         trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, trainingLevelRepository, assessmentLevelRepository, accessLevelRepository, trainingInstanceRepository,
-                mitreTechniqueRepository, hintRepository, userRefRepository, securityService, userService, defaultLevelsLoader, cloneMapper);
+                mitreTechniqueRepository, hintRepository, userRefRepository, securityService, userService, defaultLevelsLoader, cloneMapper,
+                jeopardyLevelRepository);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(1L);
@@ -116,6 +121,9 @@ public class TrainingDefinitionServiceTest {
 
         releasedDefinition = testDataFactory.getReleasedDefinition();
         releasedDefinition.setId(2L);
+
+        jeopardyLevel = testDataFactory.getJeopardyLevel();
+        jeopardyLevel.setId(5L);
 
         userRefDTO = testDataFactory.getUserRefDTO1();
 
@@ -194,7 +202,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void moveLevel(){
+    public void moveLevel() {
         trainingLevel.setOrder(1);
         trainingLevel.setTrainingDefinition(unreleasedDefinition);
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
@@ -207,7 +215,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void moveLevelWithBiggerOrderNumber(){
+    public void moveLevelWithBiggerOrderNumber() {
         trainingLevel.setOrder(1);
         trainingLevel.setTrainingDefinition(unreleasedDefinition);
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
@@ -220,7 +228,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void moveLevelWithNegativeOrderNumber(){
+    public void moveLevelWithNegativeOrderNumber() {
         trainingLevel.setOrder(1);
         trainingLevel.setTrainingDefinition(unreleasedDefinition);
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
@@ -233,14 +241,14 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void moveLevelFromReleasedDefinition(){
+    public void moveLevelFromReleasedDefinition() {
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
         given(trainingDefinitionRepository.findById(releasedDefinition.getId())).willReturn(Optional.of(releasedDefinition));
         assertThrows(EntityConflictException.class, () -> trainingDefinitionService.moveLevel(releasedDefinition.getId(), 1L, 2));
     }
 
     @Test
-    public void moveLevelFromDefinitionWithInstances(){
+    public void moveLevelFromDefinitionWithInstances() {
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
         given(trainingDefinitionRepository.findById(unreleasedDefinition.getId())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId())).willReturn(true);
@@ -270,7 +278,7 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void swapLevels(){
+    public void swapLevels() {
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(false);
         given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
@@ -283,13 +291,13 @@ public class TrainingDefinitionServiceTest {
     }
 
     @Test
-    public void swapLevelsInReleasedDefinition(){
+    public void swapLevelsInReleasedDefinition() {
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(releasedDefinition));
         assertThrows(EntityConflictException.class, () -> trainingDefinitionService.swapLevels(releasedDefinition.getId(), 1L, 2L));
     }
 
     @Test
-    public void swapLevelsInDefinitionWithInstances(){
+    public void swapLevelsInDefinitionWithInstances() {
         given(trainingDefinitionRepository.findById(anyLong())).willReturn(Optional.of(unreleasedDefinition));
         given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
         assertThrows(EntityConflictException.class, () -> trainingDefinitionService.swapLevels(unreleasedDefinition.getId(), 1L, 2L));
@@ -337,7 +345,7 @@ public class TrainingDefinitionServiceTest {
 
         trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), infoLevel.getId());
         assertEquals(LocalDateTime.now(Clock.systemUTC()).getSecond(), unreleasedDefinition.getLastEdited().getSecond());
-        assertEquals(15-infoLevel.getEstimatedDuration(), unreleasedDefinition.getEstimatedDuration());
+        assertEquals(15 - infoLevel.getEstimatedDuration(), unreleasedDefinition.getEstimatedDuration());
         assertEquals(0, assessmentLevel.getOrder());
 
         then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());

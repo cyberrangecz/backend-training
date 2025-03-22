@@ -19,10 +19,10 @@ import cz.cyberrange.platform.training.api.dto.imports.AccessLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
+import cz.cyberrange.platform.training.api.dto.imports.JeopardyLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
-import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
@@ -160,7 +160,7 @@ public class ExportImportFacade {
         try {
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
             fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(dbExport));
-            if(dbExport != null && dbExport.getTitle() != null){
+            if (dbExport != null && dbExport.getTitle() != null) {
                 fileToReturnDTO.setTitle(dbExport.getTitle());
             } else {
                 fileToReturnDTO.setTitle("");
@@ -199,23 +199,28 @@ public class ExportImportFacade {
         List<AbstractLevelImportDTO> levels = importTrainingDefinitionDTO.getLevels();
         List<AbstractLevel> createdLevels = new ArrayList<>();
         for (AbstractLevelImportDTO level : levels) {
-            AbstractLevel newLevel;
-            if (level.getLevelType().equals(LevelType.TRAINING_LEVEL)) {
-                newLevel = levelMapper.mapImportToEntity((TrainingLevelImportDTO) level);
-                checkSumOfHintPenalties((TrainingLevel) newLevel);
-                setAnswerAndAnswerVariableNameToNullIfBlank((TrainingLevel) newLevel);
-                checkAnswerAndAnswerVariableName((TrainingLevel) newLevel);
-            } else if (level.getLevelType().equals(LevelType.INFO_LEVEL)) {
-                newLevel = levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
-            } else if (level.getLevelType().equals(LevelType.ACCESS_LEVEL)) {
-                newLevel = levelMapper.mapImportToEntity((AccessLevelImportDTO) level);
-            } else {
-                newLevel = levelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
-                if (((AssessmentLevel) newLevel).getAssessmentType() == AssessmentType.TEST) {
-                    this.checkAndSetCorrectOptionsOfStatements((AssessmentLevel) newLevel, (AssessmentLevelImportDTO) level);
-                    newLevel.setMaxScore(computeAssessmentLevelMaxScore((AssessmentLevel) newLevel));
+            AbstractLevel newLevel = switch (level.getLevelType()) {
+                case TRAINING_LEVEL -> {
+                    TrainingLevel trLevel = levelMapper.mapImportToEntity((TrainingLevelImportDTO) level);
+                    checkSumOfHintPenalties(trLevel);
+                    setAnswerAndAnswerVariableNameToNullIfBlank(trLevel);
+                    checkAnswerAndAnswerVariableName(trLevel);
+                    yield trLevel;
                 }
-            }
+                case INFO_LEVEL -> levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
+                case ACCESS_LEVEL -> levelMapper.mapImportToEntity((AccessLevelImportDTO) level);
+                case ASSESSMENT_LEVEL -> {
+                    AssessmentLevel assessmentLevel = levelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
+                    if (assessmentLevel.getAssessmentType() == AssessmentType.TEST) {
+                        this.checkAndSetCorrectOptionsOfStatements(assessmentLevel, (AssessmentLevelImportDTO) level);
+                        assessmentLevel.setMaxScore(computeAssessmentLevelMaxScore(assessmentLevel));
+                    }
+                    yield assessmentLevel;
+                }
+                case JEOPARDY_LEVEL -> levelMapper.mapImportToEntity((JeopardyLevelImportDTO) level);
+                case JEOPARDY_SUBLEVEL ->
+                        throw new IllegalStateException("Level of type JEOPARDY_SUBLEVEL should be imported using JEOPARDY_BLEVEL");
+            };
             exportImportService.createLevel(newLevel, newTrainingDefinition);
             createdLevels.add(newLevel);
         }
@@ -226,13 +231,13 @@ public class ExportImportFacade {
     private void createReferenceGraph(TrainingDefinition trainingDefinition, List<AbstractLevel> createdLevels) {
         List<LevelReferenceSolutionDTO> referenceSolution = new ArrayList<>();
         boolean isAnyReferenceSolution = false;
-        for (AbstractLevel level: createdLevels) {
+        for (AbstractLevel level : createdLevels) {
             if (level.getClass() == TrainingLevel.class) {
                 isAnyReferenceSolution = isAnyReferenceSolution || !((TrainingLevel) level).getReferenceSolution().isEmpty();
                 referenceSolution.add(createLevelReferenceSolutionDTO((TrainingLevel) level));
             }
         }
-        if(isAnyReferenceSolution) {
+        if (isAnyReferenceSolution) {
             this.trainingFeedbackApiService.createReferenceGraph(trainingDefinition.getId(), referenceSolution);
         }
     }
@@ -332,6 +337,7 @@ public class ExportImportFacade {
 
     /**
      * Creates a CSV line from a training run in the format "trainingInstanceId;userRefSub;totalTrainingScore"
+     *
      * @param trainingRun training run to use
      * @return String with the specified format
      */
@@ -422,7 +428,7 @@ public class ExportImportFacade {
     }
 
     private void writeAssessmentsDetails(ZipOutputStream zos, Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails) throws IOException {
-        for(Map.Entry<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentDetails: assessmentsDetails.entrySet()) {
+        for (Map.Entry<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentDetails : assessmentsDetails.entrySet()) {
             ZipEntry assessmentDetailsEntry = new ZipEntry(ASSESSMENTS_ANSWERS_FOLDER + "/assessment-id-" + assessmentDetails.getKey() + "-details" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(assessmentDetailsEntry);
             zos.write(objectMapper.writer().writeValueAsBytes(assessmentDetails.getValue().values()));
@@ -467,10 +473,11 @@ public class ExportImportFacade {
             zos.putNextEntry(eventsDetailEntry);
 
             Map<Long, QuestionAnswersDetailsDTO> questionAnswersDetails = assessmentsDetails.getOrDefault(questionsAnswersByAssessment.getKey(), new HashMap<>());
-            for(QuestionAnswer questionAnswer : questionsAnswersByAssessment.getValue()) {
+            for (QuestionAnswer questionAnswer : questionsAnswersByAssessment.getValue()) {
                 Question question = questionAnswer.getQuestion();
                 if (question.getQuestionType() == QuestionType.EMI) {
-                    Set<QuestionEMIAnswer> emiAnswers = objectMapper.readValue(questionAnswer.getAnswers().toString(), new TypeReference<Set<QuestionEMIAnswer>>() {});
+                    Set<QuestionEMIAnswer> emiAnswers = objectMapper.readValue(questionAnswer.getAnswers().toString(), new TypeReference<Set<QuestionEMIAnswer>>() {
+                    });
                     questionAnswer.setAnswers(emiAnswers.stream()
                             .map(emiAnswer -> this.mapEmiAnswerToString(question, emiAnswer))
                             .collect(Collectors.toSet()));
@@ -489,7 +496,7 @@ public class ExportImportFacade {
 
     private String mapEmiAnswerToString(Question question, QuestionEMIAnswer emiAnswer) {
         return "{ statement: '" + question.getExtendedMatchingStatements().get(emiAnswer.getStatementOrder()).getText()
-                + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText()+ "' }";
+                + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText() + "' }";
     }
 
     private void writeConsoleCommands(ZipOutputStream zos, String sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
@@ -507,7 +514,7 @@ public class ExportImportFacade {
         levelTimestampRanges.add(Long.MAX_VALUE);
 
         for (int i = 0; i < levelIds.size(); i++) {
-            List<Map<String, Object>> consoleCommandsByLevel = getConsoleCommandsWithinTimeRange(instance, run, sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i+1));
+            List<Map<String, Object>> consoleCommandsByLevel = getConsoleCommandsWithinTimeRange(instance, run, sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i + 1));
             ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-details" + "/level" + (i + 1) + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(consoleCommandsEntryDetails);
             for (Map<String, Object> command : consoleCommandsByLevel) {
@@ -518,7 +525,7 @@ public class ExportImportFacade {
     }
 
     private List<Map<String, Object>> getConsoleCommandsWithinTimeRange(TrainingInstance instance, TrainingRun run, String sandboxId, Long from, Long to) {
-        if(instance.isLocalEnvironment()) {
+        if (instance.isLocalEnvironment()) {
             return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
         }
         return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, from, to);
@@ -549,9 +556,10 @@ public class ExportImportFacade {
         for (Hint hint : trainingLevel.getHints()) {
             sumHintPenalties += hint.getHintPenalty();
         }
-        if(sumHintPenalties > trainingLevel.getMaxScore()) {
+        if (sumHintPenalties > trainingLevel.getMaxScore()) {
             throw new UnprocessableEntityException(new EntityErrorDetail(TrainingLevel.class, "title", String.class, trainingLevel.getTitle(),
-                    "Sum of hints penalties cannot be greater than maximal score of the training level."));     }
+                    "Sum of hints penalties cannot be greater than maximal score of the training level."));
+        }
     }
 
     private int computeEstimatedDuration(ImportTrainingDefinitionDTO importedTrainingDefinition) {

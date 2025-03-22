@@ -60,9 +60,9 @@ import java.util.Set;
  * The rest controller for Training definitions.
  */
 @Api(value = "/training-definitions",
-     tags = "Training definitions",
-     consumes = MediaType.APPLICATION_JSON_VALUE,
-     authorizations = @Authorization(value = "bearerAuth"))
+        tags = "Training definitions",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        authorizations = @Authorization(value = "bearerAuth"))
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiError.class),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
@@ -379,7 +379,7 @@ public class TrainingDefinitionsRestController {
     /**
      * Update training level.
      *
-     * @param definitionId       the Training Definition id
+     * @param definitionId           the Training Definition id
      * @param trainingLevelUpdateDTO the training level to be updated
      * @return the response entity
      */
@@ -398,9 +398,9 @@ public class TrainingDefinitionsRestController {
     })
     @PutMapping(path = "/{definitionId}/training-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateTrainingLevel(@ApiParam(value = "Id of definition to which level is assigned", required = true)
-                                                @PathVariable("definitionId") Long definitionId,
-                                                @ApiParam(value = "Training level to be updated")
-                                                @RequestBody @Valid TrainingLevelUpdateDTO trainingLevelUpdateDTO) {
+                                                    @PathVariable("definitionId") Long definitionId,
+                                                    @ApiParam(value = "Training level to be updated")
+                                                    @RequestBody @Valid TrainingLevelUpdateDTO trainingLevelUpdateDTO) {
         trainingDefinitionFacade.updateTrainingLevel(definitionId, trainingLevelUpdateDTO);
         return ResponseEntity.noContent().build();
     }
@@ -466,7 +466,7 @@ public class TrainingDefinitionsRestController {
     /**
      * Update levels.
      *
-     * @param definitionId       the definition id
+     * @param definitionId    the definition id
      * @param levelUpdateDTOS the levels to be updated
      * @return the response entity
      */
@@ -485,9 +485,9 @@ public class TrainingDefinitionsRestController {
     })
     @PutMapping(path = "/{definitionId}/levels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateLevels(@ApiParam(value = "Id of definition to which level is assigned", required = true)
-                                                @PathVariable("definitionId") Long definitionId,
-                                                @ApiParam(value = "Levels to be updated")
-                                                @RequestBody @Valid List<AbstractLevelUpdateDTO> levelUpdateDTOS) {
+                                             @PathVariable("definitionId") Long definitionId,
+                                             @ApiParam(value = "Levels to be updated")
+                                             @RequestBody @Valid List<AbstractLevelUpdateDTO> levelUpdateDTOS) {
         trainingDefinitionFacade.updateLevels(definitionId, levelUpdateDTOS);
         return ResponseEntity.noContent().build();
     }
@@ -549,15 +549,13 @@ public class TrainingDefinitionsRestController {
                                               @ApiParam(value = "Fields which should be returned in REST API response", required = false)
                                               @RequestParam(value = "fields", required = false) String fields) {
         BasicLevelInfoDTO basicLevelInfoDTO;
-        if (levelType.equals(LevelType.TRAINING)) {
-            basicLevelInfoDTO = trainingDefinitionFacade.createTrainingLevel(definitionId);
-        } else if (levelType.equals(LevelType.ASSESSMENT)) {
-            basicLevelInfoDTO = trainingDefinitionFacade.createAssessmentLevel(definitionId);
-        } else if (levelType.equals(LevelType.ACCESS)) {
-                basicLevelInfoDTO = trainingDefinitionFacade.createAccessLevel(definitionId);
-        } else {
-            basicLevelInfoDTO = trainingDefinitionFacade.createInfoLevel(definitionId);
-        }
+        basicLevelInfoDTO = switch (levelType) {
+            case TRAINING -> trainingDefinitionFacade.createTrainingLevel(definitionId);
+            case ASSESSMENT -> trainingDefinitionFacade.createAssessmentLevel(definitionId);
+            case INFO -> trainingDefinitionFacade.createInfoLevel(definitionId);
+            case JEOPARDY -> trainingDefinitionFacade.createJeopardyLevel(definitionId);
+            default -> throw new IllegalArgumentException("Unknown level type: " + levelType);
+        };
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, basicLevelInfoDTO), HttpStatus.CREATED);
     }

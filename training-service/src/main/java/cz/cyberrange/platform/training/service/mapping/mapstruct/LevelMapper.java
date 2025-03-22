@@ -13,13 +13,18 @@ import cz.cyberrange.platform.training.api.dto.export.AbstractLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.AccessLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.AssessmentLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.InfoLevelExportDTO;
+import cz.cyberrange.platform.training.api.dto.export.JeopardyLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.TrainingLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AccessLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
+import cz.cyberrange.platform.training.api.dto.imports.JeopardyLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.JeopardyLevelDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.JeopardyLevelUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.jeopardylevel.JeopardyLevelViewDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPreviewDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
@@ -28,6 +33,7 @@ import cz.cyberrange.platform.training.api.dto.visualization.AbstractLevelVisual
 import cz.cyberrange.platform.training.api.dto.visualization.AccessLevelVisualizationDTO;
 import cz.cyberrange.platform.training.api.dto.visualization.AssessmentLevelVisualizationDTO;
 import cz.cyberrange.platform.training.api.dto.visualization.InfoLevelVisualizationDTO;
+import cz.cyberrange.platform.training.api.dto.visualization.JeopardyLevelVisualizationDTO;
 import cz.cyberrange.platform.training.api.dto.visualization.TrainingLevelVisualizationDTO;
 import cz.cyberrange.platform.training.api.dto.visualization.progress.LevelDefinitionProgressDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
@@ -38,6 +44,7 @@ import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.ExpectedCommand;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
+import cz.cyberrange.platform.training.persistence.model.JeopardyLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -49,7 +56,6 @@ import java.util.List;
 /**
  * The InfoLevelMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type InfoLevelMapper and
  * DTOs classes. Code is generated during compile time.
- *
  */
 @Mapper(componentModel = "spring", uses = {
         HintMapper.class, AttachmentMapper.class,
@@ -135,6 +141,29 @@ public interface LevelMapper extends ParentMapper {
         return expectedCommand;
     }
 
+    // JEOPARDY LEVEL
+    JeopardyLevelExportDTO mapToExportJeopardyLevelDTO(JeopardyLevel entity);
+
+    @Mapping(target = "levelType", constant = "JEOPARDY_LEVEL")
+    JeopardyLevelDTO mapToJeopardyLevelDTO(JeopardyLevel entity);
+
+    JeopardyLevel mapToEntity(JeopardyLevelDTO dto);
+
+    JeopardyLevel mapUpdateToEntity(JeopardyLevelUpdateDTO dto);
+
+    JeopardyLevel mapImportToEntity(JeopardyLevelImportDTO dto);
+
+    @Mapping(target = "levelType", constant = "JEOPARDY_LEVEL")
+    BasicLevelInfoDTO mapTo(JeopardyLevel trainingLevel);
+
+    JeopardyLevelVisualizationDTO mapToVisualizationJeopardyLevelDTO(JeopardyLevel entity);
+
+    @Mapping(target = "levelType", constant = "JEOPARDY_LEVEL")
+    JeopardyLevelViewDTO mapToViewDTO(JeopardyLevel entity);
+
+    @Mapping(target = "levelType", constant = "JEOPARDY_LEVEL")
+    TrainingLevelPreviewDTO mapToPreviewDTO(JeopardyLevel entity);
+
     // ACCESS LEVEL
     AccessLevel mapToEntity(AccessLevelDTO dto);
 
@@ -160,16 +189,15 @@ public interface LevelMapper extends ParentMapper {
     List<AbstractLevel> mapToLevels(List<AbstractLevelUpdateDTO> dtos);
 
     default AbstractLevel mapToAbstractLevel(AbstractLevelUpdateDTO dto) {
-        if (dto.getLevelType() == LevelType.TRAINING_LEVEL) {
-            return mapUpdateToEntity((TrainingLevelUpdateDTO) dto);
-        } else if (dto.getLevelType() == LevelType.INFO_LEVEL) {
-            return mapUpdateToEntity((InfoLevelUpdateDTO) dto);
-        } else if (dto.getLevelType() == LevelType.ASSESSMENT_LEVEL) {
-            return mapUpdateToEntity((AssessmentLevelUpdateDTO) dto);
-        } else {
-            throw new InternalServerErrorException("Level with id: " + dto.getId() + " and with title: " + dto.getTitle() +
-                    " is not instance of assessment, training or info level.");
-        }
+        return switch (dto.getLevelType()) {
+            case TRAINING_LEVEL -> mapUpdateToEntity((TrainingLevelUpdateDTO) dto);
+            case ACCESS_LEVEL -> mapUpdateToEntity((AccessLevelUpdateDTO) dto);
+            case ASSESSMENT_LEVEL -> mapUpdateToEntity((AssessmentLevelUpdateDTO) dto);
+            case JEOPARDY_LEVEL -> mapUpdateToEntity((JeopardyLevelUpdateDTO) dto);
+            default ->
+                    throw new InternalServerErrorException("Level with id: " + dto.getId() + " and with title: " + dto.getTitle() +
+                            " is not instance of assessment, training or info level.");
+        };
     }
 
     default AbstractLevelDTO mapToDTO(AbstractLevel entity) {
@@ -186,6 +214,9 @@ public interface LevelMapper extends ParentMapper {
         } else if (entity instanceof AccessLevel) {
             abstractLevelDTO = mapToAccessLevelDTO((AccessLevel) entity);
             abstractLevelDTO.setLevelType(LevelType.ACCESS_LEVEL);
+        } else if (entity instanceof JeopardyLevel jeopardyLevel) {
+            abstractLevelDTO = mapToJeopardyLevelDTO(jeopardyLevel);
+            abstractLevelDTO.setLevelType(LevelType.JEOPARDY_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
                     " is not instance of assessment, training or info level.");
@@ -208,6 +239,9 @@ public interface LevelMapper extends ParentMapper {
         } else if (entity instanceof AccessLevel) {
             abstractLevelVisualizationDTO = mapToVisualizationAccessLevelDTO((AccessLevel) entity);
             abstractLevelVisualizationDTO.setLevelType(LevelType.ACCESS_LEVEL);
+        } else if (entity instanceof JeopardyLevel jeopardyLevel) {
+            abstractLevelVisualizationDTO = mapToVisualizationJeopardyLevelDTO(jeopardyLevel);
+            abstractLevelVisualizationDTO.setLevelType(LevelType.JEOPARDY_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
                     " is not instance of assessment, training or info level.");
@@ -229,6 +263,9 @@ public interface LevelMapper extends ParentMapper {
         } else if (entity instanceof AccessLevel) {
             abstractLevelExportDTO = mapToExportAccessLevelDTO((AccessLevel) entity);
             abstractLevelExportDTO.setLevelType(LevelType.ACCESS_LEVEL);
+        } else if (entity instanceof JeopardyLevel jeopardyLevel) {
+            abstractLevelExportDTO = mapToExportJeopardyLevelDTO(jeopardyLevel);
+            abstractLevelExportDTO.setLevelType(LevelType.JEOPARDY_LEVEL);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
                     " is not instance of assessment, training or info level.");
@@ -238,10 +275,13 @@ public interface LevelMapper extends ParentMapper {
 
     @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
     LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(TrainingLevel entity);
+
     @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
     LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AssessmentLevel entity);
+
     @Mapping(target = "levelType", constant = "INFO_LEVEL")
     LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(InfoLevel entity);
+
     @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
     LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AccessLevel entity);
 
@@ -254,6 +294,8 @@ public interface LevelMapper extends ParentMapper {
             return mapToLevelDefinitionProgressDTO((AssessmentLevel) entity);
         } else if (entity instanceof AccessLevel) {
             return mapToLevelDefinitionProgressDTO((AccessLevel) entity);
+        } else if (entity instanceof JeopardyLevel jeopardyLevel) {
+            return mapToLevelDefinitionProgressDTO(jeopardyLevel);
         } else {
             throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
                     " is not instance of assessment, training or info level.");

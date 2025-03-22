@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
 import cz.cyberrange.platform.training.api.enums.TDState;
+import cz.cyberrange.platform.training.api.enums.TrainingType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -13,7 +14,6 @@ import java.util.List;
 
 /**
  * Encapsulates information about training definition and its levels.
- *
  */
 @Getter
 @Setter
@@ -32,6 +32,8 @@ public class ExportTrainingDefinitionAndLevelsDTO {
     private String[] outcomes;
     @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
     private TDState state;
+    @ApiModelProperty(value = "Type of training instance.", example = "COOP")
+    private TrainingType type;
     @ApiModelProperty(value = "Information about all levels in training definition.")
     private List<AbstractLevelExportDTO> levels = new ArrayList<>();
     @ApiModelProperty(value = "Estimated time (minutes) taken by the player to finish run created from this definition.", example = "5")

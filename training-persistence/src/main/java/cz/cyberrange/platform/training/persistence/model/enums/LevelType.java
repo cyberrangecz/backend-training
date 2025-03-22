@@ -2,7 +2,6 @@ package cz.cyberrange.platform.training.persistence.model.enums;
 
 /**
  * Enumeration of Level types.
- *
  */
 public enum LevelType {
 
@@ -21,5 +20,9 @@ public enum LevelType {
     /**
      * Access level type.
      */
-    ACCESS;
+    ACCESS,
+    /**
+     * Jeopardy level type.
+     */
+    JEOPARDY;
 }

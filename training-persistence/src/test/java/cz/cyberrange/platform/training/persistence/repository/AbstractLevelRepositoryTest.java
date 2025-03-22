@@ -5,6 +5,7 @@ import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
+import cz.cyberrange.platform.training.persistence.model.JeopardyLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
@@ -36,6 +37,7 @@ public class AbstractLevelRepositoryTest {
     private TrainingLevel trainingLevel, trainingLevel2;
     private AssessmentLevel assessmentLevel;
     private InfoLevel infoLevel, infoLevel2;
+    private JeopardyLevel jeopardyLevel, jeopardyLeveEmpty;
     private TrainingDefinition trainingDefinition;
     private Hint hint;
 
@@ -69,6 +71,14 @@ public class AbstractLevelRepositoryTest {
         infoLevel2 = testDataFactory.getInfoLevel2();
         infoLevel2.setTrainingDefinition(trainingDefinition);
         infoLevel2.setOrder(4);
+
+        jeopardyLevel = testDataFactory.getJeopardyLevel();
+        jeopardyLevel.setTrainingDefinition(trainingDefinition);
+        jeopardyLevel.setOrder(5);
+
+        jeopardyLeveEmpty = testDataFactory.getJeopardyLevelEmpty();
+        jeopardyLeveEmpty.setTrainingDefinition(trainingDefinition);
+        jeopardyLeveEmpty.setOrder(6);
     }
 
     @Test
@@ -120,6 +130,18 @@ public class AbstractLevelRepositoryTest {
     }
 
     @Test
+    public void findByIdJeopardyLevel_multipleOccurrences() {
+        entityManager.persist(trainingLevel);
+        entityManager.persist(infoLevel);
+        Long id = (Long) entityManager.persistAndGetId(jeopardyLevel);
+        entityManager.persist(infoLevel2);
+        Optional<AbstractLevel> optionalJeopardyLevel = abstractLevelRepository.findById(id);
+        assertTrue(optionalJeopardyLevel.isPresent());
+        assertInstanceOf(JeopardyLevel.class, optionalJeopardyLevel.get());
+        assertEquals(jeopardyLevel, optionalJeopardyLevel.get());
+    }
+
+    @Test
     public void findAll() {
         entityManager.persist(trainingDefinition);
         List<AbstractLevel> expectedAbstractLevels = Arrays.asList(trainingLevel, infoLevel, assessmentLevel, infoLevel2, trainingLevel2);
@@ -131,24 +153,26 @@ public class AbstractLevelRepositoryTest {
     }
 
     @Test
-    public void getCurrentMaxOrder(){
+    public void getCurrentMaxOrder() {
         entityManager.persist(trainingDefinition);
         entityManager.persist(trainingLevel);
         entityManager.persist(trainingLevel2);
         entityManager.persist(assessmentLevel);
         entityManager.persist(infoLevel);
         entityManager.persist(infoLevel2);
+        entityManager.persist(jeopardyLevel);
+        entityManager.persist(jeopardyLeveEmpty);
 
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingDefinition.getId());
-        assertEquals(maxOrder, 4);
+        assertEquals(6, maxOrder);
 
     }
 
     @Test
-    public void getCurrentMaxOrderWithNoLevels(){
+    public void getCurrentMaxOrderWithNoLevels() {
         entityManager.persist(trainingDefinition);
         int maxOrder = abstractLevelRepository.getCurrentMaxOrder(trainingDefinition.getId());
-        assertEquals(maxOrder, -1);
+        assertEquals(-1, maxOrder);
     }
 
 }

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -20,6 +21,10 @@ import java.util.Set;
 @Getter
 @Table(name = "team")
 public class Team extends AbstractEntity<Long> {
+
+    @Setter
+    @Column(name = "name")
+    private String name;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
     @Setter

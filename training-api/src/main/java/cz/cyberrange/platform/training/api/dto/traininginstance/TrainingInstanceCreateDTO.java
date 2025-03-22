@@ -2,6 +2,7 @@ package cz.cyberrange.platform.training.api.dto.traininginstance;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCDeserializer;
+import cz.cyberrange.platform.training.api.enums.TrainingType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -14,7 +15,6 @@ import java.time.LocalDateTime;
 
 /**
  * Encapsulates information about Training Instance, intended for creation of new instance.
- *
  */
 @Getter
 @Setter
@@ -49,6 +49,11 @@ public class TrainingInstanceCreateDTO {
     private boolean showStepperBar;
     @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
     private boolean backwardMode;
+
+    @Getter
+    @Setter
+    @ApiModelProperty(value = "Type of training instance.", notes = "Defaults to LINEAR", example = "COOP")
+    private TrainingType type;
 
     /**
      * Gets start time.

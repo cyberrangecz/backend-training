@@ -1,5 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -112,6 +113,12 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private boolean showStepperBar;
     @Column(name = "backward_mode", nullable = false)
     private boolean backwardMode;
+
+    @Getter
+    @Setter
+    @Column(name = "training_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TrainingType type = TrainingType.LINEAR;
 
     @Getter
     @Setter

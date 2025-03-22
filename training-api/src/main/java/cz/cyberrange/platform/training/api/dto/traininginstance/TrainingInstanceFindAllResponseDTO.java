@@ -3,6 +3,7 @@ package cz.cyberrange.platform.training.api.dto.traininginstance;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.cyberrange.platform.training.api.enums.TrainingType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,4 +48,6 @@ public class TrainingInstanceFindAllResponseDTO {
     private boolean showStepperBar;
     @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
     private boolean backwardMode;
+    @ApiModelProperty(value = "Type of training instance.", example = "COOP")
+    private TrainingType type;
 }

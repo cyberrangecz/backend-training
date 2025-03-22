@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * The enumeration of Level types.
- *
  */
 public enum LevelType {
 
@@ -23,7 +22,16 @@ public enum LevelType {
     /**
      * Assessment level type.
      */
-    ASSESSMENT_LEVEL;
+    ASSESSMENT_LEVEL,
+    /**
+     * Jeopardy level type.
+     */
+    JEOPARDY_LEVEL,
+    /**
+     * Sublevel of Jeopardy level
+     */
+    JEOPARDY_SUBLEVEL;
+
 
     @JsonCreator
     public static LevelType createLevelType(String levelType) {
