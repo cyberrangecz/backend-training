@@ -388,7 +388,7 @@ public class TrainingDefinitionService {
         checkIfCanBeUpdated(persistedJeopardyLevel.getTrainingDefinition());
         this.checkSumOfScore(updatedJeopardyLevel);
         this.checkSumOfEstimatedDuration(updatedJeopardyLevel);
-        this.checkSublevels(updatedJeopardyLevel.getSublevels(), persistedJeopardyLevel.getSublevels());
+        this.checkSublevels(updatedJeopardyLevel.flatListOfSublevels(), persistedJeopardyLevel.flatListOfSublevels());
         this.updateCommonLevelData(updatedJeopardyLevel, persistedJeopardyLevel);
         return jeopardyLevelRepository.save(updatedJeopardyLevel);
     }

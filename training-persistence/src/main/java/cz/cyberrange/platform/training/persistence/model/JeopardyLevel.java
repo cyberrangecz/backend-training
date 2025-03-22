@@ -51,7 +51,7 @@ public class JeopardyLevel extends AbstractLevel {
         ).sum();
     }
 
-    public List<JeopardySublevel> flatCopyOfSublevels() {
+    public List<JeopardySublevel> flatListOfSublevels() {
         return this.categories.stream().flatMap(category -> category.getSublevels().stream()).toList();
     }
 
