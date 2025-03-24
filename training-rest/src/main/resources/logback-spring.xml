@@ -19,7 +19,7 @@
     <logger name="cz.cyberrange.platform" level="WARN" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
-    
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%-5level --- [%thread] %logger{5} --- %msg%n</pattern>
@@ -29,7 +29,9 @@
     <appender name="AUDIT_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <charset>UTF-8</charset>
-            <pattern>${crczp.audit.messages.format:-training --- CRCZP_PORTAL_EVENTS_AUDIT [%thread] %logger{5} --- %msg%n}</pattern>
+            <pattern>${crczp.audit.messages.format:-backend-training --- CRCZP_PORTAL_EVENTS_AUDIT [%thread] %logger{5}
+                --- %msg%n}
+            </pattern>
         </encoder>
     </appender>
 
@@ -37,10 +39,13 @@
         <syslogHost>${crczp.audit.syslog.host:-localhost}</syslogHost>
         <port>${crczp.audit.syslog.port:-514}</port>
         <facility>AUDIT</facility>
-        <suffixPattern>${crczp.audit.messages.format:-training --- CRCZP_PORTAL_EVENTS_AUDIT [%thread] %logger{5} --- %msg%n}</suffixPattern>
+        <suffixPattern>
+            ${crczp.audit.messages.format:-backend-training --- CRCZP_PORTAL_EVENTS_AUDIT [%thread] %logger{5} ---
+            %msg%n}
+        </suffixPattern>
     </appender>
 
-    <logger name="cz.cyberrange.platform.elasticsearch.service" level="INFO" additivity="false">
+    <logger name="cz.cyberrange.platform.training.elasticsearch.service" level="INFO" additivity="false">
         <appender-ref ref="AUDIT_CONSOLE"/>
         <appender-ref ref="CRCZP_SYSLOG"/>
     </logger>

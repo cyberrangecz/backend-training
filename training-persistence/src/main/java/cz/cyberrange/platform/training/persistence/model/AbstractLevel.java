@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.persistence.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -14,7 +13,6 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @Entity
 @Table(name = "abstract_level")
