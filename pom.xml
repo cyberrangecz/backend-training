@@ -9,6 +9,13 @@
     <version>${app-version}</version>
     <packaging>pom</packaging>
 
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://github.com/cyberrangecz/backend-training/blob/master/LICENSE</url>
+        </license>
+    </licenses>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -20,8 +27,8 @@
         <proprietary-repo-id>github</proprietary-repo-id>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <security-commons.version>0.0.1</security-commons.version>
-        <elasticsearch-documents.version>0.0.2</elasticsearch-documents.version>
+        <security-commons.version>1.0.0</security-commons.version>
+        <elasticsearch-documents.version>1.0.0</elasticsearch-documents.version>
         <swagger.version>2.9.2</swagger.version>
         <swagger-annotations.version>1.5.22</swagger-annotations.version>
         <swagger.directory>${basedir}/../doc-files</swagger.directory>
