@@ -93,7 +93,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
     @Getter
     @Setter
-    @Column(name = "training_type", nullable = false)
+    @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
     private TrainingType type = TrainingType.LINEAR;
 
