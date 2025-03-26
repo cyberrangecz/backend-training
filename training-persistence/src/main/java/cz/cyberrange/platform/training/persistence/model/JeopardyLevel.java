@@ -5,7 +5,6 @@ import lombok.ToString;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
-import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +17,6 @@ import java.util.List;
 @ToString
 @Entity
 @Table(name = "jeopardy_level")
-@PrimaryKeyJoinColumn(name = "id")
 public class JeopardyLevel extends AbstractLevel {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "jeopardyLevel")

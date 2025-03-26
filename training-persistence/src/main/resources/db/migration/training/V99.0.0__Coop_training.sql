@@ -18,7 +18,8 @@ CREATE TABLE jeopardy_category (
 
 ALTER TABLE training_level
     ADD COLUMN description varchar(100),
-    ADD COLUMN category_id bigint REFERENCES jeopardy_category (id);
+    ADD COLUMN category_id bigint REFERENCES jeopardy_category (id),
+    ADD COLUMN level_type  varchar(16);
 
 
 CREATE TABLE team (
