@@ -6,7 +6,7 @@
     <artifactId>training</artifactId>
     <name>CyberRangeCZ Platform Training</name>
     <description>Backend for linear trainings</description>
-    <version>${app-version}</version>
+    <version>10.0.0</version>
     <packaging>pom</packaging>
 
     <licenses>

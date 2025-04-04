@@ -35,7 +35,7 @@ public class TrainingDefinitionCreateDTO {
     @NotNull(message = "{trainingDefinition.state.NotNull.message}")
     private TDState state;
     @ApiModelProperty(value = "Type of training instance.", notes = "Defaults to LINEAR", example = "COOP")
-    private TrainingType type;
+    private TrainingType type = TrainingType.LINEAR;
     @ApiModelProperty(value = "Group of organizers who is allowed to see the training definition.", required = true)
     @Valid
     private BetaTestingGroupCreateDTO betaTestingGroup;

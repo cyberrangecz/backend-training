@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -49,11 +50,14 @@ public class TrainingInstanceCreateDTO {
     private boolean showStepperBar;
     @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
     private boolean backwardMode;
+    @ApiModelProperty(value = "Maximum team size for cooperative training", example = "5", allowableValues = "1 to 12")
+    @Max(12)
+    private int maxTeamSize;
 
     @Getter
     @Setter
     @ApiModelProperty(value = "Type of training instance.", notes = "Defaults to LINEAR", example = "COOP")
-    private TrainingType type;
+    private TrainingType type = TrainingType.LINEAR;
 
     /**
      * Gets start time.

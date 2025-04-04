@@ -14,11 +14,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "training_level")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(
-        discriminatorType = DiscriminatorType.STRING,
-        name = "level_type"
-)
+@Inheritance(strategy = InheritanceType.JOINED)
 @PrimaryKeyJoinColumn(name = "id")
 public class TrainingLevel extends AbstractLevel {
 

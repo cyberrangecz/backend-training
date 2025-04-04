@@ -20,10 +20,13 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPrevie
 import cz.cyberrange.platform.training.api.enums.Actions;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
+import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
+import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.api.responses.VariantAnswer;
 import cz.cyberrange.platform.training.persistence.model.*;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
+import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionAnswer;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTrainee;
@@ -37,6 +40,7 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.ReferenceSoluti
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
+import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.AnswersStorageApiService;
@@ -74,6 +78,7 @@ public class TrainingRunFacade {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
     private static final int TIME_TO_PROPAGATE_EVENTS = 5;
+    private final TrainingInstanceLobbyService trainingInstanceLobbyService;
 
     @Value("${central.syslog.ip:127.0.0.1}")
     private String centralSyslogIp;
@@ -108,7 +113,7 @@ public class TrainingRunFacade {
                              TrainingFeedbackApiService trainingFeedbackApiService,
                              TrainingRunMapper trainingRunMapper,
                              LevelMapper levelMapper,
-                             HintMapper hintMapper) {
+                             HintMapper hintMapper, TrainingInstanceLobbyService trainingInstanceLobbyService) {
         this.trainingRunService = trainingRunService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.answersStorageApiService = answersStorageApiService;
@@ -118,6 +123,7 @@ public class TrainingRunFacade {
         this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.levelMapper = levelMapper;
         this.hintMapper = hintMapper;
+        this.trainingInstanceLobbyService = trainingInstanceLobbyService;
     }
 
     /**
@@ -254,6 +260,15 @@ public class TrainingRunFacade {
         TrainingInstance trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
         // checking if the user is not accessing to his existing training run (resume action)
         Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+        UserRef userRef = userService.createOrGetUserRef(participantRefId);
+
+        if (trainingInstance.notStarted()) {
+            if (trainingInstance.getType() == TrainingType.COOP && !trainingInstanceLobbyService.isWaiting(participantRefId)) {
+                trainingInstanceLobbyService.addUserToQueue(trainingInstance.getTrainingInstanceLobby().getTrainingInstance().getId(), participantRefId);
+            }
+            throw new ResourceNotReadyException(new EntityErrorDetail("The training instance has not started yet."));
+        }
+
         Optional<TrainingRun> accessedTrainingRun = trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
         if (accessedTrainingRun.isPresent()) {
             TrainingRun trainingRun = trainingRunService.resumeTrainingRun(accessedTrainingRun.get().getId());

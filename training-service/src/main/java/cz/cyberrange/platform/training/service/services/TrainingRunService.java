@@ -167,7 +167,7 @@ public class TrainingRunService {
         }
         questionAnswerRepository.deleteAllByTrainingRunId(trainingRunId);
         submissionRepository.deleteAllByTrainingRunId(trainingRunId);
-        if(deleteDataFromElasticsearch) {
+        if (deleteDataFromElasticsearch) {
             deleteDataFromElasticsearch(trainingRun);
         }
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
@@ -176,7 +176,7 @@ public class TrainingRunService {
     }
 
     private void deleteDataFromElasticsearch(TrainingRun trainingRun) {
-        if(trainingRun.getTrainingInstance().isLocalEnvironment()) {
+        if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
             String accessToken = trainingRun.getTrainingInstance().getAccessToken();
             Long userId = trainingRun.getParticipantRef().getUserRefId();
             elasticsearchApiService.deleteCommandsByAccessTokenAndUserId(accessToken, userId);
@@ -202,7 +202,7 @@ public class TrainingRunService {
      * Finds all Training Runs of logged in user.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
-     * @param pageable pageable parameter with information about pagination.
+     * @param pageable  pageable parameter with information about pagination.
      * @return {@link TrainingRun}s of logged in user.
      */
     public Page<TrainingRun> findAllByParticipantRefUserRefId(Predicate predicate, Pageable pageable) {
@@ -254,7 +254,7 @@ public class TrainingRunService {
     /**
      * Get previous/current level (visited) of given Training Run.
      *
-     * @param runId ID of Training Run whose visited level should be returned.
+     * @param runId   ID of Training Run whose visited level should be returned.
      * @param levelId ID of the visited level that should be returned.
      * @return {@link AbstractLevel}
      */
@@ -343,7 +343,7 @@ public class TrainingRunService {
      * @return the training instance for particular access token
      */
     public TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
-        TrainingInstance trainingInstance = trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
+        TrainingInstance trainingInstance = trainingInstanceRepository.findByEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active training session matching access token.")));
         if (!trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() == null) {
@@ -461,7 +461,7 @@ public class TrainingRunService {
         if (level.getClass() != TrainingLevel.class) {
             throw new BadRequestException("Current level is not training level and does not have answer.");
         } else if (trainingRun.isLevelAnswered()) {
-                throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
         }
         return evaluateTrainingLevelAnswer(trainingRun, answer);
     }
@@ -487,7 +487,7 @@ public class TrainingRunService {
     /**
      * Check given passkey of given Training Run.
      *
-     * @param runId  id of Training Run to check passkey.
+     * @param runId   id of Training Run to check passkey.
      * @param passkey string which player submit.
      * @return true if passkey is correct, false if passkey is wrong.
      * @throws EntityNotFoundException training run is not found.
@@ -528,7 +528,7 @@ public class TrainingRunService {
     }
 
     private String getUserIpAddress() {
-        ServletRequestAttributes requestAttributes =  ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+        ServletRequestAttributes requestAttributes = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
         if (requestAttributes != null && requestAttributes.getRequest().getHeader(X_REAL_IP_HEADER) != null) {
             return requestAttributes.getRequest().getHeader(X_REAL_IP_HEADER);
         }
@@ -582,7 +582,7 @@ public class TrainingRunService {
     }
 
     private String getSolutionWithReplacedVariable(TrainingLevel trainingLevel, TrainingRun trainingRun) {
-        if(!trainingLevel.getSolution().contains("${ANSWER}")) {
+        if (!trainingLevel.getSolution().contains("${ANSWER}")) {
             return trainingLevel.getSolution();
         }
         return trainingLevel.getSolution().replaceAll("\\$\\{ANSWER\\}", getTrainingLevelCorrectAnswer(trainingLevel, trainingRun));
@@ -592,14 +592,14 @@ public class TrainingRunService {
      * Gets correct answer of the training level based on the Training Run parameters.
      *
      * @param trainingLevel Training Level whose correct answer to get.
-     * @param trainingRun Training Run of the particular trainee used to obtain variant answer
+     * @param trainingRun   Training Run of the particular trainee used to obtain variant answer
      * @return static or variant answer based on the Training Run parameters
      */
     public String getTrainingLevelCorrectAnswer(TrainingLevel trainingLevel, TrainingRun trainingRun) {
         if (trainingLevel.isVariantAnswers()) {
             return trainingRun.getTrainingInstance().isLocalEnvironment() ?
                     answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
-                        trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName()) :
+                            trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName()) :
                     answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
         }
         return trainingLevel.getAnswer();

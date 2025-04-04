@@ -113,6 +113,15 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private boolean showStepperBar;
     @Column(name = "backward_mode", nullable = false)
     private boolean backwardMode;
+    @Setter
+    @Getter
+    @Column(name = "max_team_size")
+    private int maxTeamSize;
+
+    @Embedded
+    @Getter
+    @Setter
+    private TrainingInstanceLobby trainingInstanceLobby;
 
     @Getter
     @Setter

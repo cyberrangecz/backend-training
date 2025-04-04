@@ -46,9 +46,9 @@ import java.util.List;
  * The rest controller for Training runs.
  */
 @Api(value = "/training-runs",
-     tags = "Training runs",
-     consumes = MediaType.APPLICATION_JSON_VALUE,
-     authorizations = @Authorization(value = "bearerAuth"))
+        tags = "Training runs",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        authorizations = @Authorization(value = "bearerAuth"))
 @ApiResponses(value = {
         @ApiResponse(code = 401, message = "Full authentication is required to access this resource.", response = ApiError.class),
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
@@ -197,6 +197,7 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 200, message = "The training run has been accessed.", response = AccessTrainingRunDTO.class),
             @ApiResponse(code = 404, message = "There is no training instance with given accessToken or first level not found in database.", response = ApiError.class),
             @ApiResponse(code = 409, message = "No assigned pool to the training instance.", response = ApiError.class),
+            @ApiResponse(code = 425, message = "The training run has not started yet.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Some error occurred during getting info about sandboxes.", response = ApiError.class),
     })
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -330,8 +331,8 @@ public class TrainingRunsRestController {
     /**
      * Check if submitted answer is correct.
      *
-     * @param runId the run id
-     * @param validateAnswerDTO  submitted answer.
+     * @param runId             the run id
+     * @param validateAnswerDTO submitted answer.
      * @return True if answer is correct, false if answer is wrong.
      */
     @ApiOperation(httpMethod = "POST",
@@ -349,17 +350,17 @@ public class TrainingRunsRestController {
     })
     @PostMapping(path = "/{runId}/is-correct-answer", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<IsCorrectAnswerDTO> isCorrectAnswer(@ApiParam(value = "Training run ID", required = true)
-                                                          @PathVariable("runId") Long runId,
-                                                            @ApiParam(value = "Submitted answer", required = true)
-                                                          @RequestBody @Valid ValidateAnswerDTO validateAnswerDTO) {
+                                                              @PathVariable("runId") Long runId,
+                                                              @ApiParam(value = "Submitted answer", required = true)
+                                                              @RequestBody @Valid ValidateAnswerDTO validateAnswerDTO) {
         return ResponseEntity.ok(trainingRunFacade.isCorrectAnswer(runId, validateAnswerDTO.getAnswer()));
     }
 
     /**
      * Check if submitted passkey is correct.
      *
-     * @param runId the run id
-     * @param validatePasskeyDTO  submitted passkey.
+     * @param runId              the run id
+     * @param validatePasskeyDTO submitted passkey.
      * @return True if passkey is correct, false if passkey is wrong.
      */
     @ApiOperation(httpMethod = "POST",
@@ -377,9 +378,9 @@ public class TrainingRunsRestController {
     })
     @PostMapping(path = "/{runId}/is-correct-passkey", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Boolean> isCorrectPasskey(@ApiParam(value = "Training run ID", required = true)
-                                                              @PathVariable("runId") Long runId,
-                                                              @ApiParam(value = "Submitted passkey", required = true)
-                                                              @RequestBody @Valid ValidatePasskeyDTO validatePasskeyDTO) {
+                                                    @PathVariable("runId") Long runId,
+                                                    @ApiParam(value = "Submitted passkey", required = true)
+                                                    @RequestBody @Valid ValidatePasskeyDTO validatePasskeyDTO) {
         return ResponseEntity.ok(trainingRunFacade.isCorrectPasskey(runId, validatePasskeyDTO.getPasskey()));
     }
 
@@ -504,7 +505,7 @@ public class TrainingRunsRestController {
     })
     @PatchMapping(path = "/{runId}/archive", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> archiveTrainingRun(@ApiParam(value = "Training run ID", required = true)
-                                                  @PathVariable("runId") Long runId) {
+                                                   @PathVariable("runId") Long runId) {
         trainingRunFacade.archiveTrainingRun(runId);
         return ResponseEntity.ok().build();
     }
@@ -530,9 +531,9 @@ public class TrainingRunsRestController {
     })
     @GetMapping(path = "/{runId}/answers", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getCorrectAnswers(@ApiParam(value = "Training run ID", required = true)
-                                          @PathVariable("runId") Long runId,
-                                          @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-                                          @RequestParam(value = "fields", required = false) String fields) {
+                                                    @PathVariable("runId") Long runId,
+                                                    @ApiParam(value = "Fields which should be returned in REST API response", required = false)
+                                                    @RequestParam(value = "fields", required = false) String fields) {
         List<CorrectAnswerDTO> correctAnswerDTOs = trainingRunFacade.getCorrectAnswers(runId);
         Squiggly.init(objectMapper, fields);
         return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, correctAnswerDTOs));
@@ -541,9 +542,9 @@ public class TrainingRunsRestController {
     /**
      * Get previous or current level (any visited) of given Training Run.
      *
-     * @param runId  of Training Run for which to get previous or current level.
+     * @param runId   of Training Run for which to get previous or current level.
      * @param levelId ID of the visited level.
-     * @param fields attributes of the object to be returned as the result.
+     * @param fields  attributes of the object to be returned as the result.
      * @return Requested level.
      */
     @ApiOperation(httpMethod = "GET",

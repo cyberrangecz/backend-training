@@ -58,4 +58,6 @@ public class TrainingInstanceDTO {
     private boolean backwardMode;
     @ApiModelProperty(value = "Type of training instance.", example = "COOP")
     private TrainingType type;
+    @ApiModelProperty(value = "Max team size in COOP instance", example = "4")
+    public int maxTeamSize;
 }

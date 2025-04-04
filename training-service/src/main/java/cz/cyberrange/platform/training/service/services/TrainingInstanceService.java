@@ -312,8 +312,8 @@ public class TrainingInstanceService {
      * @param accessToken of Training instance
      * @return Training instance
      */
-    public TrainingInstance findByStartTimeAfterAndEndTimeBeforeAndAccessToken(String accessToken) {
-        return trainingInstanceRepository.findByStartTimeAfterAndEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
+    public TrainingInstance findByEndTimeBeforeAndAccessToken(String accessToken) {
+        return trainingInstanceRepository.findByEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active training session matching access token.")));
     }

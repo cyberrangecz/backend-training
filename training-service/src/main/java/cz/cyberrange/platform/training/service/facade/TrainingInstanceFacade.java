@@ -18,6 +18,7 @@ import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
+import cz.cyberrange.platform.training.persistence.model.TrainingInstanceLobby;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
@@ -29,6 +30,7 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanc
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
+import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
@@ -71,6 +73,7 @@ public class TrainingInstanceFacade {
     private final ElasticsearchApiService elasticsearchApiService;
     private final SandboxApiService sandboxApiService;
     private final TrainingFeedbackApiService trainingFeedbackApiService;
+    private final TrainingInstanceLobbyService trainingInstanceLobbyService;
 
 
     /**
@@ -97,7 +100,7 @@ public class TrainingInstanceFacade {
                                   SandboxApiService sandboxApiService,
                                   TrainingInstanceMapper trainingInstanceMapper,
                                   TrainingRunMapper trainingRunMapper,
-                                  TrainingFeedbackApiService trainingFeedbackApiService) {
+                                  TrainingFeedbackApiService trainingFeedbackApiService, TrainingInstanceLobbyService trainingInstanceLobbyService) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingRunService = trainingRunService;
@@ -109,6 +112,7 @@ public class TrainingInstanceFacade {
         this.trainingInstanceMapper = trainingInstanceMapper;
         this.trainingRunMapper = trainingRunMapper;
         this.trainingFeedbackApiService = trainingFeedbackApiService;
+        this.trainingInstanceLobbyService = trainingInstanceLobbyService;
     }
 
     /**
@@ -142,7 +146,6 @@ public class TrainingInstanceFacade {
     }
 
 
-
     /**
      * Find all Training Instances.
      *
@@ -166,7 +169,7 @@ public class TrainingInstanceFacade {
      * @return new access token if it was changed
      */
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-                      "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceUpdateDTO.getId())")
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceUpdateDTO.getId())")
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         TrainingInstance updatedTrainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
@@ -200,7 +203,7 @@ public class TrainingInstanceFacade {
             Set<String> sandboxDefinitionVariables = trainingInstance.getPoolId() != null ?
                     sandboxApiService.getVariablesByPoolId(trainingInstance.getPoolId()).getVariables() :
                     sandboxApiService.getVariablesBySandboxDefinitionId(trainingInstance.getSandboxDefinitionId());
-            if(!sandboxDefinitionVariables.containsAll(trainingDefinitionVariables)) {
+            if (!sandboxDefinitionVariables.containsAll(trainingDefinitionVariables)) {
                 trainingDefinitionVariables.removeAll(sandboxDefinitionVariables);
                 throw new EntityConflictException(new EntityErrorDetail("Variable names [" + StringUtils.collectionToCommaDelimitedString(trainingDefinitionVariables) +
                         "] defined in the training definition (ID: " + trainingInstance.getTrainingDefinition().getId() + ") aren't present in the sandbox definition."));
@@ -210,7 +213,7 @@ public class TrainingInstanceFacade {
     }
 
     private void handlePoolIdModification(Long currentPoolId, Long newPoolId, String accessToken) {
-        if(currentPoolId == null) {
+        if (currentPoolId == null) {
             sandboxApiService.lockPool(newPoolId, accessToken);
         } else if (newPoolId == null) {
             sandboxApiService.unlockPool(currentPoolId);
@@ -240,8 +243,11 @@ public class TrainingInstanceFacade {
         trainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
         validateVariableNames(trainingInstance);
         trainingInstance.setId(null);
+        trainingInstance.setTrainingInstanceLobby(new TrainingInstanceLobby());
+        trainingInstance.setTrainingInstanceLobby(new TrainingInstanceLobby());
+        trainingInstance.setMaxTeamSize(trainingInstanceCreateDTO.getMaxTeamSize());
         TrainingInstance createdTrainingInstance = trainingInstanceService.create(trainingInstance);
-        if(trainingInstance.getPoolId() != null) {
+        if (trainingInstance.getPoolId() != null) {
             handlePoolIdModification(null, trainingInstance.getPoolId(), trainingInstance.getAccessToken());
         }
         return trainingInstanceMapper.mapToDTO(createdTrainingInstance);
@@ -251,8 +257,8 @@ public class TrainingInstanceFacade {
         if (userRefIdsOfOrganizers.isEmpty()) return;
         List<UserRefDTO> organizers = getAllUsersRefsByGivenUsersIds(new ArrayList<>(userRefIdsOfOrganizers));
         Set<Long> actualOrganizersIds = trainingInstance.getOrganizers().stream()
-                                                .map(UserRef::getUserRefId)
-                                                .collect(Collectors.toSet());
+                .map(UserRef::getUserRefId)
+                .collect(Collectors.toSet());
         for (UserRefDTO organizer : organizers) {
             if (actualOrganizersIds.contains(organizer.getUserRefId())) {
                 continue;
@@ -305,22 +311,25 @@ public class TrainingInstanceFacade {
         if (trainingInstance.isLocalEnvironment()) {
             deleteBashCommandsByAccessToken(trainingInstance.getAccessToken());
         }
+        trainingInstanceLobbyService.cleanupLobby(trainingInstance.getTrainingInstanceLobby());
         trainingInstanceService.delete(trainingInstance);
         cheatingDetectionService.deleteAllCheatingDetectionsOfTrainingInstance(trainingInstanceId);
         trainingFeedbackApiService.deleteAllGraphsByTrainingInstance(trainingInstanceId);
         elasticsearchApiService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
     }
 
-    private void deleteBashCommandsByPool(Long poolId){
+    private void deleteBashCommandsByPool(Long poolId) {
         try {
             elasticsearchApiService.deleteCommandsByPool(poolId);
-        } catch (MicroserviceApiException ignored){ }
+        } catch (MicroserviceApiException ignored) {
+        }
     }
 
-    private void deleteBashCommandsByAccessToken(String accessToken){
+    private void deleteBashCommandsByAccessToken(String accessToken) {
         try {
             elasticsearchApiService.deleteCommandsByAccessToken(accessToken);
-        } catch (MicroserviceApiException ignored){ }
+        } catch (MicroserviceApiException ignored) {
+        }
     }
 
     /**

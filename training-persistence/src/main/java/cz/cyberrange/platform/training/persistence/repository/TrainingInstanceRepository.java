@@ -84,8 +84,8 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param accessToken the access token
      * @return {@link TrainingInstance} with start time in the past, end time in the future and by corresponding access token
      */
-    Optional<TrainingInstance> findByStartTimeAfterAndEndTimeBeforeAndAccessToken(@Param("datetime") LocalDateTime datetime,
-                                                                                  @Param("accessToken") String accessToken);
+    Optional<TrainingInstance> findByEndTimeBeforeAndAccessToken(@Param("datetime") LocalDateTime datetime,
+                                                                 @Param("accessToken") String accessToken);
 
     /**
      * Check if any training instances are associated with training definition

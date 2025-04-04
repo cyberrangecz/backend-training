@@ -28,6 +28,7 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapp
 import cz.cyberrange.platform.training.service.mapping.mapstruct.UserRefMapperImpl;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
+import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
@@ -94,6 +95,8 @@ public class TrainingInstanceFacadeTest {
     private SandboxApiService sandboxApiService;
     @MockBean
     private TrainingFeedbackApiService trainingFeedbackApiService;
+    @MockBean
+    private TrainingInstanceLobbyService trainingInstanceLobbyService;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingInstanceCreateDTO trainingInstanceCreate;
@@ -106,12 +109,13 @@ public class TrainingInstanceFacadeTest {
     private LockedPoolInfo lockedPoolInfo;
     private TrainingInstanceAssignPoolIdDTO trainingInstanceAssignPoolIdDTO;
 
+
     @BeforeEach
     public void init() {
         MockitoAnnotations.openMocks(this);
         trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService,
                 cheatingDetectionService, userService, elasticsearchApiService, securityService, sandboxApiService, trainingInstanceMapper,
-                trainingRunMapper, trainingFeedbackApiService);
+                trainingRunMapper, trainingFeedbackApiService, trainingInstanceLobbyService);
 
         pageable = PageRequest.of(0, 5);
 
@@ -220,7 +224,7 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void deleteTrainingInstanceWithUnfinishedInstanceAndRuns(){
+    public void deleteTrainingInstanceWithUnfinishedInstanceAndRuns() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(false);
         given(trainingRunService.existsAnyForTrainingInstance(anyLong())).willReturn(true);
@@ -228,7 +232,7 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void deleteTrainingInstanceWithLockedPool(){
+    public void deleteTrainingInstanceWithLockedPool() {
         trainingInstance1.setPoolId(1L);
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         assertThrows(EntityConflictException.class, () -> trainingInstanceFacade.delete(1L, false));
@@ -251,7 +255,7 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void unassignPool(){
+    public void unassignPool() {
         given(trainingInstanceService.findById(anyLong())).willReturn(trainingInstance1);
         trainingInstanceFacade.unassignPoolInTrainingInstance(trainingInstance1.getId());
         then(sandboxApiService).should().unlockPool(anyLong());
@@ -266,7 +270,7 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void checkIfInstanceCanBeDeleted_TRUE(){
+    public void checkIfInstanceCanBeDeleted_TRUE() {
         given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(true);
         TrainingInstanceIsFinishedInfoDTO info = trainingInstanceFacade.checkIfInstanceCanBeDeleted(1L);
         assertTrue(info.isHasFinished());
@@ -274,7 +278,7 @@ public class TrainingInstanceFacadeTest {
     }
 
     @Test
-    public void checkIfInstanceCanBeDeleted_FALSE(){
+    public void checkIfInstanceCanBeDeleted_FALSE() {
         given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(false);
         TrainingInstanceIsFinishedInfoDTO info = trainingInstanceFacade.checkIfInstanceCanBeDeleted(1L);
         assertFalse(info.isHasFinished());

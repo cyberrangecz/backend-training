@@ -45,6 +45,31 @@ public class UserRef extends AbstractEntity<Long> {
     private Set<TrainingDefinition> trainingDefinitions = new HashSet<>();
     @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
     private Set<BetaTestingGroup> betaTesters = new HashSet<>();
+    @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
+    private Set<Team> teams = new HashSet<>();
+    @ManyToMany(mappedBy = "trainingInstanceLobby.usersQueue", fetch = FetchType.LAZY)
+    private Set<TrainingInstance> joinedQueues = new HashSet<>();
+
+    public Set<Team> getTeams() {
+        return Collections.unmodifiableSet(teams);
+    }
+
+    public void addToTeam(Team team) {
+        teams.add(team);
+    }
+
+    public void removeFromTeam(Team team) {
+        teams.remove(team);
+    }
+
+    public void removeQueue(TrainingInstance trainingInstanceLobby) {
+        joinedQueues.remove(trainingInstanceLobby);
+    }
+
+    public void addQueue(TrainingInstance trainingInstanceLobby) {
+        joinedQueues.add(trainingInstanceLobby);
+    }
+
 
     /**
      * Instantiates a new user reference

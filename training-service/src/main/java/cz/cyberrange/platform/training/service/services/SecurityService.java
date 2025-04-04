@@ -5,9 +5,11 @@ import cz.cyberrange.platform.training.api.exceptions.CustomWebClientException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
+import cz.cyberrange.platform.training.persistence.model.Team;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import cz.cyberrange.platform.training.persistence.repository.TeamRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingRunRepository;
@@ -36,6 +38,7 @@ public class SecurityService {
     private final TrainingDefinitionRepository trainingDefinitionRepository;
     private final TrainingInstanceRepository trainingInstanceRepository;
     private final WebClient userManagementWebClient;
+    private final TeamRepository teamRepository;
 
     /**
      * Instantiates a new Security service.
@@ -49,11 +52,12 @@ public class SecurityService {
     public SecurityService(TrainingInstanceRepository trainingInstanceRepository,
                            TrainingDefinitionRepository trainingDefinitionRepository,
                            TrainingRunRepository trainingRunRepository,
-                           @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient) {
+                           @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient, TeamRepository teamRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.userManagementWebClient = userManagementWebClient;
+        this.teamRepository = teamRepository;
     }
 
     /**
@@ -80,6 +84,19 @@ public class SecurityService {
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(),
                         instanceId, "The necessary permissions are required for a resource.")));
         return isOrganizerOfGivenInstance(trainingInstance);
+    }
+
+    /**
+     * Is organizer of training instance of given team
+     *
+     * @param teamId the team id
+     * @return the boolean
+     */
+    public boolean isOrganizerOfGivenTeamTrainingInstance(Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(Team.class, "id", teamId.getClass(),
+                        teamId, "The necessary permissions are required for a resource.")));
+        return isOrganizerOfGivenInstance(team.getTrainingInstance());
     }
 
     /**
@@ -112,6 +129,7 @@ public class SecurityService {
 
     /**
      * Is organizer of one of the training instances from the given training definition
+     *
      * @param definitionId the definition id
      * @return the boolean
      */

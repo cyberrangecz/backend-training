@@ -4,7 +4,7 @@
     <parent>
         <groupId>cz.cyberrange.platform</groupId>
         <artifactId>training</artifactId>
-        <version>${app-version}</version>
+        <version>10.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>training-api</artifactId>

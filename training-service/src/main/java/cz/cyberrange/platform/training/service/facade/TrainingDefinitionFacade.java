@@ -24,7 +24,6 @@ import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
-import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.*;
 import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
@@ -47,6 +46,7 @@ import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.TrainingFeedbackApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -176,26 +176,24 @@ public class TrainingDefinitionFacade {
     /**
      * Find all Training Definitions.
      *
-     * @param state    represents a string if the training definitions should be released or not.
      * @param pageable pageable parameter with information about pagination.
      * @return page of all {@link TrainingDefinitionInfoDTO} accessible for organizers
      */
     @IsOrganizerOrAdmin
     @TransactionalRO
-    public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(TDState state, Pageable pageable) {
-        Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
-        if (state == TDState.RELEASED) {
-            return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllByState(cz.cyberrange.platform.training.persistence.model.enums.TDState.RELEASED, pageable));
-        } else if (state == TDState.UNRELEASED) {
-            if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-                return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllByState(cz.cyberrange.platform.training.persistence.model.enums.TDState.UNRELEASED, pageable));
-            } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER) && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
-                return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllForDesignersAndOrganizersUnreleased(loggedInUserId, pageable));
-            } else {
-                return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(trainingDefinitionService.findAllForOrganizersUnreleased(loggedInUserId, pageable));
-            }
+    public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(Predicate predicate, Pageable pageable) {
+        java.util.function.Predicate<TrainingDefinition> filter;
+
+        if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
+            filter = (var td) -> true;
+        } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER) && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
+            filter = (var td) -> td.getState() == cz.cyberrange.platform.training.persistence.model.enums.TDState.RELEASED ||
+                    securityService.isOrganizerForGivenTrainingDefinition(td.getId());
+        } else {
+            filter = (var td) -> td.getState() == cz.cyberrange.platform.training.persistence.model.enums.TDState.RELEASED;
         }
-        throw new InternalServerErrorException("It is required to provide training definition state that is RELEASED or UNRELEASED");
+
+        return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(new PageImpl<>(trainingDefinitionService.findAll(predicate, pageable).stream().filter(filter).toList()));
     }
 
     /**

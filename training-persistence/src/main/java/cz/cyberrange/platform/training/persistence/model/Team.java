@@ -18,29 +18,49 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Getter
 @Table(name = "team")
 public class Team extends AbstractEntity<Long> {
 
     @Setter
+    @Getter
     @Column(name = "name")
     private String name;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @Getter
     @Setter
+    @ManyToOne
     private TrainingInstance trainingInstance;
+
+    @Setter
+    @Getter
+    @Column(name = "started")
+    private boolean locked;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "team_user",
             joinColumns = @JoinColumn(name = "team_id"),
             inverseJoinColumns = @JoinColumn(name = "user_ref_id")
     )
-    private Set<UserRef> userRefs = new HashSet<>();
+    private Set<UserRef> members = new HashSet<>();
+
+
+    public Set<UserRef> getMembers() {
+        return new HashSet<>(members);
+    }
+
+    public void addMember(UserRef userRef) {
+        userRef.addToTeam(this);
+        members.add(userRef);
+    }
+
+    public void removeMember(UserRef userRef) {
+        userRef.removeFromTeam(this);
+        members.remove(userRef);
+    }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                Objects.hashCode(trainingInstance),
-                Arrays.deepHashCode(userRefs.toArray()));
+                Arrays.deepHashCode(members.toArray()));
     }
 }

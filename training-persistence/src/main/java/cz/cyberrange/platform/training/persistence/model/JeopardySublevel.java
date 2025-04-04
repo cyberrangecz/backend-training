@@ -5,15 +5,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
 import java.util.Objects;
 
 @Getter
 @Entity
-@DiscriminatorValue("JEOPARDY")
+@Table(name = "jeopardy_sublevel")
+@PrimaryKeyJoinColumn(name = "id")
 public class JeopardySublevel extends TrainingLevel {
 
     @Column
