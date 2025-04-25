@@ -162,6 +162,9 @@ public class TrainingInstanceService {
         //add original organizers to update
         trainingInstanceToUpdate.setOrganizers(new HashSet<>(trainingInstance.getOrganizers()));
         addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
+        trainingInstanceToUpdate.setTrainingInstanceLobby(trainingInstance.getTrainingInstanceLobby());
+        trainingInstanceToUpdate.setMaxTeamSize(trainingInstance.getMaxTeamSize());
+        trainingInstanceToUpdate.setType(trainingInstance.getType());
         //check if TI is running, true - only title can be changed, false - any field can be changed
         if (trainingInstance.notStarted()) {
             //check if access token has changed and new should be generated, if not original is kept
@@ -313,7 +316,7 @@ public class TrainingInstanceService {
      * @return Training instance
      */
     public TrainingInstance findByEndTimeBeforeAndAccessToken(String accessToken) {
-        return trainingInstanceRepository.findByEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
+        return trainingInstanceRepository.findByEndTimeAfterAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active training session matching access token.")));
     }

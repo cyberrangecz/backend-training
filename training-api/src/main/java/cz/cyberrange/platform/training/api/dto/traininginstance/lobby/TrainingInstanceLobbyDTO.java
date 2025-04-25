@@ -18,9 +18,6 @@ import java.util.List;
 @ApiModel(value = "TrainingInstanceLobbyDTO", description = "Object managing players waiting for team and players in teams.")
 public class TrainingInstanceLobbyDTO {
 
-    @ApiModelProperty(value = "Related Training Instance", example = "2")
-    private Long instanceId;
-
     @ApiModelProperty(value = "List of players waiting in queue.")
     private List<UserRefDTO> usersQueue;
 

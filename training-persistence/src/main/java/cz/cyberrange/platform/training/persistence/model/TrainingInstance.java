@@ -82,6 +82,7 @@ import java.util.Set;
         )
 })
 public class TrainingInstance extends AbstractEntity<Long> {
+    public static final int TEAM_SIZE_LIMIT = 12;
 
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
@@ -118,8 +119,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
     @Column(name = "max_team_size")
     private int maxTeamSize;
 
+
     @Embedded
-    @Getter
     @Setter
     private TrainingInstanceLobby trainingInstanceLobby;
 
@@ -129,10 +130,10 @@ public class TrainingInstance extends AbstractEntity<Long> {
     @Enumerated(EnumType.STRING)
     private TrainingType type = TrainingType.LINEAR;
 
-    @Getter
-    @Setter
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Team> teams = new HashSet<>();
+    public TrainingInstanceLobby getTrainingInstanceLobby() {
+        this.trainingInstanceLobby.setTrainingInstance(this);
+        return this.trainingInstanceLobby;
+    }
 
     /**
      * Gets unique identification number of Training instance

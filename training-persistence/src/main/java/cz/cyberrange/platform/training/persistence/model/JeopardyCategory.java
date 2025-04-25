@@ -47,7 +47,7 @@ public class JeopardyCategory extends AbstractEntity<Long> {
     }
 
     public List<JeopardySublevel> getSublevels() {
-        return new ArrayList<>(sublevels);
+        return sublevels;
     }
 
 

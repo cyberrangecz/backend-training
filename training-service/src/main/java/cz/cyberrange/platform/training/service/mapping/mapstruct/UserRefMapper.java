@@ -18,7 +18,6 @@ import java.util.Set;
 /**
  * The UserRefMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type UserRefMapper and
  * DTOs classes. Code is generated during compile time.
- *
  */
 @Mapper(componentModel = "spring", uses = {TrainingInstanceMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserRefMapper extends ParentMapper {

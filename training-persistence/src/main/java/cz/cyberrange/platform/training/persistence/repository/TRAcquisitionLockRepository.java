@@ -8,6 +8,9 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.Optional;
+
 /**
  * The JPA repository interface to manage {@link TRAcquisitionLock} instances.
  */
@@ -24,4 +27,6 @@ public interface TRAcquisitionLockRepository extends JpaRepository<TRAcquisition
     @Modifying
     void deleteByParticipantRefIdAndTrainingInstanceId(@Param("participantRefId") Long participantRefId,
                                                        @Param("trainingInstanceId") Long trainingInstanceId);
+
+    Optional<TRAcquisitionLock> findByParticipantRefIdIn(Collection<Long> participantRefIds);
 }

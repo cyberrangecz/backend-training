@@ -33,7 +33,7 @@ public class Team extends AbstractEntity<Long> {
 
     @Setter
     @Getter
-    @Column(name = "started")
+    @Column(name = "locked")
     private boolean locked;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -45,7 +45,7 @@ public class Team extends AbstractEntity<Long> {
 
 
     public Set<UserRef> getMembers() {
-        return new HashSet<>(members);
+        return members;
     }
 
     public void addMember(UserRef userRef) {

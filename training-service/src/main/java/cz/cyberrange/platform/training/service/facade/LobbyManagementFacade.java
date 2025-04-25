@@ -4,150 +4,244 @@ import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.TrainingIn
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.UserTeamDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamDTO;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
-import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
-import cz.cyberrange.platform.training.api.exceptions.ResourceNotFoundException;
+import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
+import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
 import cz.cyberrange.platform.training.persistence.model.Team;
+import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstanceLobby;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceLobbyMapper;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
+import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
 import cz.cyberrange.platform.training.service.services.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+
 
 @Service
-@Transactional
 public class LobbyManagementFacade {
 
-    private final SecurityService securityService;
     private final TrainingInstanceLobbyService teamsManagementService;
     private final TeamMapper teamMapper;
     private final TrainingInstanceLobbyMapper trainingInstanceLobbyMapper;
     private final UserService userService;
 
+    private static final Logger LOG = LoggerFactory.getLogger(LobbyManagementFacade.class);
+    private final TrainingInstanceService trainingInstanceService;
+    private final SecurityService securityService;
+
     @Autowired
     public LobbyManagementFacade(
-            SecurityService securityService,
             TrainingInstanceLobbyService trainingInstanceLobbyService,
             UserService userService,
             TeamMapper teamMapper,
-            TrainingInstanceLobbyMapper trainingInstanceLobbyMapper
-    ) {
+            TrainingInstanceLobbyMapper trainingInstanceLobbyMapper,
+            TrainingInstanceService trainingInstanceService, SecurityService securityService) {
         this.teamsManagementService = trainingInstanceLobbyService;
-        this.securityService = securityService;
         this.userService = userService;
         this.teamMapper = teamMapper;
         this.trainingInstanceLobbyMapper = trainingInstanceLobbyMapper;
+        this.trainingInstanceService = trainingInstanceService;
+        this.securityService = securityService;
     }
 
-    @PreAuthorize("@securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @TransactionalRO
     public TrainingInstanceLobbyDTO getTrainingInstanceLobby(Long instanceId) {
-        return trainingInstanceLobbyMapper.mapToDTO(
-                teamsManagementService.getTrainingInstanceLobby(instanceId).orElseThrow(
-                        () -> new ResourceNotFoundException("Lobby with of instance " + instanceId + " not found")
-                ));
+        LOG.error("Getting Lobby Instance Lobby DTO for id: {}", instanceId);
+        TrainingInstanceLobbyDTO dto = trainingInstanceLobbyMapper.mapToDTO(
+                teamsManagementService.getInstanceLobbyOrThrow(instanceId)
+        );
+        addParticipantsToLobbyInstance(dto);
+        return dto;
     }
 
-    @PreAuthorize("@securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
-    public void unassignFromTeams(Long instanceId, Set<UserTeamDTO> relations) {
+    private void addParticipantsToLobbyInstance(TrainingInstanceLobbyDTO instanceLobbyDTO) {
+        instanceLobbyDTO.setUsersQueue(
+                instanceLobbyDTO.getUsersQueue().stream().map(userRef ->
+                        userService.getUserRefDTOByUserRefId(userRef.getUserRefId())
+                ).toList()
+        );
+        instanceLobbyDTO.getTeams().forEach(teamDTO ->
+                teamDTO.setMembers(
+                        teamDTO.getMembers().stream().map(member ->
+                                userService.getUserRefDTOByUserRefId(member.getUserRefId())
+                        ).toList()
+                )
+        );
+    }
+
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @Transactional
+    public void returnToQueue(Long instanceId, Set<UserTeamDTO> relations) {
         TrainingInstanceLobby lobby = teamsManagementService.getInstanceLobbyOrThrow(instanceId);
+        relations.stream().map(
+                relation -> userService.getUserByUserRefId(relation.getUserId())
+        ).forEach(lobby::addWaitingUser);
+
         relations.forEach(
                 relation -> {
-                    Optional<Team> team = lobby.getTeams().stream().filter(searchedTeam -> searchedTeam.getId().equals(relation.getTeamId())).findFirst();
-                    if (team.isEmpty()) {
-                        return; // Team not existing implies player not assigned
-                    }
-                    UserRef userRef = userService.createOrGetUserRef(relation.getUserId());
-                    team.get().removeMember(userRef);
-                    lobby.addWaitingUser(userRef);
+                    Team team = teamsManagementService.getTeamOrThrow(relation.getTeamId());
+                    UserRef user = userService.getUserByUserRefId(relation.getUserId());
+                    team.removeMember(user);
+                    teamsManagementService.updateTeam(team);
                 }
         );
         teamsManagementService.updateTrainingInstanceLobby(lobby);
     }
 
-    @PreAuthorize("@securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @Transactional
     public TeamDTO createTeam(Long instanceId, String name) {
         TrainingInstanceLobby lobby = teamsManagementService.getInstanceLobbyOrThrow(instanceId);
-        Team team = teamsManagementService.createTeam(name);
+        Team team = teamsManagementService.createTeam(instanceId, name);
         lobby.addTeam(team);
         teamsManagementService.updateTrainingInstanceLobby(lobby);
         return teamMapper.mapToDTO(team);
     }
 
-    @PreAuthorize("@securityService.isOrganizerOfGivenTeamTrainingInstance(#teamId)")
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTeamTrainingInstance(#teamId)")
     public void disbandTeam(Long teamId) {
         Team team = teamsManagementService.getTeamOrThrow(teamId);
-        unassignFromTeams(teamId,
-                team.getMembers().stream().map(userRef ->
-                        new UserTeamDTO(userRef.getId(), teamId)
-                ).collect(Collectors.toSet()));
-        team.getTrainingInstance().getTrainingInstanceLobby().removeTeam(team);
+        if (team.isLocked()) {
+            throw new BadRequestException("Cannot delete a locked team");
+        }
+
+        TrainingInstanceLobby lobby = teamsManagementService.getInstanceLobbyOrThrow(team.getTrainingInstance().getId());
+        team.getMembers().forEach(lobby::addWaitingUser);
+        new HashSet<>(team.getMembers()).forEach(team::removeMember);
+        lobby.removeTeam(team);
         teamsManagementService.deleteTeam(teamId);
-        teamsManagementService.updateTrainingInstanceLobby(team.getTrainingInstance().getTrainingInstanceLobby());
+        teamsManagementService.updateTrainingInstanceLobby(lobby);
     }
 
-    @PreAuthorize(
-            "@securityService.isOrganizerOfGivenTeamTrainingInstance(#teamFrom) or" +
-                    "@securityService.isOrganizerOfGivenTeamTrainingInstance(#teamTo)"
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) or" +
+            "(@securityService.isOrganizerOfGivenTeamTrainingInstance(#teamFrom) and" +
+            "@securityService.isOrganizerOfGivenTeamTrainingInstance(#teamTo))"
     )
+    @Transactional
     public void moveUserBetweenTeams(Long teamFrom, Long teamTo, Set<Long> playerIds) {
         Team fromTeamEntity = teamsManagementService.getTeamOrThrow(teamFrom);
         Team toTeamEntity = teamsManagementService.getTeamOrThrow(teamTo);
-        if (!fromTeamEntity.getTrainingInstance().getId().equals(
-                toTeamEntity.getTrainingInstance().getId())) {
-            throw new EntityConflictException(new EntityErrorDetail(
-                    "Teams must be from the same Training Instance"
-            ));
-        }
-        playerIds.stream().map(userService::getUserByUserRefId)
-                .forEach(user -> {
-                    fromTeamEntity.removeMember(user);
-                    toTeamEntity.addMember(user);
-                });
+
+        playerIds.stream()
+                .map(userService::getUserByUserRefId)
+                .forEach(user ->
+                        this.teamsManagementService.moveUserBetweenTeams(fromTeamEntity, toTeamEntity, user)
+                );
         this.teamsManagementService.updateTeam(fromTeamEntity);
-        this.teamsManagementService.updateTeam(fromTeamEntity);
+        this.teamsManagementService.updateTeam(toTeamEntity);
     }
 
-    @PreAuthorize("@securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) or" +
+            "@securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
+    @Transactional
     public void assignToTeams(Long instanceId, Set<UserTeamDTO> relations) {
         TrainingInstanceLobby lobby = teamsManagementService.getInstanceLobbyOrThrow(instanceId);
         relations.forEach(
                 relation -> {
-                    Optional<Team> team = lobby.getTeams().stream().filter(searchedTeam -> searchedTeam.getId().equals(relation.getTeamId())).findFirst();
-                    if (team.isEmpty()) {
-                        throw new ResourceNotFoundException("Team with id " + relation.getTeamId() + " not found");
-                    }
-                    UserRef userRef = userService.createOrGetUserRef(relation.getUserId());
-                    team.get().addMember(userRef);
-                    lobby.removeWaitingUser(userRef);
+                    Team team = teamsManagementService.findTeam(instanceId, relation.getTeamId());
+                    UserRef userRef = userService.getUserByUserRefId(relation.getUserId());
+                    teamsManagementService.addUserToTeam(lobby.getTrainingInstance(), userRef, team);
                 }
         );
+
         teamsManagementService.updateTrainingInstanceLobby(lobby);
     }
 
-    @PreAuthorize("@securityService.isOrganizerOfGivenTeamTrainingInstance(#teamId)")
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTeamTrainingInstance(#teamId)")
+    @Transactional
     public void lockTeam(Long teamId) {
         Team team = teamsManagementService.getTeamOrThrow(teamId);
         if (team.getMembers().isEmpty()) {
             throw new BadRequestException("Empty team cannot be locked");
         }
         team.setLocked(true);
-        teamsManagementService.updateTeam(team);
+        teamsManagementService.lockTeam(team);
     }
 
-    @PreAuthorize("@securityService.isOrganizerOfGivenTeamTrainingInstance(#teamId)")
-    public void renameTeam(Long teamId, String name) {
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTeamTrainingInstance(#teamId)")
+    @Transactional
+    public String renameTeam(Long teamId, String name) {
         Team team = teamsManagementService.getTeamOrThrow(teamId);
-        team.setName(name);
-        teamsManagementService.updateTeam(team);
+        return teamsManagementService.renameTeam(team, name).getName();
     }
+
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE) or " +
+            "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) or " +
+            "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER)")
+    @TransactionalRO
+    public Integer getTrainingInstanceLobbyWaitingCount(String token, Boolean unassignedOnly) {
+        TrainingInstance instance = trainingInstanceService.findByEndTimeBeforeAndAccessToken(token);
+        return instance.getTrainingInstanceLobby().getUsersQueue().size() +
+                (unassignedOnly ? 0 :
+                        instance.getTrainingInstanceLobby()
+                                .getTeams().stream().filter(team -> !team.isLocked())
+                                .mapToInt(team -> team.getMembers().size()).sum());
+    }
+
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE) or " +
+            "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) or " +
+            "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER)")
+    @TransactionalRO
+    public String getTrainingInstanceStartDate(String accessToken) {
+        return this.trainingInstanceService.findByEndTimeBeforeAndAccessToken(accessToken)
+                .getStartTime().toInstant(ZoneOffset.UTC).toString();
+    }
+
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE) or " +
+            "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) or " +
+            "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER)")
+    @TransactionalRO
+    public TeamDTO getTeamInfo(Long instanceId, Boolean includeImages) {
+        UserRef user = this.userService.getUserByUserRefId(this.securityService.getUserRefIdFromUserAndGroup());
+
+        Optional<Team> teamAssigned = user.getTeams().stream()
+                .filter(team -> team.getMembers().contains(user))
+                .filter(team -> team.getTrainingInstance().getId().equals(instanceId))
+                .findFirst();
+
+        boolean isInQueue = user.getJoinedQueues().stream()
+                .anyMatch(instance -> instance.getId().equals(instanceId));
+
+        if (isInQueue || (teamAssigned.isPresent() && (!teamAssigned.get().isLocked()))) {
+            throw new ResourceNotReadyException(new EntityErrorDetail("Not yet assigned to a team"));
+        }
+        if (teamAssigned.isEmpty()) {
+            throw new EntityNotFoundException(new EntityErrorDetail("This instance has not been accessed"));
+        }
+
+        TeamDTO teamDTO = teamMapper.mapToDTO(teamAssigned.get());
+        teamDTO.setMembers(
+                teamDTO.getMembers().stream().map(member ->
+                        userService.getUserRefDTOWithLimitedInformation(member.getUserRefId())
+                ).peek(filledUser -> {
+                            if (!includeImages) {
+                                filledUser.setPicture(null);
+                            }
+                        }
+                ).toList()
+        );
+        return teamDTO;
+    }
+
 }

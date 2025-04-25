@@ -58,22 +58,22 @@ import java.util.stream.Collectors;
 @Service
 public class TrainingRunService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
-    private static final String X_REAL_IP_HEADER = "x-real-ip";
+    protected static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
+    protected static final String X_REAL_IP_HEADER = "x-real-ip";
 
-    private final TrainingRunRepository trainingRunRepository;
-    private final AbstractLevelRepository abstractLevelRepository;
-    private final TrainingInstanceRepository trainingInstanceRepository;
-    private final UserRefRepository participantRefRepository;
-    private final HintRepository hintRepository;
-    private final AuditEventsService auditEventsService;
-    private final ElasticsearchApiService elasticsearchApiService;
-    private final AnswersStorageApiService answersStorageApiService;
-    private final SecurityService securityService;
-    private final TRAcquisitionLockRepository trAcquisitionLockRepository;
-    private final QuestionAnswerRepository questionAnswerRepository;
-    private final SandboxApiService sandboxApiService;
-    private final SubmissionRepository submissionRepository;
+    protected final TrainingRunRepository trainingRunRepository;
+    protected final AbstractLevelRepository abstractLevelRepository;
+    protected final TrainingInstanceRepository trainingInstanceRepository;
+    protected final UserRefRepository participantRefRepository;
+    protected final HintRepository hintRepository;
+    protected final AuditEventsService auditEventsService;
+    protected final ElasticsearchApiService elasticsearchApiService;
+    protected final AnswersStorageApiService answersStorageApiService;
+    protected final SecurityService securityService;
+    protected final TRAcquisitionLockRepository trAcquisitionLockRepository;
+    protected final QuestionAnswerRepository questionAnswerRepository;
+    protected final SandboxApiService sandboxApiService;
+    protected final SubmissionRepository submissionRepository;
 
     /**
      * Instantiates a new Training run service.
@@ -343,7 +343,7 @@ public class TrainingRunService {
      * @return the training instance for particular access token
      */
     public TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
-        TrainingInstance trainingInstance = trainingInstanceRepository.findByEndTimeBeforeAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
+        TrainingInstance trainingInstance = trainingInstanceRepository.findByEndTimeAfterAndAccessToken(LocalDateTime.now(Clock.systemUTC()), accessToken)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "accessToken", accessToken.getClass(), accessToken,
                         "There is no active training session matching access token.")));
         if (!trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() == null) {
@@ -622,9 +622,11 @@ public class TrainingRunService {
                     .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(Hint.class, "id", hintId.getClass(), hintId,
                             "Hint not found.")));
             if (hint.getTrainingLevel().getId().equals(level.getId())) {
-                trainingRun.increaseCurrentPenalty(hint.getHintPenalty());
-                trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
-                auditEventsService.auditHintTakenAction(trainingRun, hint);
+                if (!trainingRun.isHintTaken(hint.getId())) {
+                    trainingRun.increaseCurrentPenalty(hint.getHintPenalty());
+                    trainingRun.addHintInfo(new HintInfo(level.getId(), hint.getId(), hint.getTitle(), hint.getContent(), hint.getOrder()));
+                    auditEventsService.auditHintTakenAction(trainingRun, hint);
+                }
                 return hint;
             }
             throw new EntityConflictException(new EntityErrorDetail(Hint.class, "id", hintId.getClass(), hintId,
@@ -836,4 +838,16 @@ public class TrainingRunService {
     }
 
 
+    public Team getTeam(Long trainingRunId) {
+        TrainingRun run = findById(trainingRunId);
+        return run.getParticipantRef().getTeams().stream().filter(
+                        team -> team.getTrainingInstance().getId().equals(run.getTrainingInstance().getId()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException(
+                        new EntityErrorDetail(
+                                Team.class, "id",
+                                run.getParticipantRef().getUserRefId().getClass(),
+                                run.getParticipantRef().getUserRefId(),
+                                "No team found for training run with id: " + trainingRunId)));
+    }
 }

@@ -13,16 +13,22 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.QueryParam;
 import java.util.Set;
 
 @Api(value = "/instance-lobby",
@@ -34,14 +40,89 @@ import java.util.Set;
         @ApiResponse(code = 403, message = "The necessary permissions are required for a resource.", response = ApiError.class)
 })
 @RestController
-@RequestMapping(value = "/teams-management", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/instance-lobby", produces = MediaType.APPLICATION_JSON_VALUE)
+@Validated
 public class TrainingInstanceLobbyRestController {
 
     LobbyManagementFacade teamsManagementFacade;
+    private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceLobbyRestController.class);
 
     @Autowired
     public TrainingInstanceLobbyRestController(LobbyManagementFacade teamsManagementFacade) {
         this.teamsManagementFacade = teamsManagementFacade;
+    }
+
+    @ApiOperation(httpMethod = "GET",
+            value = "Get number of users waiting in lobby",
+            notes = "This can only be done by trainee or organizer of an instance",
+            response = Integer.class,
+            nickname = "getLobbyWaitingCount",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Count returned.", response = Integer.class),
+            @ApiResponse(code = 404, message = "Instance lobby not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{accessToken}/count", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Integer> getUsersWaiting(
+            @ApiParam(value = "Training instance access token", required = true)
+            @PathVariable("accessToken")
+            String accessToken,
+            @ApiParam(value = "Count only unassigned users", defaultValue = "false")
+            @RequestParam(value = "unassignedOnly", required = false, defaultValue = "false")
+            Boolean unassignedOnly
+    ) {
+        return ResponseEntity.ok(
+                teamsManagementFacade.getTrainingInstanceLobbyWaitingCount(accessToken, unassignedOnly)
+        );
+    }
+
+    @ApiOperation(httpMethod = "GET",
+            value = "Get datetime of run start",
+            notes = "This can only be done by trainee or organizer of an instance",
+            response = String.class,
+            nickname = "getStartDate",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Time returned.", response = String.class),
+            @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{accessToken}/start-date", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> getStartDate(
+            @ApiParam(value = "Training instance access token", required = true)
+            @PathVariable("accessToken")
+            String accessToken
+    ) {
+        return ResponseEntity.ok(
+                teamsManagementFacade.getTrainingInstanceStartDate(accessToken)
+        );
+    }
+
+    @ApiOperation(httpMethod = "GET",
+            value = "Get team info",
+            notes = "This can only be done by trainee or organizer of an instance",
+            response = TeamDTO.class,
+            nickname = "getTeamInfo",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Time returned.", response = Integer.class),
+            @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class),
+            @ApiResponse(code = 425, message = "Not yet assigned to team", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{accessToken}/team-info", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TeamDTO> getTeamInfo(
+            @ApiParam(value = "Training instance access token", required = true)
+            @PathVariable("accessToken")
+            String accessToken
+    ) {
+        return ResponseEntity.ok(
+                teamsManagementFacade.getTeamInfo(accessToken)
+        );
     }
 
 
@@ -61,7 +142,9 @@ public class TrainingInstanceLobbyRestController {
     public ResponseEntity<TrainingInstanceLobbyDTO> getInstanceLobby(
             @ApiParam(value = "Training instance ID", required = true)
             @PathVariable("instanceId")
-            Long instanceId) {
+            Long instanceId
+    ) {
+        LOG.error("REST - Getting Lobby Instance Lobby by ID: {}", instanceId);
         return ResponseEntity.ok(
                 teamsManagementFacade.getTrainingInstanceLobby(instanceId)
         );
@@ -80,22 +163,22 @@ public class TrainingInstanceLobbyRestController {
             @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/{instanceId}/team", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/{instanceId}/team", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TeamDTO> createTeam(
             @ApiParam(value = "Training instance ID", required = true)
             @PathVariable("instanceId")
             Long instanceId,
             @ApiParam(value = "New team name", required = true)
-            @QueryParam("name")
+            @RequestParam("name")
             String name
     ) {
         return ResponseEntity.ok(teamsManagementFacade.createTeam(instanceId, name));
     }
 
     @ApiOperation(httpMethod = "PUT",
-            value = "Lock team",
+            value = "Rename team",
             notes = "This can only be done by organizer of training instance or administrator",
-            nickname = "lockTam",
+            nickname = "renameTeam",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
@@ -104,17 +187,16 @@ public class TrainingInstanceLobbyRestController {
             @ApiResponse(code = 409, message = "Team with given name already exists.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/team/{teamId}/rename", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> renameTeam(
+    @PutMapping(path = "/team/{teamId}/rename", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> renameTeam(
             @ApiParam(value = "Team ID", required = true)
             @PathVariable("teamId")
             Long teamId,
             @ApiParam(value = "New name", required = true)
-            @QueryParam("name")
+            @RequestParam("name")
             String name
     ) {
-        teamsManagementFacade.renameTeam(teamId, name);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(teamsManagementFacade.renameTeam(teamId, name));
     }
 
     @ApiOperation(httpMethod = "PUT",
@@ -128,7 +210,7 @@ public class TrainingInstanceLobbyRestController {
             @ApiResponse(code = 404, message = "Team with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/team/{teamId}/start", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/team/{teamId}/lock", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> lockTeam(
             @ApiParam(value = "Team ID", required = true)
             @PathVariable("teamId")
@@ -149,7 +231,7 @@ public class TrainingInstanceLobbyRestController {
             @ApiResponse(code = 404, message = "Instance lobby not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/team/{teamId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = "/team/{teamId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> disbandTeam(
             @ApiParam(value = "New team name", required = true)
             @PathVariable("teamId")
@@ -170,13 +252,13 @@ public class TrainingInstanceLobbyRestController {
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/team/between-teams", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/team/between-teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> transferPlayersBetweenTeams(
             @ApiParam(value = "Team to transfer players from", required = true)
-            @QueryParam("from")
+            @RequestParam("from")
             Long idFrom,
             @ApiParam(value = "Team to transfer players to", required = true)
-            @QueryParam("to")
+            @RequestParam("to")
             Long idTo,
             @ApiParam(value = "Player ids transferred", required = true)
             @RequestBody
@@ -198,7 +280,7 @@ public class TrainingInstanceLobbyRestController {
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "{instanceId}/teams/to-teams", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "{instanceId}/team/to-teams", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> transferPlayersToTeams(
             @ApiParam(value = "Training instance ID", required = true)
             @PathVariable("instanceId")
@@ -222,7 +304,7 @@ public class TrainingInstanceLobbyRestController {
             @ApiResponse(code = 404, message = "Training run with given id not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "{instanceId}/team/to-queue", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "{instanceId}/team/to-queue", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> transferPlayersToQueue(
             @ApiParam(value = "Training instance ID", required = true)
             @PathVariable("instanceId")
@@ -231,7 +313,7 @@ public class TrainingInstanceLobbyRestController {
             @RequestBody
             Set<UserTeamDTO> removedRelations
     ) {
-        teamsManagementFacade.unassignFromTeams(instanceId, removedRelations);
+        teamsManagementFacade.returnToQueue(instanceId, removedRelations);
         return ResponseEntity.ok().build();
     }
 

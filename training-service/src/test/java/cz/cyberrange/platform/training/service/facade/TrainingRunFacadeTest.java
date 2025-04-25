@@ -10,6 +10,7 @@ import cz.cyberrange.platform.training.api.responses.VariantAnswer;
 import cz.cyberrange.platform.training.persistence.model.*;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.*;
+import cz.cyberrange.platform.training.service.services.CoopTrainingRunService;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
@@ -63,6 +64,8 @@ public class TrainingRunFacadeTest {
     @MockBean
     private TrainingRunService trainingRunService;
     @MockBean
+    private CoopTrainingRunService coopTrainingRunService;
+    @MockBean
     private TrainingDefinitionService trainingDefinitionService;
     @MockBean
     private SecurityService securityService;
@@ -90,7 +93,8 @@ public class TrainingRunFacadeTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         trainingRunFacade = new TrainingRunFacade(trainingRunService, trainingDefinitionService, answersStorageApiService,
-                securityService, userService, trainingFeedbackApiService, trainingRunMapper, levelMapper, hintMapper, trainingInstanceLobbyService);
+                securityService, userService, trainingFeedbackApiService, trainingRunMapper, levelMapper, hintMapper,
+                trainingInstanceLobbyService, coopTrainingRunService);
 
         participant = new UserRef();
         participant.setUserRefId(5L);

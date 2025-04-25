@@ -15,6 +15,7 @@ import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamRunInfoDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPreviewDTO;
 import cz.cyberrange.platform.training.api.enums.Actions;
@@ -38,6 +39,7 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.ReferenceSolutionNodeMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
+import cz.cyberrange.platform.training.service.services.CoopTrainingRunService;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
@@ -79,6 +81,7 @@ public class TrainingRunFacade {
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
     private static final int TIME_TO_PROPAGATE_EVENTS = 5;
     private final TrainingInstanceLobbyService trainingInstanceLobbyService;
+    private final CoopTrainingRunService coopTrainingRunService;
 
     @Value("${central.syslog.ip:127.0.0.1}")
     private String centralSyslogIp;
@@ -113,7 +116,7 @@ public class TrainingRunFacade {
                              TrainingFeedbackApiService trainingFeedbackApiService,
                              TrainingRunMapper trainingRunMapper,
                              LevelMapper levelMapper,
-                             HintMapper hintMapper, TrainingInstanceLobbyService trainingInstanceLobbyService) {
+                             HintMapper hintMapper, TrainingInstanceLobbyService trainingInstanceLobbyService, CoopTrainingRunService coopTrainingRunService) {
         this.trainingRunService = trainingRunService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.answersStorageApiService = answersStorageApiService;
@@ -124,6 +127,7 @@ public class TrainingRunFacade {
         this.levelMapper = levelMapper;
         this.hintMapper = hintMapper;
         this.trainingInstanceLobbyService = trainingInstanceLobbyService;
+        this.coopTrainingRunService = coopTrainingRunService;
     }
 
     /**
@@ -248,6 +252,36 @@ public class TrainingRunFacade {
         return accessTrainingRunDTO;
     }
 
+
+    /**
+     * Check whether the user should wait for the start of his run
+     *
+     * @param accessToken instance access token
+     * @return waiting state
+     */
+    @IsTraineeOrAdmin
+    @Transactional
+    public boolean isWaitingForStart(String accessToken) {
+        TrainingInstance trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
+        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+
+        if (trainingInstance.getType() == TrainingType.LINEAR) {
+            return trainingInstance.notStarted();
+        }
+
+        if (trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId).isPresent() ||
+                trainingInstanceLobbyService.isInLockedTeam(trainingInstance.getId(), participantRefId)) {
+            return false;
+        }
+
+        if (!trainingInstanceLobbyService.isWaitingForStart(trainingInstance.getId(), participantRefId, !trainingInstance.notStarted())) {
+            trainingInstanceLobbyService.addUserToQueue(trainingInstance.getTrainingInstanceLobby().getTrainingInstance().getId(), participantRefId);
+            trainingInstanceLobbyService.updateTrainingInstanceLobby(trainingInstance.getTrainingInstanceLobby());
+        }
+        return true;
+
+    }
+
     /**
      * Access Training Run by logged in user based on given accessToken.
      *
@@ -258,35 +292,33 @@ public class TrainingRunFacade {
     @Transactional
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         TrainingInstance trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
+        TrainingRunService trainingRunServiceByType = trainingInstance.getType() == TrainingType.LINEAR ?
+                trainingRunService : coopTrainingRunService;
         // checking if the user is not accessing to his existing training run (resume action)
         Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
-        UserRef userRef = userService.createOrGetUserRef(participantRefId);
 
         if (trainingInstance.notStarted()) {
-            if (trainingInstance.getType() == TrainingType.COOP && !trainingInstanceLobbyService.isWaiting(participantRefId)) {
-                trainingInstanceLobbyService.addUserToQueue(trainingInstance.getTrainingInstanceLobby().getTrainingInstance().getId(), participantRefId);
-            }
             throw new ResourceNotReadyException(new EntityErrorDetail("The training instance has not started yet."));
         }
 
-        Optional<TrainingRun> accessedTrainingRun = trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
+        Optional<TrainingRun> accessedTrainingRun = trainingRunServiceByType.findRunningTrainingRunOfUser(accessToken, participantRefId);
         if (accessedTrainingRun.isPresent()) {
-            TrainingRun trainingRun = trainingRunService.resumeTrainingRun(accessedTrainingRun.get().getId());
+            TrainingRun trainingRun = trainingRunServiceByType.resumeTrainingRun(accessedTrainingRun.get().getId());
             return convertToAccessTrainingRunDTO(trainingRun);
         }
         // Check if the user already clicked access training run, in that case, it returns an exception (it prevents concurrent accesses).
-        trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
+        trainingRunServiceByType.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
         try {
             // During this action we create a new TrainingRun and lock and get sandbox from OpenStack Sandbox API
-            TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance, participantRefId);
+            TrainingRun trainingRun = trainingRunServiceByType.createTrainingRun(trainingInstance, participantRefId);
             if (!trainingInstance.isLocalEnvironment()) {
-                trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
+                trainingRunServiceByType.assignSandbox(trainingRun, trainingInstance.getPoolId());
             }
-            trainingRunService.auditTrainingRunStarted(trainingRun);
+            trainingRunServiceByType.auditTrainingRunStarted(trainingRun);
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (Exception e) {
             // delete/rollback acquisition lock when no training run either sandbox is assigned
-            trainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId());
+            trainingRunServiceByType.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId());
             throw e;
         }
     }
@@ -755,4 +787,8 @@ public class TrainingRunFacade {
         }
     }
 
+    public TeamRunInfoDTO getCoopRunInfo(Long instanceId, Boolean includeImages) {
+        TeamRunInfoDTO teamRunInfoDTO = new TeamRunInfoDTO();
+        teamRunInfoDTO.setScoreboard(this);
+    }
 }

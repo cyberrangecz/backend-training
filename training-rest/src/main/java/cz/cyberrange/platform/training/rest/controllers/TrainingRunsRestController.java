@@ -16,7 +16,10 @@ import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamRunInfoDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.ValidateAnswerDTO;
+import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
+import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.rest.utils.annotations.ApiPageableSwagger;
@@ -197,12 +200,16 @@ public class TrainingRunsRestController {
             @ApiResponse(code = 200, message = "The training run has been accessed.", response = AccessTrainingRunDTO.class),
             @ApiResponse(code = 404, message = "There is no training instance with given accessToken or first level not found in database.", response = ApiError.class),
             @ApiResponse(code = 409, message = "No assigned pool to the training instance.", response = ApiError.class),
-            @ApiResponse(code = 425, message = "The training run has not started yet.", response = ApiError.class),
+            @ApiResponse(code = 425, message = "The training run has not started yet.", response = ResponseEntity.class),
             @ApiResponse(code = 500, message = "Some error occurred during getting info about sandboxes.", response = ApiError.class),
     })
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(@ApiParam(value = "accessToken", required = true)
                                                                   @RequestParam(value = "accessToken", required = true) String accessToken) {
+        if (trainingRunFacade.isWaitingForStart(accessToken)) {
+            throw new ResourceNotReadyException(new EntityErrorDetail("The training run has not started yet."));
+        }
+
         AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(accessToken);
         return ResponseEntity.ok(accessTrainingRunDTO);
     }
@@ -238,6 +245,32 @@ public class TrainingRunsRestController {
         PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS = trainingRunFacade.findAllAccessedTrainingRuns(predicate, pageable, sortByTitle);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
+    }
+
+    @ApiOperation(httpMethod = "GET",
+            value = "Get assigned team info",
+            notes = "This can only be done by trainee or organizer of an instance",
+            response = TeamRunInfoDTO.class,
+            nickname = "getTeamInfo",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Coop run info returned.", response = Integer.class),
+            @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{instanceId}/coop-run-info", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TeamRunInfoDTO> getCoopRunInfo(
+            @ApiParam(value = "Training instance id", required = true)
+            @PathVariable("instanceId")
+            Long instanceId,
+            @ApiParam(value = "Include images", defaultValue = "true")
+            @RequestParam(value = "includeImages", required = false, defaultValue = "true")
+            Boolean includeImages
+    ) {
+        return ResponseEntity.ok(
+                trainingRunFacade.getCoopRunInfo(instanceId, includeImages)
+        );
     }
 
     /**

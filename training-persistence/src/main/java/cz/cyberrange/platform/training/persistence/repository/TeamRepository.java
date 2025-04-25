@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -20,7 +21,8 @@ public interface TeamRepository extends JpaRepository<Team, Long>, QuerydslPredi
 
     Set<Team> getTeamsByMembersContains(UserRef member);
 
-    Set<Team> getTeamsByTrainingInstance_Id(Long id);
+
+    Optional<Team> findByIdAndTrainingInstance_Id(Long id, Long trainingInstanceId);
 
     boolean existsByNameAndTrainingInstance_Id(String name, Long trainingInstanceId);
 }

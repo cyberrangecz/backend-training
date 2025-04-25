@@ -6,6 +6,7 @@ import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.ForbiddenException;
 import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
+import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
 import cz.cyberrange.platform.training.api.exceptions.TooManyRequestsException;
 import cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException;
 import org.slf4j.Logger;
@@ -252,6 +253,26 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 
+
+    /**
+     * Handle entity not ready exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @param req     the req
+     * @return the response entity
+     */
+    @ExceptionHandler({ResourceNotReadyException.class})
+    public ResponseEntity<Object> handleResourceNotReadyException(final ResourceNotReadyException ex, final WebRequest request, HttpServletRequest req) {
+        final ApiEntityError apiError = ApiEntityError.of(
+                ResourceNotReadyException.class.getAnnotation(ResponseStatus.class).value(),
+                ResourceNotReadyException.class.getAnnotation(ResponseStatus.class).reason(),
+                getErrorMessage(ex),
+                URL_PATH_HELPER.getRequestUri(req),
+                ex.getEntityErrorDetail());
+        return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+    }
+
     /**
      * Handle spring access denied exception response entity.
      *
@@ -339,7 +360,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
      */
     @ExceptionHandler({TooManyRequestsException.class})
     public ResponseEntity<Object> handleTooManyRequestsException(final TooManyRequestsException ex, final WebRequest request,
-                                                                HttpServletRequest req) {
+                                                                 HttpServletRequest req) {
         final ApiError apiError = ApiEntityError.of(
                 TooManyRequestsException.class.getAnnotation(ResponseStatus.class).value(),
                 TooManyRequestsException.class.getAnnotation(ResponseStatus.class).reason(),

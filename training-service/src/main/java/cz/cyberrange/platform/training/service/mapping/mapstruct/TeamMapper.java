@@ -7,7 +7,6 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = {UserRefMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamMapper {
@@ -19,9 +18,5 @@ public interface TeamMapper {
     List<TeamDTO> mapToListDTO(Collection<Team> entity);
 
     List<Team> mapToList(Collection<TeamDTO> dto);
-
-    Set<TeamDTO> mapToSetDTO(Set<Team> entities);
-
-    Set<Team> mapToSet(Set<TeamDTO> entities);
 
 }

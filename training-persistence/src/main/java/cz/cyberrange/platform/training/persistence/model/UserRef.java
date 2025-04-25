@@ -11,6 +11,7 @@ import javax.persistence.UniqueConstraint;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -49,26 +50,6 @@ public class UserRef extends AbstractEntity<Long> {
     private Set<Team> teams = new HashSet<>();
     @ManyToMany(mappedBy = "trainingInstanceLobby.usersQueue", fetch = FetchType.LAZY)
     private Set<TrainingInstance> joinedQueues = new HashSet<>();
-
-    public Set<Team> getTeams() {
-        return Collections.unmodifiableSet(teams);
-    }
-
-    public void addToTeam(Team team) {
-        teams.add(team);
-    }
-
-    public void removeFromTeam(Team team) {
-        teams.remove(team);
-    }
-
-    public void removeQueue(TrainingInstance trainingInstanceLobby) {
-        joinedQueues.remove(trainingInstanceLobby);
-    }
-
-    public void addQueue(TrainingInstance trainingInstanceLobby) {
-        joinedQueues.add(trainingInstanceLobby);
-    }
 
 
     /**
@@ -111,6 +92,36 @@ public class UserRef extends AbstractEntity<Long> {
      */
     public void setUserRefId(Long userRefId) {
         this.userRefId = userRefId;
+    }
+
+    public Set<Team> getTeams() {
+        return teams;
+    }
+
+    public Optional<Team> getTeamByInstance(Long trainingInstanceId) {
+        return teams.stream()
+                .filter(team -> team.getTrainingInstance().getId().equals(trainingInstanceId))
+                .findFirst();
+    }
+
+    public Set<TrainingInstance> getJoinedQueues() {
+        return joinedQueues;
+    }
+
+    public void addToTeam(Team team) {
+        teams.add(team);
+    }
+
+    public void removeFromTeam(Team team) {
+        teams.remove(team);
+    }
+
+    public void removeQueue(TrainingInstance trainingInstanceLobby) {
+        joinedQueues.remove(trainingInstanceLobby);
+    }
+
+    public void addQueue(TrainingInstance trainingInstanceLobby) {
+        joinedQueues.add(trainingInstanceLobby);
     }
 
     /**

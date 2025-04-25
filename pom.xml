@@ -32,7 +32,7 @@
         <swagger.version>2.9.2</swagger.version>
         <swagger-annotations.version>1.5.22</swagger-annotations.version>
         <swagger.directory>${basedir}/../doc-files</swagger.directory>
-        <swagger.skip>true</swagger.skip>
+        <swagger.skip>false</swagger.skip>
         <swagger.host>localhost:8083</swagger.host>
         <github.kongchen.version>3.1.8</github.kongchen.version>
         <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>

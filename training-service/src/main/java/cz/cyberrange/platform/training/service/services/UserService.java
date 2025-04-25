@@ -77,14 +77,22 @@ public class UserService {
     public UserRefDTO getUserRefDTOByUserRefId(Long id) {
         try {
             return userManagementServiceWebClient
-                .get()
-                .uri("/users/{id}", id)
-                .retrieve()
-                .bodyToMono(UserRefDTO.class)
-                .block();
+                    .get()
+                    .uri("/users/{id}", id)
+                    .retrieve()
+                    .bodyToMono(UserRefDTO.class)
+                    .block();
         } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Error when calling user management service API to obtain info about user(ID: " + id + ").", ex);
         }
+    }
+
+    public UserRefDTO getUserRefDTOWithLimitedInformation(Long id) {
+        UserRefDTO userRefDTO = getUserRefDTOByUserRefId(id);
+        userRefDTO.setIss(null);
+        userRefDTO.setMail(null);
+        userRefDTO.setUserRefSub(null);
+        return userRefDTO;
     }
 
     /**
@@ -102,18 +110,19 @@ public class UserService {
         }
         try {
             return userManagementServiceWebClient
-                .get()
-                .uri(uriBuilder -> {
-                            uriBuilder
-                                    .path("/users/ids")
-                                    .queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-                            this.setCommonParams(givenName, familyName, pageable, uriBuilder);
-                            return uriBuilder.build();
-                        }
-                )
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
-                .block();
+                    .get()
+                    .uri(uriBuilder -> {
+                                uriBuilder
+                                        .path("/users/ids")
+                                        .queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
+                                this.setCommonParams(givenName, familyName, pageable, uriBuilder);
+                                return uriBuilder.build();
+                            }
+                    )
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
+                    })
+                    .block();
         } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Error when calling user management service API to obtain users by IDs: " + userRefIds + ".", ex);
         }
@@ -143,18 +152,19 @@ public class UserService {
     public PageResultResource<UserRefDTO> getUsersByGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
         try {
             return userManagementServiceWebClient
-                .get()
-                .uri(uriBuilder -> {
-                            uriBuilder
-                                    .path("/roles/users")
-                                    .queryParam("roleType", roleType.name());
-                            this.setCommonParams(givenName, familyName, pageable, uriBuilder);
-                            return uriBuilder.build();
-                        }
-                )
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
-                .block();
+                    .get()
+                    .uri(uriBuilder -> {
+                                uriBuilder
+                                        .path("/roles/users")
+                                        .queryParam("roleType", roleType.name());
+                                this.setCommonParams(givenName, familyName, pageable, uriBuilder);
+                                return uriBuilder.build();
+                            }
+                    )
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
+                    })
+                    .block();
         } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Error when calling user management service API to obtain users with role " + roleType.name() + ".", ex);
         }
@@ -173,19 +183,20 @@ public class UserService {
     public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(RoleType roleType, Set<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
         try {
             return userManagementServiceWebClient
-                .get()
-                .uri(uriBuilder -> {
-                            uriBuilder
-                                    .path("/roles/users-not-with-ids")
-                                    .queryParam("roleType", roleType.name())
-                                    .queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-                            this.setCommonParams(givenName, familyName, pageable, uriBuilder);
-                            return uriBuilder.build();
-                        }
-                )
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
-                .block();
+                    .get()
+                    .uri(uriBuilder -> {
+                                uriBuilder
+                                        .path("/roles/users-not-with-ids")
+                                        .queryParam("roleType", roleType.name())
+                                        .queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
+                                this.setCommonParams(givenName, familyName, pageable, uriBuilder);
+                                return uriBuilder.build();
+                            }
+                    )
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {
+                    })
+                    .block();
         } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Error when calling user management service API to obtain users with role " + roleType.name() + " and IDs: " + userRefIds + ".", ex);
         }
@@ -209,7 +220,6 @@ public class UserService {
         }
     }
 
-
     private void setCommonParams(String givenName, String familyName, Pageable pageable, UriBuilder builder) {
         if (givenName != null) {
             builder.queryParam("givenName", givenName);
@@ -220,4 +230,6 @@ public class UserService {
         builder.queryParam("page", pageable.getPageNumber());
         builder.queryParam("size", pageable.getPageSize());
     }
+
+
 }

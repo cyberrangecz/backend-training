@@ -316,6 +316,7 @@ public class TrainingRun extends AbstractEntity<Long> {
 
     /**
      * Sets sandbox instance allocation id associated with Training run
+     *
      * @param sandboxInstanceAllocationId the sandbox instance allocation id
      */
     public void setSandboxInstanceAllocationId(Integer sandboxInstanceAllocationId) {
@@ -623,6 +624,10 @@ public class TrainingRun extends AbstractEntity<Long> {
         this.hasDetectionEvent = hasDetectionEvent;
     }
 
+    public boolean isHintTaken(Long hintId) {
+        return this.getHintInfoList().stream().anyMatch(hintInfo -> hintInfo.getHintId() == hintId);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance, incorrectAnswerCount);
@@ -667,4 +672,5 @@ public class TrainingRun extends AbstractEntity<Long> {
                 ", levelAnswered=" + levelAnswered +
                 '}';
     }
+
 }

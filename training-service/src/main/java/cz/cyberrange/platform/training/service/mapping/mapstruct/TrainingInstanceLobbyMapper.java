@@ -6,19 +6,14 @@ import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = {TeamMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", uses = {TeamMapper.class, UserRefMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TrainingInstanceLobbyMapper {
 
     TrainingInstanceLobby mapToEntity(TrainingInstanceLobbyDTO dto);
 
     TrainingInstanceLobbyDTO mapToDTO(TrainingInstanceLobby entity);
-
-    List<TrainingInstanceLobbyDTO> mapToListDTO(List<TrainingInstanceLobby> entity);
-
-    List<TrainingInstanceLobby> mapToList(List<TrainingInstanceLobbyDTO> dto);
 
     Set<TrainingInstanceLobby> mapToSet(Collection<TrainingInstanceLobby> entities);
 

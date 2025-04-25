@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -52,6 +53,7 @@ public class TrainingInstanceCreateDTO {
     private boolean backwardMode;
     @ApiModelProperty(value = "Maximum team size for cooperative training", example = "5", allowableValues = "1 to 12")
     @Max(12)
+    @Min(1)
     private int maxTeamSize;
 
     @Getter

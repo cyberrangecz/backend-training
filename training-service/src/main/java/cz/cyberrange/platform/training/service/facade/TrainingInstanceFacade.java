@@ -180,6 +180,7 @@ public class TrainingInstanceFacade {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", Long.class, trainingInstance.getId(),
                     "The training definition assigned to running training instance cannot be changed."));
         }
+
         checkLocalEnvironmentConfiguration(updatedTrainingInstance);
         updatedTrainingInstance.setTrainingDefinition(trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));
         validateVariableNames(updatedTrainingInstance);

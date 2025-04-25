@@ -52,6 +52,18 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      */
     List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
 
+
+    /**
+     * Find all active training instances by covering time range.
+     * Only instances fully covering the time range are returned.
+     * For all currently running instances, use current time as both start and end time.
+     *
+     * @param startTime start of the time range
+     * @param endTime   end of the time range
+     * @return the list of {@link TrainingInstance}s
+     */
+    List<TrainingInstance> findAllByStartTimeBeforeAndEndTimeAfter(LocalDateTime startTime, LocalDateTime endTime);
+
     /**
      * Find all training instances
      *
@@ -84,8 +96,9 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @param accessToken the access token
      * @return {@link TrainingInstance} with start time in the past, end time in the future and by corresponding access token
      */
-    Optional<TrainingInstance> findByEndTimeBeforeAndAccessToken(@Param("datetime") LocalDateTime datetime,
-                                                                 @Param("accessToken") String accessToken);
+    Optional<TrainingInstance> findByEndTimeAfterAndAccessToken(@Param("datetime") LocalDateTime datetime,
+                                                                @Param("accessToken") String accessToken);
+
 
     /**
      * Check if any training instances are associated with training definition

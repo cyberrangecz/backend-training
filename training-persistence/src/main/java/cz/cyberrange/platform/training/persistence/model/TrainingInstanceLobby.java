@@ -10,7 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,14 +21,12 @@ import java.util.Set;
 @Embeddable
 public class TrainingInstanceLobby implements Serializable {
 
-    public static final int TEAM_SIZE_LIMIT = 12;
-
+    @Transient
     @Setter
-    @OneToOne
-    @JoinColumn(name = "training_instance_id")
+    @Getter
     private TrainingInstance trainingInstance;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "training_instance_waiting_users",
             joinColumns = @JoinColumn(name = "training_instance_id"),
