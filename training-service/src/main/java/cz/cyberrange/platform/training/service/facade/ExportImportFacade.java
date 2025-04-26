@@ -347,7 +347,7 @@ public class ExportImportFacade {
      * @return String with the specified format
      */
     private String getLinearCSVString(TrainingRun trainingRun) {
-        UserRefDTO userRefDTO = userService.getUserRefDTOByUserRefId(trainingRun.getLinearRunOwner().getUserRefId());
+        UserRefDTO userRefDTO = userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
         return trainingRun.getTrainingInstance().getId() + DELIMITER +
                 userRefDTO.getUserRefSub() + DELIMITER +
                 trainingRun.getTotalTrainingScore() + System.lineSeparator();
@@ -416,7 +416,7 @@ public class ExportImportFacade {
         for (TrainingRun run : runs) {
             TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
             archivedRun.setInstanceId(trainingInstance.getId());
-            archivedRun.setParticipantRefId(run.getLinearRunOwner().getUserRefId());
+            archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
             ZipEntry runEntry = new ZipEntry(RUNS_FOLDER + "/training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
@@ -431,7 +431,7 @@ public class ExportImportFacade {
 
             List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
             String sandboxId = events.get(0).getSandboxId() == null ?
-                    run.getLinearRunOwner().getUserRefId().toString() : events.get(0).getSandboxId();
+                    run.getParticipantRef().getUserRefId().toString() : events.get(0).getSandboxId();
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
@@ -440,7 +440,7 @@ public class ExportImportFacade {
 
     private List<Map<String, Object>> getConsoleCommands(TrainingInstance instance, TrainingRun run) {
         if (instance.isLocalEnvironment()) {
-            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(instance.getAccessToken(), run.getLinearRunOwner().getUserRefId());
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(instance.getAccessToken(), run.getParticipantRef().getUserRefId());
         }
         String sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
         return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxId);
@@ -545,7 +545,7 @@ public class ExportImportFacade {
 
     private List<Map<String, Object>> getConsoleCommandsWithinTimeRange(TrainingInstance instance, TrainingRun run, String sandboxId, Long from, Long to) {
         if (instance.isLocalEnvironment()) {
-            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getLinearRunOwner().getUserRefId(), from, to);
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
         }
         return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, from, to);
     }

@@ -7,7 +7,6 @@ import cz.cyberrange.platform.training.persistence.model.QTrainingRun;
 import cz.cyberrange.platform.training.persistence.model.Team;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
-import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -108,13 +107,11 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      */
     Page<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId, Pageable pageable);
 
-    Page<TrainingRun> findAllByLinearRunOwner(UserRef linearRunOwner, Pageable pageable);
+    Page<TrainingRun> findAllByCoopRunTeam(Team coopRunTeam, Pageable pageable);
 
-    Page<TrainingRun> findAllByCoopRunOwner(Team coopRunOwner, Pageable pageable);
+    Optional<TrainingRun> findByCoopRunTeam_IdAndStateLike(Long coopRunTeamId, TRState state);
 
-    Optional<TrainingRun> findByCoopRunOwnerAndState(Team coopRunOwner, TRState state);
-
-    Optional<TrainingRun> findByCoopRunOwner_Id(Long coopRunOwner);
+    Optional<TrainingRun> findByCoopRunTeam_Id(Long coopRunTeam);
 
     /**
      * Find training run by id including current level

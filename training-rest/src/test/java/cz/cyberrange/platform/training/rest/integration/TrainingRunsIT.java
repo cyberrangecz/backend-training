@@ -239,12 +239,12 @@ public class TrainingRunsIT {
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setCurrentLevel(trainingLevel1);
         trainingRun1.setTrainingInstance(trainingInstance);
-        trainingRun1.setLinearRunOwner(participant1);
+        trainingRun1.setParticipantRef(participant1);
 
         trainingRun2 = testDataFactory.getFinishedRun();
         trainingRun2.setCurrentLevel(infoLevel1);
         trainingRun2.setTrainingInstance(trainingInstance);
-        trainingRun2.setLinearRunOwner(participant2);
+        trainingRun2.setParticipantRef(participant2);
 
         isCorrectAnswerDTO = new IsCorrectAnswerDTO();
         isCorrectAnswerDTO.setCorrect(true);
@@ -300,7 +300,7 @@ public class TrainingRunsIT {
     @Test
     public void findAllTrainingRuns() throws Exception {
         trainingRunRepository.save(trainingRun1);
-        trainingRun2.setLinearRunOwner(participant1);
+        trainingRun2.setParticipantRef(participant1);
         trainingRunRepository.save(trainingRun2);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
 
@@ -341,7 +341,7 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRunWithAlreadyStartedTrainingRun() throws Exception {
-        trainingRun1.setLinearRunOwner(participant1);
+        trainingRun1.setParticipantRef(participant1);
         trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRunRepository.save(trainingRun1);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
@@ -435,7 +435,7 @@ public class TrainingRunsIT {
 
     @Test
     public void getAllAccessedTrainingRuns() throws Exception {
-        trainingRun1.setLinearRunOwner(participant1);
+        trainingRun1.setParticipantRef(participant1);
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));

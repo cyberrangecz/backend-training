@@ -1,12 +1,15 @@
 package cz.cyberrange.platform.training.service.services;
 
+import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
+import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.Team;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
+import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
 import cz.cyberrange.platform.training.persistence.repository.HintRepository;
 import cz.cyberrange.platform.training.persistence.repository.QuestionAnswerRepository;
@@ -20,6 +23,7 @@ import cz.cyberrange.platform.training.service.services.api.ElasticsearchApiServ
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -66,24 +70,49 @@ public class CoopTrainingRunService extends TrainingRunService {
         TrainingInstance trainingInstance = this.getTrainingInstanceForParticularAccessToken(accessToken);
         UserRef userRef = userService.getUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
         Optional<Team> team = userRef.getTeamByInstance(trainingInstance.getId());
+        LOG.severe("Team found: " + team.isPresent());
         if (team.isEmpty()) {
             return Optional.empty();
         }
-        return trainingRunRepository.findByCoopRunOwnerAndState(team.get(), TRState.RUNNING);
+        return trainingRunRepository.findByCoopRunTeam_IdAndStateLike(team.get().getId(), TRState.RUNNING);
+    }
+
+    /**
+     * Access training run based on given accessToken.
+     *
+     * @param trainingInstance the training instance
+     * @param participantRefId the participant ref id
+     * @return accessed {@link TrainingRun}
+     * @throws EntityNotFoundException no active training instance for given access token, no starting level in training definition.
+     * @throws EntityConflictException pool of sandboxes is not created for training instance.
+     */
+    @Override
+    protected TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance, LocalDateTime startTime, LocalDateTime endTime, Long participantRefId) {
+        TrainingRun newTrainingRun = super.getNewTrainingRun(currentLevel, trainingInstance, startTime, endTime, participantRefId);
+        newTrainingRun.setType(TrainingType.COOP);
+        Optional<Team> team = userService.getUserByUserRefId(participantRefId).getTeamByInstance(trainingInstance.getId());
+        if (team.isEmpty()) {
+            throw new EntityNotFoundException(new EntityErrorDetail(
+                    String.format("User with id %d is not a member of any team in training instance with id %d",
+                            participantRefId, trainingInstance.getId())
+            ));
+        }
+        newTrainingRun.setCoopRunTeam(team.get());
+        return newTrainingRun;
     }
 
     public Team findRelatedTeam(Long trainingRunId) {
         TrainingRun run = findById(trainingRunId);
-        if (run.getCoopRunOwner() == null) {
+        if (run.getCoopRunTeam() == null) {
             throw new EntityNotFoundException(new EntityErrorDetail(
                     String.format("Training run with id %d does not have a team", trainingRunId)
             ));
         }
-        return run.getCoopRunOwner();
+        return run.getCoopRunTeam();
     }
 
     public TrainingRun findRelatedTrainingRun(Long teamId) {
-        return this.trainingRunRepository.findByCoopRunOwner_Id(teamId)
+        return this.trainingRunRepository.findByCoopRunTeam_Id(teamId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
                         String.format("Team with id %d has no training run", teamId)
                 )));

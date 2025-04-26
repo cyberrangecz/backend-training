@@ -154,6 +154,33 @@ public class TrainingInstanceLobbyRestController {
         );
     }
 
+    @ApiOperation(httpMethod = "POST",
+            value = "Post team message",
+            notes = "This can only be done by trainee or organizer of an instance",
+            response = TeamMessageDTO[].class,
+            nickname = "getTeamInfo",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Message sent.", response = Integer.class),
+            @ApiResponse(code = 404, message = "Team not found.", response = ApiError.class),
+            @ApiResponse(code = 425, message = "Not yet assigned to team", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)}
+    )
+    @PostMapping(path = "/team/{teamId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> postTeamMessage(
+            @ApiParam(value = "Team id", required = true)
+            @PathVariable("teamId") Long teamId,
+            @ApiParam(value = "Message content", required = false, defaultValue = "0")
+            @RequestBody String message
+    ) {
+
+        if (message.isBlank() || message.strip().length() > 256) {
+            return ResponseEntity.badRequest().body("Message mustn't be empty or longer than 256 characters");
+        }
+
+        return ResponseEntity.ok(teamsManagementFacade.saveTeamMessage(teamId, message));
+    }
 
     @ApiOperation(httpMethod = "GET",
             value = "Get training instance lobby",

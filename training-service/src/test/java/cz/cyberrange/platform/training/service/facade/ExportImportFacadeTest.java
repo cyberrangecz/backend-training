@@ -155,13 +155,13 @@ public class ExportImportFacadeTest {
         trainingRuns[0] = trainingRun2;
         trainingRun2.setTrainingInstance(exportTrainingInstance);
         trainingRun2.setTotalTrainingScore(131);
-        trainingRun2.setLinearRunOwner(user);
+        trainingRun2.setParticipantRef(user);
 
         TrainingRun trainingRun3 = testDataFactory.getFinishedRun();
         trainingRuns[1] = trainingRun3;
         trainingRun3.setTrainingInstance(exportTrainingInstance);
         trainingRun3.setTotalTrainingScore(10);
-        trainingRun3.setLinearRunOwner(user2);
+        trainingRun3.setParticipantRef(user2);
     }
 
     @Test
@@ -201,8 +201,8 @@ public class ExportImportFacadeTest {
     @Test
     public void exportUserScoreFromTrainingInstance() {
         given(exportImportService.findRunsByInstanceId(exportTrainingInstance.getId())).willReturn(Arrays.stream(trainingRuns).collect(Collectors.toSet()));
-        given(userService.getUserRefDTOByUserRefId(trainingRuns[0].getLinearRunOwner().getUserRefId())).willReturn(userRefDTOS[0]);
-        given(userService.getUserRefDTOByUserRefId(trainingRuns[1].getLinearRunOwner().getUserRefId())).willReturn(userRefDTOS[1]);
+        given(userService.getUserRefDTOByUserRefId(trainingRuns[0].getParticipantRef().getUserRefId())).willReturn(userRefDTOS[0]);
+        given(userService.getUserRefDTOByUserRefId(trainingRuns[1].getParticipantRef().getUserRefId())).willReturn(userRefDTOS[1]);
 
         FileToReturnDTO exportedFile = exportImportFacade.exportUserScoreFromTrainingInstance(exportTrainingInstance.getId());
         String header = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
@@ -233,7 +233,7 @@ public class ExportImportFacadeTest {
 
     private String getCSV(TrainingRun trainingRun) {
         return trainingRun.getTrainingInstance().getId() + DELIMITER
-                + userService.getUserRefDTOByUserRefId(trainingRun.getLinearRunOwner().getUserRefId()).getUserRefSub() + DELIMITER
+                + userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId()).getUserRefSub() + DELIMITER
                 + trainingRun.getTotalTrainingScore() + System.lineSeparator();
     }
 }

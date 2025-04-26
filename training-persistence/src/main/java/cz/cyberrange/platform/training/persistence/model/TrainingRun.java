@@ -22,12 +22,12 @@ import java.util.Set;
 @NamedEntityGraphs({
         @NamedEntityGraph(
                 name = "TrainingRun.findAllParticipantRef",
-                attributeNodes = @NamedAttributeNode(value = "linearRunOwner")
+                attributeNodes = @NamedAttributeNode(value = "participantRef")
         ),
         @NamedEntityGraph(
                 name = "TrainingRun.findByIdParticipantRefTrainingInstance",
                 attributeNodes = {
-                        @NamedAttributeNode(value = "linearRunOwner"),
+                        @NamedAttributeNode(value = "participantRef"),
                         @NamedAttributeNode(value = "trainingInstance")
                 }
         )
@@ -37,7 +37,7 @@ import java.util.Set;
                 name = "TrainingRun.findRunningTrainingRunOfUser",
                 query = "SELECT tr FROM TrainingRun tr " +
                         "JOIN FETCH tr.trainingInstance ti " +
-                        "JOIN FETCH tr.linearRunOwner pr " +
+                        "JOIN FETCH tr.participantRef pr " +
                         "JOIN FETCH tr.currentLevel cl " +
                         "WHERE ti.accessToken = :accessToken AND pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL AND tr.state NOT LIKE 'FINISHED'"
         ),
@@ -61,7 +61,7 @@ import java.util.Set;
         @NamedQuery(
                 name = "TrainingRun.findAllByParticipantRefId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "INNER JOIN tr.linearRunOwner pr " +
+                        "INNER JOIN tr.participantRef pr " +
                         "INNER JOIN tr.trainingInstance ti " +
                         "INNER JOIN ti.trainingDefinition " +
                         "WHERE pr.userRefId = :userRefId"
@@ -69,7 +69,7 @@ import java.util.Set;
         @NamedQuery(
                 name = "TrainingRun.findAllByTrainingDefinitionIdAndParticipantUserRefId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "INNER JOIN tr.linearRunOwner pr " +
+                        "INNER JOIN tr.participantRef pr " +
                         "INNER JOIN tr.trainingInstance ti " +
                         "INNER JOIN ti.trainingDefinition td " +
                         "WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId"
@@ -136,12 +136,12 @@ public class TrainingRun extends AbstractEntity<Long> {
     private Integer sandboxInstanceAllocationId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
-    private UserRef linearRunOwner;
+    private UserRef participantRef;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     @Getter
     @Setter
-    private Team coopRunOwner;
+    private Team coopRunTeam;
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     @Column(name = "assessment_responses", nullable = true)
@@ -395,8 +395,8 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @return the participant ref
      */
-    public UserRef getLinearRunOwner() {
-        return linearRunOwner;
+    public UserRef getParticipantRef() {
+        return participantRef;
     }
 
     /**
@@ -404,8 +404,8 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @param participantRef the participant ref
      */
-    public void setLinearRunOwner(UserRef participantRef) {
-        this.linearRunOwner = participantRef;
+    public void setParticipantRef(UserRef participantRef) {
+        this.participantRef = participantRef;
     }
 
     /**
@@ -663,8 +663,8 @@ public class TrainingRun extends AbstractEntity<Long> {
                 && Objects.equals(type, other.getType())
                 && Objects.equals(incorrectAnswerCount, other.getIncorrectAnswerCount())
                 && Objects.equals(trainingInstance, other.getTrainingInstance())
-                && Objects.equals(linearRunOwner, other.getLinearRunOwner())
-                && Objects.equals(coopRunOwner, other.getCoopRunOwner())
+                && Objects.equals(participantRef, other.getParticipantRef())
+                && Objects.equals(coopRunTeam, other.getCoopRunTeam())
                 && Objects.equals(solutionTaken, other.isSolutionTaken());
     }
 

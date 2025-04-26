@@ -64,14 +64,14 @@ public class CompactLevelViewFacade {
                 .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
 
         for (TrainingRun trainingRun : trainingRuns) {
-            List<AbstractAuditPOJO> userLevelEvents = levelEventsByUserId.getOrDefault(trainingRun.getLinearRunOwner().getUserRefId(), new ArrayList<>());
+            List<AbstractAuditPOJO> userLevelEvents = levelEventsByUserId.getOrDefault(trainingRun.getParticipantRef().getUserRefId(), new ArrayList<>());
             if (userLevelEvents.isEmpty()) {
                 continue;
             }
             List<Map<String, Object>> userLevelCommands = getUserLevelCommands(instance, trainingRun, userLevelEvents);
 
             CompactLevelViewUserDTO compactLevelViewUserDTO = new CompactLevelViewUserDTO();
-            compactLevelViewUserDTO.setUser(usersByIds.get(trainingRun.getLinearRunOwner().getUserRefId()));
+            compactLevelViewUserDTO.setUser(usersByIds.get(trainingRun.getParticipantRef().getUserRefId()));
             compactLevelViewUserDTO.setEvents(getCompactLevelViewEvents(userLevelEvents, userLevelCommands));
             compactLevelViewDTO.addUser(compactLevelViewUserDTO);
         }
@@ -103,7 +103,7 @@ public class CompactLevelViewFacade {
         Long from = userLevelEvents.get(0).getTimestamp();
         Long to = userLevelEvents.get(userLevelEvents.size() - 1).getTimestamp();
         if (instance.isLocalEnvironment()) {
-            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getLinearRunOwner().getUserRefId(), from, to);
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
         }
         return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(run.getSandboxInstanceRefId(), from, to);
     }

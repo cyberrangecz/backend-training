@@ -104,7 +104,7 @@ public class AssessmentVisualizationFacade {
         visualizationService.getAnswersToQuestionByTrainingInstance(questionId, instanceId).forEach(questionAnswer ->
                 questionAnswer.getAnswers().forEach(answer -> {
                     List<UserRefDTO> participants = participantsByAnswerText.getOrDefault(answer, new ArrayList<>());
-                    participants.add(participantsByIds.get(questionAnswer.getTrainingRun().getLinearRunOwner().getUserRefId()));
+                    participants.add(participantsByIds.get(questionAnswer.getTrainingRun().getParticipantRef().getUserRefId()));
                     participantsByAnswerText.put(answer, participants);
                 })
         );
@@ -122,7 +122,7 @@ public class AssessmentVisualizationFacade {
                 Map<String, List<UserRefDTO>> innerResult = result.getOrDefault(statementText, new HashMap<>());
                 List<UserRefDTO> participants = innerResult.getOrDefault(optionText, new ArrayList<>());
 
-                participants.add(participantsByIds.get(questionAnswer.getTrainingRun().getLinearRunOwner().getUserRefId()));
+                participants.add(participantsByIds.get(questionAnswer.getTrainingRun().getParticipantRef().getUserRefId()));
                 innerResult.put(optionText, participants);
                 result.put(statementText, innerResult);
             }

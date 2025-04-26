@@ -35,7 +35,7 @@ import java.time.LocalDateTime;
                 query = "SELECT s FROM Submission s " +
                         "JOIN FETCH s.trainingRun tr " +
                         "JOIN FETCH tr.trainingInstance ti " +
-                        "JOIN FETCH tr.linearRunOwner pr " +
+                        "JOIN FETCH tr.participantRef pr " +
                         "WHERE s.type = 'INCORRECT' AND ti.id = :trainingInstanceId " +
                         "ORDER BY pr.userRefId, s.date"
         ),

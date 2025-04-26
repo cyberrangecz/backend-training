@@ -237,7 +237,7 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingDefinitionId(trainingInstance.getTrainingDefinition().getId())
                 .trainingTime(computeTrainingTime(trainingRun.getStartTime()))
-                .userRefId(trainingRun.getLinearRunOwner().getUserRefId())
+                .userRefId(trainingRun.getParticipantRef().getUserRefId())
                 .level(trainingLevel.getId())
                 .levelOrder(trainingLevel.getOrder())
                 .totalTrainingScore(trainingRun.getTotalTrainingScore())

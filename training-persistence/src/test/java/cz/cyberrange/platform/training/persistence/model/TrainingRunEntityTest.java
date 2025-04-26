@@ -39,7 +39,7 @@ public class TrainingRunEntityTest {
     public void saveShouldPersistData() {
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
-        trainingRun1.setLinearRunOwner(entityManager.persist(participantRef));
+        trainingRun1.setParticipantRef(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
 
         TrainingRun tr = this.entityManager.persistFlushFind(trainingRun1);

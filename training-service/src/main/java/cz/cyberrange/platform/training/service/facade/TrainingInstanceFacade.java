@@ -22,12 +22,14 @@ import cz.cyberrange.platform.training.persistence.model.TrainingInstanceLobby;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
+import cz.cyberrange.platform.training.service.services.CoopTrainingRunService;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
@@ -74,6 +76,7 @@ public class TrainingInstanceFacade {
     private final SandboxApiService sandboxApiService;
     private final TrainingFeedbackApiService trainingFeedbackApiService;
     private final TrainingInstanceLobbyService trainingInstanceLobbyService;
+    private final CoopTrainingRunService coopTrainingRunService;
 
 
     /**
@@ -100,7 +103,7 @@ public class TrainingInstanceFacade {
                                   SandboxApiService sandboxApiService,
                                   TrainingInstanceMapper trainingInstanceMapper,
                                   TrainingRunMapper trainingRunMapper,
-                                  TrainingFeedbackApiService trainingFeedbackApiService, TrainingInstanceLobbyService trainingInstanceLobbyService) {
+                                  TrainingFeedbackApiService trainingFeedbackApiService, TrainingInstanceLobbyService trainingInstanceLobbyService, CoopTrainingRunService coopTrainingRunService) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingRunService = trainingRunService;
@@ -113,6 +116,7 @@ public class TrainingInstanceFacade {
         this.trainingRunMapper = trainingRunMapper;
         this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.trainingInstanceLobbyService = trainingInstanceLobbyService;
+        this.coopTrainingRunService = coopTrainingRunService;
     }
 
     /**
@@ -307,8 +311,10 @@ public class TrainingInstanceFacade {
                     "First, you must unassign pool id from training instance then try it again."));
             // not possible to delete training instance with associated pool
         }
-        Set<TrainingRun> trainingRunsInTrainingInstance = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId);
-        trainingRunsInTrainingInstance.forEach(tr -> trainingRunService.deleteTrainingRun(tr.getId(), true, false));
+
+        TrainingRunService typeBasedService = trainingInstance.getType() == TrainingType.COOP ? coopTrainingRunService : trainingRunService;
+        Set<TrainingRun> trainingRunsInTrainingInstance = typeBasedService.findAllByTrainingInstanceId(trainingInstanceId);
+        trainingRunsInTrainingInstance.forEach(tr -> typeBasedService.deleteTrainingRun(tr.getId(), true, false));
         if (trainingInstance.isLocalEnvironment()) {
             deleteBashCommandsByAccessToken(trainingInstance.getAccessToken());
         }

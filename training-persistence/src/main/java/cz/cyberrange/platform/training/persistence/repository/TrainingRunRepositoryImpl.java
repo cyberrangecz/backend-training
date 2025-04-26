@@ -47,10 +47,10 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport impleme
         QTrainingDefinition trainingDefinition = new QTrainingDefinition("trainingDefinition");
 
         JPQLQuery<TrainingRun> query = new JPAQueryFactory(entityManager).selectFrom(trainingRun).distinct()
-                .leftJoin(trainingRun.linearRunOwner, participantRef)
+                .leftJoin(trainingRun.participantRef, participantRef)
                 .leftJoin(trainingRun.trainingInstance, trainingInstance)
                 .leftJoin(trainingInstance.trainingDefinition, trainingDefinition)
-                .leftJoin(trainingRun.coopRunOwner, team)
+                .leftJoin(trainingRun.coopRunTeam, team)
                 .where(participantRef.userRefId.eq(userRefId)
                         .or(team.members.any().userRefId.eq(userRefId)));
 

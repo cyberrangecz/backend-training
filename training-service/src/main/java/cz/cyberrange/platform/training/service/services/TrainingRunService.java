@@ -15,6 +15,7 @@ import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
 import cz.cyberrange.platform.training.persistence.model.enums.QuestionType;
 import cz.cyberrange.platform.training.persistence.model.enums.SubmissionType;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
+import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionAnswer;
@@ -170,7 +171,7 @@ public class TrainingRunService {
         if (deleteDataFromElasticsearch) {
             deleteDataFromElasticsearch(trainingRun);
         }
-        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getLinearRunOwner().getUserRefId(), trainingRun.getTrainingInstance().getId());
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.delete(trainingRun);
         return trainingRun;
     }
@@ -178,7 +179,7 @@ public class TrainingRunService {
     private void deleteDataFromElasticsearch(TrainingRun trainingRun) {
         if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
             String accessToken = trainingRun.getTrainingInstance().getAccessToken();
-            Long userId = trainingRun.getLinearRunOwner().getUserRefId();
+            Long userId = trainingRun.getParticipantRef().getUserRefId();
             elasticsearchApiService.deleteCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
             String sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
@@ -385,15 +386,16 @@ public class TrainingRunService {
         return levels.get(0);
     }
 
-    private TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance, LocalDateTime startTime, LocalDateTime endTime, Long participantRefId) {
+    protected TrainingRun getNewTrainingRun(AbstractLevel currentLevel, TrainingInstance trainingInstance, LocalDateTime startTime, LocalDateTime endTime, Long participantRefId) {
         TrainingRun newTrainingRun = new TrainingRun();
         newTrainingRun.setCurrentLevel(currentLevel);
 
         UserRef userRef = participantRefRepository.createOrGet(participantRefId);
-        newTrainingRun.setLinearRunOwner(userRef);
+        newTrainingRun.setParticipantRef(userRef);
 
         newTrainingRun.setAssessmentResponses("[]");
         newTrainingRun.setState(TRState.RUNNING);
+        newTrainingRun.setType(TrainingType.LINEAR);
         newTrainingRun.setTrainingInstance(trainingInstance);
         newTrainingRun.setStartTime(startTime);
         newTrainingRun.setEndTime(endTime);
@@ -600,7 +602,7 @@ public class TrainingRunService {
         if (trainingLevel.isVariantAnswers()) {
             return trainingRun.getTrainingInstance().isLocalEnvironment() ?
                     answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
-                            trainingRun.getLinearRunOwner().getUserRefId(), trainingLevel.getAnswerVariableName()) :
+                            trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName()) :
                     answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
         }
         return trainingLevel.getAnswer();
@@ -666,7 +668,7 @@ public class TrainingRunService {
         }
         trainingRun.setState(TRState.FINISHED);
         trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
-        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getLinearRunOwner().getUserRefId(), trainingRun.getTrainingInstance().getId());
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
@@ -686,7 +688,7 @@ public class TrainingRunService {
         trainingRun.setPreviousSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
         trainingRun.setSandboxInstanceRefId(null);
         trainingRun.setSandboxInstanceAllocationId(null);
-        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getLinearRunOwner().getUserRefId(), trainingRun.getTrainingInstance().getId());
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.save(trainingRun);
     }
 
@@ -710,7 +712,7 @@ public class TrainingRunService {
         List<Map<String, Object>> runCommands;
         if (run.getTrainingInstance().isLocalEnvironment()) {
             String accessToken = run.getTrainingInstance().getAccessToken();
-            Long userId = run.getLinearRunOwner().getUserRefId();
+            Long userId = run.getParticipantRef().getUserRefId();
             runCommands = elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
             String sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();

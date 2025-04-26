@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 
 public class TeamMessageDTO {
 
+    @ApiModelProperty(value = "Message ID", example = "1")
+    private Long id;
+
     @ApiModelProperty(value = "Date when the message was sent", example = "2022-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime time;

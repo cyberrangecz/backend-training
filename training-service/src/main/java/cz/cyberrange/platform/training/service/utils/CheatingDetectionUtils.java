@@ -21,7 +21,7 @@ public enum CheatingDetectionUtils {
     public static DetectionEventParticipant extractParticipant(Submission s, boolean isMinimal, Long solvedInTime, String participantName) {
         DetectionEventParticipant participant = new DetectionEventParticipant();
         participant.setIpAddress(s.getIpAddress());
-        participant.setUserId(s.getTrainingRun().getLinearRunOwner().getUserRefId());
+        participant.setUserId(s.getTrainingRun().getParticipantRef().getUserRefId());
         participant.setOccurredAt(s.getDate());
         participant.setParticipantName(participantName);
         if (isMinimal) {

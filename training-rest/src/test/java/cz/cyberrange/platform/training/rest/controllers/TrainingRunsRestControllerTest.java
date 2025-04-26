@@ -123,7 +123,7 @@ public class TrainingRunsRestControllerTest {
 
         trainingRun1 = testDataFactory.getFinishedRun();
         trainingRun1.setId(1L);
-        trainingRun1.setLinearRunOwner(participant1);
+        trainingRun1.setParticipantRef(participant1);
 
         trainingRunByIdDTO = testDataFactory.getTrainingRunByIdDTO();
         trainingRunByIdDTO.setId(1L);

@@ -163,11 +163,11 @@ public class AnswerSimilarityService {
     }
 
     private void generateAnswerSimilarityEvent(TrainingRun run, Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
-        String answerOwner = userService.getUserRefDTOByUserRefId(run.getLinearRunOwner().getUserRefId()).getUserRefFullName();
+        String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
         List<Submission> ownerSubmissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
         for (var ownerSubmission : ownerSubmissions) {
             if (Objects.equals(ownerSubmission.getLevel().getId(), submission.getLevel().getId())) {
-                participants.add(extractParticipant(ownerSubmission, userService.getUserRefDTOByUserRefId(ownerSubmission.getTrainingRun().getLinearRunOwner().getUserRefId()).getUserRefFullName()));
+                participants.add(extractParticipant(ownerSubmission, userService.getUserRefDTOByUserRefId(ownerSubmission.getTrainingRun().getParticipantRef().getUserRefId()).getUserRefFullName()));
             }
         }
         auditAnswerSimilarityEvent(submission, cd, participants, answerOwner);
@@ -178,7 +178,7 @@ public class AnswerSimilarityService {
     private void populateParticipants(Submission submission, List<VariantAnswer> answers, String answerVariable, Set<DetectionEventParticipant> participants) {
         for (var answer : answers) {
             if (answer.getAnswerContent().equals(submission.getProvided()) && answerVariable.equals(answer.getAnswerVariableName())) {
-                DetectionEventParticipant participant = extractParticipant(submission, userService.getUserRefDTOByUserRefId(submission.getTrainingRun().getLinearRunOwner().getUserRefId()).getUserRefFullName());
+                DetectionEventParticipant participant = extractParticipant(submission, userService.getUserRefDTOByUserRefId(submission.getTrainingRun().getParticipantRef().getUserRefId()).getUserRefFullName());
                 if (!checkIfContainsParticipant(participants, participant)) {
                     participants.add(participant);
                 }

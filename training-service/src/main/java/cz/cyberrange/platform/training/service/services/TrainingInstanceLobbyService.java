@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -322,5 +323,15 @@ public class TrainingInstanceLobbyService {
     public List<TeamMessage> getTeamMessages(Long teamId, Long since) {
         LocalDateTime utc0Time = LocalDateTime.ofEpochSecond(since, 0, ZoneOffset.UTC);
         return this.teamMessageRepository.findAllByTeam_IdAndTimeAfter(teamId, utc0Time);
+    }
+
+    public TeamMessage saveTeamMessage(Team team, UserRef sender, String message) {
+        TeamMessage teamMessage = new TeamMessage();
+        teamMessage.setTeam(team);
+        teamMessage.setSender(sender);
+        teamMessage.setTime(LocalDateTime.now(ZoneOffset.UTC)
+                .plus(100, ChronoUnit.MILLIS));
+        teamMessage.setMessage(message);
+        return this.teamMessageRepository.save(teamMessage);
     }
 }

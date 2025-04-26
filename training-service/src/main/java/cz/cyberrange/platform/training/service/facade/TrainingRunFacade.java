@@ -302,7 +302,7 @@ public class TrainingRunFacade {
                     (AccessLevelViewDTO) accessTrainingRunDTO.getAbstractLevelDTO(),
                     trainingRun.getTrainingInstance().getAccessToken(),
                     securityService.getBearerToken(),
-                    trainingRun.getLinearRunOwner().getUserRefId(),
+                    trainingRun.getParticipantRef().getUserRefId(),
                     trainingRun.getTrainingInstance().getSandboxDefinitionId()
             );
         }
@@ -375,7 +375,7 @@ public class TrainingRunFacade {
                     (AccessLevelViewDTO) abstractLevelDTO,
                     trainingRun.getTrainingInstance().getAccessToken(),
                     securityService.getBearerToken(),
-                    trainingRun.getLinearRunOwner().getUserRefId(),
+                    trainingRun.getParticipantRef().getUserRefId(),
                     trainingRun.getTrainingInstance().getSandboxDefinitionId()
             );
         }
@@ -519,7 +519,7 @@ public class TrainingRunFacade {
     @TransactionalRO
     public UserRefDTO getParticipant(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
-        return userService.getUserRefDTOByUserRefId(trainingRun.getLinearRunOwner().getUserRefId());
+        return userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
     }
 
     /**
@@ -564,7 +564,7 @@ public class TrainingRunFacade {
     private Map<String, String> getVariantAnswers(TrainingRun trainingRun) {
         TrainingInstance instance = trainingRun.getTrainingInstance();
         return instance.isLocalEnvironment() ?
-                answersStorageApiService.getAnswersByAccessTokenAndUserId(instance.getAccessToken(), trainingRun.getLinearRunOwner().getUserRefId())
+                answersStorageApiService.getAnswersByAccessTokenAndUserId(instance.getAccessToken(), trainingRun.getParticipantRef().getUserRefId())
                         .getVariantAnswers().stream()
                         .collect(Collectors.toMap(VariantAnswer::getAnswerVariableName, VariantAnswer::getAnswerContent)) :
                 answersStorageApiService.getAnswersBySandboxId(trainingRun.getSandboxInstanceRefId())
@@ -689,7 +689,7 @@ public class TrainingRunFacade {
                 accessLevelViewDTO,
                 trainingRun.getTrainingInstance().getAccessToken(),
                 securityService.getBearerToken(),
-                trainingRun.getLinearRunOwner().getUserRefId(),
+                trainingRun.getParticipantRef().getUserRefId(),
                 trainingRun.getTrainingInstance().getSandboxDefinitionId()
         );
         return accessLevelViewDTO;

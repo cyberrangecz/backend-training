@@ -200,15 +200,15 @@ public class TrainingInstancesIT {
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setCurrentLevel(infoLevel);
         trainingRun1.setTrainingInstance(futureTrainingInstance);
-        trainingRun1.setLinearRunOwner(participant2);
+        trainingRun1.setParticipantRef(participant2);
         trainingRun1.setSandboxInstanceRefId(sandboxInfo1.getId());
-        trainingRun1.setLinearRunOwner(organizer1);
+        trainingRun1.setParticipantRef(organizer1);
 
         trainingRun2 = testDataFactory.getRunningRun();
         trainingRun2.setSolutionTaken(false);
         trainingRun2.setCurrentLevel(infoLevel);
         trainingRun2.setTrainingInstance(futureTrainingInstance);
-        trainingRun2.setLinearRunOwner(participant1);
+        trainingRun2.setParticipantRef(participant1);
 
         userRefDTO1 = new UserRefDTO();
         userRefDTO1.setUserRefFullName("Ing. John Doe");
@@ -227,7 +227,7 @@ public class TrainingInstancesIT {
         userRefDTO2.setUserRefId(4L);
 
         trainingRun2.setSandboxInstanceRefId(sandboxInfo2.getId());
-        trainingRun2.setLinearRunOwner(organizer1);
+        trainingRun2.setParticipantRef(organizer1);
 
         trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
         trainingInstanceAssignPoolIdDTO.setPoolId(1L);

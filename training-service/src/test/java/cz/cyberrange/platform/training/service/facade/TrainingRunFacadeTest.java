@@ -101,7 +101,7 @@ public class TrainingRunFacadeTest {
 
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
-        trainingRun1.setLinearRunOwner(participant);
+        trainingRun1.setParticipantRef(participant);
 
         hint = testDataFactory.getHint1();
         hint.setId(1L);

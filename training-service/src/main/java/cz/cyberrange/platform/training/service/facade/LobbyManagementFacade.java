@@ -21,6 +21,7 @@ import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
 import cz.cyberrange.platform.training.service.services.UserService;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,7 @@ public class LobbyManagementFacade {
     private final TrainingInstanceService trainingInstanceService;
     private final SecurityService securityService;
     private final TeamMessageMapper teamMessageMapper;
+    private final ModelMapper modelMapper;
 
     @Autowired
     public LobbyManagementFacade(
@@ -56,7 +58,8 @@ public class LobbyManagementFacade {
             UserService userService,
             TeamMapper teamMapper,
             TrainingInstanceLobbyMapper trainingInstanceLobbyMapper,
-            TrainingInstanceService trainingInstanceService, SecurityService securityService, TeamMessageMapper teamMessageMapper) {
+            TrainingInstanceService trainingInstanceService, SecurityService securityService, TeamMessageMapper teamMessageMapper,
+            ModelMapper modelMapper) {
         this.teamsManagementService = trainingInstanceLobbyService;
         this.userService = userService;
         this.teamMapper = teamMapper;
@@ -64,6 +67,7 @@ public class LobbyManagementFacade {
         this.trainingInstanceService = trainingInstanceService;
         this.securityService = securityService;
         this.teamMessageMapper = teamMessageMapper;
+        this.modelMapper = modelMapper;
     }
 
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -256,5 +260,15 @@ public class LobbyManagementFacade {
                 message -> message.getSender().getUserRefId(),
                 teamMessageMapper::mapToDTO
         ));
+    }
+
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTeam(#teamId)" +
+            "or @securityService.isTraineeOfGivenTeam(#teamId)")
+    @Transactional
+    public TeamMessageDTO saveTeamMessage(Long teamId, String message) {
+        UserRef sender = this.userService.getUserByUserRefId(this.securityService.getUserRefIdFromUserAndGroup());
+        Team team = this.teamsManagementService.getTeamOrThrow(teamId);
+        return teamMessageMapper.mapToDTO(this.teamsManagementService.saveTeamMessage(team, sender, message.strip()));
     }
 }

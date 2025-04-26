@@ -38,8 +38,7 @@ ALTER TABLE training_run
     ADD COLUMN type    varchar(16) NOT NULL DEFAULT 'LINEAR';
 
 ALTER TABLE training_run
-    ADD CONSTRAINT training_run_team_lock UNIQUE
-        NULLS NOT DISTINCT (training_instance_id, team_id);
+    ADD CONSTRAINT training_run_team_lock UNIQUE (training_instance_id, team_id);
 
 CREATE TABLE team_user (
     team_id     bigint REFERENCES team (id),

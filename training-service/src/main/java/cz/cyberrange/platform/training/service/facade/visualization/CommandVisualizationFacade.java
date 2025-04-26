@@ -218,7 +218,7 @@ public class CommandVisualizationFacade {
 
         if (trainingInstance.isLocalEnvironment()) {
             String accessToken = trainingInstance.getAccessToken();
-            Long userId = trainingRun.getLinearRunOwner().getId();
+            Long userId = trainingRun.getParticipantRef().getId();
             elasticCommands = elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
             String sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();

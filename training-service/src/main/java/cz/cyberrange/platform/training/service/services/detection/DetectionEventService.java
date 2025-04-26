@@ -115,6 +115,6 @@ public class DetectionEventService {
     }
 
     String getUserFullName(Submission currentSubmission) {
-        return userService.getUserRefDTOByUserRefId(currentSubmission.getTrainingRun().getLinearRunOwner().getUserRefId()).getUserRefFullName();
+        return userService.getUserRefDTOByUserRefId(currentSubmission.getTrainingRun().getParticipantRef().getUserRefId()).getUserRefFullName();
     }
 }

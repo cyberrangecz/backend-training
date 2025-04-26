@@ -42,6 +42,7 @@ public class SecurityService {
     private final WebClient userManagementWebClient;
     private final TeamRepository teamRepository;
     private final UserRefRepository userRefRepository;
+    private final TrainingInstanceLobbyService trainingInstanceLobbyService;
 
     /**
      * Instantiates a new Security service.
@@ -55,13 +56,18 @@ public class SecurityService {
     public SecurityService(TrainingInstanceRepository trainingInstanceRepository,
                            TrainingDefinitionRepository trainingDefinitionRepository,
                            TrainingRunRepository trainingRunRepository,
-                           @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient, TeamRepository teamRepository, UserRefRepository userRefRepository) {
+                           @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient,
+                           TeamRepository teamRepository,
+                           UserRefRepository userRefRepository,
+                           TrainingInstanceLobbyService trainingInstanceLobbyService
+    ) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.userManagementWebClient = userManagementWebClient;
         this.teamRepository = teamRepository;
         this.userRefRepository = userRefRepository;
+        this.trainingInstanceLobbyService = trainingInstanceLobbyService;
     }
 
     /**
@@ -74,7 +80,7 @@ public class SecurityService {
         TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(),
                         trainingRunId, "The necessary permissions are required for a resource.")));
-        return trainingRun.getLinearRunOwner().getUserRefId().equals(getUserRefIdFromUserAndGroup());
+        return trainingRun.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup());
     }
 
     public boolean isTraineeOfGivenTrainingInstance(Long trainingInstanceId) {
@@ -82,7 +88,7 @@ public class SecurityService {
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstanceId.getClass(),
                         trainingInstanceId, "The necessary permissions are required for a resource.")));
         return trainingRunRepository.getAllByTrainingInstance(trainingInstance)
-                .stream().anyMatch(t -> t.getLinearRunOwner().getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+                .stream().anyMatch(t -> t.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup()));
 
     }
 
@@ -201,10 +207,27 @@ public class SecurityService {
         return authentication.getToken().getTokenValue();
     }
 
+    /**
+     * Check whether the user is a member of the given team
+     *
+     * @param teamId the team id
+     * @return true if the user is a member of the team, false otherwise
+     */
     public boolean isTraineeOfGivenTeam(Long teamId) {
         UserRef userRef = userRefRepository.createOrGet(this.getUserRefIdFromUserAndGroup());
         return userRef.getTeams().stream().anyMatch(
                 team -> team.getId().equals(teamId)
         );
+    }
+
+    /**
+     * Check whether the user is an organizer of instance of the given team
+     *
+     * @param teamId the team id
+     * @return true if the user is an organizer of the team, false otherwise
+     */
+    public boolean isOrganizerOfGivenTeam(Long teamId) {
+        Team team = trainingInstanceLobbyService.getTeamOrThrow(teamId);
+        return this.isOrganizerOfGivenInstance(team.getTrainingInstance());
     }
 }

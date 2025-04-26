@@ -167,7 +167,7 @@ public class VisualizationFacade {
         if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
             return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(
                     trainingRun.getTrainingInstance().getAccessToken(),
-                    trainingRun.getLinearRunOwner().getUserRefId());
+                    trainingRun.getParticipantRef().getUserRefId());
         }
         String sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
         return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxIdentifier);
@@ -840,14 +840,14 @@ public class VisualizationFacade {
                 .collect(Collectors.toSet());
         List<Long> userRefIds = foundRuns
                 .stream()
-                .map(trainingRun -> trainingRun.getLinearRunOwner().getUserRefId())
+                .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
                 .toList();
 
         Map<Long, UserRefDTO> userRefDTOsById = getUserRefsByIds(userRefIds);
         return foundRuns.stream().collect(
                 Collectors.toMap(
                         TrainingRun::getId,
-                        trainingRun -> userRefDTOsById.get(trainingRun.getLinearRunOwner().getUserRefId())));
+                        trainingRun -> userRefDTOsById.get(trainingRun.getParticipantRef().getUserRefId())));
     }
 
     private Map<Long, UserRefDTO> getUserRefsByIds(List<Long> userRefIds) {

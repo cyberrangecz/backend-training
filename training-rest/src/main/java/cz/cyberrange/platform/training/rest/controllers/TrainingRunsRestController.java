@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * The rest controller for Training runs.
@@ -59,10 +60,11 @@ import java.util.Map;
 @Validated
 public class TrainingRunsRestController {
 
+    private static final Logger LOG = Logger.getLogger(TrainingRunsRestController.class.getName());
     private final TrainingTypeResolver trainingTypeResolver;
-    private TrainingRunFacade trainingRunFacade;
-    private CoopTrainingRunFacade coopTrainingRunFacade;
-    private ObjectMapper objectMapper;
+    private final TrainingRunFacade trainingRunFacade;
+    private final CoopTrainingRunFacade coopTrainingRunFacade;
+    private final ObjectMapper objectMapper;
 
     /**
      * Instantiates a new Training runs rest controller.
@@ -88,10 +90,17 @@ public class TrainingRunsRestController {
      * @return the response entity
      */
     @ApiOperation(httpMethod = "DELETE", value = "Delete training runs", nickname = "deleteTrainingRuns")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "The training runs have been deleted."), @ApiResponse(code = 500, message = "Unexpected condition was encountered", response = ApiError.class)})
+    @ApiResponses(
+            value = {@ApiResponse(code = 200, message = "The training runs have been deleted."), @ApiResponse(code = 500, message = "Unexpected condition was encountered", response = ApiError.class)})
     @DeleteMapping
-    public ResponseEntity<Void> deleteTrainingRuns(@ApiParam(value = "Ids of training runs that will be deleted", required = true) @RequestParam(value = "trainingRunIds", required = true) List<Long> trainingRunIds, @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false) @RequestParam(value = "forceDelete", required = false) boolean forceDelete) {
-        trainingRunFacade.deleteTrainingRuns(trainingRunIds, forceDelete);
+    public ResponseEntity<Void> deleteTrainingRuns(
+            @ApiParam(value = "Ids of training runs that will be deleted", required = true)
+            @RequestParam(value = "trainingRunIds", required = true)
+            List<Long> trainingRunIds,
+            @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false)
+            @RequestParam(value = "forceDelete", required = false) boolean forceDelete
+    ) {
+        coopTrainingRunFacade.deleteTrainingRuns(trainingRunIds, forceDelete);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -106,7 +115,7 @@ public class TrainingRunsRestController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The training run has been deleted."), @ApiResponse(code = 404, message = "The training run has not been found.", response = ApiError.class), @ApiResponse(code = 409, message = "The training run is still running.", response = ApiError.class), @ApiResponse(code = 500, message = "Unexpected condition was encountered", response = ApiError.class)})
     @DeleteMapping(path = "/{runId}")
     public ResponseEntity<Void> deleteTrainingRun(@ApiParam(value = "Id of training run that will be deleted", required = true) @PathVariable("runId") Long runId, @ApiParam(value = "Indication if this training run must be deleted no matter of any check (force it)", required = false) @RequestParam(value = "forceDelete", required = false) boolean forceDelete) {
-        trainingRunFacade.deleteTrainingRun(runId, forceDelete);
+        coopTrainingRunFacade.deleteTrainingRun(runId, forceDelete);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -159,7 +168,6 @@ public class TrainingRunsRestController {
         }
 
         TrainingType type = trainingTypeResolver.fromAccessToken(accessToken);
-
         AccessTrainingRunDTO accessTrainingRunDTO = switch (type) {
             case LINEAR -> trainingRunFacade.accessTrainingRun(accessToken);
             case COOP -> coopTrainingRunFacade.accessTrainingRun(accessToken);
@@ -187,9 +195,9 @@ public class TrainingRunsRestController {
     }
 
     @ApiOperation(httpMethod = "GET", value = "Get ", notes = "This can only be done by trainee or organizer of an instance", response = Map.class, nickname = "getTeamInfo", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Scoreboard returned.", response = Integer.class), @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class), @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)})
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Scoreboard returned.", response = TeamScoreDTO[].class), @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class), @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)})
     @GetMapping(path = "/{instanceId}/scoreboard", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<Long, TeamScoreDTO>> getScoreboard(@ApiParam(value = "Training instance id", required = true) @PathVariable("instanceId") Long instanceId) {
+    public ResponseEntity<List<TeamScoreDTO>> getScoreboard(@ApiParam(value = "Training instance id", required = true) @PathVariable("instanceId") Long instanceId) {
         return ResponseEntity.ok(coopTrainingRunFacade.getScoreboard(instanceId));
     }
 

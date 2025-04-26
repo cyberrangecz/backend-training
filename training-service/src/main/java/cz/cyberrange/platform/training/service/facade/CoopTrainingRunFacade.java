@@ -6,7 +6,6 @@ import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
-import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
@@ -31,8 +30,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -92,7 +91,8 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
             return trainingInstance.notStarted();
         }
 
-        if (trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId).isPresent() || trainingInstanceLobbyService.isInLockedTeam(trainingInstance.getId(), participantRefId)) {
+        if (trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId).isPresent() ||
+                trainingInstanceLobbyService.isInLockedTeam(trainingInstance.getId(), participantRefId)) {
             return false;
         }
 
@@ -111,17 +111,17 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
      */
     @IsTraineeOrAdmin
     @Transactional
+    @Override
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
         TrainingInstance trainingInstance = coopTrainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
         // checking if the user is not accessing to his existing training run (resume action)
         Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
-        UserRef userRef = userService.createOrGetUserRef(participantRefId);
-
         if (trainingInstance.notStarted()) {
             throw new ResourceNotReadyException(new EntityErrorDetail("The training instance has not started yet."));
         }
 
         Optional<TrainingRun> accessedTrainingRun = coopTrainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
+        LOG.error("Run found: {}", accessedTrainingRun.isPresent());
         if (accessedTrainingRun.isPresent()) {
             TrainingRun trainingRun = coopTrainingRunService.resumeTrainingRun(accessedTrainingRun.get().getId());
             return convertToAccessTrainingRunDTO(trainingRun);
@@ -167,7 +167,7 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
                         coopTrainingRunService::findById
                 ).filter(
                         run -> run.getTrainingInstance().getType() == TrainingType.COOP
-                ).map(run -> run.getCoopRunOwner().getId())
+                ).map(run -> run.getCoopRunTeam().getId())
                 .toList();
         super.deleteTrainingRuns(trainingRunIds, forceDelete);
         teamsToDelete.forEach(trainingInstanceLobbyService::deleteTeam);
@@ -186,13 +186,13 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
         TrainingRun run = this.coopTrainingRunService.findById(trainingRunId);
         super.deleteTrainingRun(trainingRunId, forceDelete);
         if (run.getTrainingInstance().getType() == TrainingType.COOP) {
-            this.trainingInstanceLobbyService.deleteTeam(run.getCoopRunOwner().getId());
+            this.trainingInstanceLobbyService.deleteTeam(run.getCoopRunTeam().getId());
         }
     }
 
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" + "or @securityService.isTraineeOfGivenTrainingInstance(#instanceId)")
     @TransactionalRO
-    public Map<Long, TeamScoreDTO> getScoreboard(Long instanceId) {
-        return scoreboardService.getScoreboard(instanceId);
+    public List<TeamScoreDTO> getScoreboard(Long instanceId) {
+        return new ArrayList<>(scoreboardService.getScoreboard(instanceId).values());
     }
 }
