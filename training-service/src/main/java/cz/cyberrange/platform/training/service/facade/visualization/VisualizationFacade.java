@@ -617,38 +617,7 @@ public class VisualizationFacade {
         return getTimelineVisualizations(trainingRun.getTrainingInstance().getId());
     }
 
-    private Timeline    }
-
-
-    private TrainingRun waitForOtherInstanceToAcquireLock(Team team, TrainingRun trainingRun) {
-        TeamRunLock existingLock = teamRunLockRepository.findById(team.getId())
-                .orElseThrow(() -> new IllegalStateException("Expected existing lock not found"));
-
-        long timeoutMillis = 5000;
-        long sleepMillis = 100;
-        long waited = 0;
-
-        while (existingLock.getSandboxInstanceRefId() == null && waited < timeoutMillis) {
-            try {
-                Thread.sleep(sleepMillis);
-                waited += sleepMillis;
-                existingLock = teamRunLockRepository.findById(team.getId())
-                        .orElseThrow(() -> new IllegalStateException("Lock disappeared while waiting for sandbox to be assigned"));
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted while waiting for sandbox assignment", ie);
-            }
-        }
-
-        if (existingLock.getSandboxInstanceRefId() == null) {
-            throw new IllegalStateException("Timed out waiting for sandbox assignment");
-        }
-
-        trainingRun.setSandboxInstanceRefId(existingLock.getSandboxInstanceRefId());
-        trainingRun.setSandboxInstanceAllocationId(existingLock.getSandboxInstanceAllocationId());
-        return trainingRun;
-    }
-DTO getTimelineVisualizations(Long trainingInstanceId) {
+    private TimelineDTO getTimelineVisualizations(Long trainingInstanceId) {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
                 elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels,
                 this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels);
