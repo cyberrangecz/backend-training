@@ -209,6 +209,7 @@ public class TrainingRunService {
         return trainingRunRepository.findAllByParticipantRefId(securityService.getUserRefIdFromUserAndGroup(), predicate, pageable);
     }
 
+
     /**
      * Finds all Training Runs of particular training instance.
      *
@@ -835,19 +836,5 @@ public class TrainingRunService {
 
     public List<QuestionAnswer> getQuestionAnswersByTrainingRunId(Long runId) {
         return questionAnswerRepository.getAllByTrainingRunId(runId);
-    }
-
-
-    public Team getTeam(Long trainingRunId) {
-        TrainingRun run = findById(trainingRunId);
-        return run.getLinearRunOwner().getTeams().stream().filter(
-                        team -> team.getTrainingInstance().getId().equals(run.getTrainingInstance().getId()))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(
-                        new EntityErrorDetail(
-                                Team.class, "id",
-                                run.getLinearRunOwner().getUserRefId().getClass(),
-                                run.getLinearRunOwner().getUserRefId(),
-                                "No team found for training run with id: " + trainingRunId)));
     }
 }

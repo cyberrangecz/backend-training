@@ -53,9 +53,7 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.ReferenceSoluti
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.cyberrange.platform.training.service.services.CoopTrainingRunService;
 import cz.cyberrange.platform.training.service.services.ExportImportService;
-import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
-import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.ElasticsearchApiService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
@@ -105,12 +103,10 @@ public class ExportImportFacade {
     private final ElasticsearchApiService elasticsearchApiService;
     private final TrainingFeedbackApiService trainingFeedbackApiService;
     private final UserService userService;
-    private final SecurityService securityService;
     private final ExportImportMapper exportImportMapper;
     private final LevelMapper levelMapper;
     private final TrainingDefinitionMapper trainingDefinitionMapper;
     private final ObjectMapper objectMapper;
-    private final TrainingInstanceService trainingInstanceService;
     private final CoopTrainingRunService coopTrainingRunService;
 
     /**
@@ -119,7 +115,6 @@ public class ExportImportFacade {
      * @param exportImportService       the export import service
      * @param trainingDefinitionService the training definition service
      * @param userService               the user service
-     * @param securityService
      * @param exportImportMapper        the export import mapper
      * @param levelMapper               the level mapper
      * @param trainingDefinitionMapper  the training definition mapper
@@ -131,22 +126,20 @@ public class ExportImportFacade {
                               ElasticsearchApiService elasticsearchApiService,
                               TrainingFeedbackApiService trainingFeedbackApiService,
                               SandboxApiService sandboxApiService,
-                              UserService userService, SecurityService securityService, ExportImportMapper exportImportMapper,
+                              UserService userService, ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper,
-                              ObjectMapper objectMapper, TrainingInstanceService trainingInstanceService, CoopTrainingRunService coopTrainingRunService) {
+                              ObjectMapper objectMapper, CoopTrainingRunService coopTrainingRunService) {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.elasticsearchApiService = elasticsearchApiService;
         this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.sandboxApiService = sandboxApiService;
         this.userService = userService;
-        this.securityService = securityService;
         this.exportImportMapper = exportImportMapper;
         this.levelMapper = levelMapper;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
         this.objectMapper = objectMapper;
-        this.trainingInstanceService = trainingInstanceService;
         this.coopTrainingRunService = coopTrainingRunService;
     }
 
@@ -361,7 +354,7 @@ public class ExportImportFacade {
     }
 
     private String getCoopCSVString(TrainingRun trainingRun) {
-        Team team = coopTrainingRunService.getRelatedTeam(trainingRun.getId());
+        Team team = coopTrainingRunService.findRelatedTeam(trainingRun.getId());
         List<UserRefDTO> usersWithData = team.getMembers().stream().map(
                 member -> userService.getUserRefDTOByUserRefId(member.getUserRefId())
         ).toList();

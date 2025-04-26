@@ -114,6 +114,8 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
 
     Optional<TrainingRun> findByCoopRunOwnerAndState(Team coopRunOwner, TRState state);
 
+    Optional<TrainingRun> findByCoopRunOwner_Id(Long coopRunOwner);
+
     /**
      * Find training run by id including current level
      *

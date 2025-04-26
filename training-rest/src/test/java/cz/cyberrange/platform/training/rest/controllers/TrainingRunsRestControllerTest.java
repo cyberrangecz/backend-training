@@ -26,7 +26,9 @@ import cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
+import cz.cyberrange.platform.training.service.facade.CoopTrainingRunFacade;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
+import cz.cyberrange.platform.training.service.facade.TrainingTypeResolver;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.BetaTestingGroupMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapperImpl;
@@ -80,6 +82,10 @@ public class TrainingRunsRestControllerTest {
 
     @MockBean
     private TrainingRunFacade trainingRunFacade;
+    @MockBean
+    private TrainingTypeResolver trainingTypeResolver;
+    @MockBean
+    private CoopTrainingRunFacade coopTrainingRunFacade;
 
     private MockMvc mockMvc;
     private AutoCloseable closeable;
@@ -162,7 +168,8 @@ public class TrainingRunsRestControllerTest {
         snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
 
         closeable = MockitoAnnotations.openMocks(this);
-        trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, snakeCaseMapper);
+        trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade, coopTrainingRunFacade, snakeCaseMapper,
+                trainingTypeResolver);
         this.mockMvc = MockMvcBuilders.standaloneSetup(trainingRunsRestController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
                         new QuerydslPredicateArgumentResolver(

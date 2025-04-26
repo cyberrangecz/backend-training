@@ -3,6 +3,7 @@ package cz.cyberrange.platform.training.persistence.repository;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import cz.cyberrange.platform.training.persistence.model.QTeam;
 import cz.cyberrange.platform.training.persistence.model.QTrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.QTrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.QTrainingRun;
@@ -33,18 +34,25 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport impleme
 
     @Override
     @Transactional
-    public Page<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId, Predicate predicate, Pageable pageable) {
+    public Page<TrainingRun> findAllByParticipantRefId(
+            @Param("userRefId") Long userRefId,
+            Predicate predicate,
+            Pageable pageable
+    ) {
 
         QTrainingRun trainingRun = QTrainingRun.trainingRun;
         QUserRef participantRef = new QUserRef("participantRef");
+        QTeam team = new QTeam("team");
         QTrainingInstance trainingInstance = new QTrainingInstance("trainingInstance");
         QTrainingDefinition trainingDefinition = new QTrainingDefinition("trainingDefinition");
 
         JPQLQuery<TrainingRun> query = new JPAQueryFactory(entityManager).selectFrom(trainingRun).distinct()
-                .leftJoin(trainingRun.participantRef, participantRef)
+                .leftJoin(trainingRun.linearRunOwner, participantRef)
                 .leftJoin(trainingRun.trainingInstance, trainingInstance)
                 .leftJoin(trainingInstance.trainingDefinition, trainingDefinition)
-                .where(participantRef.userRefId.eq(userRefId));
+                .leftJoin(trainingRun.coopRunOwner, team)
+                .where(participantRef.userRefId.eq(userRefId)
+                        .or(team.members.any().userRefId.eq(userRefId)));
 
         if (predicate != null) {
             query.where(predicate);

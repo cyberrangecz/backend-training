@@ -20,4 +20,5 @@ public interface TrainingRunRepositoryCustom {
      * @return the page of training instances
      */
     Page<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId, Predicate predicate, Pageable pageable);
+    
 }

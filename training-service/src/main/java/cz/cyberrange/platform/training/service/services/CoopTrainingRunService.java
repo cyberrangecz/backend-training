@@ -12,7 +12,6 @@ import cz.cyberrange.platform.training.persistence.repository.HintRepository;
 import cz.cyberrange.platform.training.persistence.repository.QuestionAnswerRepository;
 import cz.cyberrange.platform.training.persistence.repository.SubmissionRepository;
 import cz.cyberrange.platform.training.persistence.repository.TRAcquisitionLockRepository;
-import cz.cyberrange.platform.training.persistence.repository.TeamRunLockRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingRunRepository;
 import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
@@ -21,11 +20,8 @@ import cz.cyberrange.platform.training.service.services.api.ElasticsearchApiServ
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * The type Training run service.
@@ -35,6 +31,7 @@ public class CoopTrainingRunService extends TrainingRunService {
 
     private static final Logger LOG = Logger.getLogger(CoopTrainingRunService.class.getName());
     private final UserService userService;
+    private final TrainingInstanceLobbyService trainingInstanceLobbyService;
 
     public CoopTrainingRunService(TrainingRunRepository trainingRunRepository,
                                   AbstractLevelRepository abstractLevelRepository,
@@ -48,12 +45,13 @@ public class CoopTrainingRunService extends TrainingRunService {
                                   QuestionAnswerRepository questionAnswerRepository,
                                   SandboxApiService sandboxApiService,
                                   TRAcquisitionLockRepository trAcquisitionLockRepository,
-                                  SubmissionRepository submissionRepository, TeamRunLockRepository teamRunLockRepository, UserService userService) {
+                                  SubmissionRepository submissionRepository, UserService userService, TrainingInstanceLobbyService trainingInstanceLobbyService) {
         super(trainingRunRepository, abstractLevelRepository, trainingInstanceRepository,
                 participantRefRepository, hintRepository, auditEventsService, elasticsearchApiService,
                 answersStorageApiService, securityService, questionAnswerRepository, sandboxApiService,
                 trAcquisitionLockRepository, submissionRepository);
         this.userService = userService;
+        this.trainingInstanceLobbyService = trainingInstanceLobbyService;
     }
 
     /**
@@ -74,7 +72,7 @@ public class CoopTrainingRunService extends TrainingRunService {
         return trainingRunRepository.findByCoopRunOwnerAndState(team.get(), TRState.RUNNING);
     }
 
-    public Team getRelatedTeam(Long trainingRunId) {
+    public Team findRelatedTeam(Long trainingRunId) {
         TrainingRun run = findById(trainingRunId);
         if (run.getCoopRunOwner() == null) {
             throw new EntityNotFoundException(new EntityErrorDetail(
@@ -84,14 +82,11 @@ public class CoopTrainingRunService extends TrainingRunService {
         return run.getCoopRunOwner();
     }
 
-    public List<TrainingRun> getTeamRuns(Team team) {
-        Set<Long> userIds = team.getMembers().stream()
-                .map(UserRef::getUserRefId)
-                .collect(Collectors.toSet());
-        return trainingRunRepository.getAllByTrainingInstance(team.getTrainingInstance()).
-                stream()
-                .filter(run -> userIds.contains(run.getLinearRunOwner().getUserRefId()))
-                .toList();
+    public TrainingRun findRelatedTrainingRun(Long teamId) {
+        return this.trainingRunRepository.findByCoopRunOwner_Id(teamId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(
+                        String.format("Team with id %d has no training run", teamId)
+                )));
     }
 
 }

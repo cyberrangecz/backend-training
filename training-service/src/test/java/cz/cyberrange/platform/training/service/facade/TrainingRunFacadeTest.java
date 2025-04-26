@@ -93,8 +93,7 @@ public class TrainingRunFacadeTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         trainingRunFacade = new TrainingRunFacade(trainingRunService, trainingDefinitionService, answersStorageApiService,
-                securityService, userService, trainingFeedbackApiService, trainingRunMapper, levelMapper, hintMapper,
-                trainingInstanceLobbyService, coopTrainingRunService);
+                securityService, userService, trainingFeedbackApiService, trainingRunMapper, levelMapper, hintMapper);
 
         participant = new UserRef();
         participant.setUserRefId(5L);

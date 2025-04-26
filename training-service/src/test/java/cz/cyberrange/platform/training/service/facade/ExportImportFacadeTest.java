@@ -18,6 +18,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.*;
+import cz.cyberrange.platform.training.service.services.CoopTrainingRunService;
 import cz.cyberrange.platform.training.service.services.ExportImportService;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
@@ -82,6 +83,8 @@ public class ExportImportFacadeTest {
     private UserService userService;
     @MockBean
     private SecurityService securityService;
+    @MockBean
+    private CoopTrainingRunService coopTrainingRunService;
 
     private TrainingDefinition trainingDefinition;
     private TrainingDefinition trainingDefinitionImported;
@@ -98,8 +101,12 @@ public class ExportImportFacadeTest {
     @BeforeEach
     public void init() {
         MockitoAnnotations.openMocks(this);
-        exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, elasticsearchApiService,
-                trainingFeedbackApiService, sandboxApiService, userService, securityService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
+        exportImportFacade = new ExportImportFacade(
+                exportImportService, trainingDefinitionService, elasticsearchApiService,
+                trainingFeedbackApiService, sandboxApiService, userService,
+                exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper,
+                coopTrainingRunService
+        );
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);

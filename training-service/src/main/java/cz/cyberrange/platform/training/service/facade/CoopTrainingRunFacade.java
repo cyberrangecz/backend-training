@@ -1,19 +1,14 @@
 package cz.cyberrange.platform.training.service.facade;
 
 import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
-import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamRunInfoDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamScoreDTO;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
-import cz.cyberrange.platform.training.api.exceptions.ResourceNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
-import cz.cyberrange.platform.training.persistence.model.HintInfo;
-import cz.cyberrange.platform.training.persistence.model.SolutionInfo;
-import cz.cyberrange.platform.training.persistence.model.Team;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
-import cz.cyberrange.platform.training.persistence.repository.TeamRunLockRepository;
+import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapper;
@@ -36,10 +31,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * The type Training run facade.
@@ -51,7 +45,6 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
     private final TrainingInstanceLobbyService trainingInstanceLobbyService;
     private final CoopTrainingRunService coopTrainingRunService;
     private final ScoreboardService scoreboardService;
-    private final TeamRunLockRepository teamRunLockRepository;
 
     /**
      * Instantiates a new Training run facade.
@@ -76,13 +69,11 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
             HintMapper hintMapper,
             TrainingInstanceLobbyService trainingInstanceLobbyService,
             CoopTrainingRunService coopTrainingRunService,
-            ScoreboardService scoreboardService,
-            TeamRunLockRepository teamRunLockRepository) {
+            ScoreboardService scoreboardService) {
         super(trainingRunService, trainingDefinitionService, answersStorageApiService, securityService, userService, trainingFeedbackApiService, trainingRunMapper, levelMapper, hintMapper);
         this.trainingInstanceLobbyService = trainingInstanceLobbyService;
         this.coopTrainingRunService = coopTrainingRunService;
         this.scoreboardService = scoreboardService;
-        this.teamRunLockRepository = teamRunLockRepository;
     }
 
     /**
@@ -140,6 +131,7 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
         try {
             TrainingRun trainingRun;
             try {
+                // Catch concurrent attempt to create a training run by all team members
                 trainingRun = coopTrainingRunService.createTrainingRun(trainingInstance, participantRefId);
             } catch (DataIntegrityViolationException exception) {
                 accessedTrainingRun = coopTrainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
@@ -161,21 +153,41 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
         }
     }
 
-    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" + "or @securityService.isTraineeOfGivenTrainingInstance(#instanceId)")
-    @TransactionalRO
-    public TeamRunInfoDTO getCoopRunInfo(Long instanceId) {
-        TeamRunInfoDTO teamRunInfoDTO = new TeamRunInfoDTO();
-        UserRef currentUser = userService.getUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
+    /**
+     * Delete selected training runs together with teams
+     *
+     * @param trainingRunIds training runs to delete
+     * @param forceDelete    indicates if this training run should be force deleted.
+     */
+    @IsOrganizerOrAdmin
+    @Transactional
+    @Override
+    public void deleteTrainingRuns(List<Long> trainingRunIds, boolean forceDelete) {
+        List<Long> teamsToDelete = trainingRunIds.stream().map(
+                        coopTrainingRunService::findById
+                ).filter(
+                        run -> run.getTrainingInstance().getType() == TrainingType.COOP
+                ).map(run -> run.getCoopRunOwner().getId())
+                .toList();
+        super.deleteTrainingRuns(trainingRunIds, forceDelete);
+        teamsToDelete.forEach(trainingInstanceLobbyService::deleteTeam);
+    }
 
-        Team team = currentUser.getTeams().stream().filter(searchedTeam -> Objects.equals(searchedTeam.getTrainingInstance().getId(), instanceId)).findFirst().orElseThrow(() -> new ResourceNotFoundException("No team found in the current instance"));
-
-        teamRunInfoDTO.setCurrentLevels(coopTrainingRunService.getTeamRuns(team).stream().collect(Collectors.toMap((run) -> run.getLinearRunOwner().getId(), (run) -> run.getCurrentLevel().getId())));
-        teamRunInfoDTO.setUsedHints(coopTrainingRunService.getAllHintsTakenByTeam(team).stream().map(HintInfo::getHintId).collect(Collectors.toSet()));
-
-        teamRunInfoDTO.setShownSolutions(coopTrainingRunService.getAllSolutionsTakenByTeam(team).stream().map(SolutionInfo::getTrainingLevelId).collect(Collectors.toSet()));
-
-
-        return teamRunInfoDTO;
+    /**
+     * Delete selected training run together with team.
+     *
+     * @param trainingRunId training run to delete
+     * @param forceDelete   indicates if this training run should be force deleted.
+     */
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
+    @Transactional
+    public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
+        TrainingRun run = this.coopTrainingRunService.findById(trainingRunId);
+        super.deleteTrainingRun(trainingRunId, forceDelete);
+        if (run.getTrainingInstance().getType() == TrainingType.COOP) {
+            this.trainingInstanceLobbyService.deleteTeam(run.getCoopRunOwner().getId());
+        }
     }
 
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" + "or @securityService.isTraineeOfGivenTrainingInstance(#instanceId)")
