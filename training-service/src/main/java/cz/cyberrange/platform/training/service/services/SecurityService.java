@@ -9,10 +9,12 @@ import cz.cyberrange.platform.training.persistence.model.Team;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.repository.TeamRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingRunRepository;
+import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,7 @@ public class SecurityService {
     private final TrainingInstanceRepository trainingInstanceRepository;
     private final WebClient userManagementWebClient;
     private final TeamRepository teamRepository;
+    private final UserRefRepository userRefRepository;
 
     /**
      * Instantiates a new Security service.
@@ -52,12 +55,13 @@ public class SecurityService {
     public SecurityService(TrainingInstanceRepository trainingInstanceRepository,
                            TrainingDefinitionRepository trainingDefinitionRepository,
                            TrainingRunRepository trainingRunRepository,
-                           @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient, TeamRepository teamRepository) {
+                           @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient, TeamRepository teamRepository, UserRefRepository userRefRepository) {
         this.trainingDefinitionRepository = trainingDefinitionRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.trainingRunRepository = trainingRunRepository;
         this.userManagementWebClient = userManagementWebClient;
         this.teamRepository = teamRepository;
+        this.userRefRepository = userRefRepository;
     }
 
     /**
@@ -70,7 +74,16 @@ public class SecurityService {
         TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(),
                         trainingRunId, "The necessary permissions are required for a resource.")));
-        return trainingRun.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup());
+        return trainingRun.getLinearRunOwner().getUserRefId().equals(getUserRefIdFromUserAndGroup());
+    }
+
+    public boolean isTraineeOfGivenTrainingInstance(Long trainingInstanceId) {
+        TrainingInstance trainingInstance = trainingInstanceRepository.findById(trainingInstanceId)
+                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstanceId.getClass(),
+                        trainingInstanceId, "The necessary permissions are required for a resource.")));
+        return trainingRunRepository.getAllByTrainingInstance(trainingInstance)
+                .stream().anyMatch(t -> t.getLinearRunOwner().getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+
     }
 
     /**
@@ -186,5 +199,12 @@ public class SecurityService {
     public String getBearerToken() {
         JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         return authentication.getToken().getTokenValue();
+    }
+
+    public boolean isTraineeOfGivenTeam(Long teamId) {
+        UserRef userRef = userRefRepository.createOrGet(this.getUserRefIdFromUserAndGroup());
+        return userRef.getTeams().stream().anyMatch(
+                team -> team.getId().equals(teamId)
+        );
     }
 }

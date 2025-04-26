@@ -147,7 +147,7 @@ class VisualizationFacadeTest {
                 TrainingRun trainingRun = testDataFactory.getFinishedRun();
                 long id = instanceId * 3 + runId;
                 trainingRun.setId(id);
-                trainingRun.setParticipantRef(users.get((int) id));
+                trainingRun.setLinearRunOwner(users.get((int) id));
                 trainingRuns.add(trainingRun);
             }
             runsByTrainingInstance.put(instanceId, trainingRuns);

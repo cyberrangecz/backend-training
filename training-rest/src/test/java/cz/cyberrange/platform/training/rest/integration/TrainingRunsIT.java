@@ -239,12 +239,12 @@ public class TrainingRunsIT {
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setCurrentLevel(trainingLevel1);
         trainingRun1.setTrainingInstance(trainingInstance);
-        trainingRun1.setParticipantRef(participant1);
+        trainingRun1.setLinearRunOwner(participant1);
 
         trainingRun2 = testDataFactory.getFinishedRun();
         trainingRun2.setCurrentLevel(infoLevel1);
         trainingRun2.setTrainingInstance(trainingInstance);
-        trainingRun2.setParticipantRef(participant2);
+        trainingRun2.setLinearRunOwner(participant2);
 
         isCorrectAnswerDTO = new IsCorrectAnswerDTO();
         isCorrectAnswerDTO.setCorrect(true);
@@ -300,7 +300,7 @@ public class TrainingRunsIT {
     @Test
     public void findAllTrainingRuns() throws Exception {
         trainingRunRepository.save(trainingRun1);
-        trainingRun2.setParticipantRef(participant1);
+        trainingRun2.setLinearRunOwner(participant1);
         trainingRunRepository.save(trainingRun2);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
 
@@ -328,7 +328,7 @@ public class TrainingRunsIT {
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", trainingInstance.getAccessToken()))
+                        .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         AccessTrainingRunDTO trainingRunDTO = convertJsonBytesToObject(response.getContentAsString(), AccessTrainingRunDTO.class);
@@ -341,13 +341,13 @@ public class TrainingRunsIT {
 
     @Test
     public void accessTrainingRunWithAlreadyStartedTrainingRun() throws Exception {
-        trainingRun1.setParticipantRef(participant1);
+        trainingRun1.setLinearRunOwner(participant1);
         trainingRun1.setSandboxInstanceRefId(sandboxInfo.getId());
         trainingRunRepository.save(trainingRun1);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", trainingInstance.getAccessToken()))
+                        .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         AccessTrainingRunDTO trainingRunDTO = convertJsonBytesToObject(response.getContentAsString(), AccessTrainingRunDTO.class);
@@ -363,7 +363,7 @@ public class TrainingRunsIT {
         trainingInstanceRepository.save(trainingInstance);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", trainingInstance.getAccessToken()))
+                        .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -385,7 +385,7 @@ public class TrainingRunsIT {
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", trainingInstance.getAccessToken()))
+                        .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -411,7 +411,7 @@ public class TrainingRunsIT {
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_TRAINEE.name()));
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", trainingInstance.getAccessToken()))
+                        .param("accessToken", trainingInstance.getAccessToken()))
                 .andExpect(status().isForbidden())
                 .andReturn().getResponse();
         ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
@@ -423,7 +423,7 @@ public class TrainingRunsIT {
         trainingRunRepository.save(trainingRun2);
 
         MockHttpServletResponse response = mvc.perform(post("/training-runs")
-                .param("accessToken", "notFoundToken"))
+                        .param("accessToken", "notFoundToken"))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -435,7 +435,7 @@ public class TrainingRunsIT {
 
     @Test
     public void getAllAccessedTrainingRuns() throws Exception {
-        trainingRun1.setParticipantRef(participant1);
+        trainingRun1.setLinearRunOwner(participant1);
         trainingRunRepository.save(trainingRun1);
         trainingRunRepository.save(trainingRun2);
         given(userManagementExchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(userRefDTO1));
@@ -633,8 +633,8 @@ public class TrainingRunsIT {
 
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(validAnswerDTO)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(convertObjectToJsonBytes(validAnswerDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectAnswerDTO, mapper.readValue(response.getContentAsString(), IsCorrectAnswerDTO.class));
@@ -650,8 +650,8 @@ public class TrainingRunsIT {
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectAnswerDTO, mapper.readValue(response.getContentAsString(), IsCorrectAnswerDTO.class));
@@ -670,8 +670,8 @@ public class TrainingRunsIT {
 
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectAnswerDTO, mapper.readValue(response.getContentAsString(), IsCorrectAnswerDTO.class));
@@ -691,8 +691,8 @@ public class TrainingRunsIT {
 
         assertFalse(trainingRun1.isLevelAnswered());
         MockHttpServletResponse response = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
         assertEquals(isCorrectAnswerDTO, mapper.readValue(response.getContentAsString(), IsCorrectAnswerDTO.class));
@@ -706,8 +706,8 @@ public class TrainingRunsIT {
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
 
         Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun2.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isBadRequest()).andReturn().getResolvedException();
 
         assertEquals(BadRequestException.class, Objects.requireNonNull(ex).getClass());
@@ -719,8 +719,8 @@ public class TrainingRunsIT {
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ADMINISTRATOR.name()));
         invalidAnswerDTO.setAnswer("");
         Exception ex = mvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun2.getId())
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(convertObjectToJsonBytes(invalidAnswerDTO)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(convertObjectToJsonBytes(invalidAnswerDTO)))
                 .andExpect(status().isBadRequest()).andReturn().getResolvedException();
         assertEquals(MethodArgumentNotValidException.class, Objects.requireNonNull(ex).getClass());
     }

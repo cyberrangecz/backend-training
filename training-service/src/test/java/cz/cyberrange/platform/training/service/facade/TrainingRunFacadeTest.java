@@ -102,7 +102,7 @@ public class TrainingRunFacadeTest {
 
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
-        trainingRun1.setParticipantRef(participant);
+        trainingRun1.setLinearRunOwner(participant);
 
         hint = testDataFactory.getHint1();
         hint.setId(1L);

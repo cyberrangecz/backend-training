@@ -4,8 +4,11 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.StringPath;
 import cz.cyberrange.platform.training.persistence.model.QTrainingRun;
+import cz.cyberrange.platform.training.persistence.model.Team;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.model.enums.TRState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -104,6 +107,12 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
      * @return the page of all {@link TrainingRun}s accessed by participant
      */
     Page<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId, Pageable pageable);
+
+    Page<TrainingRun> findAllByLinearRunOwner(UserRef linearRunOwner, Pageable pageable);
+
+    Page<TrainingRun> findAllByCoopRunOwner(Team coopRunOwner, Pageable pageable);
+
+    Optional<TrainingRun> findByCoopRunOwnerAndState(Team coopRunOwner, TRState state);
 
     /**
      * Find training run by id including current level

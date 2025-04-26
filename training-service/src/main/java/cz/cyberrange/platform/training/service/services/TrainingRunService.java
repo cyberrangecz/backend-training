@@ -170,7 +170,7 @@ public class TrainingRunService {
         if (deleteDataFromElasticsearch) {
             deleteDataFromElasticsearch(trainingRun);
         }
-        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getLinearRunOwner().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.delete(trainingRun);
         return trainingRun;
     }
@@ -178,7 +178,7 @@ public class TrainingRunService {
     private void deleteDataFromElasticsearch(TrainingRun trainingRun) {
         if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
             String accessToken = trainingRun.getTrainingInstance().getAccessToken();
-            Long userId = trainingRun.getParticipantRef().getUserRefId();
+            Long userId = trainingRun.getLinearRunOwner().getUserRefId();
             elasticsearchApiService.deleteCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
             String sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
@@ -389,7 +389,7 @@ public class TrainingRunService {
         newTrainingRun.setCurrentLevel(currentLevel);
 
         UserRef userRef = participantRefRepository.createOrGet(participantRefId);
-        newTrainingRun.setParticipantRef(userRef);
+        newTrainingRun.setLinearRunOwner(userRef);
 
         newTrainingRun.setAssessmentResponses("[]");
         newTrainingRun.setState(TRState.RUNNING);
@@ -599,7 +599,7 @@ public class TrainingRunService {
         if (trainingLevel.isVariantAnswers()) {
             return trainingRun.getTrainingInstance().isLocalEnvironment() ?
                     answersStorageApiService.getCorrectAnswerByLocalSandboxIdAndVariableName(trainingRun.getTrainingInstance().getAccessToken(),
-                            trainingRun.getParticipantRef().getUserRefId(), trainingLevel.getAnswerVariableName()) :
+                            trainingRun.getLinearRunOwner().getUserRefId(), trainingLevel.getAnswerVariableName()) :
                     answersStorageApiService.getCorrectAnswerByCloudSandboxIdAndVariableName(trainingRun.getSandboxInstanceRefId(), trainingLevel.getAnswerVariableName());
         }
         return trainingLevel.getAnswer();
@@ -665,7 +665,7 @@ public class TrainingRunService {
         }
         trainingRun.setState(TRState.FINISHED);
         trainingRun.setEndTime(LocalDateTime.now(Clock.systemUTC()));
-        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getLinearRunOwner().getUserRefId(), trainingRun.getTrainingInstance().getId());
         if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);
         }
@@ -685,7 +685,7 @@ public class TrainingRunService {
         trainingRun.setPreviousSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
         trainingRun.setSandboxInstanceRefId(null);
         trainingRun.setSandboxInstanceAllocationId(null);
-        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
+        trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getLinearRunOwner().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.save(trainingRun);
     }
 
@@ -709,7 +709,7 @@ public class TrainingRunService {
         List<Map<String, Object>> runCommands;
         if (run.getTrainingInstance().isLocalEnvironment()) {
             String accessToken = run.getTrainingInstance().getAccessToken();
-            Long userId = run.getParticipantRef().getUserRefId();
+            Long userId = run.getLinearRunOwner().getUserRefId();
             runCommands = elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
             String sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
@@ -840,14 +840,14 @@ public class TrainingRunService {
 
     public Team getTeam(Long trainingRunId) {
         TrainingRun run = findById(trainingRunId);
-        return run.getParticipantRef().getTeams().stream().filter(
+        return run.getLinearRunOwner().getTeams().stream().filter(
                         team -> team.getTrainingInstance().getId().equals(run.getTrainingInstance().getId()))
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(
                         new EntityErrorDetail(
                                 Team.class, "id",
-                                run.getParticipantRef().getUserRefId().getClass(),
-                                run.getParticipantRef().getUserRefId(),
+                                run.getLinearRunOwner().getUserRefId().getClass(),
+                                run.getLinearRunOwner().getUserRefId(),
                                 "No team found for training run with id: " + trainingRunId)));
     }
 }

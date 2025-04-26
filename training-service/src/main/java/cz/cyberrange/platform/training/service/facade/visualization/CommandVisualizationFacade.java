@@ -79,6 +79,7 @@ public class CommandVisualizationFacade {
     public Object getReferenceGraphByDefinitionId(Long definitionId) {
         return trainingFeedbackApiService.getReferenceGraph(definitionId);
     }
+
     @PreAuthorize("hasAnyAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
             "T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER) " +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
@@ -90,8 +91,8 @@ public class CommandVisualizationFacade {
     @PreAuthorize("@securityService.isTraineeOfGivenTrainingRun(#runId)")
     public Object getReferenceGraphByRunId(Long runId) {
         TrainingRun trainingRun = trainingRunService.findById(runId);
-        if(trainingRun.getState() != TRState.FINISHED) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet." ));
+        if (trainingRun.getState() != TRState.FINISHED) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet."));
         }
         return trainingFeedbackApiService.getReferenceGraph(trainingRun.getTrainingInstance().getTrainingDefinition().getId());
     }
@@ -106,8 +107,8 @@ public class CommandVisualizationFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public Object getTraineeGraph(Long runId) {
         TrainingRun trainingRun = trainingRunService.findById(runId);
-        if(trainingRun.getState() != TRState.FINISHED) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet." ));
+        if (trainingRun.getState() != TRState.FINISHED) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet."));
         }
         return trainingFeedbackApiService.getTraineeGraph(runId);
     }
@@ -115,11 +116,11 @@ public class CommandVisualizationFacade {
     @PreAuthorize("hasAnyAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)")
     public Object getAggregatedCommandsForOrganizer(Long instanceId, List<Long> runIds, boolean correct, List<MistakeType> mistakeTypes) {
-        if(correct) {
+        if (correct) {
             this.checkIfTrainingRunsAreFinished(runIds);
             return trainingFeedbackApiService.getAggregatedCorrectCommands(runIds);
         } else {
-            if(mistakeTypes == null || mistakeTypes.isEmpty()) {
+            if (mistakeTypes == null || mistakeTypes.isEmpty()) {
                 throw new BadRequestException("You must specify at least one mistake type.");
             }
             this.checkIfTrainingRunsAreFinished(runIds);
@@ -131,11 +132,11 @@ public class CommandVisualizationFacade {
     @PreAuthorize("hasAnyAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
     public Object getAggregatedCommandsForTrainee(Long runId, boolean correct, List<MistakeType> mistakeTypes) {
-        if(correct) {
+        if (correct) {
             this.checkIfTrainingRunIsFinished(runId);
             return trainingFeedbackApiService.getAggregatedCorrectCommands(List.of(runId));
         } else {
-            if(mistakeTypes == null || mistakeTypes.isEmpty()) {
+            if (mistakeTypes == null || mistakeTypes.isEmpty()) {
                 throw new BadRequestException("You must specify at least one mistake type.");
             }
             this.checkIfTrainingRunIsFinished(runId);
@@ -169,8 +170,8 @@ public class CommandVisualizationFacade {
 
     private void checkIfTrainingRunIsFinished(Long runId) {
         TrainingRun trainingRun = trainingRunService.findById(runId);
-        if(trainingRun.getState() != TRState.FINISHED) {
-            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet." ));
+        if (trainingRun.getState() != TRState.FINISHED) {
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId, "Training run has not been finished yet."));
         }
     }
 
@@ -178,14 +179,15 @@ public class CommandVisualizationFacade {
         QTrainingRun trainingRun = QTrainingRun.trainingRun;
         BooleanExpression queryRunningTrainingRuns = trainingRun.id.in(runIds).and(trainingRun.state.eq(TRState.RUNNING));
         Page<TrainingRun> runningTrainingRuns = trainingRunService.findAll(queryRunningTrainingRuns, PageRequest.of(0, 1));
-        if(!runningTrainingRuns.isEmpty()) {
+        if (!runningTrainingRuns.isEmpty()) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runningTrainingRuns.getContent().get(0).getId().getClass(),
-                    runningTrainingRuns.getContent().get(0).getId(), "Training run has not been finished yet." ));
+                    runningTrainingRuns.getContent().get(0).getId(), "Training run has not been finished yet."));
         }
     }
 
     /**
      * Retrieve all commands from a specific Training Instance
+     *
      * @param trainingInstanceId id of Training Instance
      * @return map of {@link TrainingRunDTO} and commands from a specific {@link TrainingInstance}
      */
@@ -201,6 +203,7 @@ public class CommandVisualizationFacade {
 
     /**
      * Retrieve all commands from a specific training run
+     *
      * @param runId id of the Training Run
      * @return list of commands executed during a training run
      */
@@ -215,7 +218,7 @@ public class CommandVisualizationFacade {
 
         if (trainingInstance.isLocalEnvironment()) {
             String accessToken = trainingInstance.getAccessToken();
-            Long userId = trainingRun.getParticipantRef().getId();
+            Long userId = trainingRun.getLinearRunOwner().getId();
             elasticCommands = elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
             String sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
@@ -234,7 +237,7 @@ public class CommandVisualizationFacade {
     }
 
     private CommandDTO elasticSearchCommandToCommandDTO(ElasticSearchCommand elasticSearchCommand, LocalDateTime runStartTime) {
-        String[] commandSplit =  elasticSearchCommand.getCmd().split(" ", 2);
+        String[] commandSplit = elasticSearchCommand.getCmd().split(" ", 2);
         String command = commandSplit[0];
         if (AbstractCommandPrefixes.isPrefix(command) && commandSplit.length > 1) {
             commandSplit = commandSplit[1].split(" ", 2);

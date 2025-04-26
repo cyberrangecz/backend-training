@@ -1,14 +1,17 @@
 package cz.cyberrange.platform.training.service.services;
 
+import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamDTO;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.ResourceNotFoundException;
 import cz.cyberrange.platform.training.persistence.model.Team;
+import cz.cyberrange.platform.training.persistence.model.TeamMessage;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstanceLobby;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.repository.TeamMessageRepository;
 import cz.cyberrange.platform.training.persistence.repository.TeamRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
@@ -17,6 +20,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -30,15 +36,18 @@ public class TrainingInstanceLobbyService {
     private final UserRefRepository userRefRepository;
 
     private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceLobbyService.class);
+    private final TeamMessageRepository teamMessageRepository;
 
     @Autowired
     public TrainingInstanceLobbyService(
             TeamRepository teamRepository,
-            UserService userService, TrainingInstanceRepository trainingInstanceRepository, UserRefRepository userRefRepository) {
+            UserService userService, TrainingInstanceRepository trainingInstanceRepository, UserRefRepository userRefRepository,
+            TeamMessageRepository teamMessageRepository) {
         this.teamRepository = teamRepository;
         this.userService = userService;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.userRefRepository = userRefRepository;
+        this.teamMessageRepository = teamMessageRepository;
     }
 
     public TrainingInstanceLobby updateTrainingInstanceLobby(TrainingInstanceLobby trainingInstanceLobby) {
@@ -131,6 +140,7 @@ public class TrainingInstanceLobbyService {
         Team team = getTeamOrThrow(teamId);
         Set<UserRef> members = team.getMembers();
         members.forEach(team::removeMember);
+        teamMessageRepository.deleteTeamMessageByTeam(team);
         userRefRepository.saveAll(members);
         this.teamRepository.delete(team);
     }
@@ -294,5 +304,23 @@ public class TrainingInstanceLobbyService {
         Optional<Team> assignedTeam = instance.getTeams().stream().filter(team ->
                 team.getMembers().contains(participantRef)).findFirst();
         return assignedTeam.isPresent() && assignedTeam.get().isLocked();
+    }
+
+    public void setTeamMembersData(TeamDTO dto, boolean withImages) {
+        dto.setMembers(
+                dto.getMembers().stream().map(member ->
+                        userService.getUserRefDTOWithLimitedInformation(member.getUserRefId())
+                ).peek((member) -> {
+                            if (!withImages) {
+                                member.setPicture(null);
+                            }
+                        }
+                ).toList()
+        );
+    }
+
+    public List<TeamMessage> getTeamMessages(Long teamId, Long since) {
+        LocalDateTime utc0Time = LocalDateTime.ofEpochSecond(since, 0, ZoneOffset.UTC);
+        return this.teamMessageRepository.findAllByTeam_IdAndTimeAfter(teamId, utc0Time);
     }
 }

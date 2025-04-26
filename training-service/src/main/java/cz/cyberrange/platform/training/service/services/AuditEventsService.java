@@ -156,7 +156,7 @@ public class AuditEventsService {
      * Audit correct passkey submitted action.
      *
      * @param trainingRun the training run
-     * @param passkey      the passkey
+     * @param passkey     the passkey
      */
     public void auditCorrectPasskeySubmittedAction(TrainingRun trainingRun, String passkey) {
         CorrectPasskeySubmitted.CorrectPasskeySubmittedBuilder<?, ?> correctPasskeySubmittedBuilder = (CorrectPasskeySubmitted.CorrectPasskeySubmittedBuilder<?, ?>)
@@ -172,7 +172,7 @@ public class AuditEventsService {
      * Audit wrong passkey submitted action.
      *
      * @param trainingRun the training run
-     * @param passkey      the passkey
+     * @param passkey     the passkey
      */
     public void auditWrongPasskeySubmittedAction(TrainingRun trainingRun, String passkey) {
         WrongPasskeySubmitted.WrongPasskeySubmittedBuilder<?, ?> wrongPasskeySubmittedBuilder = (WrongPasskeySubmitted.WrongPasskeySubmittedBuilder<?, ?>)
@@ -237,7 +237,7 @@ public class AuditEventsService {
                 .trainingInstanceId(trainingInstance.getId())
                 .trainingDefinitionId(trainingInstance.getTrainingDefinition().getId())
                 .trainingTime(computeTrainingTime(trainingRun.getStartTime()))
-                .userRefId(trainingRun.getParticipantRef().getUserRefId())
+                .userRefId(trainingRun.getLinearRunOwner().getUserRefId())
                 .level(trainingLevel.getId())
                 .levelOrder(trainingLevel.getOrder())
                 .totalTrainingScore(trainingRun.getTotalTrainingScore())

@@ -100,7 +100,7 @@ public class TrainingDefinitionRepositoryTest {
         viewGroup4.addOrganizer(organizer1);
         entityManager.merge(trainingDefinitionWithBG4);
 
-        List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository.findAll(null, PageRequest.of(0,10), author1.getUserRefId()).getContent();
+        List<TrainingDefinition> trainingDefinitions = trainingDefinitionRepository.findAll(null, PageRequest.of(0, 10), author1.getUserRefId()).getContent();
         assertTrue(trainingDefinitions.containsAll(List.of(trainingDefinition2, trainingDefinitionWithBG1, trainingDefinitionWithBG2, trainingDefinitionWithBG4)));
         assertEquals(4, trainingDefinitions.size());
     }
@@ -137,22 +137,22 @@ public class TrainingDefinitionRepositoryTest {
         entityManager.persist(trainingInstance3);
 
         TrainingRun trainingRun1 = testDataFactory.getRunningRun();
-        trainingRun1.setParticipantRef(participantRef1);
+        trainingRun1.setLinearRunOwner(participantRef1);
         trainingRun1.setTrainingInstance(trainingInstance1);
         trainingRun1.setCurrentLevel(infoLevel1);
 
         TrainingRun trainingRun2 = testDataFactory.getArchivedRun();
-        trainingRun2.setParticipantRef(participantRef1);
+        trainingRun2.setLinearRunOwner(participantRef1);
         trainingRun2.setTrainingInstance(trainingInstance2);
         trainingRun2.setCurrentLevel(infoLevel2);
 
         TrainingRun trainingRun3 = testDataFactory.getFinishedRun();
-        trainingRun3.setParticipantRef(participantRef2);
+        trainingRun3.setLinearRunOwner(participantRef2);
         trainingRun3.setTrainingInstance(trainingInstance1);
         trainingRun3.setCurrentLevel(infoLevel1);
 
         TrainingRun trainingRun4 = testDataFactory.getRunningRun();
-        trainingRun4.setParticipantRef(participantRef2);
+        trainingRun4.setLinearRunOwner(participantRef2);
         trainingRun4.setTrainingInstance(trainingInstance3);
         trainingRun4.setCurrentLevel(infoLevel3);
 

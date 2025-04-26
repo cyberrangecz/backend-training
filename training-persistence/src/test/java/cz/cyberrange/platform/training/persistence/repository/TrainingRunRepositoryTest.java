@@ -56,21 +56,21 @@ public class TrainingRunRepositoryTest {
 
         trainingRun2 = testDataFactory.getRunningRun();
         trainingRun2.setCurrentLevel(entityManager.persist(infoLevel));
-        trainingRun2.setParticipantRef(entityManager.persist(participantRef));
+        trainingRun2.setLinearRunOwner(entityManager.persist(participantRef));
         trainingRun2.setTrainingInstance(entityManager.persist(trainingInstance));
         trainingRun2.setSandboxInstanceRefId("1L");
         trainingRun2.setSandboxInstanceAllocationId(1);
 
         trainingRun1 = testDataFactory.getFinishedRun();
         trainingRun1.setCurrentLevel(entityManager.persist(infoLevel));
-        trainingRun1.setParticipantRef(entityManager.persist(participantRef));
+        trainingRun1.setLinearRunOwner(entityManager.persist(participantRef));
         trainingRun1.setTrainingInstance(entityManager.persist(trainingInstance));
         trainingRun1.setSandboxInstanceRefId("2L");
         trainingRun1.setSandboxInstanceAllocationId(2);
 
         archivedRun = testDataFactory.getArchivedRun();
         archivedRun.setCurrentLevel(entityManager.persist(infoLevel));
-        archivedRun.setParticipantRef(entityManager.persist(participantRef));
+        archivedRun.setLinearRunOwner(entityManager.persist(participantRef));
         archivedRun.setTrainingInstance(entityManager.persist(trainingInstance));
         archivedRun.setSandboxInstanceRefId("3L");
         archivedRun.setSandboxInstanceAllocationId(3);
@@ -198,7 +198,7 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void findAllByTrainingDefinitionIdPaginationTest(){
+    public void findAllByTrainingDefinitionIdPaginationTest() {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
         pageable = PageRequest.of(0, 1);
@@ -211,7 +211,7 @@ public class TrainingRunRepositoryTest {
     }
 
     @Test
-    public void findAllByTrainingDefinitionIdAndUserRefIdPaginationTest(){
+    public void findAllByTrainingDefinitionIdAndUserRefIdPaginationTest() {
         entityManager.persist(trainingRun1);
         entityManager.persist(trainingRun2);
         pageable = PageRequest.of(0, 1);

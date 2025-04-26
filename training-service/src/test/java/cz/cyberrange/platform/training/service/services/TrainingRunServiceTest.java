@@ -162,14 +162,14 @@ public class TrainingRunServiceTest {
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
         trainingRun1.setCurrentLevel(trainingLevel);
-        trainingRun1.setParticipantRef(participantRef);
+        trainingRun1.setLinearRunOwner(participantRef);
         trainingRun1.setTrainingInstance(trainingInstance1);
         trainingRun1.setTrainingInstance(trainingInstance1);
 
         trainingRun2 = testDataFactory.getRunningRun();
         trainingRun2.setId(2L);
         trainingRun2.setCurrentLevel(infoLevel);
-        trainingRun2.setParticipantRef(participantRef);
+        trainingRun2.setLinearRunOwner(participantRef);
         trainingRun2.setTrainingInstance(trainingInstance2);
 
         assessmentLevel = testDataFactory.getTest();
@@ -240,7 +240,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         trainingRunService.deleteTrainingRun(trainingRun1.getId(), false, false);
 
-        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getLinearRunOwner().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
         then(trainingRunRepository).should().delete(trainingRun1);
     }
@@ -251,7 +251,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         assertThrows(EntityConflictException.class, () -> trainingRunService.deleteTrainingRun(trainingRun1.getId(), false, false));
 
-        then(trAcquisitionLockRepository).should(never()).deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
+        then(trAcquisitionLockRepository).should(never()).deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getLinearRunOwner().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
         then(trainingRunRepository).should(never()).delete(trainingRun1);
     }
@@ -262,7 +262,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
         trainingRunService.deleteTrainingRun(trainingRun1.getId(), true, false);
 
-        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getLinearRunOwner().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
         then(trainingRunRepository).should().delete(trainingRun1);
     }
@@ -272,7 +272,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findById(trainingRun1.getId())).willReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> trainingRunService.deleteTrainingRun(trainingRun1.getId(), true, false));
 
-        then(trAcquisitionLockRepository).should(never()).deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getParticipantRef().getUserRefId(),
+        then(trAcquisitionLockRepository).should(never()).deleteByParticipantRefIdAndTrainingInstanceId(trainingRun1.getLinearRunOwner().getUserRefId(),
                 trainingRun1.getTrainingInstance().getId());
         then(trainingRunRepository).should(never()).delete(trainingRun1);
     }
@@ -594,7 +594,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun2));
         given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
         trainingRunService.finishTrainingRun(trainingRun2.getId());
-        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun2.getParticipantRef().getUserRefId(), trainingRun2.getTrainingInstance().getId());
+        then(trAcquisitionLockRepository).should().deleteByParticipantRefIdAndTrainingInstanceId(trainingRun2.getLinearRunOwner().getUserRefId(), trainingRun2.getTrainingInstance().getId());
         assertEquals(trainingRun2.getState(), TRState.FINISHED);
     }
 

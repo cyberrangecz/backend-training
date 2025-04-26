@@ -31,7 +31,7 @@ import java.util.Set;
         @NamedQuery(
                 name = "UserRef.findParticipantsRefIdsByTrainingInstanceId",
                 query = "SELECT pr.userRefId FROM TrainingRun tr " +
-                        "INNER JOIN tr.participantRef pr " +
+                        "INNER JOIN tr.linearRunOwner pr " +
                         "INNER JOIN tr.trainingInstance ti " +
                         "WHERE ti.id = :trainingInstanceId"
         )

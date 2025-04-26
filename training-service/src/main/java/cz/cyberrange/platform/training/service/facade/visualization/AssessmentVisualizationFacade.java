@@ -67,7 +67,7 @@ public class AssessmentVisualizationFacade {
         List<AssessmentLevel> assessmentLevels = visualizationService.getAssessmentLevelsByTrainingDefinitionId(trainingInstance.getTrainingDefinition().getId());
 
         List<AssessmentVisualizationDTO> result = new ArrayList<>();
-        for (AssessmentLevel assessmentLevel: assessmentLevels) {
+        for (AssessmentLevel assessmentLevel : assessmentLevels) {
             AssessmentVisualizationDTO assessmentVisualizationDTO = new AssessmentVisualizationDTO();
             assessmentVisualizationDTO.setId(assessmentLevel.getId());
             assessmentVisualizationDTO.setTitle(assessmentLevel.getTitle());
@@ -104,7 +104,7 @@ public class AssessmentVisualizationFacade {
         visualizationService.getAnswersToQuestionByTrainingInstance(questionId, instanceId).forEach(questionAnswer ->
                 questionAnswer.getAnswers().forEach(answer -> {
                     List<UserRefDTO> participants = participantsByAnswerText.getOrDefault(answer, new ArrayList<>());
-                    participants.add(participantsByIds.get(questionAnswer.getTrainingRun().getParticipantRef().getUserRefId()));
+                    participants.add(participantsByIds.get(questionAnswer.getTrainingRun().getLinearRunOwner().getUserRefId()));
                     participantsByAnswerText.put(answer, participants);
                 })
         );
@@ -122,7 +122,7 @@ public class AssessmentVisualizationFacade {
                 Map<String, List<UserRefDTO>> innerResult = result.getOrDefault(statementText, new HashMap<>());
                 List<UserRefDTO> participants = innerResult.getOrDefault(optionText, new ArrayList<>());
 
-                participants.add(participantsByIds.get(questionAnswer.getTrainingRun().getParticipantRef().getUserRefId()));
+                participants.add(participantsByIds.get(questionAnswer.getTrainingRun().getLinearRunOwner().getUserRefId()));
                 innerResult.put(optionText, participants);
                 result.put(statementText, innerResult);
             }
@@ -131,7 +131,7 @@ public class AssessmentVisualizationFacade {
     }
 
     private String getStatementText(Question question, Integer statementOrderInAnswer) {
-        if(statementOrderInAnswer < 0 || statementOrderInAnswer >= question.getExtendedMatchingStatements().size()) {
+        if (statementOrderInAnswer < 0 || statementOrderInAnswer >= question.getExtendedMatchingStatements().size()) {
             throw new InternalServerErrorException("Statement order (value: " + statementOrderInAnswer + ") in the user answer is out" +
                     " of range of the extended matching statements (size: " + question.getExtendedMatchingStatements().size() + ") defined in the question.");
         }
@@ -139,7 +139,7 @@ public class AssessmentVisualizationFacade {
     }
 
     private String getOptionText(Question question, Integer optionOrderInAnswer) {
-        if(optionOrderInAnswer < 0 || optionOrderInAnswer >= question.getExtendedMatchingOptions().size()) {
+        if (optionOrderInAnswer < 0 || optionOrderInAnswer >= question.getExtendedMatchingOptions().size()) {
             throw new InternalServerErrorException("Option order (value: " + optionOrderInAnswer + ") in the user answer is out" +
                     " of range of the extended matching options (size: " + question.getExtendedMatchingOptions().size() + ") defined in the question.");
         }
@@ -178,11 +178,11 @@ public class AssessmentVisualizationFacade {
         var participantsByEMIAnswers = preProcessEMIQuestionAnswers(question, instanceId, participantsByIds);
         return question.getExtendedMatchingStatements().stream()
                 .map(statement ->
-                    (EMIAnswerDTO) EMIAnswerDTO.builder()
-                            .text(statement.getText())
-                            .options(collectUsersOptionsForStatement(statement, question.getExtendedMatchingOptions(),
-                                    participantsByEMIAnswers.getOrDefault(statement.getText(), new HashMap<>())))
-                            .build())
+                        (EMIAnswerDTO) EMIAnswerDTO.builder()
+                                .text(statement.getText())
+                                .options(collectUsersOptionsForStatement(statement, question.getExtendedMatchingOptions(),
+                                        participantsByEMIAnswers.getOrDefault(statement.getText(), new HashMap<>())))
+                                .build())
                 .toList();
     }
 

@@ -54,7 +54,7 @@ import java.util.Set;
         @NamedQuery(
                 name = "TrainingDefinition.findAllPlayedByUser",
                 query = "SELECT DISTINCT td FROM TrainingRun tr " +
-                        "LEFT JOIN tr.participantRef pr " +
+                        "LEFT JOIN tr.linearRunOwner pr " +
                         "LEFT JOIN tr.trainingInstance ti " +
                         "LEFT JOIN ti.trainingDefinition td " +
                         "WHERE pr.userRefId = :userRefId"

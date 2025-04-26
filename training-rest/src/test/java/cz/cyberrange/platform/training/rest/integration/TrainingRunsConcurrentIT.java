@@ -170,13 +170,13 @@ public class TrainingRunsConcurrentIT {
         trainingRunAssessmentLevel = this.testDataFactory.getRunningRun();
         trainingRunAssessmentLevel.setCurrentLevel(assessmentLevel);
         trainingRunAssessmentLevel.setTrainingInstance(trainingInstance);
-        trainingRunAssessmentLevel.setParticipantRef(participant2);
+        trainingRunAssessmentLevel.setLinearRunOwner(participant2);
 
         trainingRunTrainingLevel = this.testDataFactory.getRunningRun();
         trainingRunTrainingLevel.setCurrentLevel(trainingLevel);
         trainingRunTrainingLevel.setIncorrectAnswerCount(0);
         trainingRunTrainingLevel.setTrainingInstance(trainingInstance);
-        trainingRunTrainingLevel.setParticipantRef(participant2);
+        trainingRunTrainingLevel.setLinearRunOwner(participant2);
         trainingRunRepository.saveAll(Set.of(trainingRunAssessmentLevel, trainingRunTrainingLevel));
 
     }

@@ -4,6 +4,7 @@ package cz.cyberrange.platform.training.rest.controllers;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.TrainingInstanceLobbyDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.UserTeamDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamMessageDTO;
 import cz.cyberrange.platform.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.service.facade.LobbyManagementFacade;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
 import java.util.Set;
 
 @Api(value = "/instance-lobby",
@@ -109,12 +111,12 @@ public class TrainingInstanceLobbyRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Time returned.", response = Integer.class),
+            @ApiResponse(code = 200, message = "Team returned.", response = Integer.class),
             @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class),
             @ApiResponse(code = 425, message = "Not yet assigned to team", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/{accessToken}/team-info", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/{accessToken}/assigned-team", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TeamDTO> getTeamInfo(
             @ApiParam(value = "Training instance access token", required = true)
             @PathVariable("accessToken")
@@ -122,6 +124,33 @@ public class TrainingInstanceLobbyRestController {
     ) {
         return ResponseEntity.ok(
                 teamsManagementFacade.getTeamInfo(accessToken)
+        );
+    }
+
+    @ApiOperation(httpMethod = "GET",
+            value = "Get team messages",
+            notes = "This can only be done by trainee or organizer of an instance",
+            response = TeamMessageDTO[].class,
+            nickname = "getTeamInfo",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Messages returned.", response = Integer.class),
+            @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class),
+            @ApiResponse(code = 425, message = "Not yet assigned to team", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{teamId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<Long, TeamMessageDTO>> getTeamMessages(
+            @ApiParam(value = "Team id", required = true)
+            @PathVariable("teamId")
+            Long teamId,
+            @ApiParam(value = "Time since", required = false, defaultValue = "0")
+            @RequestParam(value = "since", required = false, defaultValue = "0")
+            Long since
+    ) {
+        return ResponseEntity.ok(
+                teamsManagementFacade.getTeamMessagesByPlayer(teamId, since)
         );
     }
 

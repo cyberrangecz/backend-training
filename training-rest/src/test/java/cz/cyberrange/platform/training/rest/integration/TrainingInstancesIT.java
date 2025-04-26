@@ -200,15 +200,15 @@ public class TrainingInstancesIT {
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setCurrentLevel(infoLevel);
         trainingRun1.setTrainingInstance(futureTrainingInstance);
-        trainingRun1.setParticipantRef(participant2);
+        trainingRun1.setLinearRunOwner(participant2);
         trainingRun1.setSandboxInstanceRefId(sandboxInfo1.getId());
-        trainingRun1.setParticipantRef(organizer1);
+        trainingRun1.setLinearRunOwner(organizer1);
 
         trainingRun2 = testDataFactory.getRunningRun();
         trainingRun2.setSolutionTaken(false);
         trainingRun2.setCurrentLevel(infoLevel);
         trainingRun2.setTrainingInstance(futureTrainingInstance);
-        trainingRun2.setParticipantRef(participant1);
+        trainingRun2.setLinearRunOwner(participant1);
 
         userRefDTO1 = new UserRefDTO();
         userRefDTO1.setUserRefFullName("Ing. John Doe");
@@ -227,7 +227,7 @@ public class TrainingInstancesIT {
         userRefDTO2.setUserRefId(4L);
 
         trainingRun2.setSandboxInstanceRefId(sandboxInfo2.getId());
-        trainingRun2.setParticipantRef(organizer1);
+        trainingRun2.setLinearRunOwner(organizer1);
 
         trainingInstanceAssignPoolIdDTO = new TrainingInstanceAssignPoolIdDTO();
         trainingInstanceAssignPoolIdDTO.setPoolId(1L);
@@ -290,7 +290,7 @@ public class TrainingInstancesIT {
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse result = mvc.perform(post("/training-instances").content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -305,7 +305,7 @@ public class TrainingInstancesIT {
     @Test
     public void createInvalidTrainingInstance() throws Exception {
         Exception ex = mvc.perform(post("/training-instances").content(convertObjectToJsonBytes(new TrainingInstanceCreateDTO()))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResolvedException();
 
@@ -323,8 +323,8 @@ public class TrainingInstancesIT {
 
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse result = mvc.perform(put("/training-instances")
-                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -344,8 +344,8 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setTrainingDefinitionId(100L);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse response = mvc.perform(put("/training-instances")
-                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -366,8 +366,8 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setTrainingDefinitionId(trainingDefinition.getId());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse response = mvc.perform(put("/training-instances")
-                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -388,8 +388,8 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setTrainingDefinitionId(notConcludedTrainingInstance.getTrainingDefinition().getId());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse response = mvc.perform(put("/training-instances")
-                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -411,8 +411,8 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setTrainingDefinitionId(notConcludedTrainingInstance.getTrainingDefinition().getId());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse response = mvc.perform(put("/training-instances")
-                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -434,8 +434,8 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setTrainingDefinitionId(notConcludedTrainingInstance.getTrainingDefinition().getId());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse response = mvc.perform(put("/training-instances")
-                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -450,8 +450,8 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setId(500L);
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse response = mvc.perform(put("/training-instances")
-                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
 
@@ -470,8 +470,8 @@ public class TrainingInstancesIT {
         trainingInstanceUpdateDTO.setPoolId(futureTrainingInstance.getPoolId());
         mockSpringSecurityContextForGet(List.of(RoleType.ROLE_TRAINING_ORGANIZER.name()));
         MockHttpServletResponse response = mvc.perform(put("/training-instances")
-                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isConflict())
                 .andReturn().getResponse();
         ApiEntityError error = convertJsonBytesToObject(response.getContentAsString(), ApiEntityError.class);
@@ -564,7 +564,7 @@ public class TrainingInstancesIT {
         assertEquals(reason, entityErrorDetail.getReason());
     }
 
-    private Mono<ClientResponse> buildMockResponse(Object body) throws IOException{
+    private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {
         ClientResponse clientResponse = ClientResponse.create(HttpStatus.OK)
                 .body(convertObjectToJsonBytes(body))
                 .header(org.apache.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

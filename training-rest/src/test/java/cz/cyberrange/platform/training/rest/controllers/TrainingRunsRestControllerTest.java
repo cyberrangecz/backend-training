@@ -117,7 +117,7 @@ public class TrainingRunsRestControllerTest {
 
         trainingRun1 = testDataFactory.getFinishedRun();
         trainingRun1.setId(1L);
-        trainingRun1.setParticipantRef(participant1);
+        trainingRun1.setLinearRunOwner(participant1);
 
         trainingRunByIdDTO = testDataFactory.getTrainingRunByIdDTO();
         trainingRunByIdDTO.setId(1L);
@@ -237,7 +237,7 @@ public class TrainingRunsRestControllerTest {
         given(trainingRunFacade.findAllAccessedTrainingRuns(any(Predicate.class), any(Pageable.class), anyString())).willReturn(accessedTrainingRunDTOPage);
 
         MockHttpServletResponse result = mockMvc.perform(get("/training-runs/accessible")
-                .param("sortByTitle", ""))
+                        .param("sortByTitle", ""))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -329,9 +329,9 @@ public class TrainingRunsRestControllerTest {
     public void isCorrectAnswer() throws Exception {
         given(trainingRunFacade.isCorrectAnswer(trainingRun1.getId(), "answer")).willReturn(isCorrectAnswerDTO);
         MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
-                .param("solutionTaken", "true")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(ObjectConverter.convertObjectToJsonBytes(validAnswerDTO)))
+                        .param("solutionTaken", "true")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(ObjectConverter.convertObjectToJsonBytes(validAnswerDTO)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -342,9 +342,9 @@ public class TrainingRunsRestControllerTest {
     public void isCorrectAnswer_FacadeException() throws Exception {
         willThrow(new EntityNotFoundException()).given(trainingRunFacade).isCorrectAnswer(anyLong(), anyString());
         MockHttpServletResponse result = mockMvc.perform(post("/training-runs/{runId}/is-correct-answer", trainingRun1.getId())
-                .param("solutionTaken", "true")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(ObjectConverter.convertObjectToJsonBytes(validAnswerDTO)))
+                        .param("solutionTaken", "true")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(ObjectConverter.convertObjectToJsonBytes(validAnswerDTO)))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
         ApiError error = ObjectConverter.convertJsonBytesToObject(result.getContentAsString(), ApiError.class);

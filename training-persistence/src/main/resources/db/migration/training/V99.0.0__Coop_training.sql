@@ -33,10 +33,26 @@ CREATE TABLE team (
     UNIQUE (name, training_instance_id)
 );
 
+ALTER TABLE training_run
+    ADD COLUMN team_id bigint REFERENCES team (id),
+    ADD COLUMN type    varchar(16) NOT NULL DEFAULT 'LINEAR';
+
+ALTER TABLE training_run
+    ADD CONSTRAINT training_run_team_lock UNIQUE
+        NULLS NOT DISTINCT (training_instance_id, team_id);
+
 CREATE TABLE team_user (
     team_id     bigint REFERENCES team (id),
     user_ref_id bigint REFERENCES user_ref (id),
     PRIMARY KEY (team_id, user_ref_id)
+);
+
+CREATE TABLE team_message (
+    id          bigint PRIMARY KEY,
+    team_id     bigint REFERENCES team (id),
+    user_ref_id bigint REFERENCES user_ref (user_ref_id),
+    time        timestamp NOT NULL,
+    message     varchar(256)
 );
 
 CREATE TABLE training_instance_waiting_users (

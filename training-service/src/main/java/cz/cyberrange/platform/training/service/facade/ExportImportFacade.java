@@ -32,6 +32,7 @@ import cz.cyberrange.platform.training.api.responses.SandboxDefinitionInfo;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.Hint;
+import cz.cyberrange.platform.training.persistence.model.Team;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
@@ -50,9 +51,11 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.ExportImportMap
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.ReferenceSolutionNodeMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
+import cz.cyberrange.platform.training.service.services.CoopTrainingRunService;
 import cz.cyberrange.platform.training.service.services.ExportImportService;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
+import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.ElasticsearchApiService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
@@ -76,6 +79,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -106,6 +110,8 @@ public class ExportImportFacade {
     private final LevelMapper levelMapper;
     private final TrainingDefinitionMapper trainingDefinitionMapper;
     private final ObjectMapper objectMapper;
+    private final TrainingInstanceService trainingInstanceService;
+    private final CoopTrainingRunService coopTrainingRunService;
 
     /**
      * Instantiates a new Export import facade.
@@ -128,7 +134,7 @@ public class ExportImportFacade {
                               UserService userService, SecurityService securityService, ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper,
-                              ObjectMapper objectMapper) {
+                              ObjectMapper objectMapper, TrainingInstanceService trainingInstanceService, CoopTrainingRunService coopTrainingRunService) {
         this.exportImportService = exportImportService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.elasticsearchApiService = elasticsearchApiService;
@@ -140,6 +146,8 @@ public class ExportImportFacade {
         this.levelMapper = levelMapper;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
         this.objectMapper = objectMapper;
+        this.trainingInstanceService = trainingInstanceService;
+        this.coopTrainingRunService = coopTrainingRunService;
     }
 
     /**
@@ -317,13 +325,17 @@ public class ExportImportFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public FileToReturnDTO exportUserScoreFromTrainingInstance(Long trainingInstanceId) {
+        TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Set<TrainingRun> trainingRuns = exportImportService.findRunsByInstanceId(trainingInstanceId);
             String csvHeader = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
             baos.write(csvHeader.getBytes(StandardCharsets.UTF_8));
-
+            Function<TrainingRun, String> csvMapper = switch (trainingInstance.getType()) {
+                case LINEAR -> this::getLinearCSVString;
+                case COOP -> this::getCoopCSVString;
+            };
             for (TrainingRun trainingRun : trainingRuns) {
-                baos.write(getCSVString(trainingRun).getBytes(StandardCharsets.UTF_8));
+                baos.write(csvMapper.apply(trainingRun).getBytes(StandardCharsets.UTF_8));
             }
 
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
@@ -341,10 +353,24 @@ public class ExportImportFacade {
      * @param trainingRun training run to use
      * @return String with the specified format
      */
-    private String getCSVString(TrainingRun trainingRun) {
-        UserRefDTO userRefDTO = userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
+    private String getLinearCSVString(TrainingRun trainingRun) {
+        UserRefDTO userRefDTO = userService.getUserRefDTOByUserRefId(trainingRun.getLinearRunOwner().getUserRefId());
         return trainingRun.getTrainingInstance().getId() + DELIMITER +
                 userRefDTO.getUserRefSub() + DELIMITER +
+                trainingRun.getTotalTrainingScore() + System.lineSeparator();
+    }
+
+    private String getCoopCSVString(TrainingRun trainingRun) {
+        Team team = coopTrainingRunService.getRelatedTeam(trainingRun.getId());
+        List<UserRefDTO> usersWithData = team.getMembers().stream().map(
+                member -> userService.getUserRefDTOByUserRefId(member.getUserRefId())
+        ).toList();
+        String teamMemberNames = usersWithData.stream()
+                .map(UserRefDTO::getUserRefSub)
+                .collect(Collectors.joining(","));
+
+        return trainingRun.getTrainingInstance().getId() + DELIMITER +
+                '{' + teamMemberNames + '}' + DELIMITER +
                 trainingRun.getTotalTrainingScore() + System.lineSeparator();
     }
 
@@ -397,7 +423,7 @@ public class ExportImportFacade {
         for (TrainingRun run : runs) {
             TrainingRunArchiveDTO archivedRun = exportImportMapper.mapToArchiveDTO(run);
             archivedRun.setInstanceId(trainingInstance.getId());
-            archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
+            archivedRun.setParticipantRefId(run.getLinearRunOwner().getUserRefId());
             ZipEntry runEntry = new ZipEntry(RUNS_FOLDER + "/training_run-id" + run.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(runEntry);
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
@@ -412,7 +438,7 @@ public class ExportImportFacade {
 
             List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
             String sandboxId = events.get(0).getSandboxId() == null ?
-                    run.getParticipantRef().getUserRefId().toString() : events.get(0).getSandboxId();
+                    run.getLinearRunOwner().getUserRefId().toString() : events.get(0).getSandboxId();
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
@@ -421,7 +447,7 @@ public class ExportImportFacade {
 
     private List<Map<String, Object>> getConsoleCommands(TrainingInstance instance, TrainingRun run) {
         if (instance.isLocalEnvironment()) {
-            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(instance.getAccessToken(), run.getParticipantRef().getUserRefId());
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(instance.getAccessToken(), run.getLinearRunOwner().getUserRefId());
         }
         String sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
         return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxId);
@@ -526,7 +552,7 @@ public class ExportImportFacade {
 
     private List<Map<String, Object>> getConsoleCommandsWithinTimeRange(TrainingInstance instance, TrainingRun run, String sandboxId, Long from, Long to) {
         if (instance.isLocalEnvironment()) {
-            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getLinearRunOwner().getUserRefId(), from, to);
         }
         return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(sandboxId, from, to);
     }

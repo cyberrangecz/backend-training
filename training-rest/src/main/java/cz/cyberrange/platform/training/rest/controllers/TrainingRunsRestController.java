@@ -17,6 +17,7 @@ import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamRunInfoDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamScoreDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
@@ -44,6 +45,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The rest controller for Training runs.
@@ -248,8 +250,31 @@ public class TrainingRunsRestController {
     }
 
     @ApiOperation(httpMethod = "GET",
-            value = "Get assigned team info",
+            value = "Get ",
             notes = "This can only be done by trainee or organizer of an instance",
+            response = TeamRunInfoDTO.class,
+            nickname = "getTeamInfo",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Scoreboard returned.", response = Integer.class),
+            @ApiResponse(code = 404, message = "Instance not found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/{instanceId}/scoreboard", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<Long, TeamScoreDTO>> getScoreboard(
+            @ApiParam(value = "Training instance id", required = true)
+            @PathVariable("instanceId")
+            Long instanceId
+    ) {
+        return ResponseEntity.ok(
+                trainingRunFacade.getScoreboard(instanceId)
+        );
+    }
+
+    @ApiOperation(httpMethod = "GET",
+            value = "Get info on the current coop run",
+            notes = "This can only be done by trainee",
             response = TeamRunInfoDTO.class,
             nickname = "getTeamInfo",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -263,13 +288,10 @@ public class TrainingRunsRestController {
     public ResponseEntity<TeamRunInfoDTO> getCoopRunInfo(
             @ApiParam(value = "Training instance id", required = true)
             @PathVariable("instanceId")
-            Long instanceId,
-            @ApiParam(value = "Include images", defaultValue = "true")
-            @RequestParam(value = "includeImages", required = false, defaultValue = "true")
-            Boolean includeImages
+            Long instanceId
     ) {
         return ResponseEntity.ok(
-                trainingRunFacade.getCoopRunInfo(instanceId, includeImages)
+                trainingRunFacade.getCoopRunInfo(instanceId)
         );
     }
 

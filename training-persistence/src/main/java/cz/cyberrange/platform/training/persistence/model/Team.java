@@ -12,7 +12,6 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -59,8 +58,18 @@ public class Team extends AbstractEntity<Long> {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Team otherTeam) {
+            return this.hashCode() == otherTeam.hashCode();
+        }
+        return false;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(
-                Arrays.deepHashCode(members.toArray()));
+                this.getId(),
+                this.trainingInstance.getId()
+        );
     }
 }

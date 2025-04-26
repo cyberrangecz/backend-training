@@ -1,6 +1,9 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
+import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -19,12 +22,12 @@ import java.util.Set;
 @NamedEntityGraphs({
         @NamedEntityGraph(
                 name = "TrainingRun.findAllParticipantRef",
-                attributeNodes = @NamedAttributeNode(value = "participantRef")
+                attributeNodes = @NamedAttributeNode(value = "linearRunOwner")
         ),
         @NamedEntityGraph(
                 name = "TrainingRun.findByIdParticipantRefTrainingInstance",
                 attributeNodes = {
-                        @NamedAttributeNode(value = "participantRef"),
+                        @NamedAttributeNode(value = "linearRunOwner"),
                         @NamedAttributeNode(value = "trainingInstance")
                 }
         )
@@ -34,7 +37,7 @@ import java.util.Set;
                 name = "TrainingRun.findRunningTrainingRunOfUser",
                 query = "SELECT tr FROM TrainingRun tr " +
                         "JOIN FETCH tr.trainingInstance ti " +
-                        "JOIN FETCH tr.participantRef pr " +
+                        "JOIN FETCH tr.linearRunOwner pr " +
                         "JOIN FETCH tr.currentLevel cl " +
                         "WHERE ti.accessToken = :accessToken AND pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL AND tr.state NOT LIKE 'FINISHED'"
         ),
@@ -58,7 +61,7 @@ import java.util.Set;
         @NamedQuery(
                 name = "TrainingRun.findAllByParticipantRefId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "INNER JOIN tr.participantRef pr " +
+                        "INNER JOIN tr.linearRunOwner pr " +
                         "INNER JOIN tr.trainingInstance ti " +
                         "INNER JOIN ti.trainingDefinition " +
                         "WHERE pr.userRefId = :userRefId"
@@ -66,7 +69,7 @@ import java.util.Set;
         @NamedQuery(
                 name = "TrainingRun.findAllByTrainingDefinitionIdAndParticipantUserRefId",
                 query = "SELECT tr FROM TrainingRun tr " +
-                        "INNER JOIN tr.participantRef pr " +
+                        "INNER JOIN tr.linearRunOwner pr " +
                         "INNER JOIN tr.trainingInstance ti " +
                         "INNER JOIN ti.trainingDefinition td " +
                         "WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId"
@@ -114,6 +117,11 @@ public class TrainingRun extends AbstractEntity<Long> {
     @Column(name = "state", length = 128, nullable = false)
     @Enumerated(EnumType.STRING)
     private TRState state;
+    @Getter
+    @Setter
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TrainingType type = TrainingType.LINEAR;
     @Column(name = "incorrect_answer_count", nullable = false)
     private int incorrectAnswerCount;
     @Column(name = "solution_taken", nullable = false)
@@ -128,7 +136,12 @@ public class TrainingRun extends AbstractEntity<Long> {
     private Integer sandboxInstanceAllocationId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
-    private UserRef participantRef;
+    private UserRef linearRunOwner;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    @Getter
+    @Setter
+    private Team coopRunOwner;
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     @Column(name = "assessment_responses", nullable = true)
@@ -382,8 +395,8 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @return the participant ref
      */
-    public UserRef getParticipantRef() {
-        return participantRef;
+    public UserRef getLinearRunOwner() {
+        return linearRunOwner;
     }
 
     /**
@@ -391,8 +404,8 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @param participantRef the participant ref
      */
-    public void setParticipantRef(UserRef participantRef) {
-        this.participantRef = participantRef;
+    public void setLinearRunOwner(UserRef participantRef) {
+        this.linearRunOwner = participantRef;
     }
 
     /**
@@ -647,9 +660,11 @@ public class TrainingRun extends AbstractEntity<Long> {
                 && Objects.equals(startTime, other.getStartTime())
                 && Objects.equals(endTime, other.getEndTime())
                 && Objects.equals(state, other.getState())
+                && Objects.equals(type, other.getType())
                 && Objects.equals(incorrectAnswerCount, other.getIncorrectAnswerCount())
                 && Objects.equals(trainingInstance, other.getTrainingInstance())
-                && Objects.equals(participantRef, other.getParticipantRef())
+                && Objects.equals(linearRunOwner, other.getLinearRunOwner())
+                && Objects.equals(coopRunOwner, other.getCoopRunOwner())
                 && Objects.equals(solutionTaken, other.isSolutionTaken());
     }
 

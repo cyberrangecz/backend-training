@@ -3,16 +3,19 @@ package cz.cyberrange.platform.training.service.facade;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.TrainingInstanceLobbyDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.UserTeamDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamMessageDTO;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
 import cz.cyberrange.platform.training.persistence.model.Team;
+import cz.cyberrange.platform.training.persistence.model.TeamMessage;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstanceLobby;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMapper;
+import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMessageMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceLobbyMapper;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
@@ -27,8 +30,11 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.ZoneOffset;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -42,6 +48,7 @@ public class LobbyManagementFacade {
     private static final Logger LOG = LoggerFactory.getLogger(LobbyManagementFacade.class);
     private final TrainingInstanceService trainingInstanceService;
     private final SecurityService securityService;
+    private final TeamMessageMapper teamMessageMapper;
 
     @Autowired
     public LobbyManagementFacade(
@@ -49,13 +56,14 @@ public class LobbyManagementFacade {
             UserService userService,
             TeamMapper teamMapper,
             TrainingInstanceLobbyMapper trainingInstanceLobbyMapper,
-            TrainingInstanceService trainingInstanceService, SecurityService securityService) {
+            TrainingInstanceService trainingInstanceService, SecurityService securityService, TeamMessageMapper teamMessageMapper) {
         this.teamsManagementService = trainingInstanceLobbyService;
         this.userService = userService;
         this.teamMapper = teamMapper;
         this.trainingInstanceLobbyMapper = trainingInstanceLobbyMapper;
         this.trainingInstanceService = trainingInstanceService;
         this.securityService = securityService;
+        this.teamMessageMapper = teamMessageMapper;
     }
 
     @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
@@ -212,16 +220,16 @@ public class LobbyManagementFacade {
             "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) or " +
             "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER)")
     @TransactionalRO
-    public TeamDTO getTeamInfo(Long instanceId, Boolean includeImages) {
+    public TeamDTO getTeamInfo(String accessToken) {
         UserRef user = this.userService.getUserByUserRefId(this.securityService.getUserRefIdFromUserAndGroup());
 
         Optional<Team> teamAssigned = user.getTeams().stream()
                 .filter(team -> team.getMembers().contains(user))
-                .filter(team -> team.getTrainingInstance().getId().equals(instanceId))
+                .filter(team -> team.getTrainingInstance().getAccessToken().equals(accessToken))
                 .findFirst();
 
         boolean isInQueue = user.getJoinedQueues().stream()
-                .anyMatch(instance -> instance.getId().equals(instanceId));
+                .anyMatch(instance -> instance.getAccessToken().equals(accessToken));
 
         if (isInQueue || (teamAssigned.isPresent() && (!teamAssigned.get().isLocked()))) {
             throw new ResourceNotReadyException(new EntityErrorDetail("Not yet assigned to a team"));
@@ -234,14 +242,19 @@ public class LobbyManagementFacade {
         teamDTO.setMembers(
                 teamDTO.getMembers().stream().map(member ->
                         userService.getUserRefDTOWithLimitedInformation(member.getUserRefId())
-                ).peek(filledUser -> {
-                            if (!includeImages) {
-                                filledUser.setPicture(null);
-                            }
-                        }
                 ).toList()
         );
         return teamDTO;
     }
 
+    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isTraineeOfGivenTeam(#teamId)")
+    @TransactionalRO
+    public Map<Long, TeamMessageDTO> getTeamMessagesByPlayer(Long teamId, Long since) {
+        List<TeamMessage> messages = this.teamsManagementService.getTeamMessages(teamId, since);
+        return messages.stream().collect(Collectors.toMap(
+                message -> message.getSender().getUserRefId(),
+                teamMessageMapper::mapToDTO
+        ));
+    }
 }

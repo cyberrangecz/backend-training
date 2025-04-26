@@ -3,7 +3,9 @@ package cz.cyberrange.platform.training.api.dto.run;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamDTO;
 import cz.cyberrange.platform.training.api.enums.TRState;
+import cz.cyberrange.platform.training.api.enums.TrainingType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
@@ -15,7 +17,6 @@ import java.time.LocalDateTime;
 
 /**
  * Encapsulates information about Training Run.
- *
  */
 @Getter
 @Setter
@@ -35,12 +36,16 @@ public class TrainingRunDTO {
     private String eventLogReference;
     @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
     private TRState state;
+    @ApiModelProperty(value = "Training run type", example = "COOP")
+    private TrainingType type;
     @ApiModelProperty(value = "Reference to the received sandbox.")
     private String sandboxInstanceRefId;
     @ApiModelProperty(value = "Allocation id to the received sandbox.")
     private Integer sandboxInstanceAllocationId;
-    @ApiModelProperty(value = "Reference to participant of training run.")
+    @ApiModelProperty(value = "Reference to participant of linear training run.")
     private UserRefDTO participantRef;
+    @ApiModelProperty(value = "Reference to team of coop training run")
+    private TeamDTO team;
     @ApiModelProperty(value = "Boolean to check whether event logging works.", example = "true")
     private boolean eventLoggingState;
     @ApiModelProperty(value = "Boolean to check whether command logging works.", example = "true")

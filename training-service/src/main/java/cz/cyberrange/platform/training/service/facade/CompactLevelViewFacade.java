@@ -63,15 +63,15 @@ public class CompactLevelViewFacade {
         Map<Long, UserRefDTO> usersByIds = userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(levelEventsByUserId.keySet())).stream()
                 .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
 
-        for(TrainingRun trainingRun : trainingRuns) {
-            List<AbstractAuditPOJO> userLevelEvents = levelEventsByUserId.getOrDefault(trainingRun.getParticipantRef().getUserRefId(), new ArrayList<>());
+        for (TrainingRun trainingRun : trainingRuns) {
+            List<AbstractAuditPOJO> userLevelEvents = levelEventsByUserId.getOrDefault(trainingRun.getLinearRunOwner().getUserRefId(), new ArrayList<>());
             if (userLevelEvents.isEmpty()) {
                 continue;
             }
             List<Map<String, Object>> userLevelCommands = getUserLevelCommands(instance, trainingRun, userLevelEvents);
 
             CompactLevelViewUserDTO compactLevelViewUserDTO = new CompactLevelViewUserDTO();
-            compactLevelViewUserDTO.setUser(usersByIds.get(trainingRun.getParticipantRef().getUserRefId()));
+            compactLevelViewUserDTO.setUser(usersByIds.get(trainingRun.getLinearRunOwner().getUserRefId()));
             compactLevelViewUserDTO.setEvents(getCompactLevelViewEvents(userLevelEvents, userLevelCommands));
             compactLevelViewDTO.addUser(compactLevelViewUserDTO);
         }
@@ -81,7 +81,7 @@ public class CompactLevelViewFacade {
     private List<CompactLevelViewEventDTO> getCompactLevelViewEvents(List<AbstractAuditPOJO> userLevelEvents, List<Map<String, Object>> levelCommands) {
         List<CompactLevelViewEventDTO> result = new ArrayList<>();
         for (AbstractAuditPOJO event : userLevelEvents) {
-            if(event.getClass() == TrainingRunStarted.class || event.getClass() == TrainingRunEnded.class) {
+            if (event.getClass() == TrainingRunStarted.class || event.getClass() == TrainingRunEnded.class) {
                 continue;
             }
             CompactLevelViewEventDTO eventDTO = new CompactLevelViewEventDTO();
@@ -102,8 +102,8 @@ public class CompactLevelViewFacade {
     private List<Map<String, Object>> getUserLevelCommands(TrainingInstance instance, TrainingRun run, List<AbstractAuditPOJO> userLevelEvents) {
         Long from = userLevelEvents.get(0).getTimestamp();
         Long to = userLevelEvents.get(userLevelEvents.size() - 1).getTimestamp();
-        if(instance.isLocalEnvironment()) {
-            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
+        if (instance.isLocalEnvironment()) {
+            return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getLinearRunOwner().getUserRefId(), from, to);
         }
         return elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(run.getSandboxInstanceRefId(), from, to);
     }

@@ -167,7 +167,7 @@ public class VisualizationFacade {
         if (trainingRun.getTrainingInstance().isLocalEnvironment()) {
             return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(
                     trainingRun.getTrainingInstance().getAccessToken(),
-                    trainingRun.getParticipantRef().getUserRefId());
+                    trainingRun.getLinearRunOwner().getUserRefId());
         }
         String sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
         return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxIdentifier);
@@ -254,7 +254,7 @@ public class VisualizationFacade {
                     this.countWrongAnswersAndAddTakenHints(levelProgress, events);
                     levelProgress.setAnswer(
                             answerStaticByLevelId.containsKey(levelProgress.getLevelId()) ? answerStaticByLevelId.get(levelProgress.getLevelId()) :
-                            getLevelVariantAnswer(levelProgress.getLevelId(), events.get(0), answerVariableNameByLevelId, trainingInstance.isLocalEnvironment(), variantAnswersBySandbox));
+                                    getLevelVariantAnswer(levelProgress.getLevelId(), events.get(0), answerVariableNameByLevelId, trainingInstance.isLocalEnvironment(), variantAnswersBySandbox));
                 }
 
                 int levelCompletedEventIndex = getLevelCompletedEventIndex(events);
@@ -288,9 +288,9 @@ public class VisualizationFacade {
         if (instance.isLocalEnvironment()) {
             variantAnswers =
                     answersStorageApiService.getAnswersByAccessTokenAndUserIds(instance.getAccessToken(), trainingInstanceService.findAllTraineesByTrainingInstance(instance.getId()))
-                    .getContent()
-                    .stream()
-                    .collect(Collectors.toMap(this::userIdToString, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
+                            .getContent()
+                            .stream()
+                            .collect(Collectors.toMap(this::userIdToString, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
         } else {
             variantAnswers = answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(instance.getId()))
                     .getContent()
@@ -575,7 +575,7 @@ public class VisualizationFacade {
 
         List<TrainingDefinitionMitreTechniquesDTO> result = new ArrayList<>();
 
-        for (TrainingDefinition trainingDefinition: trainingDefinitions) {
+        for (TrainingDefinition trainingDefinition : trainingDefinitions) {
             List<TrainingLevel> trainingLevelsOfDefinition = visualizationService.getTrainingLevelsByTrainingDefinitionId(trainingDefinition.getId());
             TrainingDefinitionMitreTechniquesDTO definitionMitreTechniquesDTO = new TrainingDefinitionMitreTechniquesDTO();
             definitionMitreTechniquesDTO.setId(trainingDefinition.getId());
@@ -617,7 +617,38 @@ public class VisualizationFacade {
         return getTimelineVisualizations(trainingRun.getTrainingInstance().getId());
     }
 
-    private TimelineDTO getTimelineVisualizations(Long trainingInstanceId) {
+    private Timeline    }
+
+
+    private TrainingRun waitForOtherInstanceToAcquireLock(Team team, TrainingRun trainingRun) {
+        TeamRunLock existingLock = teamRunLockRepository.findById(team.getId())
+                .orElseThrow(() -> new IllegalStateException("Expected existing lock not found"));
+
+        long timeoutMillis = 5000;
+        long sleepMillis = 100;
+        long waited = 0;
+
+        while (existingLock.getSandboxInstanceRefId() == null && waited < timeoutMillis) {
+            try {
+                Thread.sleep(sleepMillis);
+                waited += sleepMillis;
+                existingLock = teamRunLockRepository.findById(team.getId())
+                        .orElseThrow(() -> new IllegalStateException("Lock disappeared while waiting for sandbox to be assigned"));
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted while waiting for sandbox assignment", ie);
+            }
+        }
+
+        if (existingLock.getSandboxInstanceRefId() == null) {
+            throw new IllegalStateException("Timed out waiting for sandbox assignment");
+        }
+
+        trainingRun.setSandboxInstanceRefId(existingLock.getSandboxInstanceRefId());
+        trainingRun.setSandboxInstanceAllocationId(existingLock.getSandboxInstanceAllocationId());
+        return trainingRun;
+    }
+DTO getTimelineVisualizations(Long trainingInstanceId) {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
                 elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels,
                 this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels);
@@ -721,7 +752,7 @@ public class VisualizationFacade {
         TableLevelDTO.TableLevelBuilder tableLevelBuilder = new TableLevelDTO.TableLevelBuilder()
                 .id(abstractLevel.getId())
                 .order(abstractLevel.getOrder());
-        AbstractAuditPOJO lastLevelEvent = levelEvents.isEmpty() ? null : levelEvents.get(levelEvents.size() -1);
+        AbstractAuditPOJO lastLevelEvent = levelEvents.isEmpty() ? null : levelEvents.get(levelEvents.size() - 1);
         if (!levelEvents.isEmpty() && (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded)) {
             tableLevelBuilder.score(lastLevelEvent.getActualScoreInLevel());
         }
@@ -825,8 +856,8 @@ public class VisualizationFacade {
         trainingInstanceData.levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingInstanceData.trainingInstance.getTrainingDefinition().getId());
         trainingInstanceData.events = aggregatedEventsFunction.apply(trainingInstanceData.trainingInstance.getId());
         trainingInstanceData.participantsByTrainingRuns = getUserRefDTOsFromInstanceEvents(trainingInstanceId,
-                                                                                           trainingInstanceData.events,
-                                                                                           trainingRunsIdsRetrieveFunction);
+                trainingInstanceData.events,
+                trainingRunsIdsRetrieveFunction);
         return trainingInstanceData;
     }
 
@@ -840,14 +871,14 @@ public class VisualizationFacade {
                 .collect(Collectors.toSet());
         List<Long> userRefIds = foundRuns
                 .stream()
-                .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
+                .map(trainingRun -> trainingRun.getLinearRunOwner().getUserRefId())
                 .toList();
 
         Map<Long, UserRefDTO> userRefDTOsById = getUserRefsByIds(userRefIds);
         return foundRuns.stream().collect(
                 Collectors.toMap(
                         TrainingRun::getId,
-                        trainingRun -> userRefDTOsById.get(trainingRun.getParticipantRef().getUserRefId())));
+                        trainingRun -> userRefDTOsById.get(trainingRun.getLinearRunOwner().getUserRefId())));
     }
 
     private Map<Long, UserRefDTO> getUserRefsByIds(List<Long> userRefIds) {
@@ -1107,7 +1138,9 @@ public class VisualizationFacade {
 
         List<ClusteringLevelDTO> levelsField;
 
-        public TrainingData() {}
+        public TrainingData() {
+        }
+
         public TrainingData(Long estimatedDuration,
                             Map<Long, Map<Long, List<AbstractAuditPOJO>>> events,
                             Map<Long, UserRefDTO> participantsByTrainingRuns) {

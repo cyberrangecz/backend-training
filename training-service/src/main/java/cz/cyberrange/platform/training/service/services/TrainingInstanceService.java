@@ -342,7 +342,7 @@ public class TrainingInstanceService {
     public List<Long> findAllTraineesByTrainingInstance(Long trainingInstanceId) {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId)
                 .stream()
-                .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
+                .map(trainingRun -> trainingRun.getLinearRunOwner().getUserRefId())
                 .collect(Collectors.toList());
     }
 

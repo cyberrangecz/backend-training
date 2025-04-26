@@ -1,14 +1,13 @@
 package cz.cyberrange.platform.training.service.utils;
 
 
-
-
 import cz.cyberrange.platform.training.persistence.model.Submission;
 import cz.cyberrange.platform.training.persistence.model.detection.DetectionEventParticipant;
 
 import java.util.Set;
 
-public enum CheatingDetectionUtils {;
+public enum CheatingDetectionUtils {
+    ;
 
     public static boolean checkIfContainsParticipant(Set<DetectionEventParticipant> participants, DetectionEventParticipant participant) {
         return participants.stream()
@@ -22,7 +21,7 @@ public enum CheatingDetectionUtils {;
     public static DetectionEventParticipant extractParticipant(Submission s, boolean isMinimal, Long solvedInTime, String participantName) {
         DetectionEventParticipant participant = new DetectionEventParticipant();
         participant.setIpAddress(s.getIpAddress());
-        participant.setUserId(s.getTrainingRun().getParticipantRef().getUserRefId());
+        participant.setUserId(s.getTrainingRun().getLinearRunOwner().getUserRefId());
         participant.setOccurredAt(s.getDate());
         participant.setParticipantName(participantName);
         if (isMinimal) {
