@@ -20,6 +20,7 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPrevie
 import cz.cyberrange.platform.training.api.enums.Actions;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
+import cz.cyberrange.platform.training.api.enums.TrainingType;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.ResourceNotReadyException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
@@ -617,6 +618,7 @@ public class TrainingRunFacade {
         AccessedTrainingRunDTO accessedTrainingRunDTO = new AccessedTrainingRunDTO();
         accessedTrainingRunDTO.setId(trainingRun.getId());
         accessedTrainingRunDTO.setTitle(trainingRun.getTrainingInstance().getTitle());
+        accessedTrainingRunDTO.setType(fromModelTrainingType(trainingRun.getType()));
         accessedTrainingRunDTO.setTrainingInstanceStartDate(trainingRun.getTrainingInstance().getStartTime());
         accessedTrainingRunDTO.setTrainingInstanceEndDate(trainingRun.getTrainingInstance().getEndTime());
         accessedTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
@@ -624,6 +626,13 @@ public class TrainingRunFacade {
         accessedTrainingRunDTO.setCurrentLevelOrder(trainingRun.getCurrentLevel().getOrder() + 1);
         accessedTrainingRunDTO.setPossibleAction(resolvePossibleActions(accessedTrainingRunDTO, trainingRun.getState()));
         return accessedTrainingRunDTO;
+    }
+
+    private TrainingType fromModelTrainingType(cz.cyberrange.platform.training.persistence.model.enums.TrainingType trainingType) {
+        return switch (trainingType) {
+            case LINEAR -> TrainingType.LINEAR;
+            case COOP -> TrainingType.COOP;
+        };
     }
 
     private Actions resolvePossibleActions(AccessedTrainingRunDTO trainingRunDTO, TRState trainingRunState) {

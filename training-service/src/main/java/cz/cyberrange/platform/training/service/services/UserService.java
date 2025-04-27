@@ -70,25 +70,25 @@ public class UserService {
     /**
      * Finds specific User reference by login
      *
-     * @param id of wanted User reference
+     * @param userRefId of wanted User reference
      * @return {@link UserRef} with corresponding login
      * @throws EntityNotFoundException UserRef was not found
      */
-    public UserRefDTO getUserRefDTOByUserRefId(Long id) {
+    public UserRefDTO getUserRefDTOByUserRefId(Long userRefId) {
         try {
             return userManagementServiceWebClient
                     .get()
-                    .uri("/users/{id}", id)
+                    .uri("/users/{id}", userRefId)
                     .retrieve()
                     .bodyToMono(UserRefDTO.class)
                     .block();
         } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to obtain info about user(ID: " + id + ").", ex);
+            throw new MicroserviceApiException("Error when calling user management service API to obtain info about user(ID: " + userRefId + ").", ex);
         }
     }
 
-    public UserRefDTO getUserRefDTOWithLimitedInformation(Long id) {
-        UserRefDTO userRefDTO = getUserRefDTOByUserRefId(id);
+    public UserRefDTO getUserRefDTOWithLimitedInformation(Long userRefId) {
+        UserRefDTO userRefDTO = getUserRefDTOByUserRefId(userRefId);
         userRefDTO.setIss(null);
         userRefDTO.setMail(null);
         userRefDTO.setUserRefSub(null);

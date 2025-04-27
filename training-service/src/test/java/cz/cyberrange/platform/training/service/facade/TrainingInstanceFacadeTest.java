@@ -26,6 +26,7 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanc
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.UserRefMapperImpl;
+import cz.cyberrange.platform.training.service.services.CoopTrainingRunService;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceLobbyService;
@@ -97,6 +98,8 @@ public class TrainingInstanceFacadeTest {
     private TrainingFeedbackApiService trainingFeedbackApiService;
     @MockBean
     private TrainingInstanceLobbyService trainingInstanceLobbyService;
+    @MockBean
+    private CoopTrainingRunService coopTrainingRunService;
 
     private TrainingInstance trainingInstance1, trainingInstance2;
     private TrainingInstanceCreateDTO trainingInstanceCreate;
@@ -115,7 +118,7 @@ public class TrainingInstanceFacadeTest {
         MockitoAnnotations.openMocks(this);
         trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService,
                 cheatingDetectionService, userService, elasticsearchApiService, securityService, sandboxApiService, trainingInstanceMapper,
-                trainingRunMapper, trainingFeedbackApiService, trainingInstanceLobbyService);
+                trainingRunMapper, trainingFeedbackApiService, trainingInstanceLobbyService, coopTrainingRunService);
 
         pageable = PageRequest.of(0, 5);
 

@@ -15,11 +15,6 @@ import cz.cyberrange.platform.training.persistence.repository.TeamMessageReposit
 import cz.cyberrange.platform.training.persistence.repository.TeamRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -27,6 +22,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class TrainingInstanceLobbyService {
@@ -277,6 +276,12 @@ public class TrainingInstanceLobbyService {
 
     public Team findTeam(Long instanceId, Long teamId) {
         Optional<Team> team = teamRepository.findByIdAndTrainingInstance_Id(teamId, instanceId);
+        team.orElseThrow(() -> new ResourceNotFoundException("Team with id " + teamId + " not found"));
+        return team.get();
+    }
+
+    public Team findTeam(Long teamId) {
+        Optional<Team> team = teamRepository.findById(teamId);
         team.orElseThrow(() -> new ResourceNotFoundException("Team with id " + teamId + " not found"));
         return team.get();
     }
