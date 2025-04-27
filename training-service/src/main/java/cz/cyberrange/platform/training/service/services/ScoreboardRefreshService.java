@@ -4,6 +4,7 @@ import cz.cyberrange.platform.training.api.dto.traininginstance.lobby.team.TeamS
 import cz.cyberrange.platform.training.persistence.model.Team;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import cz.cyberrange.platform.training.persistence.repository.TeamRepository;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMapper;
 import java.util.ArrayList;
@@ -25,17 +26,22 @@ public class ScoreboardRefreshService {
 
   private final TeamMapper teamMapper;
   private final CoopTrainingRunService coopTrainingRunService;
+  private final TeamRepository teamRepository;
 
   public ScoreboardRefreshService(
-      TeamMapper teamMapper, CoopTrainingRunService coopTrainingRunService) {
+      TeamMapper teamMapper,
+      CoopTrainingRunService coopTrainingRunService,
+      TrainingInstanceLobbyService trainingInstanceLobbyService,
+      TeamRepository teamRepository) {
     this.teamMapper = teamMapper;
     this.coopTrainingRunService = coopTrainingRunService;
+    this.teamRepository = teamRepository;
   }
 
   @TransactionalRO
   public Map<Long, TeamScoreDTO> refreshScoreboardForInstance(TrainingInstance instance) {
     Map<Long, Team> teamsById =
-        instance.getTrainingInstanceLobby().getTeams().stream()
+        teamRepository.findAllByTrainingInstance_Id(instance.getId()).stream()
             .filter(Team::isLocked)
             .collect(Collectors.toMap(Team::getId, team -> team));
 

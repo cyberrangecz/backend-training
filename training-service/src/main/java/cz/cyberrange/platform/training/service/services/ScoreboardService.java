@@ -6,14 +6,15 @@ import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
-import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMapper;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,27 +25,20 @@ public class ScoreboardService {
 
   private static final Logger LOG = Logger.getLogger(ScoreboardService.class.getName());
 
-  private final TrainingInstanceRepository trainingInstanceRepository;
   private final TrainingInstanceLobbyService trainingInstanceLobbyService;
   // InstanceId -> TeamId -> Score
-  private final Map<Long, Map<Long, TeamScoreDTO>> scoreboards = new ConcurrentHashMap<>();
+  private static final AtomicReference<Map<Long, Map<Long, TeamScoreDTO>>> scoreboardsRef =
+      new AtomicReference<>(new HashMap<>());
   private final ScoreboardRefreshService scoreboardRefreshService;
   private final TrainingInstanceService trainingInstanceService;
-  private final TrainingRunService trainingRunService;
 
   public ScoreboardService(
-      TrainingInstanceRepository trainingInstanceRepository,
       TrainingInstanceLobbyService trainingInstanceLobbyService,
-      CoopTrainingRunService coopTrainingRunService,
-      TeamMapper teamMapper,
       ScoreboardRefreshService scoreboardRefreshService,
-      TrainingInstanceService trainingInstanceService,
-      TrainingRunService trainingRunService) {
-    this.trainingInstanceRepository = trainingInstanceRepository;
+      TrainingInstanceService trainingInstanceService) {
     this.trainingInstanceLobbyService = trainingInstanceLobbyService;
     this.scoreboardRefreshService = scoreboardRefreshService;
     this.trainingInstanceService = trainingInstanceService;
-    this.trainingRunService = trainingRunService;
   }
 
   /**
@@ -86,7 +80,7 @@ public class ScoreboardService {
     int userPosition = scoresByTeamId.get(teamId).getPosition();
 
     Set<Integer> requiredPositions =
-        Set.of(1, 2, 3, userPosition - 1, userPosition, userPosition + 1);
+        new HashSet<>(Arrays.asList(1, 2, 3, userPosition - 1, userPosition, userPosition + 1));
 
     LimitedScoreboardDTO limitedScoreboardDTO = new LimitedScoreboardDTO();
     limitedScoreboardDTO.setLimitedScoreboard(
@@ -94,6 +88,7 @@ public class ScoreboardService {
             .filter(team -> requiredPositions.contains(team.getPosition()))
             .sorted(Comparator.comparingInt(TeamScoreDTO::getPosition))
             .toList());
+
     limitedScoreboardDTO.setTeamCountBeforeRelative(
         (int)
             scoresByTeamId.values().stream()
@@ -115,12 +110,11 @@ public class ScoreboardService {
   }
 
   public Map<Long, TeamScoreDTO> getScoreboard(Long instanceId) {
-    return Map.copyOf(scoreboards.getOrDefault(instanceId, new HashMap<>()));
+    return scoreboardsRef.get().getOrDefault(instanceId, Collections.emptyMap());
   }
 
-  @Scheduled(fixedRate = 3_000)
+  @Scheduled(fixedRate = 5_000)
   public void recalculateScores() {
-
     List<TrainingInstance> runningCoopInstances =
         trainingInstanceService.findAllRunningInstances().stream()
             .filter(instance -> instance.getType() == TrainingType.COOP)
@@ -128,13 +122,22 @@ public class ScoreboardService {
 
     Set<Long> activeInstanceIds =
         runningCoopInstances.stream().map(TrainingInstance::getId).collect(Collectors.toSet());
+    Map<Long, Map<Long, TeamScoreDTO>> newScoreboards = new HashMap<>();
 
-    scoreboards.keySet().retainAll(activeInstanceIds);
+    scoreboardsRef
+        .get()
+        .forEach(
+            (instanceId, scores) -> {
+              if (activeInstanceIds.contains(instanceId)) {
+                newScoreboards.put(instanceId, scores);
+              }
+            });
 
     for (TrainingInstance instance : runningCoopInstances) {
       Map<Long, TeamScoreDTO> instanceTeamScores =
           scoreboardRefreshService.refreshScoreboardForInstance(instance);
-      scoreboards.replace(instance.getId(), instanceTeamScores);
+      newScoreboards.put(instance.getId(), instanceTeamScores);
     }
+    scoreboardsRef.set(newScoreboards);
   }
 }
