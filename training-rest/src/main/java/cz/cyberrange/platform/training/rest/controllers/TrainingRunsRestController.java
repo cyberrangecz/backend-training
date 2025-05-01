@@ -39,6 +39,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -405,8 +406,14 @@ public class TrainingRunsRestController {
       })
   @GetMapping(path = "/{runId}/scoreboard", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<LimitedScoreboardDTO> getScoreboard(
-      @ApiParam(value = "Training run id", required = true) @PathVariable("runId") Long runId) {
-    return ResponseEntity.ok(coopTrainingRunFacade.getLimitedScoreboard(runId));
+      @ApiParam(value = "Training run id", required = true) @PathVariable("runId") Long runId,
+      @ApiParam(value = "Cached teams", required = false) @RequestParam(value = "cachedTeams", required = false)
+    List<Long> cachedTeams
+  ) {
+    return ResponseEntity.ok(
+            coopTrainingRunFacade.getLimitedScoreboard(
+                    runId,cachedTeams == null ? new ArrayList<>() : cachedTeams)
+    );
   }
 
   @ApiOperation(
@@ -449,8 +456,8 @@ public class TrainingRunsRestController {
             message = "Unexpected condition was encountered.",
             response = ApiError.class)
       })
-  @GetMapping(path = "/team/{teamId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Map<Long, TeamMessageDTO>> getTeamMessages(
+  @GetMapping(path = "/team/{teamId}/message", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Map<Long, List<TeamMessageDTO>>> getTeamMessages(
       @ApiParam(value = "Team id", required = true) @PathVariable("teamId") Long teamId,
       @ApiParam(value = "Time of last fetch", required = false, defaultValue = "0")
           @RequestParam(value = "lastFetch", required = false, defaultValue = "0")
@@ -475,15 +482,15 @@ public class TrainingRunsRestController {
             message = "Unexpected condition was encountered.",
             response = ApiError.class)
       })
-  @PostMapping(path = "/team/{teamId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(path = "/team/{teamId}/message", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> postTeamMessage(
       @ApiParam(value = "Team id", required = true) @PathVariable("teamId") Long teamId,
       @ApiParam(value = "Message content", required = false, defaultValue = "0") @RequestBody
           String message) {
 
-    if (message.isBlank() || message.strip().length() > 256) {
+    if (message.isBlank() || message.strip().length() > 1024) {
       return ResponseEntity.badRequest()
-          .body("Message mustn't be empty or longer than 256 characters");
+          .body("Message mustn't be empty or longer than 1024 characters");
     }
 
     return ResponseEntity.ok(coopTrainingRunFacade.saveTeamMessage(teamId, message));
@@ -729,9 +736,24 @@ public class TrainingRunsRestController {
       })
   @GetMapping(path = "/{runId}/resumption", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AccessTrainingRunDTO> resumeTrainingRun(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
-    AccessTrainingRunDTO resumedTrainingRunDTO = trainingRunFacade.resumeTrainingRun(runId);
-    return ResponseEntity.ok(resumedTrainingRunDTO);
+      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
+      @ApiParam(value = "Current level verification", required = false)
+          @RequestParam(value = "currentLevelId", required = false)
+          Long currentLevelId,
+      @ApiParam(value = "Hints verification", required = false)
+          @RequestParam(value = "hintIds", required = false)
+          List<Long> hintIds,
+      @ApiParam(value = "Solution verification", required = false)
+          @RequestParam(value = "solutionShown", required = false)
+          Boolean solutionShown) {
+
+    if (this.trainingTypeResolver.fromTrainingRunId(runId) == TrainingType.COOP
+        && currentLevelId != null
+        && solutionShown != null) {
+      return ResponseEntity.ok(
+          coopTrainingRunFacade.resumeTrainingRun(runId, currentLevelId, hintIds, solutionShown));
+    }
+    return ResponseEntity.ok(trainingRunFacade.resumeTrainingRun(runId));
   }
 
   /**

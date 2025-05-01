@@ -46,12 +46,14 @@ CREATE TABLE team_user (
     PRIMARY KEY (team_id, user_ref_id)
 );
 
+CREATE SEQUENCE message_seq AS bigint INCREMENT 100 MINVALUE 1;
+
 CREATE TABLE team_message (
-    id          bigint PRIMARY KEY,
+    message_id  bigint PRIMARY KEY,
     team_id     bigint REFERENCES team (id),
     user_ref_id bigint REFERENCES user_ref (user_ref_id),
     time        timestamp NOT NULL,
-    message     varchar(256)
+    message     varchar(1024)
 );
 
 CREATE TABLE training_instance_waiting_users (

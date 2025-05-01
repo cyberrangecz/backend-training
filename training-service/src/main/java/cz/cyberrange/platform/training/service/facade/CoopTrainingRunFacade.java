@@ -17,6 +17,7 @@ import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
+import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMapper;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,6 +132,31 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
           trainingInstance.getTrainingInstanceLobby());
     }
     return true;
+  }
+
+  /**
+   * Resume given training run. If validation data is provided and all matches the existing data,
+   * the status NOT_MODIFIED is returned instead
+   *
+   * @param trainingRunId id of Training Run to be resumed.
+   * @param currentLevelId id of current level
+   * @param hintIds list of hints
+   * @param solutionShown true if solution is shown
+   * @return {@link AccessTrainingRunDTO} response
+   */
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+  @TransactionalWO
+  public AccessTrainingRunDTO resumeTrainingRun(
+      Long trainingRunId, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
+    this.coopTrainingRunService.validateRunChanged(
+        trainingRunId,
+        currentLevelId,
+        hintIds == null ? new ArrayList<>() : hintIds,
+        solutionShown);
+
+    return super.resumeTrainingRun(trainingRunId);
   }
 
   /**
@@ -233,7 +260,7 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
           + "or hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   @TransactionalRO
-  public LimitedScoreboardDTO getLimitedScoreboard(Long trainingRunId) {
+  public LimitedScoreboardDTO getLimitedScoreboard(Long trainingRunId, List<Long> cachedTeams) {
     TrainingRun run = this.coopTrainingRunService.findById(trainingRunId);
     UserRef userRef =
         userService.getUserByUserRefId(securityService.getUserRefIdFromUserAndGroup());
@@ -246,9 +273,16 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
                         new EntityErrorDetail(
                             "User is not a member of any team in this training instance")))
             .getId();
+
+    Set<Long> cachedTeamIds = new java.util.HashSet<>(cachedTeams);
+
     LimitedScoreboardDTO scoreboardDTO =
         scoreboardService.getLimitedScoreboard(run.getTrainingInstance().getId(), userTeamId);
-    scoreboardService.setFullUserRefDTOData(scoreboardDTO.getLimitedScoreboard(), true);
+    scoreboardService.setFullUserRefDTOData(
+        scoreboardDTO.getLimitedScoreboard().stream()
+            .filter((team) -> !cachedTeamIds.contains(team.getTeam().getId()))
+            .toList(),
+        true);
     return scoreboardDTO;
   }
 
@@ -280,12 +314,13 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isTraineeOfGivenTeam(#teamId)")
   @TransactionalRO
-  public Map<Long, TeamMessageDTO> getTeamMessagesByPlayer(Long teamId, Long since) {
+  public Map<Long, List<TeamMessageDTO>> getTeamMessagesByPlayer(Long teamId, Long since) {
     List<TeamMessage> messages = this.trainingInstanceLobbyService.getTeamMessages(teamId, since);
     return messages.stream()
         .collect(
-            Collectors.toMap(
-                message -> message.getSender().getUserRefId(), teamMessageMapper::mapToDTO));
+            Collectors.groupingBy(
+                message -> message.getSender().getUserRefId(),
+                Collectors.mapping(teamMessageMapper::mapToDTO, Collectors.toList())));
   }
 
   @PreAuthorize(

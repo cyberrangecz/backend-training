@@ -1,33 +1,33 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import java.time.LocalDateTime;
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "team_message")
-public class TeamMessage extends AbstractEntity<Long> {
+public class TeamMessage {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id")
-    private Team team;
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "messageGenerator")
+  @SequenceGenerator(name = "messageGenerator", sequenceName = "message_seq")
+  @Column(name = "message_id", nullable = false, unique = true)
+  private Long messageId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_ref_id")
-    private UserRef sender;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "team_id")
+  private Team team;
 
-    @Column(name = "time")
-    private LocalDateTime time;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_ref_id")
+  private UserRef sender;
 
-    @Column(name = "message")
-    private String message;
+  @Column(name = "time")
+  private LocalDateTime time;
+
+  @Column(name = "message")
+  private String message;
 }
