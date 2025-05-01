@@ -407,13 +407,12 @@ public class TrainingRunsRestController {
   @GetMapping(path = "/{runId}/scoreboard", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<LimitedScoreboardDTO> getScoreboard(
       @ApiParam(value = "Training run id", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Cached teams", required = false) @RequestParam(value = "cachedTeams", required = false)
-    List<Long> cachedTeams
-  ) {
+      @ApiParam(value = "Cached teams", required = false)
+          @RequestParam(value = "cachedTeams", required = false)
+          List<Long> cachedTeams) {
     return ResponseEntity.ok(
-            coopTrainingRunFacade.getLimitedScoreboard(
-                    runId,cachedTeams == null ? new ArrayList<>() : cachedTeams)
-    );
+        coopTrainingRunFacade.getLimitedScoreboard(
+            runId, cachedTeams == null ? new ArrayList<>() : cachedTeams));
   }
 
   @ApiOperation(
@@ -736,6 +735,37 @@ public class TrainingRunsRestController {
       })
   @GetMapping(path = "/{runId}/resumption", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AccessTrainingRunDTO> resumeTrainingRun(
+      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
+    return ResponseEntity.ok(trainingRunFacade.resumeTrainingRun(runId));
+  }
+
+  @ApiOperation(
+      httpMethod = "GET",
+      value = "Get current level of resumed training run",
+      response = AccessTrainingRunDTO.class,
+      nickname = "resumeTrainingRun",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            code = 200,
+            message = "The training run has been resumed.",
+            response = AccessTrainingRunDTO.class),
+        @ApiResponse(
+            code = 404,
+            message = "The training run has not been found.",
+            response = ApiError.class),
+        @ApiResponse(
+            code = 409,
+            message = "Cannot resume finished training run.",
+            response = ApiError.class),
+        @ApiResponse(
+            code = 500,
+            message = "Unexpected condition was encountered.",
+            response = ApiError.class)
+      })
+  @GetMapping(path = "/{runId}/reload", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<AccessTrainingRunDTO> fetchUpdatedRunData(
       @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
       @ApiParam(value = "Current level verification", required = false)
           @RequestParam(value = "currentLevelId", required = false)
@@ -748,12 +778,10 @@ public class TrainingRunsRestController {
           Boolean solutionShown) {
 
     if (this.trainingTypeResolver.fromTrainingRunId(runId) == TrainingType.COOP
-        && currentLevelId != null
-        && solutionShown != null) {
-      return ResponseEntity.ok(
-          coopTrainingRunFacade.resumeTrainingRun(runId, currentLevelId, hintIds, solutionShown));
+        && !coopTrainingRunFacade.hasRunChanged(runId, currentLevelId, hintIds, solutionShown)) {
+      return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
     }
-    return ResponseEntity.ok(trainingRunFacade.resumeTrainingRun(runId));
+    return ResponseEntity.ok(coopTrainingRunFacade.fetchUpdatedRunData(runId));
   }
 
   /**

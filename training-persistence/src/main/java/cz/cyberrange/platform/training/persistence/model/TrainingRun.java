@@ -2,15 +2,14 @@ package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
 import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import javax.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 /**
  * Class represents Training run.
@@ -49,6 +48,14 @@ import java.util.Set;
                         "JOIN FETCH ti.trainingDefinition " +
                         "WHERE tr.id= :trainingRunId",
                 lockMode = LockModeType.PESSIMISTIC_WRITE
+        ),
+        @NamedQuery(
+                name = "TrainingRun.findByIdWithLevelReadOnly",
+                query = "SELECT tr FROM TrainingRun tr " +
+                        "JOIN FETCH tr.currentLevel " +
+                        "JOIN FETCH tr.trainingInstance ti " +
+                        "JOIN FETCH ti.trainingDefinition " +
+                        "WHERE tr.id= :trainingRunId"
         ),
         @NamedQuery(
                 name = "TrainingRun.deleteTrainingRunsByTrainingInstance",

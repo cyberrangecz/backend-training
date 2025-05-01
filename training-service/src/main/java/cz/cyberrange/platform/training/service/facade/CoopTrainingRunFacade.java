@@ -17,7 +17,6 @@ import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
-import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMapper;
@@ -147,16 +146,14 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-  @TransactionalWO
-  public AccessTrainingRunDTO resumeTrainingRun(
+  @TransactionalRO
+  public boolean hasRunChanged(
       Long trainingRunId, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
-    this.coopTrainingRunService.validateRunChanged(
+    return this.coopTrainingRunService.hasRunChanged(
         trainingRunId,
         currentLevelId,
         hintIds == null ? new ArrayList<>() : hintIds,
-        solutionShown);
-
-    return super.resumeTrainingRun(trainingRunId);
+        solutionShown != null && solutionShown);
   }
 
   /**
@@ -283,6 +280,16 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
             .filter((team) -> !cachedTeamIds.contains(team.getTeam().getId()))
             .toList(),
         true);
+    scoreboardDTO
+        .getLimitedScoreboard()
+        .forEach(
+            (scoreDTO -> {
+              if (cachedTeamIds.contains(scoreDTO.getTeam().getId())) {
+                TeamDTO team = scoreDTO.getTeam();
+                team.setMembers(new ArrayList<>());
+                scoreDTO.setTeam(team);
+              }
+            }));
     return scoreboardDTO;
   }
 
@@ -334,5 +341,16 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
     Team team = this.trainingInstanceLobbyService.getTeamOrThrow(teamId);
     return teamMessageMapper.mapToDTO(
         this.trainingInstanceLobbyService.saveTeamMessage(team, sender, message.strip()));
+  }
+
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+  @TransactionalRO
+  public AccessTrainingRunDTO fetchUpdatedRunData(Long runId) {
+    TrainingRun trainingRun = coopTrainingRunService.findByIdWithLevelReadOnly(runId);
+    TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
+    coopTrainingRunService.validateTrainingRunAccess(trainingInstance, trainingRun);
+    return createAccessRunDTO(trainingRun);
   }
 }

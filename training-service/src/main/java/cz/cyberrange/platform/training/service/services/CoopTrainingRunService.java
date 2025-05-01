@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.service.services;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
-import cz.cyberrange.platform.training.api.exceptions.EntityNotModifiedException;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.HintInfo;
 import cz.cyberrange.platform.training.persistence.model.Team;
@@ -153,9 +152,36 @@ public class CoopTrainingRunService extends TrainingRunService {
                         String.format("Team with id %d has no training run", teamId))));
   }
 
-  public void validateRunChanged(
+  /**
+   * /** Finds specific Training Run by id including current level
+   *
+   * <p>The result should not be modified
+   *
+   * @param runId of a Training Run with level that would be returned
+   * @return specific {@link TrainingRun} by id
+   * @throws EntityNotFoundException training run is not found.
+   */
+  public TrainingRun findByIdWithLevelReadOnly(Long runId) {
+    return trainingRunRepository
+        .findByIdWithLevelReadOnly(runId)
+        .orElseThrow(
+            () ->
+                new EntityNotFoundException(
+                    new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId)));
+  }
+
+  public boolean hasRunChanged(
       Long runId, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
-    TrainingRun trainingRun = findByIdWithLevel(runId);
+    TrainingRun trainingRun = findByIdWithLevelReadOnly(runId);
+
+    LOG.severe("Tr solution shown: " + trainingRun.isSolutionTaken());
+    LOG.severe("Cache solution shown: " + solutionShown);
+
+    LOG.severe("Tr hints shown: " + trainingRun.getHintInfoList());
+    LOG.severe("Cache hints shown: " + hintIds);
+
+    LOG.severe("Tr level id: " + trainingRun.getCurrentLevel().getId());
+    LOG.severe("Cache level id: " + currentLevelId);
 
     boolean levelIdChanged = !trainingRun.getCurrentLevel().getId().equals(currentLevelId);
     boolean hintsChanged =
@@ -168,9 +194,6 @@ public class CoopTrainingRunService extends TrainingRunService {
                     .collect(Collectors.toSet()));
     boolean solutionChanged = !solutionShown.equals(trainingRun.isSolutionTaken());
 
-    if (!(levelIdChanged || hintsChanged || solutionChanged)) {
-      throw new EntityNotModifiedException(
-          new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId));
-    }
+    return (levelIdChanged || hintsChanged || solutionChanged);
   }
 }

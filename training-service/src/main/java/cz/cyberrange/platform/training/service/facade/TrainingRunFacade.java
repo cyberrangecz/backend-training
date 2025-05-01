@@ -253,13 +253,15 @@ public class TrainingRunFacade {
   @TransactionalWO
   public AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
-    AbstractLevel resolvedLevel = unproxyLevel(trainingRun.getCurrentLevel());
-    trainingRun.setCurrentLevel(resolvedLevel);
-    AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
+    return createAccessRunDTO(trainingRun);
+  }
 
-    if (resolvedLevel instanceof TrainingLevel trainingLevel) {
+  protected AccessTrainingRunDTO createAccessRunDTO(TrainingRun trainingRun) {
+    AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
+    if (trainingRun.getCurrentLevel() instanceof TrainingLevel) {
       if (trainingRun.isSolutionTaken()) {
-        accessTrainingRunDTO.setTakenSolution(trainingLevel.getSolution());
+        accessTrainingRunDTO.setTakenSolution(
+            ((TrainingLevel) trainingRun.getCurrentLevel()).getSolution());
       }
       trainingRun
           .getHintInfoList()
