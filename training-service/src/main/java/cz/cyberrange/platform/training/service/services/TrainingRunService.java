@@ -459,7 +459,7 @@ public class TrainingRunService {
         participantRefId, trainingInstanceId);
   }
 
-  private AbstractLevel findFirstLevelForTrainingRun(Long trainingDefinitionId) {
+  AbstractLevel findFirstLevelForTrainingRun(Long trainingDefinitionId) {
     List<AbstractLevel> levels =
         abstractLevelRepository.findFirstLevelByTrainingDefinitionId(
             trainingDefinitionId, PageRequest.of(0, 1));

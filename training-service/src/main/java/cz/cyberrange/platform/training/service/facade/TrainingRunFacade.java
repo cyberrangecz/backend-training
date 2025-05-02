@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -301,11 +302,12 @@ public class TrainingRunFacade {
       // Sandbox API
       TrainingRun trainingRun =
           trainingRunService.createTrainingRun(trainingInstance, participantRefId);
+      TrainingRun withLevel = trainingRunService.findByIdWithLevel(trainingRun.getId());
       if (!trainingInstance.isLocalEnvironment()) {
-        trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
+        trainingRunService.assignSandbox(withLevel, trainingInstance.getPoolId());
       }
-      trainingRunService.auditTrainingRunStarted(trainingRun);
-      return convertToAccessTrainingRunDTO(trainingRun);
+      trainingRunService.auditTrainingRunStarted(withLevel);
+      return convertToAccessTrainingRunDTO(withLevel);
     } catch (Exception e) {
       // delete/rollback acquisition lock when no training run either sandbox is assigned
       trainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(
@@ -753,19 +755,25 @@ public class TrainingRunFacade {
 
   private AbstractLevelDTO getAbstractLevelDTO(AbstractLevel abstractLevel) {
     AbstractLevelDTO abstractLevelDTO;
-    if (abstractLevel instanceof AssessmentLevel assessmentLevel) {
-      abstractLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevel);
-      deleteInfoAboutCorrectnessFromQuestions((AssessmentLevelDTO) abstractLevelDTO);
-    } else if (abstractLevel instanceof TrainingLevel trainingLevel) {
-      abstractLevelDTO = levelMapper.mapToViewDTO(trainingLevel);
-    } else if (abstractLevel instanceof AccessLevel accessLevel) {
-      abstractLevelDTO = levelMapper.mapToViewDTO(accessLevel);
-    } else if (abstractLevel instanceof InfoLevel infoLevel) {
-      abstractLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel);
-    } else if (abstractLevel instanceof JeopardyLevel jeopardyLevel) {
-      abstractLevelDTO = levelMapper.mapToViewDTO(jeopardyLevel);
+
+    Class<?> clazz = Hibernate.getClass(abstractLevel);
+
+    if (AssessmentLevel.class.equals(clazz)) {
+      abstractLevelDTO =
+          levelMapper.mapToAssessmentLevelDTO((AssessmentLevel) Hibernate.unproxy(abstractLevel));
+      deleteInfoAboutCorrectnessFromQuestions(
+          (AssessmentLevelDTO) Hibernate.unproxy(abstractLevel));
+    } else if (TrainingLevel.class.equals(clazz)) {
+      abstractLevelDTO = levelMapper.mapToViewDTO((TrainingLevel) Hibernate.unproxy(abstractLevel));
+    } else if (AccessLevel.class.equals(clazz)) {
+      abstractLevelDTO = levelMapper.mapToViewDTO((AccessLevel) Hibernate.unproxy(abstractLevel));
+    } else if (InfoLevel.class.equals(clazz)) {
+      abstractLevelDTO =
+          levelMapper.mapToInfoLevelDTO((InfoLevel) Hibernate.unproxy(abstractLevel));
+    } else if (JeopardyLevel.class.equals(clazz)) {
+      abstractLevelDTO = levelMapper.mapToViewDTO((JeopardyLevel) Hibernate.unproxy(abstractLevel));
     } else {
-      throw new IllegalStateException("Unknown level type: " + abstractLevel.getClass().getName());
+      throw new IllegalStateException("Unknown level type: " + clazz.getName());
     }
     return abstractLevelDTO;
   }

@@ -751,11 +751,15 @@ public class TrainingRunsRestController {
             message = "The training run has been resumed.",
             response = AccessTrainingRunDTO.class),
         @ApiResponse(
+            code = 304,
+            message = "The training run has not changed.",
+            response = ApiError.class),
+        @ApiResponse(
             code = 404,
             message = "The training run has not been found.",
             response = ApiError.class),
         @ApiResponse(
-            code = 409,
+            code = 410,
             message = "Cannot resume finished training run.",
             response = ApiError.class),
         @ApiResponse(

@@ -13,6 +13,7 @@ import cz.cyberrange.platform.training.persistence.model.TeamMessage;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.model.enums.TRState;
 import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
@@ -22,6 +23,7 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMessageMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
+import cz.cyberrange.platform.training.service.services.AuditEventsService;
 import cz.cyberrange.platform.training.service.services.CoopTrainingRunService;
 import cz.cyberrange.platform.training.service.services.ScoreboardService;
 import cz.cyberrange.platform.training.service.services.SecurityService;
@@ -31,12 +33,16 @@ import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.AnswersStorageApiService;
 import cz.cyberrange.platform.training.service.services.api.TrainingFeedbackApiService;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +51,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /** The type Training run facade. */
@@ -57,6 +64,7 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
   private final ScoreboardService scoreboardService;
   private final TeamMapper teamMapper;
   private final TeamMessageMapper teamMessageMapper;
+  private final AuditEventsService auditEventsService;
 
   /**
    * Instantiates a new Training run facade.
@@ -83,7 +91,8 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
       CoopTrainingRunService coopTrainingRunService,
       ScoreboardService scoreboardService,
       TeamMapper teamMapper,
-      TeamMessageMapper teamMessageMapper) {
+      TeamMessageMapper teamMessageMapper,
+      AuditEventsService auditEventsService) {
     super(
         trainingRunService,
         trainingDefinitionService,
@@ -99,7 +108,10 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
     this.scoreboardService = scoreboardService;
     this.teamMapper = teamMapper;
     this.teamMessageMapper = teamMessageMapper;
+    this.auditEventsService = auditEventsService;
   }
+
+  @PersistenceContext private EntityManager entityManager;
 
   /**
    * Check whether the user should wait for the start of his run
@@ -166,30 +178,71 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
     // (it prevents concurrent accesses).
     coopTrainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(
         participantRefId, trainingInstance.getId(), accessToken);
+    TrainingRun trainingRun;
     try {
-      TrainingRun trainingRun;
-      try {
-        // Catch concurrent attempt to create a training run by all team members
-        trainingRun = coopTrainingRunService.createTrainingRun(trainingInstance, participantRefId);
-      } catch (DataIntegrityViolationException exception) {
-        accessedTrainingRun =
-            coopTrainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
-        if (accessedTrainingRun.isPresent()) {
-          trainingRun = coopTrainingRunService.resumeTrainingRun(accessedTrainingRun.get().getId());
-          return convertToAccessTrainingRunDTO(trainingRun);
-        }
-        throw new IllegalStateException("Team run is locked but cannot be found");
-      }
+      TrainingRun newRun =
+          coopTrainingRunService.createTrainingRun(trainingInstance, participantRefId);
+      TrainingRun withLevel = trainingRunService.findByIdWithLevel(newRun.getId());
       if (!trainingInstance.isLocalEnvironment()) {
-        coopTrainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
+        coopTrainingRunService.assignSandbox(withLevel, trainingInstance.getPoolId());
       }
-      coopTrainingRunService.auditTrainingRunStarted(trainingRun);
-      return convertToAccessTrainingRunDTO(trainingRun);
+      coopTrainingRunService.auditTrainingRunStarted(withLevel);
+      return convertToAccessTrainingRunDTO(withLevel);
+    } catch (DataIntegrityViolationException | ConstraintViolationException exception) {
+      // Allow only a signle team member to create the run
+      // others must access existing
+      return convertToAccessTrainingRunDTO(handleTeamRunExisting(accessToken, participantRefId));
     } catch (Exception e) {
-      // delete/rollback acquisition lock when no training run either sandbox is assigned
+      // delete/rollback acquisition lock when failed
       coopTrainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(
           participantRefId, trainingInstance.getId());
       throw e;
+    }
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public TrainingRun handleTeamRunExisting(String accessToken, Long participantRefId) {
+    LOG.warn("Concurrent run creation detected — recovering existing team run.");
+    entityManager.clear(); // Reset dirty session just in case
+
+    TrainingInstance instance =
+        this.coopTrainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
+    UserRef userRef = userService.getUserByUserRefId(participantRefId);
+    Optional<Team> teamOpt = userRef.getTeamByInstance(instance.getId());
+    if (teamOpt.isEmpty()) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail("User is not a member of any team in this training instance"));
+    }
+
+    Team team = teamOpt.get();
+    Long trainingRunId = coopTrainingRunService.getRelatedTrainingRun(team.getId()).getId();
+
+    if (instance.isLocalEnvironment()) {
+      return coopTrainingRunService.findByIdWithLevel(trainingRunId);
+    }
+
+    final int maxRetries = 20;
+    final Duration retryDelay = Duration.ofMillis(200); // adjustable
+    int attempt = 0;
+
+    while (true) {
+      TrainingRun fullRun = coopTrainingRunService.findById(trainingRunId);
+
+      if (fullRun.getSandboxInstanceRefId() != null) {
+        auditEventsService.auditTrainingRunResumedAction(fullRun);
+        return coopTrainingRunService.findByIdWithLevel(trainingRunId);
+      }
+
+      if (++attempt >= maxRetries) {
+        throw new IllegalStateException("Sandbox has not yet been assigned to team run");
+      }
+
+      try {
+        Thread.sleep(retryDelay.toMillis());
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+        throw new IllegalStateException("Interrupted while waiting for sandbox assignment", ex);
+      }
     }
   }
 
@@ -330,7 +383,11 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
       Long runId, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
     TrainingRun trainingRun = coopTrainingRunService.findByIdWithLevelReadOnly(runId);
 
-    if (this.coopTrainingRunService.hasRunChanged(
+    if (trainingRun.getState() == TRState.FINISHED) {
+      return ResponseEntity.status(HttpStatus.GONE).build();
+    }
+
+    if (!this.coopTrainingRunService.hasRunChanged(
         trainingRun,
         currentLevelId,
         hintIds == null ? new ArrayList<>() : hintIds,

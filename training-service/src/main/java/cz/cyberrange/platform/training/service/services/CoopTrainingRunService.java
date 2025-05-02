@@ -22,6 +22,7 @@ import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import cz.cyberrange.platform.training.service.services.api.AnswersStorageApiService;
 import cz.cyberrange.platform.training.service.services.api.ElasticsearchApiService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,8 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /** The type Training run service. */
 @Service
@@ -37,7 +40,6 @@ public class CoopTrainingRunService extends TrainingRunService {
 
   private static final Logger LOG = Logger.getLogger(CoopTrainingRunService.class.getName());
   private final UserService userService;
-  private final TrainingInstanceLobbyService trainingInstanceLobbyService;
 
   public CoopTrainingRunService(
       TrainingRunRepository trainingRunRepository,
@@ -53,8 +55,7 @@ public class CoopTrainingRunService extends TrainingRunService {
       SandboxApiService sandboxApiService,
       TRAcquisitionLockRepository trAcquisitionLockRepository,
       SubmissionRepository submissionRepository,
-      UserService userService,
-      TrainingInstanceLobbyService trainingInstanceLobbyService) {
+      UserService userService) {
     super(
         trainingRunRepository,
         abstractLevelRepository,
@@ -70,7 +71,6 @@ public class CoopTrainingRunService extends TrainingRunService {
         trAcquisitionLockRepository,
         submissionRepository);
     this.userService = userService;
-    this.trainingInstanceLobbyService = trainingInstanceLobbyService;
   }
 
   /**
@@ -94,6 +94,30 @@ public class CoopTrainingRunService extends TrainingRunService {
     }
     return trainingRunRepository.findByCoopRunTeam_IdAndStateLike(
         team.get().getId(), TRState.RUNNING);
+  }
+
+  /**
+   * Access training run based on given accessToken.
+   *
+   * @param trainingInstance the training instance
+   * @param participantRefId the participant ref id
+   * @return accessed {@link TrainingRun}
+   * @throws EntityNotFoundException no active training instance for given access token, no starting
+   *     level in training definition.
+   * @throws EntityConflictException pool of sandboxes is not created for training instance.
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public TrainingRun createTrainingRun(TrainingInstance trainingInstance, Long participantRefId) {
+    AbstractLevel initialLevel =
+        findFirstLevelForTrainingRun(trainingInstance.getTrainingDefinition().getId());
+    TrainingRun trainingRun =
+        getNewTrainingRun(
+            initialLevel,
+            trainingInstance,
+            LocalDateTime.now(Clock.systemUTC()),
+            trainingInstance.getEndTime(),
+            participantRefId);
+    return trainingRunRepository.saveAndFlush(trainingRun);
   }
 
   /**
@@ -142,14 +166,17 @@ public class CoopTrainingRunService extends TrainingRunService {
     return run.getCoopRunTeam();
   }
 
-  public TrainingRun findRelatedTrainingRun(Long teamId) {
-    return this.trainingRunRepository
-        .findByCoopRunTeam_Id(teamId)
+  public TrainingRun getRelatedTrainingRun(Long teamId) {
+    return this.findRelatedTrainingRun(teamId)
         .orElseThrow(
             () ->
                 new EntityNotFoundException(
                     new EntityErrorDetail(
                         String.format("Team with id %d has no training run", teamId))));
+  }
+
+  public Optional<TrainingRun> findRelatedTrainingRun(Long teamId) {
+    return this.trainingRunRepository.findByCoopRunTeam_Id(teamId);
   }
 
   /**
@@ -172,6 +199,19 @@ public class CoopTrainingRunService extends TrainingRunService {
 
   public boolean hasRunChanged(
       TrainingRun trainingRun, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
+
+    LOG.severe("Sent levelId: " + currentLevelId);
+    LOG.severe("Current levelId: " + trainingRun.getCoopRunTeam().getId());
+    LOG.severe("Sent hints: " + hintIds);
+    LOG.severe(
+        "Current hints: "
+            + trainingRun.getHintInfoList().stream()
+                .filter((hintInfo -> Objects.equals(hintInfo.getTrainingLevelId(), currentLevelId)))
+                .map(HintInfo::getHintId)
+                .collect(Collectors.toSet()));
+
+    LOG.severe("Sent solution: " + solutionShown);
+    LOG.severe("Current solution: " + trainingRun.isSolutionTaken());
 
     boolean levelIdChanged = !trainingRun.getCurrentLevel().getId().equals(currentLevelId);
     boolean hintsChanged =

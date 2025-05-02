@@ -31,7 +31,6 @@ public class ScoreboardRefreshService {
   public ScoreboardRefreshService(
       TeamMapper teamMapper,
       CoopTrainingRunService coopTrainingRunService,
-      TrainingInstanceLobbyService trainingInstanceLobbyService,
       TeamRepository teamRepository) {
     this.teamMapper = teamMapper;
     this.coopTrainingRunService = coopTrainingRunService;
@@ -47,7 +46,11 @@ public class ScoreboardRefreshService {
 
     SortedMap<Integer, List<Long>> teamsByScore = new TreeMap<>(Comparator.reverseOrder());
     for (Team team : teamsById.values()) {
-      Integer score = getTeamScore(team);
+      Integer score =
+          coopTrainingRunService
+              .findRelatedTrainingRun(team.getId())
+              .map(TrainingRun::getTotalTrainingScore)
+              .orElse(0);
       teamsByScore.computeIfAbsent(score, k -> new ArrayList<>()).add(team.getId());
     }
 
@@ -63,10 +66,5 @@ public class ScoreboardRefreshService {
       position++;
     }
     return instanceTeamScores;
-  }
-
-  public Integer getTeamScore(Team team) {
-    TrainingRun teamRun = coopTrainingRunService.findRelatedTrainingRun(team.getId());
-    return teamRun.getTotalTrainingScore();
   }
 }
