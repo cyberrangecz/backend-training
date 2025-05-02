@@ -491,7 +491,6 @@ public class TrainingRunsRestController {
       return ResponseEntity.badRequest()
           .body("Message mustn't be empty or longer than 1024 characters");
     }
-
     return ResponseEntity.ok(coopTrainingRunFacade.saveTeamMessage(teamId, message));
   }
 
@@ -777,11 +776,7 @@ public class TrainingRunsRestController {
           @RequestParam(value = "solutionShown", required = false)
           Boolean solutionShown) {
 
-    if (this.trainingTypeResolver.fromTrainingRunId(runId) == TrainingType.COOP
-        && !coopTrainingRunFacade.hasRunChanged(runId, currentLevelId, hintIds, solutionShown)) {
-      return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
-    }
-    return ResponseEntity.ok(coopTrainingRunFacade.fetchUpdatedRunData(runId));
+    return coopTrainingRunFacade.fetchUpdatedRunData(runId, currentLevelId, hintIds, solutionShown);
   }
 
   /**

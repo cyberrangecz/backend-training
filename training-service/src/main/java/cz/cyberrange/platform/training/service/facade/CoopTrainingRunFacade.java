@@ -41,6 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -131,29 +133,6 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
           trainingInstance.getTrainingInstanceLobby());
     }
     return true;
-  }
-
-  /**
-   * Resume given training run. If validation data is provided and all matches the existing data,
-   * the status NOT_MODIFIED is returned instead
-   *
-   * @param trainingRunId id of Training Run to be resumed.
-   * @param currentLevelId id of current level
-   * @param hintIds list of hints
-   * @param solutionShown true if solution is shown
-   * @return {@link AccessTrainingRunDTO} response
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-  @TransactionalRO
-  public boolean hasRunChanged(
-      Long trainingRunId, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
-    return this.coopTrainingRunService.hasRunChanged(
-        trainingRunId,
-        currentLevelId,
-        hintIds == null ? new ArrayList<>() : hintIds,
-        solutionShown != null && solutionShown);
   }
 
   /**
@@ -334,7 +313,7 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenTeam(#teamId)"
           + "or @securityService.isTraineeOfGivenTeam(#teamId)")
-  @javax.transaction.Transactional
+  @Transactional
   public TeamMessageDTO saveTeamMessage(Long teamId, String message) {
     UserRef sender =
         this.userService.getUserByUserRefId(this.securityService.getUserRefIdFromUserAndGroup());
@@ -347,10 +326,19 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
   @TransactionalRO
-  public AccessTrainingRunDTO fetchUpdatedRunData(Long runId) {
+  public ResponseEntity<AccessTrainingRunDTO> fetchUpdatedRunData(
+      Long runId, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
     TrainingRun trainingRun = coopTrainingRunService.findByIdWithLevelReadOnly(runId);
+
+    if (this.coopTrainingRunService.hasRunChanged(
+        trainingRun,
+        currentLevelId,
+        hintIds == null ? new ArrayList<>() : hintIds,
+        solutionShown != null && solutionShown)) {
+      return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+    }
     TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
     coopTrainingRunService.validateTrainingRunAccess(trainingInstance, trainingRun);
-    return createAccessRunDTO(trainingRun);
+    return ResponseEntity.ok(createAccessRunDTO(trainingRun));
   }
 }

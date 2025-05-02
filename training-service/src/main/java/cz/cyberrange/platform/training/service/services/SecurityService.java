@@ -17,6 +17,9 @@ import cz.cyberrange.platform.training.persistence.repository.TrainingRunReposit
 import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,208 +29,272 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
-
-
-/**
- * The type Security service.
- */
+/** The type Security service. */
 @Service
 @TransactionalRO(propagation = Propagation.REQUIRES_NEW)
 public class SecurityService {
 
-    private final TrainingRunRepository trainingRunRepository;
-    private final TrainingDefinitionRepository trainingDefinitionRepository;
-    private final TrainingInstanceRepository trainingInstanceRepository;
-    private final WebClient userManagementWebClient;
-    private final TeamRepository teamRepository;
-    private final UserRefRepository userRefRepository;
-    private final TrainingInstanceLobbyService trainingInstanceLobbyService;
+  private static final Logger LOG = Logger.getLogger(SecurityService.class.getName());
 
-    /**
-     * Instantiates a new Security service.
-     *
-     * @param trainingInstanceRepository   the training instance repository
-     * @param trainingDefinitionRepository the training definition repository
-     * @param trainingRunRepository        the training run repository
-     * @param userManagementWebClient      the java rest template
-     */
-    @Autowired
-    public SecurityService(TrainingInstanceRepository trainingInstanceRepository,
-                           TrainingDefinitionRepository trainingDefinitionRepository,
-                           TrainingRunRepository trainingRunRepository,
-                           @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient,
-                           TeamRepository teamRepository,
-                           UserRefRepository userRefRepository,
-                           TrainingInstanceLobbyService trainingInstanceLobbyService
-    ) {
-        this.trainingDefinitionRepository = trainingDefinitionRepository;
-        this.trainingInstanceRepository = trainingInstanceRepository;
-        this.trainingRunRepository = trainingRunRepository;
-        this.userManagementWebClient = userManagementWebClient;
-        this.teamRepository = teamRepository;
-        this.userRefRepository = userRefRepository;
-        this.trainingInstanceLobbyService = trainingInstanceLobbyService;
+  private final TrainingRunRepository trainingRunRepository;
+  private final TrainingDefinitionRepository trainingDefinitionRepository;
+  private final TrainingInstanceRepository trainingInstanceRepository;
+  private final WebClient userManagementWebClient;
+  private final TeamRepository teamRepository;
+  private final UserRefRepository userRefRepository;
+  private final TrainingInstanceLobbyService trainingInstanceLobbyService;
+
+  /**
+   * Instantiates a new Security service.
+   *
+   * @param trainingInstanceRepository the training instance repository
+   * @param trainingDefinitionRepository the training definition repository
+   * @param trainingRunRepository the training run repository
+   * @param userManagementWebClient the java rest template
+   */
+  @Autowired
+  public SecurityService(
+      TrainingInstanceRepository trainingInstanceRepository,
+      TrainingDefinitionRepository trainingDefinitionRepository,
+      TrainingRunRepository trainingRunRepository,
+      @Qualifier("userManagementServiceWebClient") WebClient userManagementWebClient,
+      TeamRepository teamRepository,
+      UserRefRepository userRefRepository,
+      TrainingInstanceLobbyService trainingInstanceLobbyService) {
+    this.trainingDefinitionRepository = trainingDefinitionRepository;
+    this.trainingInstanceRepository = trainingInstanceRepository;
+    this.trainingRunRepository = trainingRunRepository;
+    this.userManagementWebClient = userManagementWebClient;
+    this.teamRepository = teamRepository;
+    this.userRefRepository = userRefRepository;
+    this.trainingInstanceLobbyService = trainingInstanceLobbyService;
+  }
+
+  /**
+   * Is trainee of given training run boolean.
+   *
+   * @param trainingRunId the training run id
+   * @return the boolean
+   */
+  public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
+    TrainingRun trainingRun =
+        trainingRunRepository
+            .findById(trainingRunId)
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        new EntityErrorDetail(
+                            TrainingRun.class,
+                            "id",
+                            trainingRunId.getClass(),
+                            trainingRunId,
+                            "The necessary permissions are required for a resource.")));
+
+    Long userRefId = getUserRefIdFromUserAndGroup();
+
+    boolean isInRunsTeam =
+        trainingRun.getCoopRunTeam() != null
+            && trainingRun.getCoopRunTeam().getMembers().stream()
+                .anyMatch(member -> member.getUserRefId().equals(userRefId));
+
+    return isInRunsTeam || trainingRun.getParticipantRef().getUserRefId().equals(userRefId);
+  }
+
+  public boolean isTraineeOfGivenTrainingInstance(Long trainingInstanceId) {
+    TrainingInstance trainingInstance =
+        trainingInstanceRepository
+            .findById(trainingInstanceId)
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        new EntityErrorDetail(
+                            TrainingInstance.class,
+                            "id",
+                            trainingInstanceId.getClass(),
+                            trainingInstanceId,
+                            "The necessary permissions are required for a resource.")));
+    return trainingRunRepository.getAllByTrainingInstance(trainingInstance).stream()
+        .anyMatch(t -> t.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+  }
+
+  /**
+   * Is organizer of given training instance boolean.
+   *
+   * @param instanceId the instance id
+   * @return the boolean
+   */
+  public boolean isOrganizerOfGivenTrainingInstance(Long instanceId) {
+    TrainingInstance trainingInstance =
+        trainingInstanceRepository
+            .findById(instanceId)
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        new EntityErrorDetail(
+                            TrainingInstance.class,
+                            "id",
+                            instanceId.getClass(),
+                            instanceId,
+                            "The necessary permissions are required for a resource.")));
+    return isOrganizerOfGivenInstance(trainingInstance);
+  }
+
+  /**
+   * Is organizer of training instance of given team
+   *
+   * @param teamId the team id
+   * @return the boolean
+   */
+  public boolean isOrganizerOfGivenTeamTrainingInstance(Long teamId) {
+    Team team =
+        teamRepository
+            .findById(teamId)
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        new EntityErrorDetail(
+                            Team.class,
+                            "id",
+                            teamId.getClass(),
+                            teamId,
+                            "The necessary permissions are required for a resource.")));
+    return isOrganizerOfGivenInstance(team.getTrainingInstance());
+  }
+
+  /**
+   * Is organizer of given training run.
+   *
+   * @param trainingRunId the run id
+   * @return the boolean
+   */
+  public boolean isOrganizerOfGivenTrainingRun(Long trainingRunId) {
+    TrainingRun trainingRun =
+        trainingRunRepository
+            .findById(trainingRunId)
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        new EntityErrorDetail(
+                            TrainingRun.class,
+                            "id",
+                            trainingRunId.getClass(),
+                            trainingRunId,
+                            "The necessary permissions are required for a resource.")));
+    return trainingRun.getTrainingInstance().getOrganizers().stream()
+        .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+  }
+
+  /**
+   * Is designer of given training definition boolean.
+   *
+   * @param definitionId the definition id
+   * @return the boolean
+   */
+  public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
+    TrainingDefinition trainingDefinition =
+        trainingDefinitionRepository
+            .findById(definitionId)
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        new EntityErrorDetail(
+                            TrainingDefinition.class,
+                            "id",
+                            definitionId.getClass(),
+                            definitionId,
+                            "The necessary permissions are required for a resource.")));
+    return trainingDefinition.getAuthors().stream()
+        .anyMatch(a -> a.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+  }
+
+  /**
+   * Is organizer of one of the training instances from the given training definition
+   *
+   * @param definitionId the definition id
+   * @return the boolean
+   */
+  public boolean isOrganizerForGivenTrainingDefinition(Long definitionId) {
+    List<TrainingInstance> instances =
+        trainingInstanceRepository.findAllByTrainingDefinitionId(definitionId);
+    for (TrainingInstance trainingInstance : instances) {
+      if (isOrganizerOfGivenInstance(trainingInstance)) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    /**
-     * Is trainee of given training run boolean.
-     *
-     * @param trainingRunId the training run id
-     * @return the boolean
-     */
-    public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
-        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(),
-                        trainingRunId, "The necessary permissions are required for a resource.")));
-        return trainingRun.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup());
+  private boolean isOrganizerOfGivenInstance(TrainingInstance trainingInstance) {
+    return trainingInstance.getOrganizers().stream()
+        .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+  }
+
+  /**
+   * Has role boolean.
+   *
+   * @param roleTypeSecurity the role type security
+   * @return the boolean
+   */
+  public boolean hasRole(RoleTypeSecurity roleTypeSecurity) {
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    for (GrantedAuthority gA : authentication.getAuthorities()) {
+      if (gA.getAuthority().equals(roleTypeSecurity.name())) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    public boolean isTraineeOfGivenTrainingInstance(Long trainingInstanceId) {
-        TrainingInstance trainingInstance = trainingInstanceRepository.findById(trainingInstanceId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstanceId.getClass(),
-                        trainingInstanceId, "The necessary permissions are required for a resource.")));
-        return trainingRunRepository.getAllByTrainingInstance(trainingInstance)
-                .stream().anyMatch(t -> t.getParticipantRef().getUserRefId().equals(getUserRefIdFromUserAndGroup()));
-
+  /**
+   * Gets user ref id from user and group.
+   *
+   * @return the user ref id from user and group
+   */
+  public Long getUserRefIdFromUserAndGroup() {
+    try {
+      UserRefDTO userRefDTO =
+          userManagementWebClient
+              .get()
+              .uri("/users/info")
+              .retrieve()
+              .bodyToMono(UserRefDTO.class)
+              .block();
+      return userRefDTO.getUserRefId();
+    } catch (CustomWebClientException ex) {
+      throw new MicroserviceApiException(
+          "Error when calling user management service API to get info about logged in user.", ex);
     }
+  }
 
-    /**
-     * Is organizer of given training instance boolean.
-     *
-     * @param instanceId the instance id
-     * @return the boolean
-     */
-    public boolean isOrganizerOfGivenTrainingInstance(Long instanceId) {
-        TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(),
-                        instanceId, "The necessary permissions are required for a resource.")));
-        return isOrganizerOfGivenInstance(trainingInstance);
-    }
+  public String getBearerToken() {
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    return authentication.getToken().getTokenValue();
+  }
 
-    /**
-     * Is organizer of training instance of given team
-     *
-     * @param teamId the team id
-     * @return the boolean
-     */
-    public boolean isOrganizerOfGivenTeamTrainingInstance(Long teamId) {
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(Team.class, "id", teamId.getClass(),
-                        teamId, "The necessary permissions are required for a resource.")));
-        return isOrganizerOfGivenInstance(team.getTrainingInstance());
-    }
+  /**
+   * Check whether the user is a member of the given team
+   *
+   * @param teamId the team id
+   * @return true if the user is a member of the team, false otherwise
+   */
+  public boolean isTraineeOfGivenTeam(Long teamId) {
+    Optional<UserRef> userRef =
+        userRefRepository.findUserByUserRefId(this.getUserRefIdFromUserAndGroup());
 
-    /**
-     * Is organizer of given training run.
-     *
-     * @param trainingRunId the run id
-     * @return the boolean
-     */
-    public boolean isOrganizerOfGivenTrainingRun(Long trainingRunId) {
-        TrainingRun trainingRun = trainingRunRepository.findById(trainingRunId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(),
-                        trainingRunId, "The necessary permissions are required for a resource.")));
-        return trainingRun.getTrainingInstance().getOrganizers().stream()
-                .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
-    }
+    return userRef.isPresent()
+        && userRef.get().getTeams().stream().anyMatch(team -> team.getId().equals(teamId));
+  }
 
-    /**
-     * Is designer of given training definition boolean.
-     *
-     * @param definitionId the definition id
-     * @return the boolean
-     */
-    public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
-        TrainingDefinition trainingDefinition = trainingDefinitionRepository.findById(definitionId)
-                .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class,
-                        "id", definitionId.getClass(), definitionId, "The necessary permissions are required for a resource.")));
-        return trainingDefinition.getAuthors().stream()
-                .anyMatch(a -> a.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
-    }
-
-    /**
-     * Is organizer of one of the training instances from the given training definition
-     *
-     * @param definitionId the definition id
-     * @return the boolean
-     */
-    public boolean isOrganizerForGivenTrainingDefinition(Long definitionId) {
-        List<TrainingInstance> instances = trainingInstanceRepository.findAllByTrainingDefinitionId(definitionId);
-        for (TrainingInstance trainingInstance : instances) {
-            if (isOrganizerOfGivenInstance(trainingInstance)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isOrganizerOfGivenInstance(TrainingInstance trainingInstance) {
-        return trainingInstance.getOrganizers().stream()
-                .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
-    }
-
-    /**
-     * Has role boolean.
-     *
-     * @param roleTypeSecurity the role type security
-     * @return the boolean
-     */
-    public boolean hasRole(RoleTypeSecurity roleTypeSecurity) {
-        JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority gA : authentication.getAuthorities()) {
-            if (gA.getAuthority().equals(roleTypeSecurity.name())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Gets user ref id from user and group.
-     *
-     * @return the user ref id from user and group
-     */
-    public Long getUserRefIdFromUserAndGroup() {
-        try {
-            UserRefDTO userRefDTO = userManagementWebClient
-                    .get()
-                    .uri("/users/info")
-                    .retrieve()
-                    .bodyToMono(UserRefDTO.class)
-                    .block();
-            return userRefDTO.getUserRefId();
-        } catch (CustomWebClientException ex) {
-            throw new MicroserviceApiException("Error when calling user management service API to get info about logged in user.", ex);
-        }
-    }
-
-    public String getBearerToken() {
-        JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getToken().getTokenValue();
-    }
-
-    /**
-     * Check whether the user is a member of the given team
-     *
-     * @param teamId the team id
-     * @return true if the user is a member of the team, false otherwise
-     */
-    public boolean isTraineeOfGivenTeam(Long teamId) {
-        UserRef userRef = userRefRepository.createOrGet(this.getUserRefIdFromUserAndGroup());
-        return userRef.getTeams().stream().anyMatch(
-                team -> team.getId().equals(teamId)
-        );
-    }
-
-    /**
-     * Check whether the user is an organizer of instance of the given team
-     *
-     * @param teamId the team id
-     * @return true if the user is an organizer of the team, false otherwise
-     */
-    public boolean isOrganizerOfGivenTeam(Long teamId) {
-        Team team = trainingInstanceLobbyService.getTeamOrThrow(teamId);
-        return this.isOrganizerOfGivenInstance(team.getTrainingInstance());
-    }
+  /**
+   * Check whether the user is an organizer of instance of the given team
+   *
+   * @param teamId the team id
+   * @return true if the user is an organizer of the team, false otherwise
+   */
+  public boolean isOrganizerOfGivenTeam(Long teamId) {
+    Team team = trainingInstanceLobbyService.getTeamOrThrow(teamId);
+    return this.isOrganizerOfGivenInstance(team.getTrainingInstance());
+  }
 }

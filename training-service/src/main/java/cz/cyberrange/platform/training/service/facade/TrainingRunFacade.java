@@ -58,7 +58,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.hibernate.proxy.HibernateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,14 +230,6 @@ public class TrainingRunFacade {
     Page<TrainingRun> trainingRuns =
         trainingRunService.findAllByParticipantRefUserRefId(predicate, pageable);
     return convertToAccessedRunDTO(trainingRuns, sortByTitle);
-  }
-
-  private AbstractLevel unproxyLevel(AbstractLevel level) {
-    if (level instanceof HibernateProxy) {
-      return (AbstractLevel)
-          ((HibernateProxy) level).getHibernateLazyInitializer().getImplementation();
-    }
-    return level;
   }
 
   /**

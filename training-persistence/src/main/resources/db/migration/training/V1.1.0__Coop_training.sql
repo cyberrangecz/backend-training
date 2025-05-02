@@ -51,7 +51,7 @@ CREATE SEQUENCE message_seq AS bigint INCREMENT 100 MINVALUE 1;
 CREATE TABLE team_message (
     message_id  bigint PRIMARY KEY,
     team_id     bigint REFERENCES team (id),
-    user_ref_id bigint REFERENCES user_ref (user_ref_id),
+    user_ref_id bigint REFERENCES user_ref (id),
     time        timestamp NOT NULL,
     message     varchar(1024)
 );

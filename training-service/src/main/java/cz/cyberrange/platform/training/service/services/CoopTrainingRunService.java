@@ -171,17 +171,7 @@ public class CoopTrainingRunService extends TrainingRunService {
   }
 
   public boolean hasRunChanged(
-      Long runId, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
-    TrainingRun trainingRun = findByIdWithLevelReadOnly(runId);
-
-    LOG.severe("Tr solution shown: " + trainingRun.isSolutionTaken());
-    LOG.severe("Cache solution shown: " + solutionShown);
-
-    LOG.severe("Tr hints shown: " + trainingRun.getHintInfoList());
-    LOG.severe("Cache hints shown: " + hintIds);
-
-    LOG.severe("Tr level id: " + trainingRun.getCurrentLevel().getId());
-    LOG.severe("Cache level id: " + currentLevelId);
+      TrainingRun trainingRun, Long currentLevelId, List<Long> hintIds, Boolean solutionShown) {
 
     boolean levelIdChanged = !trainingRun.getCurrentLevel().getId().equals(currentLevelId);
     boolean hintsChanged =
