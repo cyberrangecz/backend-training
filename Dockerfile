@@ -6,13 +6,13 @@ FROM maven:3.8.4-openjdk-17-slim AS build
 WORKDIR /app
 
 ARG PROJECT_ARTIFACT_ID
-ARG PROPRIETARY_REPO_URL=YOUR-PATH-TO-PROPRIETARY_REPO
-ARG GITHUB_ACTOR=REGISTRY-USER
-ARG READ_PACKAGES_TOKEN=REGISTRY-TOKEN
-ARG MAVEN_CLI_OPTS=EXTRA-OPTIONS
+ARG PROPRIETARY_REPO_URL
 
 COPY pom.xml /app/pom.xml
 COPY etc/ci_settings.xml /app/etc/ci_settings.xml
+
+# Will work only with cache provided
+# COPY .m2 /app/.m2
 
 COPY training-api /app/training-api
 COPY training-elasticsearch /app/training-elasticsearch
@@ -21,7 +21,7 @@ COPY training-service /app/training-service
 COPY training-rest /app/training-rest
 
 # Build JAR file
-RUN mvn clean install -DskipTests $MAVEN_CLI_OPTS -Dproprietary-repo-url=$PROPRIETARY_REPO_URL && \
+RUN mvn clean install -U -s /app/etc/ci_settings.xml -DskipTests -Dproprietary-repo-url=$PROPRIETARY_REPO_URL && \
     cp /app/training-rest/target/$PROJECT_ARTIFACT_ID-*.jar /app/$PROJECT_ARTIFACT_ID.jar
 
 ############ RUNNABLE STAGE ############
