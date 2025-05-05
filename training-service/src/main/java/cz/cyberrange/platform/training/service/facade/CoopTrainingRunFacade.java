@@ -18,6 +18,7 @@ import cz.cyberrange.platform.training.persistence.model.enums.TrainingType;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
+import cz.cyberrange.platform.training.service.mapping.mapstruct.CloneMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TeamMapper;
@@ -65,6 +66,7 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
   private final TeamMapper teamMapper;
   private final TeamMessageMapper teamMessageMapper;
   private final AuditEventsService auditEventsService;
+  private final CloneMapper cloneMapper;
 
   /**
    * Instantiates a new Training run facade.
@@ -92,7 +94,8 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
       ScoreboardService scoreboardService,
       TeamMapper teamMapper,
       TeamMessageMapper teamMessageMapper,
-      AuditEventsService auditEventsService) {
+      AuditEventsService auditEventsService,
+      CloneMapper cloneMapper) {
     super(
         trainingRunService,
         trainingDefinitionService,
@@ -109,6 +112,7 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
     this.teamMapper = teamMapper;
     this.teamMessageMapper = teamMessageMapper;
     this.auditEventsService = auditEventsService;
+    this.cloneMapper = cloneMapper;
   }
 
   @PersistenceContext private EntityManager entityManager;
@@ -317,12 +321,10 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
         .forEach(
             (scoreDTO -> {
               if (cachedTeamIds.contains(scoreDTO.getTeam().getId())) {
-                TeamDTO team = scoreDTO.getTeam();
-                team.setMembers(new ArrayList<>());
-                scoreDTO.setTeam(team);
+                scoreDTO.getTeam().setMembers(new ArrayList<>());
               }
             }));
-    return scoreboardDTO;
+    return cloneMapper.clone(scoreboardDTO);
   }
 
   @PreAuthorize(
@@ -346,7 +348,7 @@ public class CoopTrainingRunFacade extends TrainingRunFacade {
     List<TeamScoreDTO> teamScoreDTOs =
         new ArrayList<>(scoreboardService.getScoreboard(instanceId).values());
     scoreboardService.setFullUserRefDTOData(teamScoreDTOs, true);
-    return teamScoreDTOs;
+    return cloneMapper.cloneTeamScoreDTOs(teamScoreDTOs);
   }
 
   @PreAuthorize(
