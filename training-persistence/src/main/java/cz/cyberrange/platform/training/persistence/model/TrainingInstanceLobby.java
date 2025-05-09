@@ -1,8 +1,10 @@
 package cz.cyberrange.platform.training.persistence.model;
 
-import lombok.Getter;
-import lombok.Setter;
-
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Embeddable;
 import javax.persistence.FetchType;
@@ -11,64 +13,57 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Embeddable
 public class TrainingInstanceLobby implements Serializable {
 
-    @Transient
-    @Setter
-    @Getter
-    private TrainingInstance trainingInstance;
+  @Transient @Setter @Getter private TrainingInstance trainingInstance;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(
-            name = "training_instance_waiting_users",
-            joinColumns = @JoinColumn(name = "training_instance_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_ref_id")
-    )
-    private Set<UserRef> usersQueue = new HashSet<>();
+  @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+  @JoinTable(
+      name = "training_instance_waiting_user",
+      joinColumns = @JoinColumn(name = "training_instance_id"),
+      inverseJoinColumns = @JoinColumn(name = "user_ref_id"))
+  private Set<UserRef> usersQueue = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "training_instance_id")
-    private Set<Team> teams = new HashSet<>();
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @JoinColumn(name = "training_instance_id")
+  private Set<Team> teams = new HashSet<>();
 
-    public void addWaitingUser(UserRef userRef) {
-        usersQueue.add(userRef);
-        userRef.addQueue(trainingInstance);
-    }
+  public void addWaitingUser(UserRef userRef) {
+    usersQueue.add(userRef);
+    userRef.addQueue(trainingInstance);
+  }
 
-    public void removeWaitingUser(UserRef userRef) {
-        usersQueue.remove(userRef);
-        userRef.removeQueue(trainingInstance);
-    }
+  public void removeWaitingUser(UserRef userRef) {
+    usersQueue.remove(userRef);
+    userRef.removeQueue(trainingInstance);
+  }
 
-    public void addTeam(Team team) {
-        teams.add(team);
-    }
+  public void addTeam(Team team) {
+    teams.add(team);
+  }
 
-    public void removeTeam(Team team) {
-        teams.remove(team);
-    }
+  public void removeTeam(Team team) {
+    teams.remove(team);
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TrainingInstanceLobby that = (TrainingInstanceLobby) o;
-        return this.hashCode() == that.hashCode();
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    TrainingInstanceLobby that = (TrainingInstanceLobby) o;
+    return this.hashCode() == that.hashCode();
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(
-                Objects.hashCode(trainingInstance),
-                Arrays.deepHashCode(usersQueue.toArray()),
-                Arrays.deepHashCode(teams.toArray()));
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        Objects.hashCode(trainingInstance),
+        Arrays.deepHashCode(usersQueue.toArray()),
+        Arrays.deepHashCode(teams.toArray()));
+  }
 }

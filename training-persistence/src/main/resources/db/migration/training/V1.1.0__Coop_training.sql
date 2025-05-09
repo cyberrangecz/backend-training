@@ -56,7 +56,7 @@ CREATE TABLE team_message (
     message     varchar(1024)
 );
 
-CREATE TABLE training_instance_waiting_users (
+CREATE TABLE training_instance_waiting_user (
     training_instance_id bigint REFERENCES training_instance (id),
     user_ref_id          bigint REFERENCES user_ref (id),
     PRIMARY KEY (training_instance_id, user_ref_id)
