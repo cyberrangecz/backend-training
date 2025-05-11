@@ -229,12 +229,10 @@ public class TrainingInstanceLobbyService {
    */
   public void cleanupLobby(TrainingInstanceLobby trainingInstanceLobby) {
     trainingInstanceLobby.getTeams().forEach(team -> this.deleteTeam(team.getId()));
-    trainingInstanceLobby
-        .getUsersQueue()
-        .forEach(
-            user ->
-                this.removeUserFromQueue(
-                    trainingInstanceLobby.getTrainingInstance().getId(), user.getId()));
+    Long instanceId = trainingInstanceLobby.getTrainingInstance().getId();
+    List<Long> idsToRemove =
+        trainingInstanceLobby.getUsersQueue().stream().map(UserRef::getUserRefId).toList();
+    idsToRemove.forEach(id -> this.removeUserFromQueue(instanceId, id));
   }
 
   public void removeUserFromQueue(Long instanceId, Long userId) {
