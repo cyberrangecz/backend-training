@@ -17,10 +17,10 @@ import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import org.elasticsearch.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,7 +155,7 @@ public class TrainingInstanceLobbyService {
    */
   public void deleteTeam(Long teamId) {
     Team team = getTeamOrThrow(teamId);
-    Set<UserRef> members = team.getMembers();
+    List<UserRef> members = new ArrayList<>(team.getMembers());
     members.forEach(team::removeMember);
     teamMessageRepository.deleteTeamMessageByTeam(team);
     userRefRepository.saveAll(members);

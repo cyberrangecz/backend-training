@@ -12,12 +12,8 @@ import org.springframework.stereotype.Service;
 public class IdenticonCombinerService {
 
   public byte[] combineIdenticons(List<byte[]> identiconList) {
-    if (identiconList == null || identiconList.isEmpty()) {
-      throw new IllegalArgumentException("Identicon list must not be empty.");
-    }
-
     int count = identiconList.size();
-    int gridSize = (int) Math.ceil(Math.sqrt(count)); // e.g. 2 for 2 icons
+    int gridSize = (int) Math.ceil(Math.sqrt(count));
 
     int canvasSize = 100;
     int cellSize = canvasSize / gridSize;
@@ -32,7 +28,6 @@ public class IdenticonCombinerService {
       int iconWidth = icon.getWidth();
       int iconHeight = icon.getHeight();
 
-      // Scale preserving aspect ratio
       float scale = Math.min((float) cellSize / iconWidth, (float) cellSize / iconHeight);
       int scaledWidth = Math.round(iconWidth * scale);
       int scaledHeight = Math.round(iconHeight * scale);
@@ -41,8 +36,8 @@ public class IdenticonCombinerService {
 
       int row = i / gridSize;
       int col = i % gridSize;
-      int x = col * cellSize + (cellSize - scaledWidth) / 2; // center horizontally
-      int y = row * cellSize + (cellSize - scaledHeight) / 2; // center vertically
+      int x = col * cellSize + (cellSize - scaledWidth) / 2;
+      int y = row * cellSize + (cellSize - scaledHeight) / 2;
 
       g2d.drawImage(scaledIcon, x, y, null);
     }
