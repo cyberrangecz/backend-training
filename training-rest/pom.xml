@@ -104,7 +104,7 @@
                                 </securityDefinition>
                             </securityDefinitions>
                             <swaggerDirectory>${swagger.directory}</swaggerDirectory>
-                            <swaggerFileName>swagger-docs</swaggerFileName>
+                            <swaggerFileName>${project.artifactId}-swagger-docs</swaggerFileName>
                             <outputFormats>yaml</outputFormats>
                             <swaggerApiReader>cz.cyberrange.platform.training.rest.utils.reader.SnakeCaseSwaggerReader
                             </swaggerApiReader>
