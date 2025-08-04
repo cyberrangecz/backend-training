@@ -70,12 +70,12 @@
             <dependency>
                 <groupId>cz.cybersecurityhub.maven</groupId>
                 <artifactId>crczp-security-commons</artifactId>
-                <version>${security-commons.version}</version>
+                <version>${crczp-security-commons.version}</version>
             </dependency>
             <dependency>
                 <groupId>cz.cybersecurityhub.maven</groupId>
                 <artifactId>crczp-elasticsearch-documents</artifactId>
-                <version>${elasticsearch-documents.version}</version>
+                <version>${crczp-elasticsearch-documents.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.springfox</groupId>
