@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>cz.cyberrange.platform</groupId>
+        <groupId>cz.cybersecurityhub.maven</groupId>
         <artifactId>training</artifactId>
         <version>${app-version}</version>
         <relativePath>../pom.xml</relativePath>
@@ -13,8 +13,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>cz.cyberrange.platform</groupId>
-            <artifactId>elasticsearch-documents</artifactId>
+            <groupId>cz.cybersecurityhub.maven</groupId>
+            <artifactId>crczp-elasticsearch-documents</artifactId>
         </dependency>
         <!--SPRING BOOT STARTERS-->
         <dependency>
