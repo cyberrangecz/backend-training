@@ -2,12 +2,27 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cz.cyberrange.platform</groupId>
+    <groupId>cz.cybersecurityhub.maven</groupId>
     <artifactId>training</artifactId>
     <name>CyberRangeCZ Platform Training</name>
     <description>Backend for linear trainings</description>
     <version>${app-version}</version>
     <packaging>pom</packaging>
+
+    <url>https://github.com/cyberrangecz/backend-training</url>
+    <scm>
+        <url>https://github.com/cyberrangecz/backend-training</url>
+        <connection>scm:git:https://github.com/cyberrangecz/backend-training.git</connection>
+        <developerConnection>scm:git:git@github.com:cyberrangecz/backend-training.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Mário Murín</name>
+            <email>murin@cshub.cz</email>
+        </developer>
+    </developers>
 
     <licenses>
         <license>
@@ -27,8 +42,8 @@
         <proprietary-repo-id>github</proprietary-repo-id>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <security-commons.version>1.0.0</security-commons.version>
-        <elasticsearch-documents.version>1.0.0</elasticsearch-documents.version>
+        <crczp-security-commons.version>1.0.1</crczp-security-commons.version>
+        <crczp-elasticsearch-documents.version>1.0.1</crczp-elasticsearch-documents.version>
         <swagger.version>2.9.2</swagger.version>
         <swagger-annotations.version>1.5.22</swagger-annotations.version>
         <swagger.directory>${basedir}/../doc-files</swagger.directory>
@@ -49,25 +64,18 @@
         <lombok.version>1.18.36</lombok.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>${proprietary-repo-id}</id>
-            <url>${proprietary-repo-url}</url>
-        </repository>
-    </repositories>
-
     <!-- specifies versions not defined by the Spring boot platform -->
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>cz.cyberrange.platform</groupId>
-                <artifactId>elasticsearch-documents</artifactId>
-                <version>${elasticsearch-documents.version}</version>
+                <groupId>cz.cybersecurityhub.maven</groupId>
+                <artifactId>crczp-security-commons</artifactId>
+                <version>${crczp-security-commons.version}</version>
             </dependency>
             <dependency>
-                <groupId>cz.cyberrange.platform</groupId>
-                <artifactId>security-commons</artifactId>
-                <version>${security-commons.version}</version>
+                <groupId>cz.cybersecurityhub.maven</groupId>
+                <artifactId>crczp-elasticsearch-documents</artifactId>
+                <version>${crczp-elasticsearch-documents.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.springfox</groupId>
