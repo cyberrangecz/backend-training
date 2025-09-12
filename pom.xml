@@ -45,7 +45,6 @@
         <crczp-security-commons.version>1.0.1</crczp-security-commons.version>
         <crczp-elasticsearch-documents.version>1.0.1</crczp-elasticsearch-documents.version>
         <swagger.version>2.9.2</swagger.version>
-        <swagger-annotations.version>1.5.22</swagger-annotations.version>
         <swagger.directory>${basedir}/../doc-files</swagger.directory>
         <swagger.skip>true</swagger.skip>
         <swagger.host>localhost:8083</swagger.host>
@@ -224,6 +223,11 @@
                     </goals>
                     </execution>
                 </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
                 </plugin>
 
                 <plugin>
