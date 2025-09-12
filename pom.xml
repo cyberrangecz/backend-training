@@ -228,6 +228,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>3.5.5</version>
                 </plugin>
 
                 <plugin>
@@ -243,6 +244,11 @@
                         </compilerArgs>
                         <release>${java.version}</release>
                         <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
                             <!-- Errorprone -->
                             <path>
                                 <groupId>com.google.errorprone</groupId>
