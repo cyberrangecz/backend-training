@@ -213,6 +213,8 @@
                     <!-- later need to set score -->
                     <failBuildOnCVSS>11</failBuildOnCVSS>
                     <nvdApiKey>${env.NVD_API_TOKEN}</nvdApiKey>
+                    <dataDirectory>${env.NVD_DATA_DIR}</dataDirectory>
+                    <ossIndexServerId>ossindex</ossIndexServerId>
                 </configuration>
                 <executions>
                     <execution>
