@@ -26,3 +26,4 @@ jobs:
       MAVEN_CLI_OPTS: "-s etc/ci_settings.xml"
       IMAGE_NAME: "training"
       VERSION_PATH: "etc/ci_settings.xml"
+      publish_and_tag: ${{ github.event.inputs.confirm_action }}
