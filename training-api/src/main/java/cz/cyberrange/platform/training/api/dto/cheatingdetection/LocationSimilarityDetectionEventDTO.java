@@ -11,13 +11,18 @@ import lombok.ToString;
 @Setter
 @ToString
 @EqualsAndHashCode
-@ApiModel(value = "LocationSimilarityDetectionEventDTO", description = "A detection event of type Location Similarity.", parent = AbstractDetectionEventDTO.class)
+@ApiModel(
+    value = "LocationSimilarityDetectionEventDTO",
+    description = "A detection event of type Location Similarity.",
+    parent = AbstractDetectionEventDTO.class)
 public class LocationSimilarityDetectionEventDTO extends AbstractDetectionEventDTO {
 
-    @ApiModelProperty(value = "Ip address of participant.", example = "1.1.1.1")
-    private String ipAddress;
-    @ApiModelProperty(value = "DNS of participant.", example = "dns.provider.cz")
-    private String dns;
-    @ApiModelProperty(value = "If the address is the same as deployment.", example = "false")
-    private boolean isAddressDeploy;
+  @ApiModelProperty(value = "Ip address of participant.", example = "1.1.1.1")
+  private String ipAddress;
+
+  @ApiModelProperty(value = "DNS of participant.", example = "dns.provider.cz")
+  private String dns;
+
+  @ApiModelProperty(value = "If the address is the same as deployment.", example = "false")
+  private boolean isAddressDeploy;
 }

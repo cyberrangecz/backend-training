@@ -66,7 +66,8 @@ public class OpenSearchSqlService {
    * @param allowedRunIds list of run IDs the user has access to (trainee role)
    * @return a {@link JsonNode} containing the query results, or an empty object if both
    *     allowedInstanceIds and allowedRunIds are empty
-   * @throws OpenSearchQueryException if an error occurs while executing the query or processing the response
+   * @throws OpenSearchQueryException if an error occurs while executing the query or processing the
+   *     response
    * @throws OpenSearchSerializeException if an error occurs while parsing the response JSON
    */
   public JsonNode executeSqlQueryWithAccessControl(
@@ -91,7 +92,8 @@ public class OpenSearchSqlService {
    * @return a {@link JsonNode} containing the query results
    * @throws IOException if an error occurs while executing the query or processing the response
    */
-  public JsonNode executeSqlQueryFromAdmin(String sqlQuery) throws OpenSearchQueryException, OpenSearchSerializeException {
+  public JsonNode executeSqlQueryFromAdmin(String sqlQuery)
+      throws OpenSearchQueryException, OpenSearchSerializeException {
     return this.executeSqlQuery(sqlQuery, null);
   }
 
@@ -109,8 +111,11 @@ public class OpenSearchSqlService {
       logger.error("Failed to parse OpenSearch SQL response JSON", e);
       throw new OpenSearchSerializeException("Failed to parse OpenSearch SQL response JSON", e);
     } catch (IOException e) {
-      logger.error("Failed to execute SQL query with access control. Query: {}, access filter: {}",
-          sqlQuery, filter, e);
+      logger.error(
+          "Failed to execute SQL query with access control. Query: {}, access filter: {}",
+          sqlQuery,
+          filter,
+          e);
       throw new OpenSearchQueryException("Failed to execute SQL query with access control", e);
     }
   }

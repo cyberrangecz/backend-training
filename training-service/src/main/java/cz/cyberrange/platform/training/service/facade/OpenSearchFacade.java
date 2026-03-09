@@ -5,14 +5,10 @@ import cz.cyberrange.platform.training.opensearch.logging.exceptions.OpenSearchQ
 import cz.cyberrange.platform.training.opensearch.logging.exceptions.OpenSearchSerializeException;
 import cz.cyberrange.platform.training.opensearch.querying.OpenSearchSqlService;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
-import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingRunRepository;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.services.SecurityService;
-import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
-import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
-import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -38,7 +34,8 @@ public class OpenSearchFacade {
     this.userService = userService;
   }
 
-  public JsonNode handleSqlQuery(@NonNull String query) throws OpenSearchQueryException, OpenSearchSerializeException {
+  public JsonNode handleSqlQuery(@NonNull String query)
+      throws OpenSearchQueryException, OpenSearchSerializeException {
     if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
       return opensearchSqlService.executeSqlQueryFromAdmin(query);
     }

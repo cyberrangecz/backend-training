@@ -284,8 +284,7 @@ public class VisualizationFacade {
         getLevelDefinitions(trainingDefinitionOfTrainingRun.getId()));
 
     Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromOpenSearch =
-        opensearchApiService.getAggregatedEventsByTrainingRunsAndLevels(
-            trainingInstance.getId());
+        opensearchApiService.getAggregatedEventsByTrainingRunsAndLevels(trainingInstance.getId());
 
     // Player progress
     List<ProgressDTO> playerProgresses = new ArrayList<>();
@@ -545,8 +544,7 @@ public class VisualizationFacade {
 
     for (TrainingInstance trainingInstance : instances) {
       Map<Long, Map<Long, List<AbstractAuditPOJO>>> instanceEvents =
-          opensearchApiService.getAggregatedEventsByLevelsAndTrainingRuns(
-              trainingInstance.getId());
+          opensearchApiService.getAggregatedEventsByLevelsAndTrainingRuns(trainingInstance.getId());
       for (AbstractLevel level : levels) {
         Map<Long, List<AbstractAuditPOJO>> levelEvents = instanceEvents.get(level.getId());
         if (levelEvents != null) {
@@ -1056,8 +1054,7 @@ public class VisualizationFacade {
     return trainingInstanceData;
   }
 
-  private Map<Long, UserRefDTO>
-  getUserRefDTOsFromInstanceEvents(
+  private Map<Long, UserRefDTO> getUserRefDTOsFromInstanceEvents(
       Long trainingInstanceId,
       Map<Long, Map<Long, List<AbstractAuditPOJO>>> trainingInstanceEvents,
       Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>>

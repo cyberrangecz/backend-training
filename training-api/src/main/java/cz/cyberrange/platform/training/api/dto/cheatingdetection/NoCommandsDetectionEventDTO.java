@@ -6,7 +6,8 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-@ApiModel(value = "NoCommandsDetectionEventDTO", description = "A detection event of type No Commands.", parent = AbstractDetectionEventDTO.class)
-public class NoCommandsDetectionEventDTO extends AbstractDetectionEventDTO {
-
-}
+@ApiModel(
+    value = "NoCommandsDetectionEventDTO",
+    description = "A detection event of type No Commands.",
+    parent = AbstractDetectionEventDTO.class)
+public class NoCommandsDetectionEventDTO extends AbstractDetectionEventDTO {}
