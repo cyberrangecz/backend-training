@@ -99,6 +99,16 @@ public class TrainingInstanceService {
     }
 
     /**
+     * Find distinct pool IDs linked to at least one non-managed training instance.
+     * Used by sandbox-service single-sandbox cleanup job.
+     *
+     * @return list of pool IDs for non-managed training instances
+     */
+    public List<Long> findDistinctPoolIdsByManagedFalse() {
+        return trainingInstanceRepository.findDistinctPoolIdsByManagedFalse();
+    }
+
+    /**
      * Find all Training Instances.
      *
      * @param predicate represents a predicate (boolean-valued function) of one argument.
@@ -171,6 +181,10 @@ public class TrainingInstanceService {
                 trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
             }
         } else {
+            // Preserve immutable fields from current so omitted DTO fields (e.g. poolId) are not treated as changes
+            trainingInstanceToUpdate.setStartTime(trainingInstance.getStartTime());
+            trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
+            trainingInstanceToUpdate.setPoolId(trainingInstance.getPoolId());
             this.checkChangedFieldsOfTrainingInstance(trainingInstanceToUpdate, trainingInstance);
             trainingInstanceToUpdate.setAccessToken(trainingInstance.getAccessToken());
         }

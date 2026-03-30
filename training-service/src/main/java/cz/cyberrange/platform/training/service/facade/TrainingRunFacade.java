@@ -5,6 +5,7 @@ import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
+import cz.cyberrange.platform.training.api.dto.QuestionCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -20,7 +21,9 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPrevie
 import cz.cyberrange.platform.training.api.enums.Actions;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
+import cz.cyberrange.platform.training.api.responses.ActiveSandboxSummaryDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
+import cz.cyberrange.platform.training.api.responses.SandboxInfo;
 import cz.cyberrange.platform.training.api.responses.VariantAnswer;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
@@ -49,6 +52,7 @@ import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.AnswersStorageApiService;
 import cz.cyberrange.platform.training.service.services.api.TrainingFeedbackApiService;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +63,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -83,8 +89,14 @@ public class TrainingRunFacade {
     private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
     private static final int TIME_TO_PROPAGATE_EVENTS = 5;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Value("${central.syslog.ip:127.0.0.1}")
     private String centralSyslogIp;
+
+    @Value("${single.sandbox.per.user.enabled:false}")
+    private boolean singleSandboxPerUserEnabled;
 
     private final TrainingRunService trainingRunService;
     private final TrainingDefinitionService trainingDefinitionService;
@@ -234,7 +246,96 @@ public class TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId) {
-        TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
+        TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
+        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
+        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+
+        // Managed instances: reuse managed flow semantics for resume as well – if sandbox is gone or not yet ready,
+        // keep user on overview instead of entering the run with no environment.
+        if (trainingInstance.isManaged()) {
+            String userSub = securityService.getOidcSub();
+            if (trainingRun.getSandboxInstanceRefId() != null && !trainingRun.getSandboxInstanceRefId().isBlank()) {
+                if (trainingRunService.verifySandboxStillExistsAndDetachIfNot(trainingRun)) {
+                    trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
+                    AccessTrainingRunDTO dto = convertToAccessTrainingRunDTO(trainingRun);
+                    dto.setManaged(true);
+                    return dto;
+                }
+                AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, trainingRunId, List.of());
+                dto.setManaged(true);
+                return dto;
+            }
+            if (trainingRun.getSandboxInstanceAllocationId() != null) {
+                if (trainingRunService.attachSandboxIfAllocationReady(trainingRun)) {
+                    trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
+                    AccessTrainingRunDTO dto = convertToAccessTrainingRunDTO(trainingRun);
+                    dto.setManaged(true);
+                    return dto;
+                }
+                List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, trainingRunId, activeSandboxes);
+                dto.setManaged(true);
+                return dto;
+            }
+            // No sandbox and no allocation – behave like "no free sandbox" in managed access flow.
+            AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, trainingRunId, List.of());
+            dto.setManaged(true);
+            return dto;
+        }
+
+        // Non-managed instances with single-sandbox-per-user enabled: require a valid sandbox before resuming.
+        if (singleSandboxPerUserEnabled && !trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() != null) {
+            String userSub = securityService.getOidcSub();
+            // If run has a sandbox, verify it still exists.
+            if (trainingRun.getSandboxInstanceRefId() != null && !trainingRun.getSandboxInstanceRefId().isBlank()) {
+                if (!trainingRunService.verifySandboxStillExistsAndDetachIfNot(trainingRun)) {
+                    // Sandbox was removed (e.g. by cleanup/admin) – treat as no sandbox below.
+                    trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
+                } else {
+                    trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
+                    return enrichWithHintsAndSolution(trainingRun);
+                }
+            }
+
+            // No sandbox ref at this point.
+            if (trainingRun.getSandboxInstanceAllocationId() != null) {
+                // There is an allocation; check if it is ready now.
+                if (trainingRunService.attachSandboxIfAllocationReady(trainingRun)) {
+                    trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
+                    return enrichWithHintsAndSolution(trainingRun);
+                }
+                // Still building – return stay-on-overview with active sandboxes and stages.
+                List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                return buildStayOnOverviewDTO(trainingInstance, trainingRunId, activeSandboxes);
+            }
+
+            // No sandbox and no allocation – user must allocate via access code first.
+            List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+            if (activeSandboxes == null) {
+                activeSandboxes = new ArrayList<>();
+            }
+            trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+            trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+            trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+            AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, trainingRunId, activeSandboxes);
+            // Signal that user is allowed to allocate (frontend can show a message like
+            // “Please allocate a sandbox using your access code before resuming this training.”).
+            dto.setAllowAllocate(true);
+            return dto;
+        }
+
+        // Fallback: environments that do not use single-sandbox-per-user (or local), keep existing behaviour.
+        trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
+        return enrichWithHintsAndSolution(trainingRun);
+    }
+
+    private AccessTrainingRunDTO enrichWithHintsAndSolution(TrainingRun trainingRun) {
         AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
         if (trainingRun.getCurrentLevel() instanceof TrainingLevel) {
             if (trainingRun.isSolutionTaken()) {
@@ -251,6 +352,20 @@ public class TrainingRunFacade {
     }
 
     /**
+     * Returns true if the current user (from JWT) has an active training run that uses the given sandbox.
+     * Used by sandbox-service to verify a trainee may access a specific sandbox (e.g. topology) when pool is locked.
+     *
+     * @param sandboxId sandbox UUID
+     * @return true if the current user has an active run with this sandbox
+     */
+    @IsTraineeOrAdmin
+    @TransactionalRO
+    public boolean verifySandboxAccessForCurrentUser(String sandboxId) {
+        Long userRefId = securityService.getUserRefIdFromUserAndGroup();
+        return trainingRunService.hasActiveRunWithSandboxForUser(userRefId, sandboxId);
+    }
+
+    /**
      * Access Training Run by logged in user based on given accessToken.
      *
      * @param accessToken of one training instance
@@ -259,26 +374,263 @@ public class TrainingRunFacade {
     @IsTraineeOrAdmin
     @Transactional
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
-        TrainingInstance trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
-        // checking if the user is not accessing to his existing training run (resume action)
         Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
-        Optional<TrainingRun> accessedTrainingRun = trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
+        TrainingInstance trainingInstance;
+        if (singleSandboxPerUserEnabled) {
+            // When single-sandbox is enabled, user may have an existing run for an instance whose time window has expired.
+            // Resolve instance from existing run if any, so they get stay-on-overview or resume instead of EntityNotFoundException.
+            Optional<TrainingRun> existingRun = trainingRunService.findRunningTrainingRunOfUserWithOrWithoutSandbox(accessToken, participantRefId);
+            if (existingRun.isPresent()) {
+                trainingInstance = existingRun.get().getTrainingInstance();
+            } else {
+                trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
+            }
+        } else {
+            trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
+        }
+        // First: check if this is a managed instance — trainee cannot allocate; only use a sandbox allocated by Admin.
+        if (trainingInstance.isManaged()) {
+            return accessTrainingRunManaged(trainingInstance, accessToken, participantRefId);
+        }
+        // Second: single-sandbox-per-user — check active sandboxes before allowing resume or new allocation.
+        // Number of allocations per student is controlled here: we never create a second allocation when they already have one.
+        if (singleSandboxPerUserEnabled) {
+            String userSub = securityService.getOidcSub();
+            List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+            if (activeSandboxes == null) {
+                activeSandboxes = new ArrayList<>();
+            }
+            trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+            trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+            trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+            // Managed-instance sandboxes do not count toward single-allocation quota for non-managed instances.
+            List<ActiveSandboxSummaryDTO> nonManagedSandboxes = activeSandboxes.stream()
+                    .filter(s -> !Boolean.TRUE.equals(s.getTrainingInstanceManaged()))
+                    .collect(Collectors.toList());
+            if (!nonManagedSandboxes.isEmpty()) {
+                Optional<TrainingRun> runForThisToken = trainingRunService.findRunningTrainingRunOfUserWithOrWithoutSandbox(accessToken, participantRefId);
+                // Allow resume when the user has a fully ready non-managed sandbox that belongs to this token's run
+                // (by sandbox ref or by allocation id). When run has allocation id but no sandbox ref yet, we fall
+                // through so the Second block can attach and resume.
+                TrainingRun run = runForThisToken.orElse(null);
+                boolean mayResume = false;
+                if (run != null) {
+                    for (ActiveSandboxSummaryDTO s : nonManagedSandboxes) {
+                        boolean runHasSandboxRef = run.getSandboxInstanceRefId() != null && !run.getSandboxInstanceRefId().isBlank();
+                        boolean sandboxMatchesRef = runHasSandboxRef && run.getSandboxInstanceRefId().equals(s.getSandboxId());
+                        boolean runHasAllocationNoRef = !runHasSandboxRef
+                                && run.getSandboxInstanceAllocationId() != null
+                                && run.getSandboxInstanceAllocationId().equals(s.getId());
+                        if ((sandboxMatchesRef || (runHasAllocationNoRef && s.isAllowRemove()))
+                                && TrainingRunService.isAllocationFullyReady(s)) {
+                            mayResume = true;
+                            break;
+                        }
+                    }
+                }
+                if (!mayResume) {
+                    AccessTrainingRunDTO dto = new AccessTrainingRunDTO();
+                    dto.setInstanceId(trainingInstance.getId());
+                    dto.setTrainingInstanceTitle(trainingInstance.getTitle());
+                    dto.setAllowAllocate(false);
+                    dto.setActiveSandboxes(activeSandboxes);
+                    return dto;
+                }
+                // Matching sandbox for this token's run — fall through to resume below
+            }
+        }
+        // Second: if user has an existing run for this token, enter it (resume or return with allowAllocate if sandbox was removed).
+        Optional<TrainingRun> accessedTrainingRun = trainingRunService.findRunningTrainingRunOfUserWithOrWithoutSandbox(accessToken, participantRefId);
         if (accessedTrainingRun.isPresent()) {
-            TrainingRun trainingRun = trainingRunService.resumeTrainingRun(accessedTrainingRun.get().getId());
+            TrainingRun trainingRun = accessedTrainingRun.get();
+            // If run has a sandbox, verify it still exists (e.g. not removed by admin). If gone, detach and let user allocate again.
+            if (trainingRun.getSandboxInstanceRefId() != null && !trainingRun.getSandboxInstanceRefId().isBlank()) {
+                if (!trainingRunService.verifySandboxStillExistsAndDetachIfNot(trainingRun)) {
+                    // Sandbox was removed (e.g. by admin). Start allocation without waiting; user stays on /run.
+                    trainingRun = trainingRunService.findByIdWithLevel(trainingRun.getId());
+                    if (singleSandboxPerUserEnabled && !trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() != null) {
+                        String userSub = securityService.getOidcSub();
+                        List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                        if (activeSandboxes == null) activeSandboxes = new ArrayList<>();
+                        trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                        trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                        trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                        List<ActiveSandboxSummaryDTO> nonManagedSandboxes = activeSandboxes.stream()
+                                .filter(s -> !Boolean.TRUE.equals(s.getTrainingInstanceManaged()))
+                                .collect(Collectors.toList());
+                        if (nonManagedSandboxes.isEmpty()) {
+                            trainingRun = trainingRunService.startSandboxAllocationForTrainingRun(trainingRun, userSub);
+                            activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                            trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                            trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                            trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                            return buildStayOnOverviewDTO(trainingInstance, trainingRun.getId(), activeSandboxes);
+                        }
+                    }
+                    AccessTrainingRunDTO dto = convertToAccessTrainingRunDTO(trainingRun);
+                    dto.setAllowAllocate(true);
+                    return dto;
+                }
+            }
+            if (trainingRun.getSandboxInstanceRefId() == null || trainingRun.getSandboxInstanceRefId().isBlank()) {
+                // Run exists but has no sandbox. If it has an allocation id, check if ready now (user re-submitted access code).
+                if (trainingRun.getSandboxInstanceAllocationId() != null) {
+                    if (trainingRunService.attachSandboxIfAllocationReady(trainingRun)) {
+                        trainingRun = trainingRunService.resumeTrainingRun(trainingRun.getId());
+                        return convertToAccessTrainingRunDTO(trainingRun);
+                    }
+                    // Still building: return stay-on-overview response (active sandboxes with stages)
+                    String userSub = securityService.getOidcSub();
+                    List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                    trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                    trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                    trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                    return buildStayOnOverviewDTO(trainingInstance, trainingRun.getId(), activeSandboxes);
+                }
+                // No allocation yet (e.g. admin removed). Start allocation without waiting; user re-submits when ready.
+                if (singleSandboxPerUserEnabled && !trainingInstance.isLocalEnvironment() && trainingInstance.getPoolId() != null) {
+                    String userSub = securityService.getOidcSub();
+                    List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                    if (activeSandboxes == null) activeSandboxes = new ArrayList<>();
+                    trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                    trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                    trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                    List<ActiveSandboxSummaryDTO> nonManagedSandboxes = activeSandboxes.stream()
+                            .filter(s -> !Boolean.TRUE.equals(s.getTrainingInstanceManaged()))
+                            .collect(Collectors.toList());
+                    if (nonManagedSandboxes.isEmpty()) {
+                        trainingRun = trainingRunService.startSandboxAllocationForTrainingRun(trainingRun, userSub);
+                        activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                        trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                        trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                        trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                        return buildStayOnOverviewDTO(trainingInstance, trainingRun.getId(), activeSandboxes);
+                    }
+                }
+                trainingRun = trainingRunService.findByIdWithLevel(trainingRun.getId());
+                AccessTrainingRunDTO dto = convertToAccessTrainingRunDTO(trainingRun);
+                dto.setAllowAllocate(true);
+                return dto;
+            }
+            trainingRun = trainingRunService.resumeTrainingRun(trainingRun.getId());
             return convertToAccessTrainingRunDTO(trainingRun);
         }
-        // Check if the user already clicked access training run, in that case, it returns an exception (it prevents concurrent accesses).
+        // Third: single-sandbox-per-user already allowed (no active sandboxes) or disabled — check lock and create run
+        // With single-sandbox we only start allocation (no wait); user stays on /run and re-submits access code when ready.
         trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
         try {
-            // During this action we create a new TrainingRun and lock and get sandbox from OpenStack Sandbox API
             TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance, participantRefId);
             if (!trainingInstance.isLocalEnvironment()) {
-                trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
+                if (singleSandboxPerUserEnabled) {
+                    String userSub = securityService.getOidcSub();
+                    trainingRun = trainingRunService.startSandboxAllocationForTrainingRun(trainingRun, userSub);
+                    trainingRunService.auditTrainingRunStarted(trainingRun);
+                    List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                    trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                    trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                    trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                    return buildStayOnOverviewDTO(trainingInstance, trainingRun.getId(), activeSandboxes);
+                } else {
+                    trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
+                }
             }
             trainingRunService.auditTrainingRunStarted(trainingRun);
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (Exception e) {
-            // delete/rollback acquisition lock when no training run either sandbox is assigned
+            trainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId());
+            throw e;
+        }
+    }
+
+    /** Builds a response that tells the frontend to stay on /run (show message and active sandboxes). No level content. */
+    private AccessTrainingRunDTO buildStayOnOverviewDTO(TrainingInstance trainingInstance, Long trainingRunId, List<ActiveSandboxSummaryDTO> activeSandboxes) {
+        AccessTrainingRunDTO dto = new AccessTrainingRunDTO();
+        dto.setInstanceId(trainingInstance.getId());
+        dto.setTrainingInstanceTitle(trainingInstance.getTitle());
+        dto.setTrainingRunID(trainingRunId);
+        dto.setAllowAllocate(false);
+        dto.setActiveSandboxes(activeSandboxes != null ? activeSandboxes : List.of());
+        dto.setShowStepperBar(false);
+        dto.setSandboxInstanceRefId(null);
+        dto.setAccessToken(trainingInstance.getAccessToken());
+        return dto;
+    }
+
+    /**
+     * Access flow for managed training instances: trainee cannot allocate a sandbox; only use one
+     * already in the pool. Reserve via get-and-lock (one call, no allocation created). If no free
+     * sandbox, stay on overview with message only.
+     */
+    private AccessTrainingRunDTO accessTrainingRunManaged(TrainingInstance trainingInstance, String accessToken, Long participantRefId) {
+        String userSub = securityService.getOidcSub();
+        Long poolId = trainingInstance.getPoolId();
+        if (poolId == null || trainingInstance.isLocalEnvironment()) {
+            AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, null, List.of());
+            dto.setManaged(true);
+            return dto;
+        }
+        Optional<TrainingRun> existingRunOpt = trainingRunService.findRunningTrainingRunOfUserWithOrWithoutSandbox(accessToken, participantRefId);
+        if (existingRunOpt.isPresent()) {
+            TrainingRun run = existingRunOpt.get();
+            if (run.getSandboxInstanceRefId() != null && !run.getSandboxInstanceRefId().isBlank()) {
+                if (trainingRunService.verifySandboxStillExistsAndDetachIfNot(run)) {
+                    run = trainingRunService.resumeTrainingRun(run.getId());
+                    AccessTrainingRunDTO dto = convertToAccessTrainingRunDTO(run);
+                    dto.setManaged(true);
+                    return dto;
+                }
+                AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, run.getId(), List.of());
+                dto.setManaged(true);
+                return dto;
+            }
+            if (run.getSandboxInstanceAllocationId() != null) {
+                if (trainingRunService.attachSandboxIfAllocationReady(run)) {
+                    run = trainingRunService.resumeTrainingRun(run.getId());
+                    AccessTrainingRunDTO dto = convertToAccessTrainingRunDTO(run);
+                    dto.setManaged(true);
+                    return dto;
+                }
+                List<ActiveSandboxSummaryDTO> activeSandboxes = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+                trainingRunService.enrichActiveSandboxesWithAllocationRequest(activeSandboxes, participantRefId);
+                trainingRunService.enrichActiveSandboxesWithAllowRemove(activeSandboxes);
+                trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(activeSandboxes, participantRefId);
+                AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, run.getId(), activeSandboxes);
+                dto.setManaged(true);
+                return dto;
+            }
+            Optional<TrainingRun> attachedOpt = trainingRunService.reserveAndAttachSandboxForManaged(run, poolId, accessToken);
+            if (attachedOpt.isPresent()) {
+                // Load run in new transaction so we see the committed attach (avoid stale persistence context)
+                run = trainingRunService.findByIdWithLevelForResumeInNewTransaction(run.getId());
+                run = entityManager.merge(run);
+                trainingRunService.validateResumeAndAuditResumed(run, run.getId());
+                AccessTrainingRunDTO dto = convertToAccessTrainingRunDTO(run);
+                dto.setManaged(true);
+                return dto;
+            }
+            AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, run.getId(), List.of());
+            dto.setManaged(true);
+            return dto;
+        }
+        // No existing run: reserve one sandbox via get-and-lock first; if none free, stay on overview without creating a run.
+        Optional<SandboxInfo> sandboxOpt = trainingRunService.tryReserveSandboxForManaged(poolId, accessToken);
+        if (sandboxOpt.isEmpty()) {
+            AccessTrainingRunDTO dto = buildStayOnOverviewDTO(trainingInstance, null, List.of());
+            dto.setManaged(true);
+            return dto;
+        }
+        SandboxInfo sandboxInfo = sandboxOpt.get();
+        trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
+        try {
+            TrainingRun trainingRun = trainingRunService.createTrainingRunInNewTransaction(trainingInstance, participantRefId);
+            trainingRunService.attachRunToAllocationInNewTransaction(trainingRun.getId(), sandboxInfo.getAllocationUnitId(), sandboxInfo.getId());
+            trainingRun = trainingRunService.findByIdWithLevelForResumeInNewTransaction(trainingRun.getId());
+            trainingRun = entityManager.merge(trainingRun);
+            trainingRunService.auditTrainingRunStarted(trainingRun);
+            AccessTrainingRunDTO dto = convertToAccessTrainingRunDTO(trainingRun);
+            dto.setManaged(true);
+            return dto;
+        } catch (Exception e) {
             trainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId());
             throw e;
         }
@@ -297,7 +649,10 @@ public class TrainingRunFacade {
         accessTrainingRunDTO.setBackwardMode(trainingRun.getTrainingInstance().isBackwardMode());
         accessTrainingRunDTO.setSandboxDefinitionId(trainingRun.getTrainingInstance().getSandboxDefinitionId());
         accessTrainingRunDTO.setLevelAnswered(trainingRun.isLevelAnswered());
-        if(trainingRun.getCurrentLevel().getClass() == AccessLevel.class) {
+        accessTrainingRunDTO.setAllowAllocate(true);
+        accessTrainingRunDTO.setTrainingInstanceTitle(trainingRun.getTrainingInstance().getTitle());
+        accessTrainingRunDTO.setAccessToken(trainingRun.getTrainingInstance().getAccessToken());
+        if (trainingRun.getCurrentLevel().getClass() == AccessLevel.class) {
             replacePlaceholders(
                     (AccessLevelViewDTO) accessTrainingRunDTO.getAbstractLevelDTO(),
                     trainingRun.getTrainingInstance().getAccessToken(),
@@ -324,6 +679,49 @@ public class TrainingRunFacade {
             }
         }
         return infoAboutLevels;
+    }
+
+    /**
+     * Request cleanup of a sandbox owned by the current trainee (single-sandbox-per-user).
+     * Verifies ownership via sandbox-service; only the owner can request cleanup.
+     *
+     * @param sandboxId sandbox UUID
+     */
+    @IsTraineeOrAdmin
+    @Transactional
+    public void requestTraineeSandboxCleanup(String sandboxId) {
+        String userSub = securityService.getOidcSub();
+        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+        trainingRunService.requestTraineeSandboxCleanup(sandboxId, userSub, participantRefId);
+    }
+
+    @IsTraineeOrAdmin
+    @Transactional
+    public void requestTraineeSandboxCleanupByAllocationId(Integer allocationUnitId) {
+        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+        trainingRunService.requestTraineeSandboxCleanupByAllocationId(allocationUnitId, participantRefId);
+    }
+
+    /**
+     * Returns active sandboxes for the current user (single-sandbox-per-user).
+     * Used by Run Overview to display deployed sandboxes with stages and delete. Empty when feature is disabled.
+     */
+    @IsTraineeOrAdmin
+    @TransactionalRO
+    public List<ActiveSandboxSummaryDTO> getUserActiveSandboxes() {
+        if (!singleSandboxPerUserEnabled) {
+            return List.of();
+        }
+        String userSub = securityService.getOidcSub();
+        Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+        List<ActiveSandboxSummaryDTO> list = trainingRunService.getMergedActiveSandboxesForUser(userSub, participantRefId);
+        if (list == null || list.isEmpty()) {
+            return List.of();
+        }
+        trainingRunService.enrichActiveSandboxesWithAllocationRequest(list, participantRefId);
+        trainingRunService.enrichActiveSandboxesWithAllowRemove(list);
+        trainingRunService.enrichActiveSandboxesWithTrainingInstanceTitles(list, participantRefId);
+        return list;
     }
 
     /**
@@ -542,23 +940,51 @@ public class TrainingRunFacade {
 
     /**
      * Gets correct answers of the given Training Run.
+     * Includes both Training levels (single correct answer per level) and Assessment levels
+     * (correct answers per question: MCQ, FFQ, EMI).
      *
      * @param trainingRunId id of Training Run which current level gets hint for.
-     * @return {@link CorrectAnswerDTO[]}
+     * @return {@link CorrectAnswerDTO[]} one entry per level, in level order
      */
     @IsOrganizerOrAdmin
     @TransactionalWO
     public List<CorrectAnswerDTO> getCorrectAnswers(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-        List<TrainingLevel> trainingLevels = trainingRunService.getLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId()).stream()
+        Long definitionId = trainingRun.getTrainingInstance().getTrainingDefinition().getId();
+        List<AbstractLevel> allLevels = trainingRunService.getLevels(definitionId);
+        List<TrainingLevel> trainingLevels = allLevels.stream()
                 .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class)
                 .map(abstractLevel -> (TrainingLevel) abstractLevel)
                 .toList();
         boolean isVariantAnswers = trainingLevels.stream().anyMatch(TrainingLevel::isVariantAnswers);
         Map<String, String> variantAnswers = isVariantAnswers ? getVariantAnswers(trainingRun) : new HashMap<>();
-        return trainingLevels.stream()
-                .map(trainingLevel -> mapToCorrectAnswerDTO(trainingLevel, variantAnswers))
-                .collect(Collectors.toList());
+
+        List<CorrectAnswerDTO> result = new ArrayList<>();
+        for (AbstractLevel level : allLevels) {
+            if (level instanceof TrainingLevel tl) {
+                result.add(mapToCorrectAnswerDTO(tl, variantAnswers));
+            } else if (level instanceof AssessmentLevel) {
+                trainingRunService.getAssessmentLevelWithQuestions(level.getId()).ifPresent(assessmentLevel -> {
+                    List<QuestionCorrectAnswerDTO> questionDtos = assessmentLevel.getQuestions().stream()
+                            .map(q -> {
+                                QuestionCorrectAnswerDTO dto = new QuestionCorrectAnswerDTO();
+                                dto.setQuestionId(q.getId());
+                                dto.setQuestionText(q.getText());
+                                dto.setCorrectAnswers(trainingRunService.getCorrectAnswersForQuestion(q));
+                                return dto;
+                            })
+                            .collect(Collectors.toList());
+                    CorrectAnswerDTO dto = new CorrectAnswerDTO();
+                    dto.setLevelId(assessmentLevel.getId());
+                    dto.setLevelTitle(assessmentLevel.getTitle());
+                    dto.setLevelOrder(assessmentLevel.getOrder());
+                    dto.setLevelType("ASSESSMENT");
+                    dto.setQuestionCorrectAnswers(questionDtos);
+                    result.add(dto);
+                });
+            }
+        }
+        return result;
     }
 
     private Map<String, String> getVariantAnswers(TrainingRun trainingRun) {
@@ -577,6 +1003,7 @@ public class TrainingRunFacade {
         correctAnswerDTO.setLevelId(trainingLevel.getId());
         correctAnswerDTO.setLevelTitle(trainingLevel.getTitle());
         correctAnswerDTO.setLevelOrder(trainingLevel.getOrder());
+        correctAnswerDTO.setLevelType("TRAINING");
         if(trainingLevel.isVariantAnswers()) {
             correctAnswerDTO.setCorrectAnswer(variantAnswers.get(trainingLevel.getAnswerVariableName()) );
             correctAnswerDTO.setVariableName(trainingLevel.getAnswerVariableName());
@@ -636,30 +1063,41 @@ public class TrainingRunFacade {
     }
 
     private AbstractLevelDTO getAbstractLevelDTO(AbstractLevel abstractLevel) {
+        if (abstractLevel == null) {
+            return null;
+        }
+        AbstractLevel level = (AbstractLevel) Hibernate.unproxy(abstractLevel);
         AbstractLevelDTO abstractLevelDTO;
-        if (abstractLevel instanceof AssessmentLevel assessmentLevel) {
+        if (level instanceof AssessmentLevel assessmentLevel) {
             abstractLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevel);
             deleteInfoAboutCorrectnessFromQuestions((AssessmentLevelDTO) abstractLevelDTO);
-        } else if (abstractLevel instanceof TrainingLevel trainingLevel) {
+        } else if (level instanceof TrainingLevel trainingLevel) {
             abstractLevelDTO = levelMapper.mapToViewDTO(trainingLevel);
-        } else if (abstractLevel instanceof AccessLevel accessLevel) {
+        } else if (level instanceof AccessLevel accessLevel) {
             abstractLevelDTO = levelMapper.mapToViewDTO(accessLevel);
-        } else {
-            InfoLevel infoLevel = (InfoLevel) abstractLevel;
+        } else if (level instanceof InfoLevel infoLevel) {
             abstractLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel);
+        } else {
+            throw new IllegalStateException("Unknown level type: " + level.getClass().getName());
         }
         return abstractLevelDTO;
     }
 
-    private AbstractLevelDTO getAbstractLevelPreviewDTO (AbstractLevel abstractLevel, TrainingRun trainingRun) {
-        if (abstractLevel instanceof InfoLevel infoLevel) {
+    private AbstractLevelDTO getAbstractLevelPreviewDTO(AbstractLevel abstractLevel, TrainingRun trainingRun) {
+        if (abstractLevel == null) {
+            return null;
+        }
+        AbstractLevel level = (AbstractLevel) Hibernate.unproxy(abstractLevel);
+        if (level instanceof InfoLevel infoLevel) {
             return levelMapper.mapToInfoLevelDTO(infoLevel);
-        } else if (abstractLevel instanceof TrainingLevel trainingLevel) {
+        } else if (level instanceof TrainingLevel trainingLevel) {
             return mapToTrainingLevelPreviewDTO(trainingLevel, trainingRun);
-        } else if (abstractLevel instanceof AccessLevel accessLevel) {
+        } else if (level instanceof AccessLevel accessLevel) {
             return mapToAccessLevelViewDTO(accessLevel, trainingRun);
+        } else if (level instanceof AssessmentLevel assessmentLevel) {
+            return mapToAssessmentLevelPreviewDTO(assessmentLevel, trainingRun);
         } else {
-            return mapToAssessmentLevelPreviewDTO((AssessmentLevel) abstractLevel, trainingRun);
+            throw new IllegalStateException("Unknown level type: " + level.getClass().getName());
         }
     }
 

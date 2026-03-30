@@ -200,6 +200,9 @@ public class ElasticsearchApiService {
     }
 
     public List<Map<String, Object>> findAllConsoleCommandsBySandbox(String sandboxId){
+        if (sandboxId == null || sandboxId.isBlank()) {
+            return List.of();
+        }
         try {
             return elasticsearchServiceWebClient
                     .get()
@@ -227,6 +230,9 @@ public class ElasticsearchApiService {
     }
 
     public List<Map<String, Object>> findAllConsoleCommandsBySandboxAndTimeRange(String sandboxId, Long from, Long to, List<String> filterCommands){
+        if (sandboxId == null || sandboxId.isBlank()) {
+            return List.of();
+        }
         try {
             return elasticsearchServiceWebClient
                     .get()
@@ -245,6 +251,9 @@ public class ElasticsearchApiService {
     }
 
     public List<Map<String, Object>> findAllConsoleCommandsBySandboxAndTimeRange(String sandboxId, Long from, Long to){
+        if (sandboxId == null || sandboxId.isBlank()) {
+            return List.of();
+        }
         try {
             return elasticsearchServiceWebClient
                     .get()
@@ -306,6 +315,9 @@ public class ElasticsearchApiService {
     }
 
     public void deleteCommandsBySandbox(String sandboxId){
+        if (sandboxId == null || sandboxId.isBlank()) {
+            return;
+        }
         try{
             elasticsearchServiceWebClient
                     .delete()

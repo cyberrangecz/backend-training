@@ -39,6 +39,14 @@ import java.util.Set;
                         "WHERE ti.accessToken = :accessToken AND pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL AND tr.state NOT LIKE 'FINISHED'"
         ),
         @NamedQuery(
+                name = "TrainingRun.findRunningTrainingRunOfUserWithOrWithoutSandbox",
+                query = "SELECT tr FROM TrainingRun tr " +
+                        "JOIN FETCH tr.trainingInstance ti " +
+                        "JOIN FETCH tr.participantRef pr " +
+                        "JOIN FETCH tr.currentLevel cl " +
+                        "WHERE ti.accessToken = :accessToken AND pr.userRefId = :userRefId AND tr.state NOT IN ('FINISHED', 'ARCHIVED')"
+        ),
+        @NamedQuery(
                 name = "TrainingRun.findByIdWithLevel",
                 query = "SELECT tr FROM TrainingRun tr " +
                         "JOIN FETCH tr.currentLevel " +
@@ -46,6 +54,15 @@ import java.util.Set;
                         "JOIN FETCH ti.trainingDefinition " +
                         "WHERE tr.id= :trainingRunId",
                 lockMode = LockModeType.PESSIMISTIC_WRITE
+        ),
+        /** Same as findByIdWithLevel but without write lock; use for read-only resume path to avoid deadlocks on training_instance. */
+        @NamedQuery(
+                name = "TrainingRun.findByIdWithLevelForResume",
+                query = "SELECT tr FROM TrainingRun tr " +
+                        "JOIN FETCH tr.currentLevel " +
+                        "JOIN FETCH tr.trainingInstance ti " +
+                        "JOIN FETCH ti.trainingDefinition " +
+                        "WHERE tr.id= :trainingRunId"
         ),
         @NamedQuery(
                 name = "TrainingRun.deleteTrainingRunsByTrainingInstance",

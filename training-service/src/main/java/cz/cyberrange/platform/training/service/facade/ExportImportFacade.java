@@ -314,7 +314,7 @@ public class ExportImportFacade {
     public FileToReturnDTO exportUserScoreFromTrainingInstance(Long trainingInstanceId) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Set<TrainingRun> trainingRuns = exportImportService.findRunsByInstanceId(trainingInstanceId);
-            String csvHeader = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
+            String csvHeader = "trainingInstanceId;userRefSub;totalTrainingScore;totalAssessmentScore;totalScore" + System.lineSeparator();
             baos.write(csvHeader.getBytes(StandardCharsets.UTF_8));
 
             for (TrainingRun trainingRun : trainingRuns) {
@@ -331,15 +331,24 @@ public class ExportImportFacade {
     }
 
     /**
-     * Creates a CSV line from a training run in the format "trainingInstanceId;userRefSub;totalTrainingScore"
+     * Creates a CSV line from a training run in the format
+     * "trainingInstanceId;userRefSub;totalTrainingScore;totalAssessmentScore;totalScore".
+     * totalScore is the sum of totalTrainingScore and totalAssessmentScore so that assessment-only
+     * runs (which store score in totalAssessmentScore) export a non-zero score.
+     *
      * @param trainingRun training run to use
      * @return String with the specified format
      */
     private String getCSVString(TrainingRun trainingRun) {
         UserRefDTO userRefDTO = userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
+        int totalTraining = trainingRun.getTotalTrainingScore();
+        int totalAssessment = trainingRun.getTotalAssessmentScore();
+        int totalScore = totalTraining + totalAssessment;
         return trainingRun.getTrainingInstance().getId() + DELIMITER +
                 userRefDTO.getUserRefSub() + DELIMITER +
-                trainingRun.getTotalTrainingScore() + System.lineSeparator();
+                totalTraining + DELIMITER +
+                totalAssessment + DELIMITER +
+                totalScore + System.lineSeparator();
     }
 
     /**

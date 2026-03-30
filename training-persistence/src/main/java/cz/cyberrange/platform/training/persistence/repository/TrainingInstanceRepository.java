@@ -88,6 +88,21 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
                                                                                   @Param("accessToken") String accessToken);
 
     /**
+     * Find training instance by access token, with start time in the past and end time after a minimum (grace period).
+     * Used so that requests in flight when an instance ends, or with slight clock skew, still find the instance.
+     *
+     * @param datetime    the current time (startTime must be before this)
+     * @param endTimeMin  minimum end time (endTime must be after this; e.g. now - 2 minutes for grace)
+     * @param accessToken the access token
+     * @return the instance if found
+     */
+    @Query("SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td "
+            + "WHERE ti.startTime < :datetime AND ti.endTime > :endTimeMin AND ti.accessToken = :accessToken")
+    Optional<TrainingInstance> findByAccessTokenActiveWithGrace(@Param("datetime") LocalDateTime datetime,
+                                                                @Param("endTimeMin") LocalDateTime endTimeMin,
+                                                                @Param("accessToken") String accessToken);
+
+    /**
      * Check if any training instances are associated with training definition
      *
      * @param trainingDefinitionId the training definition id
@@ -119,6 +134,19 @@ public interface TrainingInstanceRepository extends JpaRepository<TrainingInstan
      * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
      */
     Optional<TrainingInstance> findByPoolId(@Param("poolId") Long poolId);
+
+    /**
+     * Find distinct pool IDs that are linked to at least one non-managed training instance
+     * and are not linked to any managed instance. Used by sandbox-service single-sandbox
+     * cleanup job so that managed pools (e.g. admin-allocated sandboxes for StressTest)
+     * are never cleaned.
+     *
+     * @return list of pool IDs that may be cleaned (only pools used exclusively by non-managed instances)
+     */
+    @Query("SELECT DISTINCT ti.poolId FROM TrainingInstance ti "
+            + "WHERE ti.managed = false AND ti.poolId IS NOT NULL "
+            + "AND ti.poolId NOT IN (SELECT ti2.poolId FROM TrainingInstance ti2 WHERE ti2.managed = true AND ti2.poolId IS NOT NULL)")
+    List<Long> findDistinctPoolIdsByManagedFalse();
 
     /**
      * Checks if training instance finished.

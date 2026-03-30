@@ -18,13 +18,7 @@
     </properties>
 
     <dependencies>
-        <dependency> <!-- reuse src/test/java code from persistence module! -->
-            <groupId>cz.cybersecurityhub.maven</groupId>
-            <artifactId>training-persistence</artifactId>
-            <version>${app-version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
+        <!-- training-persistence:tests is in profile include-persistence-test-jar (skip when -Dskip.test.deps=true for Docker build) -->
         <dependency>
             <groupId>cz.cybersecurityhub.maven</groupId>
             <artifactId>training-api</artifactId>
@@ -69,6 +63,25 @@
             <artifactId>mapstruct</artifactId>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- When skip.test.deps is set (e.g. Docker build with -Dmaven.test.skip), omit persistence test-jar dependency so build can resolve. -->
+        <profile>
+            <id>include-persistence-test-jar</id>
+            <activation>
+                <property><name>!skip.test.deps</name></property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>cz.cybersecurityhub.maven</groupId>
+                    <artifactId>training-persistence</artifactId>
+                    <version>${app-version}</version>
+                    <scope>test</scope>
+                    <classifier>tests</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>${project.artifactId}</finalName>

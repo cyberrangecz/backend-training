@@ -141,6 +141,16 @@ public class TrainingInstanceFacade {
         return trainingInstanceService.findInstanceAccessTokenByPoolId(poolId);
     }
 
+    /**
+     * Get pool IDs linked to at least one non-managed training instance.
+     * For use by sandbox-service single-sandbox cleanup job (internal API).
+     *
+     * @return list of pool IDs
+     */
+    public List<Long> getPoolIdsForSingleSandboxCleanup() {
+        return trainingInstanceService.findDistinctPoolIdsByManagedFalse();
+    }
+
 
 
     /**

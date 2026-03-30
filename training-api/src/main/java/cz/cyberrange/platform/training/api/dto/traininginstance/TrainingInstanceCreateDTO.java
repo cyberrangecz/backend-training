@@ -49,6 +49,8 @@ public class TrainingInstanceCreateDTO {
     private boolean showStepperBar;
     @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
     private boolean backwardMode;
+    @ApiModelProperty(value = "When true, trainee cannot allocate a sandbox; only one allocated by Admin for this user can be used.", example = "false")
+    private boolean managed;
 
     /**
      * Gets start time.
@@ -228,6 +230,24 @@ public class TrainingInstanceCreateDTO {
      */
     public void setBackwardMode(boolean backwardMode) {
         this.backwardMode = backwardMode;
+    }
+
+    /**
+     * When true, trainee cannot allocate a sandbox; only one allocated by Admin for this user can be used.
+     *
+     * @return true if managed
+     */
+    public boolean isManaged() {
+        return managed;
+    }
+
+    /**
+     * Sets whether this training instance is managed.
+     *
+     * @param managed true if managed
+     */
+    public void setManaged(boolean managed) {
+        this.managed = managed;
     }
 
     @Override

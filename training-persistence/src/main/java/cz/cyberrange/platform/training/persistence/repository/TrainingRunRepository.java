@@ -19,6 +19,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -113,6 +114,16 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     Optional<TrainingRun> findByIdWithLevel(@Param("trainingRunId") Long trainingRunId);
 
     /**
+     * Find training run by id including current level, without write lock.
+     * Use for resume path only to avoid deadlocks on training_instance when multiple requests run concurrently.
+     *
+     * @param trainingRunId the training run id
+     * @return {@link TrainingRun} including {@link cz.cyberrange.platform.training.persistence.model.AbstractLevel}
+     */
+    @Query(name = "TrainingRun.findByIdWithLevelForResume")
+    Optional<TrainingRun> findByIdWithLevelForResume(@Param("trainingRunId") Long trainingRunId);
+
+    /**
      * Find all training runs by id of associated training definition that are accessible to participant by user ref id.
      *
      * @param trainingDefinitionId the training definition id
@@ -173,7 +184,7 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     void deleteTrainingRunsByTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 
     /**
-     * Find valid training run by user and access token.
+     * Find valid training run by user and access token (must have sandbox assigned).
      *
      * @param accessToken the access token
      * @param userRefId   the user ref id
@@ -182,11 +193,87 @@ public interface TrainingRunRepository extends JpaRepository<TrainingRun, Long>,
     Optional<TrainingRun> findRunningTrainingRunOfUser(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
 
     /**
+     * Find running training run by user and access token, with or without sandbox.
+     * Used when entering run: after detaching removed sandbox we still need to find this run to return it with allowAllocate.
+     *
+     * @param accessToken the access token
+     * @param userRefId   the user ref id
+     * @return the {@link TrainingRun} if any
+     */
+    Optional<TrainingRun> findRunningTrainingRunOfUserWithOrWithoutSandbox(@Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
+
+    /**
      * Exists any for training instance boolean.
      *
      * @param trainingInstanceId the training instance id
      * @return the boolean
      */
     boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
+
+    /**
+     * Find training runs that reference the given sandbox (for detaching when trainee requests cleanup).
+     *
+     * @param sandboxInstanceRefId the sandbox UUID
+     * @return list of training runs with this sandbox
+     */
+    List<TrainingRun> findBySandboxInstanceRefId(@Param("sandboxInstanceRefId") String sandboxInstanceRefId);
+
+    /**
+     * True if the given user has at least one running (not finished/archived) training run that uses this sandbox.
+     * Used by sandbox-service to verify a trainee may access a specific sandbox (e.g. topology) when pool is locked.
+     *
+     * @param userRefId            participant user ref id (from JWT)
+     * @param sandboxInstanceRefId sandbox UUID
+     * @return true if user has an active run with this sandbox
+     */
+    @Query("SELECT CASE WHEN COUNT(tr) > 0 THEN true ELSE false END FROM TrainingRun tr JOIN tr.participantRef pr "
+            + "WHERE pr.userRefId = :userRefId AND tr.sandboxInstanceRefId = :sandboxInstanceRefId "
+            + "AND tr.state NOT IN ('FINISHED', 'ARCHIVED')")
+    boolean existsRunningRunByUserRefIdAndSandboxInstanceRefId(
+            @Param("userRefId") Long userRefId,
+            @Param("sandboxInstanceRefId") String sandboxInstanceRefId);
+
+    /**
+     * Find running training runs (not finished/archived) for the given participant that have this allocation unit id.
+     * Used to verify ownership when requesting cleanup by allocation id (e.g. when sandbox_id is null).
+     */
+    @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance JOIN tr.participantRef pr "
+            + "WHERE pr.userRefId = :userRefId AND tr.sandboxInstanceAllocationId = :allocationUnitId "
+            + "AND tr.state NOT IN ('FINISHED', 'ARCHIVED')")
+    List<TrainingRun> findRunningByParticipantRefIdAndAllocationId(
+            @Param("userRefId") Long userRefId,
+            @Param("allocationUnitId") Integer allocationUnitId);
+
+    /**
+     * Find any running training run (any participant) that uses this allocation unit id.
+     * Used for managed instances to determine if a pool allocation is free (not attached to any run).
+     */
+    @Query("SELECT tr FROM TrainingRun tr WHERE tr.sandboxInstanceAllocationId = :allocationUnitId "
+            + "AND tr.state NOT IN ('FINISHED', 'ARCHIVED')")
+    List<TrainingRun> findRunningByAllocationId(@Param("allocationUnitId") Integer allocationUnitId);
+
+    /**
+     * Find running training runs (not finished/archived) that have a sandbox, for the given participant.
+     * Used for single-sandbox-per-user: block new allocation when user already has a run with sandbox elsewhere.
+     *
+     * @param userRefId the participant user ref id
+     * @return list of runs with sandbox for this user
+     */
+    @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance JOIN tr.participantRef pr "
+            + "WHERE pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL "
+            + "AND tr.state NOT IN ('FINISHED', 'ARCHIVED')")
+    List<TrainingRun> findRunningWithSandboxByParticipantRefId(@Param("userRefId") Long userRefId);
+
+    /**
+     * Find running training runs (not finished/archived) that have an allocation id (sandbox building or ready).
+     * Used so active-sandboxes list includes allocations that are still building (sandbox_instance_ref_id null).
+     *
+     * @param userRefId the participant user ref id
+     * @return list of runs with allocation for this user
+     */
+    @Query("SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance JOIN tr.participantRef pr "
+            + "WHERE pr.userRefId = :userRefId AND tr.sandboxInstanceAllocationId IS NOT NULL "
+            + "AND tr.state NOT IN ('FINISHED', 'ARCHIVED')")
+    List<TrainingRun> findRunningWithAllocationByParticipantRefId(@Param("userRefId") Long userRefId);
 
 }
