@@ -1,5 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.run;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
@@ -10,6 +11,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import cz.cyberrange.platform.training.api.responses.ActiveSandboxSummaryDTO;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ public class AccessTrainingRunDTO {
     private List<BasicLevelInfoDTO> infoAboutLevels;
     @ApiModelProperty(value = "Id of associated training instance", example = "1")
     private Long instanceId;
+    @ApiModelProperty(value = "Title of the training instance (e.g. when allowAllocate is false).")
+    private String trainingInstanceTitle;
     @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime startTime;
@@ -51,6 +56,20 @@ public class AccessTrainingRunDTO {
     private boolean backwardMode;
     @ApiModelProperty(value = "Indicates if the current level has been already corrected/answered.", example = "true")
     private boolean isLevelAnswered;
+
+    /** When true, frontend may show \"Allocate sandbox\"; when false, show \"Remove sandbox\" for activeSandboxes. Default true. */
+    @ApiModelProperty(value = "Whether the trainee may allocate a new sandbox (single-sandbox-per-user).", example = "true")
+    private boolean allowAllocate = true;
+    /** When allowAllocate is false, list of active sandboxes the trainee must remove before allocating. */
+    @ApiModelProperty(value = "Active sandboxes owned by the trainee when allowAllocate is false.")
+    private List<ActiveSandboxSummaryDTO> activeSandboxes;
+    /** When true, this is a managed instance: trainee cannot allocate; only a sandbox assigned by Admin can be used. */
+    @ApiModelProperty(value = "Whether this training instance is managed (sandbox assigned by administrator only).", example = "false")
+    private boolean managed;
+    /** Training instance access token; frontend sends it as X-Training-Access-Token when calling sandbox-service (e.g. topology) for managed runs. */
+    @JsonProperty("access_token")
+    @ApiModelProperty(value = "Access token for this training instance (use as X-Training-Access-Token when calling sandbox APIs for this run).")
+    private String accessToken;
 
     /**
      * Add taken hint to list of taken hints.

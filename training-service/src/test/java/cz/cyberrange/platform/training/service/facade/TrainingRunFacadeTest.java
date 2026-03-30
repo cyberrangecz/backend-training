@@ -278,6 +278,7 @@ public class TrainingRunFacadeTest {
         answerDTO.setLevelId(trainingLevel.getId());
         answerDTO.setLevelTitle(trainingLevel.getTitle());
         answerDTO.setLevelOrder(trainingLevel.getOrder());
+        answerDTO.setLevelType("TRAINING");
         answerDTO.setCorrectAnswer(correctVariantAnswer == null ? trainingLevel.getAnswer() : correctVariantAnswer);
         answerDTO.setVariableName(trainingLevel.getAnswerVariableName());
         return answerDTO;

@@ -307,8 +307,12 @@ public class VisualizationFacade {
           levelStartedEventIndex = 1;
         }
         levelProgress.setStartTime(events.get(levelStartedEventIndex).getTimestamp());
-        if (((LevelStarted) events.get(levelStartedEventIndex)).getLevelType()
-            == LevelType.TRAINING) {
+        boolean isTrainingLevel =
+            isTrainingLevelForProgress(
+                levelProgress.getLevelId(),
+                events.get(levelStartedEventIndex),
+                visualizationProgressDTO.getLevels());
+        if (isTrainingLevel) {
           this.countWrongAnswersAndAddTakenHints(levelProgress, events);
           levelProgress.setAnswer(
               answerStaticByLevelId.containsKey(levelProgress.getLevelId())
@@ -429,6 +433,28 @@ public class VisualizationFacade {
       return -1;
     }
     return lastEvent instanceof TrainingRunEnded ? events.size() - 2 : events.size() - 1;
+  }
+
+  /**
+   * Returns true if the level should be treated as a training level for progress (wrong answers, variant answer).
+   * When the level-start event is {@link LevelStarted}, uses the event's level type; when it is
+   * {@link TrainingRunResumed} (e.g. after single-sandbox resume), resolves level type from the definition.
+   */
+  private boolean isTrainingLevelForProgress(
+      Long levelId,
+      AbstractAuditPOJO levelStartEvent,
+      List<LevelDefinitionProgressDTO> levelDefinitions) {
+    if (levelStartEvent instanceof LevelStarted) {
+      return ((LevelStarted) levelStartEvent).getLevelType() == LevelType.TRAINING;
+    }
+    if (levelStartEvent instanceof TrainingRunResumed && levelDefinitions != null) {
+      return levelDefinitions.stream()
+          .filter(def -> levelId != null && levelId.equals(def.getId()))
+          .findFirst()
+          .map(def -> def.getLevelType() == cz.cyberrange.platform.training.api.enums.LevelType.TRAINING_LEVEL)
+          .orElse(false);
+    }
+    return false;
   }
 
   private void countWrongAnswersAndAddTakenHints(
@@ -657,8 +683,13 @@ public class VisualizationFacade {
               AbstractAuditPOJO lastLevelEvent = null;
               UserRefDTO participantInfo =
                   trainingInstanceData.participantsByTrainingRuns.get(runEvents.getKey());
-              TablePlayerDTO tablePlayerDataDTO =
-                  new TablePlayerDTO(participantInfo, runEvents.getKey());
+              TablePlayerDTO tablePlayerDataDTO;
+              if (participantInfo != null) {
+                tablePlayerDataDTO = new TablePlayerDTO(participantInfo, runEvents.getKey());
+              } else {
+                tablePlayerDataDTO =
+                    new TablePlayerDTO(-1L, "Unknown", null, runEvents.getKey());
+              }
 
               for (AbstractLevel abstractLevel : trainingInstanceData.levels) {
                 List<AbstractAuditPOJO> levelEvents =
@@ -820,9 +851,16 @@ public class VisualizationFacade {
     int trainingScore = processedLevelsData.lastLevelEvent.getTotalTrainingScore();
     int assessmentScore = processedLevelsData.lastLevelEvent.getTotalAssessmentScore();
 
-    TimelinePlayerDTO timelinePlayerDTO =
-        new TimelinePlayerDTO(
-            player, firstEvent.getTrainingRunId(), trainingScore, assessmentScore);
+    TimelinePlayerDTO timelinePlayerDTO;
+    if (player != null) {
+      timelinePlayerDTO =
+          new TimelinePlayerDTO(
+              player, firstEvent.getTrainingRunId(), trainingScore, assessmentScore);
+    } else {
+      timelinePlayerDTO =
+          new TimelinePlayerDTO(
+              -1L, "Unknown", null, firstEvent.getTrainingRunId(), trainingScore, assessmentScore);
+    }
     timelinePlayerDTO.setTrainingTime(
         processedLevelsData.lastLevelEvent.getTrainingTime() - firstEvent.getTrainingTime());
     timelinePlayerDTO.setLevels(processedLevelsData.timelineLevels);
@@ -967,13 +1005,26 @@ public class VisualizationFacade {
           trainingRunLevelEvents.getValue().get(trainingRunLevelEvents.getValue().size() - 1);
       UserRefDTO participantInfo =
           trainingData.participantsByTrainingRuns.get(trainingRunLevelEvents.getKey());
-      ClusteringLevelPlayerDTO playerDataDTOForLevel =
-          new ClusteringLevelPlayerDTO(
-              participantInfo,
-              trainingRunLevelEvents.getKey(),
-              lastLevelEvent.getTrainingTime() - firstLevelEvent.getTrainingTime(),
-              lastLevelEvent.getActualScoreInLevel(),
-              lastLevelEvent instanceof LevelCompleted);
+      ClusteringLevelPlayerDTO playerDataDTOForLevel;
+      if (participantInfo != null) {
+        playerDataDTOForLevel =
+            new ClusteringLevelPlayerDTO(
+                participantInfo,
+                trainingRunLevelEvents.getKey(),
+                lastLevelEvent.getTrainingTime() - firstLevelEvent.getTrainingTime(),
+                lastLevelEvent.getActualScoreInLevel(),
+                lastLevelEvent instanceof LevelCompleted);
+      } else {
+        playerDataDTOForLevel =
+            new ClusteringLevelPlayerDTO(
+                -1L,
+                trainingRunLevelEvents.getKey(),
+                "Unknown",
+                null,
+                lastLevelEvent.getTrainingTime() - firstLevelEvent.getTrainingTime(),
+                lastLevelEvent.getActualScoreInLevel(),
+                lastLevelEvent instanceof LevelCompleted);
+      }
       levelStatistics.updateStatistics(
           playerDataDTOForLevel.getTrainingTime(),
           playerDataDTOForLevel.getParticipantLevelScore());
@@ -1016,6 +1067,9 @@ public class VisualizationFacade {
     for (Map.Entry<Long, AbstractAuditPOJO> lastEventOfTrainingRun :
         trainingInstanceStatistics.lastEventsOfTrainingRuns.entrySet()) {
       UserRefDTO participantInfo = participants.get(lastEventOfTrainingRun.getKey());
+      if (participantInfo == null) {
+        continue;
+      }
       finalResults.addPlayerData(
           new TrainingResultsPlayerDTO(
               participantInfo,

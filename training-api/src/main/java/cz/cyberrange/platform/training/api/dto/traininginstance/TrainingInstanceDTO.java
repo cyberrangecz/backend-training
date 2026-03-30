@@ -56,4 +56,6 @@ public class TrainingInstanceDTO {
     private boolean showStepperBar;
     @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
     private boolean backwardMode;
+    @ApiModelProperty(value = "When true, trainee cannot allocate a sandbox; only one allocated by Admin for this user can be used.", example = "false")
+    private boolean managed;
 }

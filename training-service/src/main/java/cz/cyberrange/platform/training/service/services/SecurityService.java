@@ -169,4 +169,18 @@ public class SecurityService {
         JwtAuthenticationToken authentication = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         return authentication.getToken().getTokenValue();
     }
+
+    /**
+     * Gets the OIDC sub (subject) claim from the current JWT.
+     * Used for single-sandbox-per-user to identify the trainee when calling sandbox-service.
+     *
+     * @return the sub claim, or null if not present or not a JWT
+     */
+    public String getOidcSub() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof JwtAuthenticationToken) {
+            return ((JwtAuthenticationToken) auth).getToken().getClaimAsString("sub");
+        }
+        return null;
+    }
 }

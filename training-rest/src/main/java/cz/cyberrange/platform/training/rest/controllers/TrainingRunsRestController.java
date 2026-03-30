@@ -17,6 +17,7 @@ import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.ValidateAnswerDTO;
+import cz.cyberrange.platform.training.api.responses.ActiveSandboxSummaryDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.rest.utils.annotations.ApiPageableSwagger;
@@ -207,6 +208,52 @@ public class TrainingRunsRestController {
     }
 
     /**
+     * Request cleanup of a sandbox owned by the current trainee (single-sandbox-per-user).
+     * Only the owner can request cleanup; returns 403 if the sandbox is not owned by the current user.
+     *
+     * @param sandboxId sandbox UUID
+     * @return 204 on success
+     */
+    @ApiOperation(value = "Request cleanup of trainee's sandbox", nickname = "requestTraineeSandboxCleanup")
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Cleanup requested."),
+            @ApiResponse(code = 403, message = "Sandbox not found or you do not own it.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected error.", response = ApiError.class)
+    })
+    @PostMapping(path = "/user-sandboxes/{sandboxId}/cleanup", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> requestTraineeSandboxCleanup(
+            @ApiParam(value = "Sandbox UUID", required = true) @PathVariable("sandboxId") String sandboxId) {
+        trainingRunFacade.requestTraineeSandboxCleanup(sandboxId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation(value = "Request cleanup by allocation unit id", nickname = "requestTraineeSandboxCleanupByAllocationId")
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Cleanup requested."),
+            @ApiResponse(code = 403, message = "Allocation not found or you do not own it.", response = ApiError.class)
+    })
+    @PostMapping(path = "/user-sandboxes/by-allocation/{allocationUnitId}/cleanup", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> requestTraineeSandboxCleanupByAllocationId(
+            @ApiParam(value = "Allocation unit id", required = true) @PathVariable("allocationUnitId") Integer allocationUnitId) {
+        trainingRunFacade.requestTraineeSandboxCleanupByAllocationId(allocationUnitId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Get active sandboxes for the current user (single-sandbox-per-user).
+     * Used by Run Overview to show deployed sandboxes with deployment stages and delete. Returns empty list when feature is disabled.
+     */
+    @ApiOperation(value = "Get current user's active sandboxes", nickname = "getUserActiveSandboxes")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "List of active sandboxes (may be empty)."),
+            @ApiResponse(code = 403, message = "Forbidden.", response = ApiError.class)
+    })
+    @GetMapping(path = "/user-active-sandboxes", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ActiveSandboxSummaryDTO>> getUserActiveSandboxes() {
+        return ResponseEntity.ok(trainingRunFacade.getUserActiveSandboxes());
+    }
+
+    /**
      * Get all accessed Training Runs.
      *
      * @param predicate   specifies query to database.
@@ -384,17 +431,30 @@ public class TrainingRunsRestController {
     }
 
     /**
-     * Resume paused training run.
+     * Verify that the current user has an active training run that uses the given sandbox.
+     * Called by sandbox-service when a trainee requests sandbox topology and the pool is locked (managed run):
+     * only allow if this user's run is assigned this sandbox.
      *
-     * @param runId id of training run.
-     * @return current level of training run.
+     * @param sandboxId sandbox UUID (query param)
+     * @return 200 if the user has an active run with this sandbox, 404 otherwise
      */
-    @ApiOperation(httpMethod = "GET",
-            value = "Get current level of resumed training run",
-            response = AccessTrainingRunDTO.class,
-            nickname = "resumeTrainingRun",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @ApiOperation(value = "Verify sandbox access for current user", nickname = "verifySandboxAccess")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Current user has an active run with this sandbox."),
+            @ApiResponse(code = 404, message = "Current user does not have an active run with this sandbox."),
+            @ApiResponse(code = 401, message = "Full authentication is required.")
+    })
+    @GetMapping(path = "/verify-sandbox-access", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> verifySandboxAccess(
+            @ApiParam(value = "Sandbox UUID", required = true) @RequestParam("sandbox_id") String sandboxId) {
+        if (trainingRunFacade.verifySandboxAccessForCurrentUser(sandboxId)) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @ApiOperation(httpMethod = "GET", value = "Get current level of resumed training run",
+            response = AccessTrainingRunDTO.class, nickname = "resumeTrainingRun", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "The training run has been resumed.", response = AccessTrainingRunDTO.class),
             @ApiResponse(code = 404, message = "The training run has not been found.", response = ApiError.class),
@@ -518,7 +578,7 @@ public class TrainingRunsRestController {
      */
     @ApiOperation(httpMethod = "GET",
             value = "Get correct answers of the training run.",
-            notes = "Returns non-empty list of answers if given training run exists and contains at least one training level",
+            notes = "Returns list of correct answers: one entry per level (training and assessment). Training levels have levelType TRAINING and correctAnswer; assessment levels have levelType ASSESSMENT and questionCorrectAnswers (per-question correct answers).",
             response = CorrectAnswerDTO[].class,
             nickname = "getCorrectAnswers",
             produces = MediaType.APPLICATION_JSON_VALUE

@@ -109,6 +109,9 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private boolean showStepperBar;
     @Column(name = "backward_mode", nullable = false)
     private boolean backwardMode;
+    /** When true, trainee cannot allocate a sandbox; only an allocation created by Admin for this user can be used. */
+    @Column(name = "managed", nullable = false)
+    private boolean managed;
 
     /**
      * Gets unique identification number of Training instance
@@ -379,6 +382,24 @@ public class TrainingInstance extends AbstractEntity<Long> {
      */
     public void setBackwardMode(boolean backwardMode) {
         this.backwardMode = backwardMode;
+    }
+
+    /**
+     * When true, trainee cannot allocate a sandbox; only a sandbox allocated by Admin for this user can be used.
+     *
+     * @return true if this is a managed training instance
+     */
+    public boolean isManaged() {
+        return managed;
+    }
+
+    /**
+     * Sets whether this training instance is managed (sandbox assigned by Admin only).
+     *
+     * @param managed true if managed
+     */
+    public void setManaged(boolean managed) {
+        this.managed = managed;
     }
 
     public boolean running() {

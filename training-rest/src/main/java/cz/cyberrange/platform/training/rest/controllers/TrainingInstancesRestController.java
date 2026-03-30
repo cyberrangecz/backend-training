@@ -27,6 +27,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.http.HttpStatus;
@@ -53,8 +54,13 @@ import java.util.Set;
 @RequestMapping(path = "/training-instances", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainingInstancesRestController {
 
+    private static final String HEADER_INTERNAL_SECRET = "X-Internal-Secret";
+
     private TrainingInstanceFacade trainingInstanceFacade;
     private ObjectMapper objectMapper;
+
+    @Value("${single.sandbox.cleanup.internal-secret:}")
+    private String singleSandboxCleanupInternalSecret;
 
     /**
      * Instantiates a new Training instances rest controller.
@@ -122,6 +128,22 @@ public class TrainingInstancesRestController {
             @PathVariable("poolId") Long poolId) {
         String accessToken = trainingInstanceFacade.findInstanceAccessTokenByPoolId(poolId);
         return ResponseEntity.ok(accessToken);
+    }
+
+    /**
+     * Internal endpoint: pool IDs for single-sandbox cleanup (non-managed training instances only).
+     * When single.sandbox.cleanup.internal-secret is set, caller must provide matching X-Internal-Secret header.
+     * When not set, allowed without header (internal traffic only).
+     */
+    @GetMapping(path = "/internal/single-sandbox-cleanup-pool-ids", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Long>> getSingleSandboxCleanupPoolIds(
+            @RequestHeader(value = HEADER_INTERNAL_SECRET, required = false) String internalSecret) {
+        boolean secretConfigured = singleSandboxCleanupInternalSecret != null && !singleSandboxCleanupInternalSecret.isEmpty();
+        if (secretConfigured && !singleSandboxCleanupInternalSecret.equals(internalSecret)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        List<Long> poolIds = trainingInstanceFacade.getPoolIdsForSingleSandboxCleanup();
+        return ResponseEntity.ok(poolIds);
     }
 
     /**

@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
+
 @EqualsAndHashCode
 @Getter
 @Setter
@@ -24,4 +26,8 @@ public class CorrectAnswerDTO {
     private String correctAnswer;
     @ApiModelProperty(value = "Identifier of the variant answer.", example = "username")
     private String variableName;
+    @ApiModelProperty(value = "Level type: TRAINING or ASSESSMENT. Omitted for backward compatibility when TRAINING.")
+    private String levelType;
+    @ApiModelProperty(value = "For ASSESSMENT levels: correct answers per question. Empty or null for TRAINING levels.")
+    private List<QuestionCorrectAnswerDTO> questionCorrectAnswers;
 }
