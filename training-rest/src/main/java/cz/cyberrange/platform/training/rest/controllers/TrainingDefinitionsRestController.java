@@ -21,7 +21,6 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
@@ -1256,7 +1255,6 @@ public class TrainingDefinitionsRestController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "True - reference solution is defined, false - otherwise.", response = VisualizationInfoDTO.class),
             @ApiResponse(code = 404, message = "Training definition not found.", response = ApiError.class)
     })
     @GetMapping(path = "/{definitionId}/has-reference-solution", produces = MediaType.APPLICATION_JSON_VALUE)

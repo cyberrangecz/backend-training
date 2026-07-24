@@ -29,12 +29,6 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPreviewDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelViewDTO;
-import cz.cyberrange.platform.training.api.dto.visualization.AbstractLevelVisualizationDTO;
-import cz.cyberrange.platform.training.api.dto.visualization.AccessLevelVisualizationDTO;
-import cz.cyberrange.platform.training.api.dto.visualization.AssessmentLevelVisualizationDTO;
-import cz.cyberrange.platform.training.api.dto.visualization.InfoLevelVisualizationDTO;
-import cz.cyberrange.platform.training.api.dto.visualization.TrainingLevelVisualizationDTO;
-import cz.cyberrange.platform.training.api.dto.visualization.progress.LevelDefinitionProgressDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
@@ -84,7 +78,6 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "INFO_LEVEL")
   InfoLevelBasicDTO mapToInfoLevelBasicDTO(InfoLevel entity);
 
-    InfoLevelVisualizationDTO mapToVisualizationInfoLevelDTO(InfoLevel entity);
   InfoLevelExportDTO mapToExportInfoLevelDTO(InfoLevel entity);
 
   // ASSESSMENT LEVEL
@@ -107,7 +100,6 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
   AssessmentLevelPreviewDTO mapToAssessmentLevelPreviewDTO(AssessmentLevel entity);
 
-    AssessmentLevelVisualizationDTO mapToVisualizationAssessmentLevelDTO(AssessmentLevel entity);
   @Mapping(source = "questions", target = "questions", qualifiedByName = "questionWithoutId")
   AssessmentLevelExportDTO mapToExportAssessmentLevelDTO(AssessmentLevel entity);
 
@@ -137,7 +129,6 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
   TrainingLevelBasicDTO mapToTrainingLevelBasicDTO(TrainingLevel entity);
 
-    TrainingLevelVisualizationDTO mapToVisualizationTrainingLevelDTO(TrainingLevel entity);
   @Mapping(source = "mitreTechniques", target = "mitreTechniques", qualifiedByName = "ignoreIds")
   TrainingLevelExportDTO mapToExportTrainingLevelDTO(TrainingLevel entity);
 
@@ -256,7 +247,6 @@ public interface LevelMapper extends ParentMapper {
     return abstractLevelBasicDTO;
   }
 
-    AccessLevelVisualizationDTO mapToVisualizationAccessLevelDTO(AccessLevel entity);
   default AbstractLevelExportDTO mapToExportDTO(AbstractLevel entity) {
     AbstractLevelExportDTO abstractLevelExportDTO;
     if (entity instanceof TrainingLevel) {
@@ -278,49 +268,6 @@ public interface LevelMapper extends ParentMapper {
               + " in given training definition with id: "
               + entity.getTrainingDefinition().getId()
               + " is not instance of assessment, training or info level.");
-    }
-    default AbstractLevelVisualizationDTO mapToVisualizationDTO(AbstractLevel entity) {
-        AbstractLevelVisualizationDTO abstractLevelVisualizationDTO;
-        if (entity instanceof TrainingLevel) {
-            abstractLevelVisualizationDTO = mapToVisualizationTrainingLevelDTO((TrainingLevel) entity);
-            abstractLevelVisualizationDTO.setLevelType(LevelType.TRAINING_LEVEL);
-        } else if (entity instanceof InfoLevel) {
-            abstractLevelVisualizationDTO = mapToVisualizationInfoLevelDTO((InfoLevel) entity);
-            abstractLevelVisualizationDTO.setLevelType(LevelType.INFO_LEVEL);
-        } else if (entity instanceof AssessmentLevel) {
-            abstractLevelVisualizationDTO = mapToVisualizationAssessmentLevelDTO((AssessmentLevel) entity);
-            abstractLevelVisualizationDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-        } else if (entity instanceof AccessLevel) {
-            abstractLevelVisualizationDTO = mapToVisualizationAccessLevelDTO((AccessLevel) entity);
-            abstractLevelVisualizationDTO.setLevelType(LevelType.ACCESS_LEVEL);
-        } else {
-            throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
-                    " is not instance of assessment, training or info level.");
-        }
-        return abstractLevelVisualizationDTO;
-    }
-    @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
-    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(TrainingLevel entity);
-    @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
-    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AssessmentLevel entity);
-    @Mapping(target = "levelType", constant = "INFO_LEVEL")
-    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(InfoLevel entity);
-    @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
-    LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AccessLevel entity);
-
-    default LevelDefinitionProgressDTO mapToLevelDefinitionProgressDTO(AbstractLevel entity) {
-        if (entity instanceof TrainingLevel) {
-            return mapToLevelDefinitionProgressDTO((TrainingLevel) entity);
-        } else if (entity instanceof InfoLevel) {
-            return mapToLevelDefinitionProgressDTO((InfoLevel) entity);
-        } else if (entity instanceof AssessmentLevel) {
-            return mapToLevelDefinitionProgressDTO((AssessmentLevel) entity);
-        } else if (entity instanceof AccessLevel) {
-            return mapToLevelDefinitionProgressDTO((AccessLevel) entity);
-        } else {
-            throw new InternalServerErrorException("Level with id: " + entity.getId() + " in given training definition with id: " + entity.getTrainingDefinition().getId() +
-                    " is not instance of assessment, training or info level.");
-        }
     }
     return abstractLevelExportDTO;
   }
