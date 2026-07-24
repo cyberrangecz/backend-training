@@ -1,73 +1,83 @@
 package cz.cyberrange.platform.training.service.mapping.mapstruct;
 
 import cz.cyberrange.platform.training.api.dto.export.HintExportDTO;
+import cz.cyberrange.platform.training.api.dto.hint.HintBasicDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintDTO;
 import cz.cyberrange.platform.training.api.dto.hint.TakenHintDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.HintInfo;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.mapstruct.IterableMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 /**
- * The HintMapper is an utility class to map items into data transfer objects. It provides the implementation of mappings between Java bean type HintMapper and
- * DTOs classes. Code is generated during compile time.
- *
+ * The HintMapper is an utility class to map items into data transfer objects. It provides the
+ * implementation of mappings between Java bean type HintMapper and DTOs classes. Code is generated
+ * during compile time.
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface HintMapper extends ParentMapper {
 
-    Hint mapToEntity(HintDTO dto);
+  @Mapping(target = "title", source = "title", defaultValue = "")
+  Hint mapToEntity(HintDTO dto);
 
-    HintDTO mapToDTO(Hint entity);
+  @Mapping(target = "title", source = "title", defaultValue = "")
+  HintDTO mapToDTO(Hint entity);
 
-    @Mapping(source = "hintId", target = "id")
-    @Mapping(source = "hintContent", target = "content")
-    @Mapping(source = "hintTitle", target = "title")
-    TakenHintDTO mapToDTO(HintInfo hintInfo);
+  @Named("hintToBasicDTO")
+  HintBasicDTO mapToBasicDTO(Hint entity);
 
-    HintExportDTO mapToHintExportDTO(Hint entity);
+  @IterableMapping(qualifiedByName = "hintToBasicDTO")
+  List<HintBasicDTO> mapToBasicDtoList(List<Hint> entities);
 
-    List<Hint> mapToList(Collection<HintDTO> dtos);
+  @Mapping(source = "hintId", target = "id")
+  @Mapping(source = "hintContent", target = "content")
+  @Mapping(source = "hintTitle", target = "title")
+  TakenHintDTO mapToDTO(HintInfo hintInfo);
 
-    List<HintDTO> mapToListDTO(Collection<Hint> entities);
+  HintExportDTO mapToHintExportDTO(Hint entity);
 
-    Set<Hint> mapToSet(Collection<HintDTO> dtos);
+  List<Hint> mapToList(Collection<HintDTO> dtos);
 
-    Set<HintDTO> mapToSetDTO(Collection<Hint> entities);
+  List<HintDTO> mapToListDTO(Collection<Hint> entities);
 
-    Set<TakenHintDTO> mapToSetInfoDTO(Collection<HintInfo> entities);
+  Set<Hint> mapToSet(Collection<HintDTO> dtos);
 
-    default Optional<Hint> mapToOptional(HintDTO dto) {
-        return Optional.ofNullable(mapToEntity(dto));
-    }
+  Set<HintDTO> mapToSetDTO(Collection<Hint> entities);
 
-    default Optional<HintDTO> mapToOptional(Hint entity) {
-        return Optional.ofNullable(mapToDTO(entity));
-    }
+  Set<TakenHintDTO> mapToSetInfoDTO(Collection<HintInfo> entities);
 
-    default Page<HintDTO> mapToPageDTO(Page<Hint> objects) {
-        List<HintDTO> mapped = mapToListDTO(objects.getContent());
-        return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
-    }
+  default Optional<Hint> mapToEntityOptional(HintDTO dto) {
+    return Optional.ofNullable(mapToEntity(dto));
+  }
 
-    default Page<Hint> mapToPage(Page<HintDTO> objects) {
-        List<Hint> mapped = mapToList(objects.getContent());
-        return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
-    }
+  default Optional<HintDTO> mapToDTOOptional(Hint entity) {
+    return Optional.ofNullable(mapToDTO(entity));
+  }
 
-    default PageResultResource<HintDTO> mapToPageResultResource(Page<Hint> objects) {
-        List<HintDTO> mapped = new ArrayList<>();
-        objects.forEach(object -> mapped.add(mapToDTO(object)));
-        return new PageResultResource<>(mapped, createPagination(objects));
-    }
+  default Page<HintDTO> mapToPageDTO(Page<Hint> objects) {
+    List<HintDTO> mapped = mapToListDTO(objects.getContent());
+    return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
+  }
+
+  default Page<Hint> mapToPage(Page<HintDTO> objects) {
+    List<Hint> mapped = mapToList(objects.getContent());
+    return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
+  }
+
+  default PageResultResource<HintDTO> mapToPageResultResource(Page<Hint> objects) {
+    List<HintDTO> mapped = new ArrayList<>();
+    objects.forEach(object -> mapped.add(mapToDTO(object)));
+    return new PageResultResource<>(mapped, createPagination(objects));
+  }
 }
