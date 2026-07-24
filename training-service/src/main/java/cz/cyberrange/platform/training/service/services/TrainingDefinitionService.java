@@ -1020,18 +1020,6 @@ public class TrainingDefinitionService {
     return abstractLevelRepository.findAllByIdIn(ids);
   }
 
-    /**
-     * Check if the reference solution is defined for the given training definition.
-     *
-     * @param trainingDefinitionId the training definition id
-     * @return true if at least one of the training levels has reference solution defined, false otherwise.
-     */
-    public boolean hasReferenceSolution(Long trainingDefinitionId) {
-        if (!trainingDefinitionRepository.existsById(trainingDefinitionId)) {
-            throw new EntityNotFoundException(new EntityErrorDetail(TrainingDefinition.class, "id", Long.class, trainingDefinitionId));
-        }
-        return this.trainingLevelRepository.hasReferenceSolution(trainingDefinitionId);
-    }
   public List<Hint> findAllHintsByIds(List<Long> ids) {
     return hintRepository.findAllByIdIn(ids);
   }

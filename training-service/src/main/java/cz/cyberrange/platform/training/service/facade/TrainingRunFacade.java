@@ -16,7 +16,6 @@ import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunBasicDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
-import cz.cyberrange.platform.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPreviewDTO;
 import cz.cyberrange.platform.training.api.enums.Actions;
 import cz.cyberrange.platform.training.api.enums.LevelType;
@@ -28,7 +27,6 @@ import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.SolutionInfo;
-import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
@@ -42,14 +40,11 @@ import cz.cyberrange.platform.training.service.annotations.transactions.Transact
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.ReferenceSolutionNodeMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
 import cz.cyberrange.platform.training.service.services.SecurityService;
-import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.AnswersStorageApiService;
-import cz.cyberrange.platform.training.service.services.api.TrainingFeedbackApiService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -84,8 +79,6 @@ public class TrainingRunFacade {
   @Value("${central.syslog.ip:127.0.0.1}")
   private String centralSyslogIp;
 
-    private final TrainingDefinitionService trainingDefinitionService;
-    private final TrainingFeedbackApiService trainingFeedbackApiService;
   private final TrainingRunService trainingRunService;
   private final AnswersStorageApiService answersStorageApiService;
   private final SecurityService securityService;
@@ -94,36 +87,34 @@ public class TrainingRunFacade {
   private final LevelMapper levelMapper;
   private final HintMapper hintMapper;
 
+  /**
+   * Instantiates a new Training run facade.
+   *
+   * @param trainingRunService the training run service
+   * @param securityService the security service
+   * @param userService the user service
+   * @param trainingRunMapper the training run mapper
+   * @param levelMapper the level mapper
+   * @param hintMapper the hint mapper
+   */
+  @Autowired
+  public TrainingRunFacade(
+      TrainingRunService trainingRunService,
+      AnswersStorageApiService answersStorageApiService,
+      SecurityService securityService,
+      UserService userService,
+      TrainingRunMapper trainingRunMapper,
+      LevelMapper levelMapper,
+      HintMapper hintMapper) {
+    this.trainingRunService = trainingRunService;
+    this.answersStorageApiService = answersStorageApiService;
+    this.securityService = securityService;
+    this.userService = userService;
+    this.trainingRunMapper = trainingRunMapper;
+    this.levelMapper = levelMapper;
+    this.hintMapper = hintMapper;
+  }
 
-    /**
-     * Instantiates a new Training run facade.
-     *
-     * @param trainingRunService the training run service
-     * @param securityService    the security service
-     * @param userService        the user service
-     * @param trainingRunMapper  the training run mapper
-     * @param levelMapper        the level mapper
-     * @param hintMapper         the hint mapper
-     */
-    @Autowired
-    public TrainingRunFacade(TrainingRunService trainingRunService,
-                             TrainingDefinitionService trainingDefinitionService,
-                             AnswersStorageApiService answersStorageApiService,
-                             SecurityService securityService,
-                             UserService userService,
-                             TrainingFeedbackApiService trainingFeedbackApiService,
-                             TrainingRunMapper trainingRunMapper,
-                             LevelMapper levelMapper,
-                             HintMapper hintMapper) {
-        this.trainingRunService = trainingRunService;
-        this.trainingDefinitionService = trainingDefinitionService;
-        this.answersStorageApiService = answersStorageApiService;
-        this.securityService = securityService;
-        this.userService = userService;
-        this.trainingRunMapper = trainingRunMapper;
-        this.trainingFeedbackApiService = trainingFeedbackApiService;
-        this.levelMapper = levelMapper;
-        this.hintMapper = hintMapper;
   /**
    * Finds specific Training Run by id
    *
@@ -163,23 +154,45 @@ public class TrainingRunFacade {
     return trainingRunDTOPageResultResource;
   }
 
+  /**
+   * Delete selected training runs.
+   *
+   * @param trainingRunIds training runs to delete
+   * @param forceDelete indicates if this training run should be force deleted.
+   */
+  @IsOrganizerOrAdmin
+  @TransactionalWO
+  public void deleteTrainingRuns(List<Long> trainingRunIds, boolean forceDelete) {
+    if (trainingRunIds.isEmpty()) {
+      return;
     }
 
+    if (!securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
+      for (Long trainingRunId : trainingRunIds) {
+        if (!securityService.isOrganizerOfGivenTrainingRun(trainingRunId)) {
+          throw new SecurityException("Cannot delete training runs from different instance.");
+        }
+      }
     }
 
+    for (Long trainingRunId : trainingRunIds) {
+      trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true).getTrainingInstance();
     }
+  }
 
-    /**
-     * Delete selected training runs.
-     *
-     * @param trainingRunIds training runs to delete
-     * @param forceDelete    indicates if this training run should be force deleted.
-     */
-    @IsOrganizerOrAdmin
-    @TransactionalWO
-    public void deleteTrainingRuns(List<Long> trainingRunIds, boolean forceDelete) {
-        if(trainingRunIds.isEmpty()) {
-            return;
+  /**
+   * Delete selected training run.
+   *
+   * @param trainingRunId training run to delete
+   * @param forceDelete indicates if this training run should be force deleted.
+   */
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
+  @TransactionalWO
+  public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
+    trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true);
+  }
 
   /**
    * Finds all Training Runs of logged in user.
@@ -445,6 +458,19 @@ public class TrainingRunFacade {
     return trainingRunService.isCorrectPassKey(trainingRunId, passkey);
   }
 
+  /**
+   * Finish training run.
+   *
+   * @param trainingRunId id of Training Run to be finished.
+   */
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
+  @TransactionalWO
+  public void finishTrainingRun(Long trainingRunId) {
+    TrainingRun finishedTrainingRun = trainingRunService.finishTrainingRun(trainingRunId);
+    waitToPropagateEvents();
+  }
 
   /**
    * Archive training run.
@@ -635,10 +661,6 @@ public class TrainingRunFacade {
     return runs;
   }
 
-        if (!securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-            for (Long trainingRunId : trainingRunIds) {
-                if (!securityService.isOrganizerOfGivenTrainingRun(trainingRunId)) {
-                    throw new SecurityException("Cannot delete training runs from different instance.");
   private AccessedTrainingRunDTO generateAccessedTrainingRunDTO(TrainingRun trainingRun) {
     AccessedTrainingRunDTO accessedTrainingRunDTO = new AccessedTrainingRunDTO();
     accessedTrainingRunDTO.setId(trainingRun.getId());
@@ -761,8 +783,6 @@ public class TrainingRunFacade {
                 if (previewQuestionDTO.getQuestionType() == QuestionType.FFQ) {
                   previewQuestionDTO.setChoices(new ArrayList<>());
                 }
-            }
-        }
                 previewQuestionDTO.setUserAnswers(
                     userAnswersByQuestionId.get(previewQuestionDTO.getId()));
               }
@@ -770,13 +790,6 @@ public class TrainingRunFacade {
     return assessmentPreviewDTO;
   }
 
-        TrainingInstance trainingInstance = null;
-        for (Long trainingRunId : trainingRunIds) {
-            trainingInstance = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true).getTrainingInstance();
-            trainingFeedbackApiService.deleteTraineeGraph(trainingRunId);
-        }
-        trainingFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
-        trainingFeedbackApiService.createSummaryGraph(trainingInstance.getTrainingDefinition().getId(), trainingInstance.getId());
   private Map<String, Integer> convertEmiAnswerToMap(String emiAnswer) {
     emiAnswer = emiAnswer.replaceAll("\"", "");
     emiAnswer = emiAnswer.substring(1, emiAnswer.length() - 1);
@@ -822,61 +835,6 @@ public class TrainingRunFacade {
       TimeUnit.SECONDS.sleep(TIME_TO_PROPAGATE_EVENTS);
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
-    }
-    /**
-     * Delete selected training run.
-     *
-     * @param trainingRunId training run to delete
-     * @param forceDelete   indicates if this training run should be force deleted.
-     */
-    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-        "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalWO
-    public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
-        TrainingRun deletedTrainingRun = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true);
-        trainingFeedbackApiService.deleteTraineeGraph(trainingRunId);
-        TrainingInstance trainingInstance = deletedTrainingRun.getTrainingInstance();
-        TrainingDefinition trainingDefinition = trainingInstance.getTrainingDefinition();
-        trainingFeedbackApiService.deleteSummaryGraph(trainingInstance.getId());
-        trainingFeedbackApiService.createSummaryGraph(trainingDefinition.getId(), trainingInstance.getId());
-    }
-    /**
-     * Finish training run.
-     *
-     * @param trainingRunId id of Training Run to be finished.
-     */
-    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
-    @TransactionalWO
-    public void finishTrainingRun(Long trainingRunId) {
-        TrainingRun finishedTrainingRun = trainingRunService.finishTrainingRun(trainingRunId);
-        waitToPropagateEvents();
-        createTraineeGraphAndUpdateSummaryGraph(finishedTrainingRun);
-    }
-
-    private void createTraineeGraphAndUpdateSummaryGraph(TrainingRun run) {
-        TrainingInstance instance = run.getTrainingInstance();
-        TrainingDefinition definition = instance.getTrainingDefinition();
-        boolean isAnyReferenceSolution = false;
-        List<LevelReferenceSolutionDTO> referenceSolution = new ArrayList<>();
-        for (TrainingLevel level : this.trainingDefinitionService.getAllTrainingLevels(definition.getId())) {
-            isAnyReferenceSolution = isAnyReferenceSolution || !level.getReferenceSolution().isEmpty();
-            referenceSolution.add(createLevelReferenceSolutionDTO(level));
-        }
-        if(isAnyReferenceSolution) {
-            this.trainingFeedbackApiService.createTraineeGraph(definition.getId(), instance.getId(), run.getId(), referenceSolution,
-                    run.getTrainingInstance().isLocalEnvironment() ? run.getTrainingInstance().getAccessToken() : null);
-            this.trainingFeedbackApiService.deleteSummaryGraph(instance.getId());
-            this.trainingFeedbackApiService.createSummaryGraph(definition.getId(), instance.getId());
-        }
-    }
-
-    private LevelReferenceSolutionDTO createLevelReferenceSolutionDTO(TrainingLevel trainingLevel) {
-        return new LevelReferenceSolutionDTO(
-                trainingLevel.getId(),
-                trainingLevel.getOrder(),
-                new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(trainingLevel.getReferenceSolution()))
-        );
     }
   }
 }

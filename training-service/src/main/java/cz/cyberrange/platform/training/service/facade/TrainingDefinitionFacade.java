@@ -16,7 +16,6 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
-import cz.cyberrange.platform.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
@@ -44,18 +43,15 @@ import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
-import cz.cyberrange.platform.training.service.annotations.security.IsTrainee;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.ReferenceSolutionNodeMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserService;
-import cz.cyberrange.platform.training.service.services.api.TrainingFeedbackApiService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -79,7 +75,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TrainingDefinitionFacade {
 
-    private final TrainingFeedbackApiService trainingFeedbackApiService;
   private final TrainingDefinitionService trainingDefinitionService;
   private final UserService userService;
   private final SecurityService securityService;
@@ -87,8 +82,6 @@ public class TrainingDefinitionFacade {
   private final LevelMapper levelMapper;
   private final HintMapper hintMapper;
 
-                                    TrainingFeedbackApiService trainingFeedbackApiService,
-        this.trainingFeedbackApiService = trainingFeedbackApiService;
   /**
    * Instantiates a new Training definition facade.
    *
@@ -743,7 +736,6 @@ public class TrainingDefinitionFacade {
         Collections.emptyList(), new PageResultResource.Pagination(0, 0, 0, 0, 0));
   }
 
-        this.updateReferenceSolution(clonedDefinition.getId());
   /**
    * Retrieve all designers not in the given training definition.
    *
@@ -795,7 +787,6 @@ public class TrainingDefinitionFacade {
     trainingDefinitionService.auditAndSave(trainingDefinition);
   }
 
-        this.updateReferenceSolution(definitionId);
   private void addAuthorsToTrainingDefinition(
       TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
     List<UserRefDTO> authors = getAllUsersRefsByGivenUsersIds(new ArrayList<>(userRefIds));
@@ -812,39 +803,6 @@ public class TrainingDefinitionFacade {
     }
   }
 
-        this.updateReferenceSolution(definitionId);
-        trainingFeedbackApiService.deleteReferenceGraph(id);
-        this.updateReferenceSolution(definitionId);
-        boolean referenceSolutionChanged = false;
-                    referenceSolutionChanged = referenceSolutionChanged || !updatedTrainingLevel.getReferenceSolution()
-                            .equals(((TrainingLevel)persistedLevel).getReferenceSolution());
-        if (referenceSolutionChanged) {
-            updateReferenceSolution(definitionId);
-        }
-    private void updateReferenceSolution(Long definitionId) {
-        boolean isAnyReferenceSolution = false;
-        List<LevelReferenceSolutionDTO> referenceSolution = new ArrayList<>();
-        for (TrainingLevel level : this.trainingDefinitionService.getAllTrainingLevels(definitionId)) {
-            referenceSolution.add(new LevelReferenceSolutionDTO(level.getId(), level.getOrder(), new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(level.getReferenceSolution()))));
-            isAnyReferenceSolution = isAnyReferenceSolution || !level.getReferenceSolution().isEmpty();
-        }
-        this.trainingFeedbackApiService.deleteReferenceGraph(definitionId);
-        if(isAnyReferenceSolution) {
-            this.trainingFeedbackApiService.createReferenceGraph(definitionId, referenceSolution);
-        }
-    }
-        this.updateReferenceSolution(definitionId);
-    /**
-     * Check if the reference solution is defined for the given training definition.
-     *
-     * @param trainingDefinitionId the training definition id
-     * @return true if at least one of the training levels has reference solution defined, false otherwise.
-     */
-    @IsTrainee
-    @TransactionalRO
-    public boolean hasReferenceSolution(Long trainingDefinitionId) {
-        return trainingDefinitionService.hasReferenceSolution(trainingDefinitionId);
-    }
   private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
     List<UserRefDTO> users = new ArrayList<>();
     PageResultResource<UserRefDTO> usersPageResultResource;

@@ -20,7 +20,6 @@ import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionD
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
-import cz.cyberrange.platform.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
@@ -53,13 +52,11 @@ import cz.cyberrange.platform.training.service.annotations.transactions.Transact
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EventMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.ExportImportMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.ReferenceSolutionNodeMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.cyberrange.platform.training.service.services.ExportImportService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
-import cz.cyberrange.platform.training.service.services.api.TrainingFeedbackApiService;
 import cz.cyberrange.platform.training.service.utils.AbstractFileExtensions;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -95,7 +92,6 @@ public class ExportImportFacade {
 
   private static final String DELIMITER = ";";
 
-    private final TrainingFeedbackApiService trainingFeedbackApiService;
   private final ExportImportService exportImportService;
   private final TrainingDefinitionService trainingDefinitionService;
   private final SandboxApiService sandboxApiService;
@@ -108,8 +104,6 @@ public class ExportImportFacade {
   private final TrainingEventsService trainingEventsService;
   private final EventMapper eventMapper;
 
-                              TrainingFeedbackApiService trainingFeedbackApiService,
-        this.trainingFeedbackApiService = trainingFeedbackApiService;
   /**
    * Instantiates a new Export import facade.
    *
@@ -612,7 +606,6 @@ public class ExportImportFacade {
     List<Long> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
     levelTimestampRanges.add(Long.MAX_VALUE);
 
-        createReferenceGraph(newTrainingDefinition, createdLevels);
     for (int i = 0; i < levelIds.size(); i++) {
       List<CommandEventDTO> consoleCommandsByLevel =
           getConsoleCommandsWithinTimeRange(
@@ -639,18 +632,6 @@ public class ExportImportFacade {
     }
   }
 
-    private void createReferenceGraph(TrainingDefinition trainingDefinition, List<AbstractLevel> createdLevels) {
-        List<LevelReferenceSolutionDTO> referenceSolution = new ArrayList<>();
-        boolean isAnyReferenceSolution = false;
-        for (AbstractLevel level: createdLevels) {
-            if (level.getClass() == TrainingLevel.class) {
-                isAnyReferenceSolution = isAnyReferenceSolution || !((TrainingLevel) level).getReferenceSolution().isEmpty();
-                referenceSolution.add(createLevelReferenceSolutionDTO((TrainingLevel) level));
-            }
-        }
-        if(isAnyReferenceSolution) {
-            this.trainingFeedbackApiService.createReferenceGraph(trainingDefinition.getId(), referenceSolution);
-        }
   private List<CommandEventDTO> getConsoleCommandsWithinTimeRange(
       TrainingInstance instance, TrainingRun run, String sandboxId, Long from, Long to) {
     List<TrainingCommand> commands =
@@ -675,12 +656,6 @@ public class ExportImportFacade {
     }
   }
 
-    private LevelReferenceSolutionDTO createLevelReferenceSolutionDTO(TrainingLevel trainingLevel) {
-        return new LevelReferenceSolutionDTO(
-                trainingLevel.getId(),
-                trainingLevel.getOrder(),
-                new ArrayList<>(ReferenceSolutionNodeMapper.INSTANCE.mapToSetDTO(trainingLevel.getReferenceSolution()))
-        );
   private void writeSandboxDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance)
       throws IOException {
     if (trainingInstance.getPoolId() != null) {

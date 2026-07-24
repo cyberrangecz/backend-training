@@ -29,8 +29,6 @@ public class WebClientConfig {
   @Value("${sandbox-service.uri}")
   private String sandboxService;
 
-    @Value("${training-feedback-service.uri}")
-    private String trainingFeedbackServiceURI;
   @Value("${user-and-group-service.uri}")
   private String userAndGroupURI;
 
@@ -182,26 +180,6 @@ public class WebClientConfig {
       return objectMapper.readValue(errorBody, JavaApiError.class);
     } catch (IOException e) {
       return JavaApiError.of("Could not obtain error message. Error body is: " + errorBody);
-    }
-
-    /**
-     * Training feedback service web client.
-     *
-     * @return the web client
-     */
-    @Bean
-    public WebClient trainingFeedbackServiceWebClient() {
-        return WebClient.builder()
-                .baseUrl(trainingFeedbackServiceURI)
-                .defaultHeaders(headers -> {
-                    headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-                    headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-                })
-                .filters(exchangeFilterFunctions -> {
-                    exchangeFilterFunctions.add(addSecurityHeader());
-                    exchangeFilterFunctions.add(javaMicroserviceExceptionHandlingFunction());
-                })
-                .build();
     }
   }
 }
