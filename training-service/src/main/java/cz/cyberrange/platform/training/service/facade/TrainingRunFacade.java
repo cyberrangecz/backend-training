@@ -45,6 +45,7 @@ import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.AnswersStorageApiService;
+import cz.cyberrange.platform.training.service.utils.SandboxIdHasher;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -519,6 +520,10 @@ public class TrainingRunFacade {
   /**
    * Finds Training Runs by their ids.
    *
+   * <p>The {@code sandboxInstanceRefId} field is masked according to caller privilege:
+   * administrators and organizers of the runs see the plain sandbox UUID for every run; all other
+   * callers see a plain UUID only for their own run and the SHA-256 hash of the UUID for all other
+   * runs.
    *
    * @param ids the ids of Training Runs to return.
    * @return List of requested {@link TrainingRunBasicDTO}.
@@ -531,6 +536,20 @@ public class TrainingRunFacade {
   public List<TrainingRunBasicDTO> findTrainingRunsByIds(List<Long> ids) {
     List<TrainingRunBasicDTO> runs =
         trainingRunMapper.mapToBasicDtoList(trainingRunService.findAllByIds(ids));
+    boolean callerIsPrivileged =
+        securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)
+            || securityService.isOrganizerOfGivenTrainingRuns(ids);
+    if (!callerIsPrivileged) {
+      Long callerUserRefId = securityService.getUserRefIdFromUserAndGroup();
+      runs.forEach(
+          run -> {
+            if (run.getSandboxInstanceRefId() != null
+                && (run.getParticipantRef() == null
+                    || !callerUserRefId.equals(run.getParticipantRef().getUserRefId()))) {
+              run.setSandboxInstanceRefId(SandboxIdHasher.hash(run.getSandboxInstanceRefId()));
+            }
+          });
+    }
     return runs;
   }
 
