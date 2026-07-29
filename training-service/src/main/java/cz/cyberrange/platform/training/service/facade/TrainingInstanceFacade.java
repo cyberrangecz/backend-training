@@ -44,6 +44,7 @@ import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
 import cz.cyberrange.platform.training.service.services.detection.CheatingDetectionService;
+import cz.cyberrange.platform.training.service.utils.SandboxIdHasher;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -667,6 +668,16 @@ public class TrainingInstanceFacade {
       mappedEvents = new ArrayList<>(eventMapper.mapToEventListDTO(trainingEvents));
     }
 
+    if (!callerIsPrivileged) {
+      String callerSandboxId =
+          trainingEventAccessService.resolveTraineeSandboxId(instanceId, callerUserRefId);
+      mappedEvents.forEach(
+          event -> {
+            String eventSandboxId = event.getSandboxId();
+            if (eventSandboxId != null && !eventSandboxId.equals(callerSandboxId)) {
+              event.setSandboxId(SandboxIdHasher.hash(eventSandboxId));
+            }
+          });
     }
 
     return mappedEvents;

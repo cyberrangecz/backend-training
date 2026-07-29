@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
-import cz.cyberrange.platform.training.api.dto.snapshothook.SnapshotHookDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
 import io.swagger.annotations.ApiModel;
@@ -40,7 +39,6 @@ import lombok.ToString;
 })
 public class AbstractLevelDTO extends AbstractLevelBasicDTO {
 
-    protected SnapshotHookDTO snapshotHook;
   @ApiModelProperty(value = "Training definition to which is this level assigned.", example = "2")
   protected TrainingDefinitionDTO trainingDefinition;
 }
