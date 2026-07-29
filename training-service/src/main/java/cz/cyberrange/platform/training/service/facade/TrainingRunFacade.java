@@ -177,7 +177,7 @@ public class TrainingRunFacade {
     }
 
     for (Long trainingRunId : trainingRunIds) {
-      trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true).getTrainingInstance();
+      trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true);
     }
   }
 
@@ -469,7 +469,7 @@ public class TrainingRunFacade {
           + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   @TransactionalWO
   public void finishTrainingRun(Long trainingRunId) {
-    TrainingRun finishedTrainingRun = trainingRunService.finishTrainingRun(trainingRunId);
+    trainingRunService.finishTrainingRun(trainingRunId);
     waitToPropagateEvents();
   }
 
