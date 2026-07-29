@@ -79,17 +79,8 @@ public class ExportImportServiceTest {
     given(trainingInstanceRepository.findById(any(Long.class)))
         .willReturn(Optional.of(trainingInstance));
     given(trainingInstance.getId()).willReturn(1L);
-    TrainingInstance tI = exportImportService.findInstanceById(trainingInstance.getId());
+    exportImportService.findInstanceById(trainingInstance.getId());
 
     then(trainingInstanceRepository).should().findById(trainingInstance.getId());
-  }
-
-  @Test
-  public void test() {
-    String pass = "pass-0221";
-    String shortPass = pass.substring(0, pass.length() - 5);
-    String pin = pass.substring(pass.length() - 4, pass.length());
-    System.out.println("short:" + shortPass);
-    System.out.println("pin: " + pin);
   }
 }
