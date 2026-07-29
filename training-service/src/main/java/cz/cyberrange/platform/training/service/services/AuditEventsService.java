@@ -2,7 +2,9 @@ package cz.cyberrange.platform.training.service.services;
 
 import cz.cyberrange.platform.training.opensearch.events.training.logging.AuditService;
 import cz.cyberrange.platform.training.opensearch.events.training.model.AbstractAuditPOJO;
+import cz.cyberrange.platform.training.opensearch.events.training.model.AssessmentAnswered;
 import cz.cyberrange.platform.training.opensearch.events.training.model.CorrectAnswerSubmitted;
+import cz.cyberrange.platform.training.opensearch.events.training.model.EventAnswer;
 import cz.cyberrange.platform.training.opensearch.events.training.model.HintTaken;
 import cz.cyberrange.platform.training.opensearch.events.training.model.LevelCompleted;
 import cz.cyberrange.platform.training.opensearch.events.training.model.LevelStarted;
@@ -24,6 +26,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -161,6 +164,21 @@ public class AuditEventsService {
             .count(trainingRun.getIncorrectAnswerCount())
             .build();
     auditService.saveTrainingRunEvent(wrongAnswerSubmitted);
+  }
+
+  /**
+   * Audit assessment answers action.
+   *
+   * @param trainingRun the training run
+   * @param answers the typed per-question answers submitted by the trainee
+   */
+  public void auditAssessmentAnswersAction(TrainingRun trainingRun, List<EventAnswer> answers) {
+    AssessmentAnswered.AssessmentAnsweredBuilder<?, ?> assessmentAnswersBuilder =
+        (AssessmentAnswered.AssessmentAnsweredBuilder<?, ?>)
+            fillInCommonBuilderFields(trainingRun, AssessmentAnswered.builder());
+
+    AssessmentAnswered assessmentAnswers = assessmentAnswersBuilder.answers(answers).build();
+    auditService.saveTrainingRunEvent(assessmentAnswers);
   }
 
   /**

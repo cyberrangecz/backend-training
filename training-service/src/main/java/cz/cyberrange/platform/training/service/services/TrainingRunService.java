@@ -11,6 +11,11 @@ import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.exceptions.TooManyRequestsException;
 import cz.cyberrange.platform.training.api.responses.SandboxInfo;
 import cz.cyberrange.platform.training.opensearch.events.commands.query.CommandEventsService;
+import cz.cyberrange.platform.training.opensearch.events.training.model.AnswerSelection;
+import cz.cyberrange.platform.training.opensearch.events.training.model.EventAnswer;
+import cz.cyberrange.platform.training.opensearch.events.training.model.ExtendedMatchingEventAnswer;
+import cz.cyberrange.platform.training.opensearch.events.training.model.FreeFormEventAnswer;
+import cz.cyberrange.platform.training.opensearch.events.training.model.MultipleChoiceEventAnswer;
 import cz.cyberrange.platform.training.opensearch.events.training.query.TrainingEventsService;
 import cz.cyberrange.platform.training.persistence.model.*;
 import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
@@ -238,6 +243,15 @@ public class TrainingRunService {
     return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
   }
 
+  /**
+   * Finds all Training Runs by their ids.
+   *
+   * @param ids the training run ids
+   * @return the list of {@link TrainingRun}
+   */
+  public List<TrainingRun> findAllByIds(List<Long> ids) {
+    return trainingRunRepository.findAllById(ids);
+  }
 
   /**
    * Move to the next level of given Training Run by setting up a new current level.
@@ -886,6 +900,178 @@ public class TrainingRunService {
     return commandEventsService.hasConsoleCommandsBySandbox(sandboxId);
   }
 
+  /**
+   * Evaluate and store responses to assessment.
+   *
+   * @param trainingRunId id of training run to be finished.
+   * @param answersToQuestions response to assessment to be evaluated
+   * @throws EntityNotFoundException training run is not found.
+   */
+  public void evaluateResponsesToAssessment(
+      Long trainingRunId, Map<Long, QuestionAnswerDTO> answersToQuestions) {
+    TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    if (!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
+      throw new BadRequestException(
+          "Current level is not assessment level and cannot be evaluated.");
+    }
+    if (trainingRun.isLevelAnswered())
+      throw new EntityConflictException(
+          new EntityErrorDetail(
+              TrainingRun.class,
+              "id",
+              trainingRunId.getClass(),
+              trainingRunId,
+              "Current level of the training run has been already answered."));
+    List<QuestionAnswer> userAnswersToQuestions;
+    Map<Long, AnswerEvaluation> evaluations;
+    if (((AssessmentLevel) trainingRun.getCurrentLevel()).getAssessmentType()
+        == AssessmentType.TEST) {
+      AssessmentEvaluation assessmentEvaluation =
+          this.gatherAndEvaluateAnswers(trainingRun, answersToQuestions);
+      userAnswersToQuestions = assessmentEvaluation.answers();
+      evaluations = assessmentEvaluation.evaluations();
+    } else {
+      userAnswersToQuestions = this.gatherAnswers(trainingRun, answersToQuestions);
+      evaluations = Map.of();
+    }
+    trainingRun.setLevelAnswered(true);
+    questionAnswerRepository.saveAll(userAnswersToQuestions);
+    List<EventAnswer> eventAnswers =
+        this.buildEventAnswers(
+            (AssessmentLevel) trainingRun.getCurrentLevel(), answersToQuestions, evaluations);
+    auditEventsService.auditAssessmentAnswersAction(trainingRun, eventAnswers);
+    auditEventsService.auditLevelCompletedAction(trainingRun);
+  }
+
+  private List<EventAnswer> buildEventAnswers(
+      AssessmentLevel assessmentLevel,
+      Map<Long, QuestionAnswerDTO> answersToQuestions,
+      Map<Long, AnswerEvaluation> evaluations) {
+    List<EventAnswer> eventAnswers = new ArrayList<>();
+    for (Question question : assessmentLevel.getQuestions()) {
+      QuestionAnswerDTO submittedAnswer = answersToQuestions.get(question.getId());
+      if (submittedAnswer != null) {
+        eventAnswers.add(
+            this.toEventAnswer(question, submittedAnswer, evaluations.get(question.getId())));
+      }
+    }
+    return eventAnswers;
+  }
+
+  private EventAnswer toEventAnswer(
+      Question question, QuestionAnswerDTO submittedAnswer, AnswerEvaluation evaluation) {
+    boolean scored = evaluation != null;
+    EventAnswer eventAnswer =
+        switch (question.getQuestionType()) {
+          case FFQ ->
+              FreeFormEventAnswer.builder()
+                  .questionId(question.getId())
+                  .answer(this.freeFormSelection(question, submittedAnswer.getAnswers(), scored))
+                  .build();
+          case MCQ ->
+              MultipleChoiceEventAnswer.builder()
+                  .questionId(question.getId())
+                  .selectedOptions(
+                      this.selectedOptions(question, submittedAnswer.getAnswers(), scored))
+                  .build();
+          case EMI ->
+              ExtendedMatchingEventAnswer.builder()
+                  .questionId(question.getId())
+                  .pairs(
+                      this.pairSelections(
+                          question, submittedAnswer.getExtendedMatchingPairs(), scored))
+                  .build();
+        };
+    eventAnswer.setPointsGained(scored ? evaluation.pointsGained() : 0);
+    if (scored) {
+      eventAnswer.setCorrect(evaluation.correct());
+    }
+    return eventAnswer;
+  }
+
+  private AnswerSelection<String> freeFormSelection(
+      Question question, Set<String> answers, boolean scored) {
+    String answer = this.singleAnswer(answers);
+    if (answer == null) {
+      return null;
+    }
+    Boolean correct = scored ? this.isFreeFormAnswerCorrect(question, answer) : null;
+    return AnswerSelection.<String>builder().value(answer).correct(correct).build();
+  }
+
+  private String singleAnswer(Set<String> answers) {
+    return answers == null || answers.isEmpty() ? null : answers.iterator().next();
+  }
+
+  private boolean isFreeFormAnswerCorrect(Question question, String answer) {
+    return question.getChoices().stream().map(QuestionChoice::getText).anyMatch(answer::equals);
+  }
+
+  private List<AnswerSelection<Integer>> selectedOptions(
+      Question question, Set<String> selectedTexts, boolean scored) {
+    if (selectedTexts == null) {
+      return new ArrayList<>();
+    }
+    return question.getChoices().stream()
+        .filter(choice -> selectedTexts.contains(choice.getText()))
+        .sorted(Comparator.comparingInt(QuestionChoice::getOrder))
+        .map(
+            choice ->
+                AnswerSelection.<Integer>builder()
+                    .value(choice.getOrder())
+                    .correct(scored ? choice.isCorrect() : null)
+                    .build())
+        .toList();
+  }
+
+  private Map<Integer, AnswerSelection<Integer>> pairSelections(
+      Question question, Map<Integer, Integer> submittedPairs, boolean scored) {
+    Map<Integer, AnswerSelection<Integer>> selections = new TreeMap<>();
+    if (submittedPairs == null) {
+      return selections;
+    }
+    Map<Integer, Integer> expectedByStatement =
+        scored ? this.expectedOptionByStatement(question) : Map.of();
+    submittedPairs.forEach(
+        (statementOrder, optionOrder) -> {
+          Boolean correct =
+              scored ? optionOrder.equals(expectedByStatement.get(statementOrder)) : null;
+          selections.put(
+              statementOrder,
+              AnswerSelection.<Integer>builder().value(optionOrder).correct(correct).build());
+        });
+    return selections;
+  }
+
+  private Map<Integer, Integer> expectedOptionByStatement(Question question) {
+    Map<Integer, Integer> expected = new HashMap<>();
+    for (ExtendedMatchingStatement statement : question.getExtendedMatchingStatements()) {
+      expected.put(statement.getOrder(), statement.getExtendedMatchingOption().getOrder());
+    }
+    return expected;
+  }
+
+  private AssessmentEvaluation gatherAndEvaluateAnswers(
+      TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
+    int score = 0;
+    List<QuestionAnswer> userAnswersToQuestions = new ArrayList<>();
+    Map<Long, AnswerEvaluation> evaluations = new HashMap<>();
+    for (Question question : ((AssessmentLevel) trainingRun.getCurrentLevel()).getQuestions()) {
+      QuestionAnswerDTO questionAnswerDTO = answersToQuestions.get(question.getId());
+      if (questionAnswerDTO == null) {
+        throw new BadRequestException(
+            "The question '" + question.getText() + "' must be answered.");
+      }
+      userAnswersToQuestions.add(
+          this.createQuestionAnswer(question, trainingRun, questionAnswerDTO));
+      AnswerEvaluation evaluation = this.evaluateAnswer(question, questionAnswerDTO);
+      evaluations.put(question.getId(), evaluation);
+      score += evaluation.pointsGained();
+    }
+    trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore() - score);
+    trainingRun.increaseTotalAssessmentScore(score);
+    return new AssessmentEvaluation(userAnswersToQuestions, evaluations);
+  }
 
   private List<QuestionAnswer> gatherAnswers(
       TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
@@ -928,97 +1114,57 @@ public class TrainingRunService {
     }
     return questionAnswer;
   }
+
+  private AnswerEvaluation evaluateAnswer(Question question, QuestionAnswerDTO userAnswer) {
+    boolean correct =
+        switch (question.getQuestionType()) {
+          case FFQ -> this.isFreeFormCorrect(question, userAnswer);
+          case MCQ -> this.isMultipleChoiceCorrect(question, userAnswer);
+          case EMI -> this.isExtendedMatchingCorrect(question, userAnswer);
+        };
+    int pointsGained = correct ? question.getPoints() : (-1) * question.getPenalty();
+    return new AnswerEvaluation(correct, pointsGained);
+  }
+
+  private boolean isFreeFormCorrect(Question question, QuestionAnswerDTO userAnswer) {
+    List<String> correctAnswers =
+        question.getChoices().stream().map(QuestionChoice::getText).toList();
+    return correctAnswers.containsAll(userAnswer.getAnswers());
+  }
+
+  private boolean isMultipleChoiceCorrect(Question question, QuestionAnswerDTO userAnswer) {
+    List<String> correctAnswers =
+        question.getChoices().stream()
+            .filter(QuestionChoice::isCorrect)
+            .map(QuestionChoice::getText)
+            .toList();
+    return userAnswer.getAnswers().size() == correctAnswers.size()
+        && userAnswer.getAnswers().containsAll(correctAnswers);
+  }
+
+  private boolean isExtendedMatchingCorrect(Question question, QuestionAnswerDTO userAnswer) {
+    for (ExtendedMatchingStatement extendedMatchingStatement :
+        question.getExtendedMatchingStatements()) {
+      int expectedOptionOrder = extendedMatchingStatement.getExtendedMatchingOption().getOrder();
+      int answeredOptionOrder =
+          userAnswer.getExtendedMatchingPairs().get(extendedMatchingStatement.getOrder());
+      if (expectedOptionOrder != answeredOptionOrder) {
         return false;
+      }
     }
+    return true;
+  }
 
+  private record AnswerEvaluation(boolean correct, int pointsGained) {}
 
+  private record AssessmentEvaluation(
+      List<QuestionAnswer> answers, Map<Long, AnswerEvaluation> evaluations) {}
 
   public void auditRunHasDetectionEvent(TrainingRun run) {
     run.setHasDetectionEvent(true);
     trainingRunRepository.save(run);
   }
 
-    /**
-     * Evaluate and store responses to assessment.
-     *
-     * @param trainingRunId      id of training run to be finished.
-     * @param answersToQuestions response to assessment to be evaluated
-     * @throws EntityNotFoundException training run is not found.
-     */
-    public void evaluateResponsesToAssessment(Long trainingRunId, Map<Long, QuestionAnswerDTO> answersToQuestions) {
-        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
-        if (!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
-            throw new BadRequestException("Current level is not assessment level and cannot be evaluated.");
-        }
-        if (trainingRun.isLevelAnswered())
-            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", trainingRunId.getClass(), trainingRunId,
-                    "Current level of the training run has been already answered."));
-        List<QuestionAnswer> userAnswersToQuestions;
-        if (((AssessmentLevel) trainingRun.getCurrentLevel()).getAssessmentType() == AssessmentType.TEST) {
-            userAnswersToQuestions = this.gatherAndEvaluateAnswers(trainingRun, answersToQuestions);
-        } else {
-            userAnswersToQuestions = this.gatherAnswers(trainingRun, answersToQuestions);
-        }
-        trainingRun.setLevelAnswered(true);
-        questionAnswerRepository.saveAll(userAnswersToQuestions);
-        auditEventsService.auditAssessmentAnswersAction(trainingRun, userAnswersToQuestions.toString());
-        auditEventsService.auditLevelCompletedAction(trainingRun);
-    }
-
-    private List<QuestionAnswer> gatherAndEvaluateAnswers(TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
-        int score = 0;
-        List<QuestionAnswer> userAnswersToQuestions = new ArrayList<>();
-        for (Question question : ((AssessmentLevel) trainingRun.getCurrentLevel()).getQuestions()) {
-            QuestionAnswerDTO questionAnswerDTO = answersToQuestions.get(question.getId());
-            if (questionAnswerDTO == null) {
-                throw new BadRequestException("The question '" + question.getText() + "' must be answered.");
-            }
-            userAnswersToQuestions.add(this.createQuestionAnswer(question, trainingRun, answersToQuestions.get(question.getId())));
-            switch (question.getQuestionType()) {
-                case MCQ:
-                    score += evaluateMCQ(question, answersToQuestions.get(question.getId()));
-                    break;
-                case FFQ:
-                    score += evaluateFFQ(question, answersToQuestions.get(question.getId()));
-                    break;
-                case EMI:
-                    score += evaluateEMI(question, answersToQuestions.get(question.getId()));
-                    break;
-                default:
-                    break;
-            }
-        }
-        trainingRun.setCurrentPenalty(trainingRun.getMaxLevelScore() - score);
-        trainingRun.increaseTotalAssessmentScore(score);
-        return userAnswersToQuestions;
-    }
-
-    private int evaluateFFQ(Question question, QuestionAnswerDTO userAnswer) {
-        List<String> correctAnswers = question.getChoices().stream()
-                .map(QuestionChoice::getText)
-                .toList();
-        return correctAnswers.containsAll(userAnswer.getAnswers()) ? question.getPoints() : (-1) * question.getPenalty();
-    }
-
-    private int evaluateMCQ(Question question, QuestionAnswerDTO userAnswer) {
-        List<String> correctAnswers = question.getChoices().stream()
-                .filter(QuestionChoice::isCorrect)
-                .map(QuestionChoice::getText)
-                .toList();
-        return userAnswer.getAnswers().size() == correctAnswers.size() &&
-                userAnswer.getAnswers().containsAll(correctAnswers) ? question.getPoints() : (-1) * question.getPenalty();
-    }
-
-    private int evaluateEMI(Question question, QuestionAnswerDTO userAnswer) {
-        for (ExtendedMatchingStatement extendedMatchingStatement : question.getExtendedMatchingStatements()) {
-            int expectedOptionOrder = extendedMatchingStatement.getExtendedMatchingOption().getOrder();
-            int answeredOptionOrder = userAnswer.getExtendedMatchingPairs().get(extendedMatchingStatement.getOrder());
-            if (expectedOptionOrder != answeredOptionOrder) {
-                return (-1) * question.getPenalty();
-            }
-        }
-        return question.getPoints();
-    }
   public List<QuestionAnswer> getQuestionAnswersByTrainingRunId(Long runId) {
     return questionAnswerRepository.getAllByTrainingRunId(runId);
   }
