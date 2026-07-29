@@ -29,7 +29,7 @@ public class WebClientConfig {
   @Value("${sandbox-service.uri}")
   private String sandboxService;
 
-  @Value("${user-and-group-service.uri}")
+  @Value("${user-and-group-server.uri}")
   private String userAndGroupURI;
 
   @Value("${answers-storage.uri}")
