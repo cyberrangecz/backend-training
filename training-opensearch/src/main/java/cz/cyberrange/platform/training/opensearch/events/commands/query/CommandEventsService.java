@@ -16,7 +16,6 @@ import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,11 +26,6 @@ public class CommandEventsService {
   private static final String INDEX_PATTERN_SANDBOX = "crczp.logs.console.*.sandbox=%s";
   private static final String INDEX_PATTERN_POOL = "crczp.logs.console.pool=%d.*";
   private static final String INDEX_PATTERN_POOL_SANDBOX = "crczp.logs.console.pool=%d.sandbox=%s";
-
-  // actual run logic
-
-  @Value("${opensearch.max-result-window:10000}")
-  private int maxResultWindow;
 
   private final OpenSearchClient openSearchClient;
   private final ObjectMapper objectMapper;
@@ -143,8 +137,7 @@ public class CommandEventsService {
                       .ignoreUnavailable(true)
                       .allowNoIndices(true)
                       .query(query)
-                      .sort(so -> so.field(f -> f.field(TIMESTAMP_STR_FIELD).order(SortOrder.Asc)))
-                      .size(maxResultWindow),
+                      .sort(so -> so.field(f -> f.field(TIMESTAMP_STR_FIELD).order(SortOrder.Asc))),
               ObjectNode.class);
       List<TrainingCommand> commands = new ArrayList<>();
       if (response.hits() != null && response.hits().hits() != null) {

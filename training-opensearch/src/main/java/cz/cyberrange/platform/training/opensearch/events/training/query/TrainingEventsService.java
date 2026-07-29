@@ -17,7 +17,6 @@ import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,9 +31,6 @@ public class TrainingEventsService {
   private static final String DELETE_FAILED_MSG = "OpenSearch delete failed.";
 
   private final OpenSearchClient openSearchClient;
-
-  @Value("${opensearch.max-result-window:10000}")
-  private int maxResultWindow;
 
   @Autowired
   public TrainingEventsService(OpenSearchClient openSearchClient) {
@@ -134,7 +130,6 @@ public class TrainingEventsService {
                     .index(instanceIndex)
                     .ignoreUnavailable(true)
                     .allowNoIndices(true)
-                    .size(maxResultWindow)
                     .sort(
                         sort ->
                             sort.field(field -> field.field(TIMESTAMP_FIELD).order(SortOrder.Asc)))
@@ -150,7 +145,6 @@ public class TrainingEventsService {
                 s.index(indexPattern)
                     .ignoreUnavailable(true)
                     .allowNoIndices(true)
-                    .size(maxResultWindow)
                     .sort(so -> so.field(f -> f.field(TIMESTAMP_FIELD).order(SortOrder.Asc))));
     return executeSearch(searchRequest);
   }
