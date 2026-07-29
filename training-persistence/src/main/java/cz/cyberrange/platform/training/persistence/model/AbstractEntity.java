@@ -30,8 +30,11 @@ public class AbstractEntity<PK extends Serializable> implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
     if (obj instanceof AbstractEntity other) {
-      return id.equals(other.id);
+      return id != null && id.equals(other.id);
     }
     return false;
   }
