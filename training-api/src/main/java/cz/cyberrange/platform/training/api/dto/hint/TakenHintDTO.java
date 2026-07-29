@@ -2,15 +2,11 @@ package cz.cyberrange.platform.training.api.dto.hint;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /** Encapsulates information about hint that was already taken */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "TakenHintDTO",
     description = "A taken brief textual description to aid the participant.")
@@ -27,85 +23,7 @@ public class TakenHintDTO {
       example = "Very good advice")
   private String content;
 
+  @EqualsAndHashCode.Exclude
   @ApiModelProperty(value = "The order of hint in training level", example = "1")
   private int order;
-
-  /**
-   * Gets id.
-   *
-   * @return the id
-   */
-  public Long getId() {
-    return id;
-  }
-
-  /**
-   * Sets id.
-   *
-   * @param id the id
-   */
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  /**
-   * Gets title.
-   *
-   * @return the title
-   */
-  public String getTitle() {
-    return title;
-  }
-
-  /**
-   * Sets title.
-   *
-   * @param title the title
-   */
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
-  /**
-   * Gets content.
-   *
-   * @return the content
-   */
-  public String getContent() {
-    return content;
-  }
-
-  /**
-   * Sets content.
-   *
-   * @param content the content
-   */
-  public void setContent(String content) {
-    this.content = content;
-  }
-
-  public int getOrder() {
-    return order;
-  }
-
-  public void setOrder(int order) {
-    this.order = order;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
-    TakenHintDTO hintDTO = (TakenHintDTO) o;
-
-    if (!id.equals(hintDTO.id)) return false;
-    if (!title.equals(hintDTO.title)) return false;
-    return content.equals(hintDTO.content);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, title, content);
-  }
 }
