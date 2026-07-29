@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
+import cz.cyberrange.platform.training.api.dto.run.TrainingRunBasicDTO;
 import cz.cyberrange.platform.training.api.responses.SandboxAnswersInfo;
 import cz.cyberrange.platform.training.api.responses.VariantAnswer;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
@@ -20,6 +21,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.*;
 import cz.cyberrange.platform.training.service.services.SecurityService;
@@ -290,5 +292,69 @@ public class TrainingRunFacadeTest {
         correctVariantAnswer == null ? trainingLevel.getAnswer() : correctVariantAnswer);
     answerDTO.setVariableName(trainingLevel.getAnswerVariableName());
     return answerDTO;
+  }
+
+  @Test
+  public void findTrainingRunsByIdsAsPrivilegedCallerReturnsUnmaskedSandboxReference() {
+    trainingRun1.setSandboxInstanceRefId("sandbox-own-instance");
+    UserRef otherParticipant = new UserRef();
+    otherParticipant.setId(2L);
+    otherParticipant.setUserRefId(77L);
+    trainingRun2.setParticipantRef(otherParticipant);
+    trainingRun2.setSandboxInstanceRefId("sandbox-other-instance");
+    List<Long> ids = List.of(trainingRun1.getId(), trainingRun2.getId());
+
+    given(trainingRunService.findAllByIds(ids)).willReturn(List.of(trainingRun1, trainingRun2));
+    given(securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)).willReturn(true);
+    given(securityService.getUserRefIdFromUserAndGroup()).willReturn(participant.getUserRefId());
+
+    List<TrainingRunBasicDTO> result = trainingRunFacade.findTrainingRunsByIds(ids);
+
+    assertEquals(trainingRun1.getSandboxInstanceRefId(), result.get(0).getSandboxInstanceRefId());
+    assertEquals(trainingRun2.getSandboxInstanceRefId(), result.get(1).getSandboxInstanceRefId());
+  }
+
+  @Test
+  public void
+      findTrainingRunsByIdsAsNonPrivilegedCallerMasksOtherParticipantsSandboxReferenceStably() {
+    trainingRun1.setSandboxInstanceRefId("sandbox-own-instance");
+    UserRef otherParticipant = new UserRef();
+    otherParticipant.setId(2L);
+    otherParticipant.setUserRefId(77L);
+    trainingRun2.setParticipantRef(otherParticipant);
+    trainingRun2.setSandboxInstanceRefId("sandbox-other-instance");
+    List<Long> ids = List.of(trainingRun1.getId(), trainingRun2.getId());
+
+    given(trainingRunService.findAllByIds(ids)).willReturn(List.of(trainingRun1, trainingRun2));
+    given(securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)).willReturn(false);
+    given(securityService.isOrganizerOfGivenTrainingRuns(ids)).willReturn(false);
+    given(securityService.getUserRefIdFromUserAndGroup()).willReturn(participant.getUserRefId());
+
+    List<TrainingRunBasicDTO> firstResult = trainingRunFacade.findTrainingRunsByIds(ids);
+    List<TrainingRunBasicDTO> secondResult = trainingRunFacade.findTrainingRunsByIds(ids);
+
+    assertEquals(
+        trainingRun1.getSandboxInstanceRefId(), firstResult.get(0).getSandboxInstanceRefId());
+    assertNotEquals(
+        trainingRun2.getSandboxInstanceRefId(), firstResult.get(1).getSandboxInstanceRefId());
+    assertEquals(
+        firstResult.get(1).getSandboxInstanceRefId(),
+        secondResult.get(1).getSandboxInstanceRefId());
+  }
+
+  @Test
+  public void findTrainingRunsByIdsWithAbsentSandboxReferenceKeepsItAbsentForNonPrivilegedCaller() {
+    trainingRun1.setSandboxInstanceRefId(null);
+    List<Long> ids = List.of(trainingRun1.getId());
+
+    given(trainingRunService.findAllByIds(ids)).willReturn(List.of(trainingRun1));
+    given(securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)).willReturn(false);
+    given(securityService.isOrganizerOfGivenTrainingRuns(ids)).willReturn(false);
+    given(securityService.getUserRefIdFromUserAndGroup())
+        .willReturn(participant.getUserRefId() + 1);
+
+    List<TrainingRunBasicDTO> result = trainingRunFacade.findTrainingRunsByIds(ids);
+
+    assertNull(result.get(0).getSandboxInstanceRefId());
   }
 }
