@@ -1,9 +1,8 @@
 package cz.cyberrange.platform.training.service.utils;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 
 /**
  * Utility for one-way masking of sandbox identifiers for callers not authorized to see real sandbox
@@ -11,6 +10,8 @@ import java.util.HexFormat;
  * the same hash value, but the original UUID cannot be recovered.
  */
 public final class SandboxIdHasher {
+
+  private static final HashFunction SHA_256 = Hashing.sha256();
 
   private SandboxIdHasher() {}
 
@@ -25,12 +26,6 @@ public final class SandboxIdHasher {
     if (sandboxId == null) {
       return null;
     }
-    try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      byte[] hashBytes = digest.digest(sandboxId.getBytes(StandardCharsets.UTF_8));
-      return HexFormat.of().formatHex(hashBytes);
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("SHA-256 algorithm is unavailable on this JVM", e);
-    }
+    return SHA_256.hashString(sandboxId, StandardCharsets.UTF_8).toString();
   }
 }
