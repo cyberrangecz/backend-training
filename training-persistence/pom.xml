@@ -17,6 +17,11 @@
             <artifactId>training-api</artifactId>
             <version>${app-version}</version>
         </dependency>
+        <dependency>
+            <groupId>cz.cybersecurityhub.maven</groupId>
+            <artifactId>training-opensearch</artifactId>
+            <version>${app-version}</version>
+        </dependency>
         <!--SPRING BOOT STARTERS-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
