@@ -18,7 +18,6 @@ import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
-import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.opensearch.events.commands.model.TrainingCommand;
 import cz.cyberrange.platform.training.opensearch.events.commands.query.CommandEventsService;
 import cz.cyberrange.platform.training.opensearch.events.training.model.AbstractAuditPOJO;
@@ -44,7 +43,6 @@ import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
-import cz.cyberrange.platform.training.service.services.api.TrainingFeedbackApiService;
 import cz.cyberrange.platform.training.service.services.detection.CheatingDetectionService;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -67,7 +65,6 @@ import org.springframework.util.StringUtils;
 @Service
 public class TrainingInstanceFacade {
 
-    private final TrainingFeedbackApiService trainingFeedbackApiService;
   private final TrainingInstanceService trainingInstanceService;
   private final TrainingDefinitionService trainingDefinitionService;
   private final TrainingRunService trainingRunService;
@@ -133,7 +130,19 @@ public class TrainingInstanceFacade {
     this.trainingEventAccessService = trainingEventAccessService;
   }
 
-        this.trainingFeedbackApiService = trainingFeedbackApiService;
+  /**
+   * Finds specific Training Instance by id
+   *
+   * @param id of a Training Instance that would be returned
+   * @return specific {@link TrainingInstanceDTO} by id
+   */
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenTrainingInstance(#id)")
+  @TransactionalRO
+  public TrainingInstanceDTO findById(Long id) {
+    return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
+  }
 
   /**
    * Get Training instance access token by pool id.
@@ -647,22 +656,6 @@ public class TrainingInstanceFacade {
       throw new BadRequestException("poolId is required for COMMAND event type");
     }
 
-    /**
-     * Finds specific Training Instance by id
-     *
-     * @param id of a Training Instance that would be returned
-     * @return specific {@link TrainingInstanceDTO} by id
-     */
-    @PreAuthorize("hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#id)")
-    @TransactionalRO
-    public TrainingInstanceDTO findById(Long id) {
-        TrainingInstanceDTO trainingInstanceDTO = trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
-        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingInstanceDTO.getTrainingDefinition().getId());
-        trainingInstanceDTO.getTrainingDefinition().setHasReferenceSolution(levels.stream()
-                .filter(level -> level.getClass() == TrainingLevel.class)
-                .anyMatch(trainingLevel -> !((TrainingLevel) trainingLevel).getReferenceSolution().isEmpty()));
-        return trainingInstanceDTO;
     List<AbstractEventDTO> mappedEvents;
     if (isCommandEventType) {
       List<TrainingCommand> commands =
@@ -699,6 +692,5 @@ public class TrainingInstanceFacade {
       throw new BadRequestException(
           "The sandbox definition cannot be set in the training instance if the local environment is disabled.");
     }
-        trainingFeedbackApiService.deleteAllGraphsByTrainingInstance(trainingInstanceId);
   }
 }

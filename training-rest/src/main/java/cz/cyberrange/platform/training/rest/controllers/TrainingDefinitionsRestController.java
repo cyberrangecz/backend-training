@@ -21,7 +21,6 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
@@ -1241,29 +1240,6 @@ public class TrainingDefinitionsRestController {
     @JsonProperty(required = true)
     @ApiModelProperty(value = "Retrieved Training Instances from databases.")
     private List<UserRefDTO> content;
-
-
-    /**
-     * Check if the reference solution is defined for the given training definition.
-     *
-     * @param definitionId the training definition id
-     * @return true if at least one of the training levels has reference solution defined, false otherwise.
-     */
-    @ApiOperation(httpMethod = "GET",
-            value = "Get boolean value if the reference solution is defined or not.",
-            response = Boolean.class,
-            nickname = "hasReferenceSolution",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "True - reference solution is defined, false - otherwise.", response = VisualizationInfoDTO.class),
-            @ApiResponse(code = 404, message = "Training definition not found.", response = ApiError.class)
-    })
-    @GetMapping(path = "/{definitionId}/has-reference-solution", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Boolean> hasReferenceSolution(
-            @ApiParam(value = "Training Definition ID", required = true) @PathVariable("definitionId") Long definitionId) {
-        return ResponseEntity.ok(trainingDefinitionFacade.hasReferenceSolution(definitionId));
-    }
 
     @JsonProperty(required = true)
     @ApiModelProperty(
