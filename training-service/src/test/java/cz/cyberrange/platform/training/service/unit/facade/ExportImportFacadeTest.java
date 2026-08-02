@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
@@ -21,7 +20,6 @@ import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
-import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.facade.ExportImportFacade;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.*;
@@ -29,11 +27,9 @@ import cz.cyberrange.platform.training.service.services.ExportImportService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
-import java.io.ByteArrayInputStream;
+import cz.cyberrange.platform.training.service.services.score.ScoreReportService;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -72,6 +68,7 @@ public class ExportImportFacadeTest {
   @MockBean private CommandEventsService commandEventsService;
   @MockBean private TrainingEventsService trainingEventsService;
   @MockBean private EventMapper eventMapper;
+  @MockBean private ScoreReportService scoreReportService;
 
   private TrainingDefinition trainingDefinition;
   private TrainingDefinition trainingDefinitionImported;
@@ -79,10 +76,6 @@ public class ExportImportFacadeTest {
   private TrainingLevel trainingLevel;
   private InfoLevel infoLevel;
   private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
-  private TrainingInstance exportTrainingInstance;
-  private TrainingRun[] trainingRuns;
-  private UserRefDTO[] userRefDTOS;
-  private final String DELIMITER = ";";
 
   @BeforeEach
   public void init() {
@@ -99,7 +92,8 @@ public class ExportImportFacadeTest {
             objectMapper,
             commandEventsService,
             trainingEventsService,
-            eventMapper);
+            eventMapper,
+            scoreReportService);
 
     assessmentLevel = testDataFactory.getTest();
     assessmentLevel.setId(1L);
@@ -135,27 +129,6 @@ public class ExportImportFacadeTest {
 
     TrainingRun trainingRun = testDataFactory.getFinishedRun();
     trainingRun.setTrainingInstance(trainingInstance);
-
-    exportTrainingInstance = testDataFactory.getConcludedInstance();
-    exportTrainingInstance.setId(18L);
-    UserRef user = testDataFactory.getUserRef1();
-    UserRef user2 = testDataFactory.getUserRef2();
-    trainingRuns = new TrainingRun[2];
-    userRefDTOS = new UserRefDTO[2];
-    userRefDTOS[0] = testDataFactory.getUserRefDTO1();
-    userRefDTOS[1] = testDataFactory.getUserRefDTO2();
-
-    TrainingRun trainingRun2 = testDataFactory.getFinishedRun();
-    trainingRuns[0] = trainingRun2;
-    trainingRun2.setTrainingInstance(exportTrainingInstance);
-    trainingRun2.setTotalTrainingScore(131);
-    trainingRun2.setParticipantRef(user);
-
-    TrainingRun trainingRun3 = testDataFactory.getFinishedRun();
-    trainingRuns[1] = trainingRun3;
-    trainingRun3.setTrainingInstance(exportTrainingInstance);
-    trainingRun3.setTotalTrainingScore(10);
-    trainingRun3.setParticipantRef(user2);
   }
 
   @Test
@@ -201,37 +174,6 @@ public class ExportImportFacadeTest {
     deepEqualsTrainingDefinitionDTO(trainingDefinitionByIdDTOImported, trainingDefinitionByIdDTO);
   }
 
-  @Test
-  public void exportUserScoreFromTrainingInstance() {
-    given(exportImportService.findRunsByInstanceId(exportTrainingInstance.getId()))
-        .willReturn(Arrays.stream(trainingRuns).collect(Collectors.toSet()));
-    given(userService.getUserRefDTOByUserRefId(trainingRuns[0].getParticipantRef().getUserRefId()))
-        .willReturn(userRefDTOS[0]);
-    given(userService.getUserRefDTOByUserRefId(trainingRuns[1].getParticipantRef().getUserRefId()))
-        .willReturn(userRefDTOS[1]);
-
-    FileToReturnDTO exportedFile =
-        exportImportFacade.exportUserScoreFromTrainingInstance(exportTrainingInstance.getId());
-    String header = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
-    String expectedString = getCSV(trainingRuns[0]) + getCSV(trainingRuns[1]);
-    byte[] expectedResult = (header + expectedString).getBytes(StandardCharsets.UTF_8);
-    // since the buffer will be 0-initialized, we create another similar-sized buffer for easy
-    // comparison
-    byte[] expected = new byte[1024];
-    System.arraycopy(expectedResult, 0, expected, 0, expectedResult.length);
-    byte[] buffer = new byte[1024];
-
-    try (ByteArrayInputStream bais = new ByteArrayInputStream(exportedFile.getContent())) {
-      assertEquals(
-          "training_instance-id" + exportTrainingInstance.getId() + "-scores",
-          exportedFile.getTitle());
-      bais.read(buffer);
-      assertArrayEquals(expected, buffer);
-    } catch (IOException ex) {
-      fail();
-    }
-  }
-
   private void deepEqualsTrainingDefinitionDTO(
       TrainingDefinitionByIdDTO t1, TrainingDefinitionByIdDTO t2) {
     assertEquals(t1.getId(), t2.getId());
@@ -240,16 +182,5 @@ public class ExportImportFacadeTest {
     assertEquals(t1.getTitle(), t2.getTitle());
     assertEquals(t1.getBetaTestingGroupId(), t2.getBetaTestingGroupId());
     assertEquals(t1.getLevels(), t2.getLevels());
-  }
-
-  private String getCSV(TrainingRun trainingRun) {
-    return trainingRun.getTrainingInstance().getId()
-        + DELIMITER
-        + userService
-            .getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId())
-            .getUserRefSub()
-        + DELIMITER
-        + trainingRun.getTotalTrainingScore()
-        + System.lineSeparator();
   }
 }

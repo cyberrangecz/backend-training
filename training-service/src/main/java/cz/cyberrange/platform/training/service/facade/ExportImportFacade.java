@@ -19,6 +19,7 @@ import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
+import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.TDState;
@@ -57,10 +58,10 @@ import cz.cyberrange.platform.training.service.services.ExportImportService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
+import cz.cyberrange.platform.training.service.services.score.ScoreReportService;
 import cz.cyberrange.platform.training.service.utils.AbstractFileExtensions;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,6 +78,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /** The type Export import facade. */
@@ -90,8 +92,6 @@ public class ExportImportFacade {
   private static final String RUNS_FOLDER = "training_runs";
   private static final String ASSESSMENTS_ANSWERS_FOLDER = "assessments_answers";
 
-  private static final String DELIMITER = ";";
-
   private final ExportImportService exportImportService;
   private final TrainingDefinitionService trainingDefinitionService;
   private final SandboxApiService sandboxApiService;
@@ -103,6 +103,7 @@ public class ExportImportFacade {
   private final CommandEventsService commandEventsService;
   private final TrainingEventsService trainingEventsService;
   private final EventMapper eventMapper;
+  private final ScoreReportService scoreReportService;
 
   /**
    * Instantiates a new Export import facade.
@@ -114,6 +115,7 @@ public class ExportImportFacade {
    * @param levelMapper the level mapper
    * @param trainingDefinitionMapper the training definition mapper
    * @param objectMapper the object mapper
+   * @param scoreReportService the score report service
    */
   @Autowired
   public ExportImportFacade(
@@ -127,7 +129,8 @@ public class ExportImportFacade {
       ObjectMapper objectMapper,
       CommandEventsService commandEventsService,
       TrainingEventsService trainingEventsService,
-      EventMapper eventMapper) {
+      EventMapper eventMapper,
+      ScoreReportService scoreReportService) {
     this.exportImportService = exportImportService;
     this.trainingDefinitionService = trainingDefinitionService;
     this.sandboxApiService = sandboxApiService;
@@ -139,6 +142,7 @@ public class ExportImportFacade {
     this.commandEventsService = commandEventsService;
     this.trainingEventsService = trainingEventsService;
     this.eventMapper = eventMapper;
+    this.scoreReportService = scoreReportService;
   }
 
   /**
@@ -296,52 +300,38 @@ public class ExportImportFacade {
   }
 
   /**
-   * Export all user scores from training instance
+   * Reports the standing of every participant of a training instance, with per-level scores and
+   * activity counts derived from the audit events of their runs.
    *
    * @param trainingInstanceId id of the training instance
-   * @return csv file containing all user score from the instance, {@link FileToReturnDTO}
+   * @return the report of the instance, {@link TrainingInstanceScoreReportDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
-  @TransactionalRO
-  public FileToReturnDTO exportUserScoreFromTrainingInstance(Long trainingInstanceId) {
-    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-      Set<TrainingRun> trainingRuns = exportImportService.findRunsByInstanceId(trainingInstanceId);
-      String csvHeader =
-          "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
-      baos.write(csvHeader.getBytes(StandardCharsets.UTF_8));
-
-      for (TrainingRun trainingRun : trainingRuns) {
-        baos.write(getCSVString(trainingRun).getBytes(StandardCharsets.UTF_8));
-      }
-
-      FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
-      fileToReturnDTO.setContent(baos.toByteArray());
-      fileToReturnDTO.setTitle("training_instance-id" + trainingInstanceId + "-scores");
-      return fileToReturnDTO;
-    } catch (IOException ex) {
-      throw new InternalServerErrorException(
-          "The .csv file was not created due to some processing error.", ex);
-    }
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  public TrainingInstanceScoreReportDTO exportUserScoreFromTrainingInstance(
+      Long trainingInstanceId) {
+    Set<Long> participantRefIds = scoreReportService.findParticipantRefIds(trainingInstanceId);
+    return scoreReportService.createReport(
+        trainingInstanceId, resolveParticipants(participantRefIds), System.currentTimeMillis());
   }
 
   /**
-   * Creates a CSV line from a training run in the format
-   * "trainingInstanceId;userRefSub;totalTrainingScore"
+   * Resolves trainees in a single call to the user management service. Deliberately called outside
+   * any database transaction, so that the external round trip does not hold a connection open.
    *
-   * @param trainingRun training run to use
-   * @return String with the specified format
+   * @param participantRefIds user reference ids of the trainees to resolve
+   * @return participant keyed by user reference id, omitting those the service did not return
    */
-  private String getCSVString(TrainingRun trainingRun) {
-    UserRefDTO userRefDTO =
-        userService.getUserRefDTOByUserRefId(trainingRun.getParticipantRef().getUserRefId());
-    return trainingRun.getTrainingInstance().getId()
-        + DELIMITER
-        + userRefDTO.getUserRefSub()
-        + DELIMITER
-        + trainingRun.getTotalTrainingScore()
-        + System.lineSeparator();
+  private Map<Long, UserRefDTO> resolveParticipants(Set<Long> participantRefIds) {
+    if (participantRefIds.isEmpty()) {
+      return Map.of();
+    }
+    return userService.getUsersRefDTOByGivenUserIds(List.copyOf(participantRefIds)).stream()
+        .collect(
+            Collectors.toMap(
+                UserRefDTO::getUserRefId, participant -> participant, (first, duplicate) -> first));
   }
 
   /**

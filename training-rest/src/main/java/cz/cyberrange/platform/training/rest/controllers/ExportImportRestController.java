@@ -7,6 +7,7 @@ import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDT
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
+import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.service.facade.ExportImportFacade;
@@ -17,7 +18,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
-import java.util.List;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -207,20 +207,20 @@ public class ExportImportRestController {
    * Export user scores from a specific training instance
    *
    * @param trainingInstanceId id of the training instance
-   * @return CSV file containing user scores
+   * @return the standing of every participant of the instance
    */
   @ApiOperation(
       httpMethod = "GET",
       value = "Export training instance scores",
-      response = String.class,
+      response = TrainingInstanceScoreReportDTO.class,
       nickname = "exportTrainingInstanceScores",
-      produces = MediaType.TEXT_PLAIN_VALUE)
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiResponses(
       value = {
         @ApiResponse(
             code = 200,
             message = "Training instance score exported",
-            response = String.class),
+            response = TrainingInstanceScoreReportDTO.class),
         @ApiResponse(
             code = 404,
             message = "Training instance not found.",
@@ -230,34 +230,13 @@ public class ExportImportRestController {
             message = "Unexpected condition was encountered.",
             response = ApiError.class)
       })
-  @GetMapping(path = "/exports/training-instances/{instanceId}/scores", produces = "text/plain")
-  public ResponseEntity<byte[]> exportTrainingInstanceScores(
+  @GetMapping(
+      path = "/exports/training-instances/{instanceId}/scores",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<TrainingInstanceScoreReportDTO> exportTrainingInstanceScores(
       @ApiParam(value = "Id of training instance", required = true) @PathVariable("instanceId")
           Long trainingInstanceId) {
-    FileToReturnDTO file =
-        exportImportFacade.exportUserScoreFromTrainingInstance(trainingInstanceId);
-    HttpHeaders header =
-        fileHttpHeader(
-            new MediaType("text", "plain"),
-            file.getTitle() + AbstractFileExtensions.CSV_FILE_EXTENSION,
-            file.getContent().length);
-    return new ResponseEntity<>(file.getContent(), header, HttpStatus.OK);
-  }
-
-  /**
-   * Create a http header for file exports
-   *
-   * @param type media type of the file
-   * @param fileName name of the file
-   * @param length size of the file
-   * @return corresponding {@link HttpHeaders}
-   */
-  private HttpHeaders fileHttpHeader(MediaType type, String fileName, int length) {
-    HttpHeaders header = new HttpHeaders();
-    header.setContentType(type);
-    header.setAccessControlExposeHeaders(List.of("Content-Disposition"));
-    header.set("Content-Disposition", "inline; filename=" + fileName);
-    header.setContentLength(length);
-    return header;
+    return ResponseEntity.ok(
+        exportImportFacade.exportUserScoreFromTrainingInstance(trainingInstanceId));
   }
 }

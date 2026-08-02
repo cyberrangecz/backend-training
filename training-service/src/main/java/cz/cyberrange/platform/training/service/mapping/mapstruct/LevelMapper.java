@@ -127,6 +127,7 @@ public interface LevelMapper extends ParentMapper {
   TrainingLevelDTO mapToTrainingLevelDTO(TrainingLevel entity);
 
   @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
+  @Mapping(source = "hints", target = "hints", qualifiedByName = "hintsToBasicDtoSet")
   TrainingLevelBasicDTO mapToTrainingLevelBasicDTO(TrainingLevel entity);
 
   @Mapping(source = "mitreTechniques", target = "mitreTechniques", qualifiedByName = "ignoreIds")

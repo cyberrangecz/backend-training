@@ -40,6 +40,10 @@ public interface HintMapper extends ParentMapper {
   @IterableMapping(qualifiedByName = "hintToBasicDTO")
   List<HintBasicDTO> mapToBasicDtoList(List<Hint> entities);
 
+  @Named("hintsToBasicDtoSet")
+  @IterableMapping(qualifiedByName = "hintToBasicDTO")
+  Set<HintBasicDTO> mapToBasicDtoSet(Collection<Hint> entities);
+
   @Mapping(source = "hintId", target = "id")
   @Mapping(source = "hintContent", target = "content")
   @Mapping(source = "hintTitle", target = "title")
