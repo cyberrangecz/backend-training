@@ -2,6 +2,7 @@ package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
+import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
@@ -28,6 +29,9 @@ public class TrainingDefinitionDTO extends TrainingDefinitionBasicDTO {
           "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ",
       example = "")
   private String[] outcomes;
+
+  @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
+  private TDState state;
 
   @ApiModelProperty(
       value = "Group of organizers who is allowed to see the training definition.",
