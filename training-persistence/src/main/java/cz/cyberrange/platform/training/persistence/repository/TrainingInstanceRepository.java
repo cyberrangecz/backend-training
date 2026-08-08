@@ -58,6 +58,18 @@ public interface TrainingInstanceRepository
   List<TrainingInstance> findAllByTrainingDefinitionId(@Param("trainingDefId") Long trainingDefId);
 
   /**
+   * Find the ids of those given training definitions that have at least one training instance
+   * ending after the given time.
+   *
+   * @param trainingDefinitionIds the training definition ids to restrict the lookup to
+   * @param time the moment an instance has to end after
+   * @return the ids of the matching {@link TrainingDefinition}s
+   */
+  List<Long> findTrainingDefinitionIdsWithInstanceEndingAfter(
+      @Param("trainingDefinitionIds") Collection<Long> trainingDefinitionIds,
+      @Param("time") LocalDateTime time);
+
+  /**
    * Find all training instances
    *
    * @param predicate the predicate

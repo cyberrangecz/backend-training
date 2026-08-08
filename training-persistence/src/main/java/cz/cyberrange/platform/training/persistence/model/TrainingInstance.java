@@ -71,6 +71,11 @@ import javax.persistence.*;
       query =
           "SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId"),
   @NamedQuery(
+      name = "TrainingInstance.findTrainingDefinitionIdsWithInstanceEndingAfter",
+      query =
+          "SELECT DISTINCT td.id FROM TrainingInstance ti INNER JOIN ti.trainingDefinition td "
+              + "WHERE td.id IN :trainingDefinitionIds AND ti.endTime > :time"),
+  @NamedQuery(
       name = "TrainingInstance.existsAnyForTrainingDefinition",
       query =
           "SELECT (COUNT(ti) > 0) FROM TrainingInstance ti "

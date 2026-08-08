@@ -12,7 +12,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /** Encapsulates information about Training Definition */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
 @ToString

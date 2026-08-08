@@ -19,6 +19,7 @@ import cz.cyberrange.platform.training.service.startup.DefaultLevelsLoader;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -643,6 +644,36 @@ public class TrainingDefinitionService {
   }
 
   /**
+   * Finds all levels belonging to any of the given definitions.
+   *
+   * @param definitionIds ids of the definitions
+   * @return list of {@link AbstractLevel} associated with any of the given training definitions,
+   *     ordered by level order
+   */
+  public List<AbstractLevel> findAllLevelsFromDefinitions(Collection<Long> definitionIds) {
+    return definitionIds.isEmpty()
+        ? List.of()
+        : abstractLevelRepository.findAllLevelsByTrainingDefinitionIdIn(definitionIds);
+  }
+
+  /**
+   * Finds which of the given definitions still have a training instance running at or after the
+   * given moment.
+   *
+   * @param definitionIds ids of the definitions to restrict the lookup to
+   * @param time the moment an instance has to end after
+   * @return ids of the definitions with at least one such instance
+   */
+  public Set<Long> findDefinitionIdsWithInstanceEndingAfter(
+      Collection<Long> definitionIds, LocalDateTime time) {
+    return definitionIds.isEmpty()
+        ? Set.of()
+        : new HashSet<>(
+            trainingInstanceRepository.findTrainingDefinitionIdsWithInstanceEndingAfter(
+                definitionIds, time));
+  }
+
+  /**
    * Finds specific level by id with associated training definition
    *
    * @param levelId - id of wanted level
@@ -674,17 +705,6 @@ public class TrainingDefinitionService {
                 new EntityNotFoundException(
                     new EntityErrorDetail(
                         AbstractLevel.class, "id", levelId.getClass(), levelId, LEVEL_NOT_FOUND)));
-  }
-
-  /**
-   * Find all training instances associated with training definition by id.
-   *
-   * @param id the id of training definition
-   * @return the list of all {@link TrainingInstance}s associated with wanted {@link
-   *     TrainingDefinition}
-   */
-  public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
-    return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
   }
 
   /**

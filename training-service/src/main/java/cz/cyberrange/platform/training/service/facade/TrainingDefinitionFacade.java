@@ -33,7 +33,6 @@ import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.BetaTestingGroup;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
-import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
@@ -55,6 +54,7 @@ import cz.cyberrange.platform.training.service.services.UserService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -158,6 +158,15 @@ public class TrainingDefinitionFacade {
     return levels.stream().map(this.levelMapper::mapToDTO).collect(Collectors.toList());
   }
 
+  private Map<Long, List<AbstractLevelBasicDTO>> gatherBasicLevelsByDefinitionId(
+      Collection<Long> definitionIds) {
+    return trainingDefinitionService.findAllLevelsFromDefinitions(definitionIds).stream()
+        .collect(
+            Collectors.groupingBy(
+                level -> level.getTrainingDefinition().getId(),
+                Collectors.mapping(this.levelMapper::mapToBasicDTO, Collectors.toList())));
+  }
+
   /**
    * Find all Training Definitions.
    *
@@ -181,8 +190,21 @@ public class TrainingDefinitionFacade {
       Page<TrainingDefinition> trainingDefinitionPage) {
     PageResultResource<TrainingDefinitionDTO> resource =
         trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionPage);
+    List<Long> definitionIds =
+        resource.getContent().stream()
+            .map(TrainingDefinitionBasicDTO::getId)
+            .collect(Collectors.toList());
+    Map<Long, List<AbstractLevelBasicDTO>> levelsByDefinitionId =
+        gatherBasicLevelsByDefinitionId(definitionIds);
+    Set<Long> definitionIdsWithRunningInstance =
+        trainingDefinitionService.findDefinitionIdsWithInstanceEndingAfter(
+            definitionIds, LocalDateTime.now(Clock.systemUTC()));
     for (TrainingDefinitionDTO trainingDefinitionDTO : resource.getContent()) {
-      trainingDefinitionDTO.setCanBeArchived(checkIfCanBeArchived(trainingDefinitionDTO.getId()));
+      trainingDefinitionDTO.setLevels(
+          levelsByDefinitionId.getOrDefault(
+              trainingDefinitionDTO.getId(), Collections.emptyList()));
+      trainingDefinitionDTO.setCanBeArchived(
+          !definitionIdsWithRunningInstance.contains(trainingDefinitionDTO.getId()));
     }
     return resource;
   }
@@ -642,11 +664,15 @@ public class TrainingDefinitionFacade {
   public List<TrainingDefinitionBasicDTO> findTrainingDefinitionsByIds(List<Long> ids) {
     List<TrainingDefinitionBasicDTO> definitions =
         trainingDefinitionMapper.mapToBasicDtoList(trainingDefinitionService.findAllByIds(ids));
+    Map<Long, List<AbstractLevelBasicDTO>> levelsByDefinitionId =
+        gatherBasicLevelsByDefinitionId(
+            definitions.stream()
+                .map(TrainingDefinitionBasicDTO::getId)
+                .collect(Collectors.toList()));
     definitions.forEach(
         definition ->
             definition.setLevels(
-                levelMapper.mapToBasicDtoList(
-                    trainingDefinitionService.findAllLevelsFromDefinition(definition.getId()))));
+                levelsByDefinitionId.getOrDefault(definition.getId(), Collections.emptyList())));
     return definitions;
   }
 
@@ -676,17 +702,6 @@ public class TrainingDefinitionFacade {
           + "or @securityService.participatesInLevelsWithHints(#ids)")
   public List<HintBasicDTO> findHintsByIds(List<Long> ids) {
     return hintMapper.mapToBasicDtoList(trainingDefinitionService.findAllHintsByIds(ids));
-  }
-
-  private boolean checkIfCanBeArchived(Long definitionId) {
-    List<TrainingInstance> instances =
-        trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(definitionId);
-    for (TrainingInstance trainingInstance : instances) {
-      if (trainingInstance.getEndTime().isAfter(LocalDateTime.now(Clock.systemUTC()))) {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**

@@ -27,6 +27,17 @@ public interface AbstractLevelRepository
       @Param("trainingDefinitionId") Long trainingDefinitionId);
 
   /**
+   * Find all levels belonging to any of the given training definitions, ordered by training
+   * definition and by level order within it.
+   *
+   * @param trainingDefinitionIds the training definition ids
+   * @return list of {@link AbstractLevel}s associated with any of the given {@link
+   *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition}s
+   */
+  List<AbstractLevel> findAllLevelsByTrainingDefinitionIdIn(
+      @Param("trainingDefinitionIds") Collection<Long> trainingDefinitionIds);
+
+  /**
    * Find all levels by level ids.
    *
    * @param levelIds the ids of the levels
