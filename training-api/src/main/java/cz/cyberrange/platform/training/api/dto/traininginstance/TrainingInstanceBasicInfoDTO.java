@@ -5,14 +5,10 @@ import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about Training Instance */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(value = "TrainingInstanceBasicInfoDTO")
 public class TrainingInstanceBasicInfoDTO {
 

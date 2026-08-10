@@ -8,15 +8,13 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 /** Encapsulates information about Training Instance */
+@Data
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
 @ToString(callSuper = true)
 @ApiModel(
     value = "TrainingInstanceDTO",

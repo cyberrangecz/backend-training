@@ -5,13 +5,13 @@ import cz.cyberrange.platform.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /** Encapsulates information needed to update info level. */
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
 public class InfoLevelUpdateDTO extends AbstractLevelUpdateDTO {

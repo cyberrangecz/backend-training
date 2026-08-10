@@ -6,17 +6,15 @@ import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
  * Encapsulates information about Training Definition including its authoring and lifecycle data.
  */
+@Data
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
 @ToString(callSuper = true)
 @ApiModel(value = "TrainingDefinitionDTO", description = "A blueprint of abstract levels.")
 public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {

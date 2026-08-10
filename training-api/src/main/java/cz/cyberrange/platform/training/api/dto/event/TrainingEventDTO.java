@@ -5,14 +5,12 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
+@Data
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
 @ToString(callSuper = true)
 @ApiModel(value = "TrainingEventDTO", description = "Parent class for all training audit events")
 @JsonTypeInfo(

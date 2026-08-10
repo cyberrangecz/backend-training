@@ -7,14 +7,10 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about Training Instance, intended for edit of the instance. */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(value = "TrainingInstanceUpdateDTO", description = "Training Instance to update.")
 public class TrainingInstanceUpdateDTO {
 

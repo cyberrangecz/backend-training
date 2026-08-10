@@ -4,14 +4,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Set;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information needed for update of Beta testing group */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "BetaTestingGroupUpdateDTO",
     description = "BetaTesting group to update. (Deprecated)")

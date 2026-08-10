@@ -14,19 +14,13 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /**
  * Encapsulates information about abstract level. Extended by {@link AssessmentLevelDTO}, {@link
  * TrainingLevelDTO}, {@link AccessLevelUpdateDTO} and {@link InfoLevelDTO}
  */
-@EqualsAndHashCode
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "AbstractLevelUpdateDTO",
     subTypes = {

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,6 +30,7 @@ class MitreTechniqueMapperTest {
 
   private static final Long ENTITY_ID = 42L;
   private static final String TECHNIQUE_KEY = "T1548.001";
+  private static final String OTHER_TECHNIQUE_KEY = "T1548.002";
 
   private MitreTechniqueMapper sut;
 
@@ -267,8 +269,8 @@ class MitreTechniqueMapperTest {
   class MapToListDTOIgnoreIds {
 
     @Test
-    @DisplayName("should map entities to DTOs with null ids")
-    void shouldMapEntitiesToDTOsWithNullIds() {
+    @DisplayName("should collapse entities sharing a technique key into one DTO with a null id")
+    void shouldCollapseEntitiesSharingTechniqueKey() {
       List<MitreTechnique> entities = new ArrayList<>();
       entities.add(entity);
       entities.add(entity);
@@ -276,12 +278,29 @@ class MitreTechniqueMapperTest {
       Set<MitreTechniqueDTO> result = sut.mapToListDTOIgnoreIds(entities);
 
       assertNotNull(result);
-      assertEquals(2, result.size());
+      assertEquals(1, result.size());
       result.forEach(
           dtoItem -> {
             assertNull(dtoItem.getId());
             assertEquals(TECHNIQUE_KEY, dtoItem.getTechniqueKey());
           });
+    }
+
+    @Test
+    @DisplayName("should map entities with distinct technique keys to distinct DTOs with null ids")
+    void shouldMapEntitiesWithDistinctTechniqueKeys() {
+      MitreTechnique otherEntity = new MitreTechnique();
+      otherEntity.setId(99L);
+      otherEntity.setTechniqueKey(OTHER_TECHNIQUE_KEY);
+
+      Set<MitreTechniqueDTO> result = sut.mapToListDTOIgnoreIds(List.of(entity, otherEntity));
+
+      assertNotNull(result);
+      assertEquals(2, result.size());
+      result.forEach(dtoItem -> assertNull(dtoItem.getId()));
+      assertEquals(
+          Set.of(TECHNIQUE_KEY, OTHER_TECHNIQUE_KEY),
+          result.stream().map(MitreTechniqueDTO::getTechniqueKey).collect(Collectors.toSet()));
     }
 
     @Test

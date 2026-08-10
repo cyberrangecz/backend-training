@@ -7,15 +7,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @ApiModel(
     value = "CheatingDetectionDTO",
     description = "Basic information about cheating detection.")

@@ -3,16 +3,10 @@ package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates basic information about Training Definition. */
-@EqualsAndHashCode
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "TrainingDefinitionInfoDTO",
     description = "Basic training definition information.")

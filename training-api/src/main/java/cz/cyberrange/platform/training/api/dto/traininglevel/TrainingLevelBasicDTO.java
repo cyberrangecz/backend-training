@@ -8,12 +8,12 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @ApiModel(
     value = "TrainingLevelBasicDTO",

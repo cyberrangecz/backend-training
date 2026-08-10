@@ -2,15 +2,9 @@ package cz.cyberrange.platform.training.api.dto.export;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @ApiModel(value = "AttachmentExportDTO", description = "An exported attachment of training level.")
 public class AttachmentExportDTO {
 

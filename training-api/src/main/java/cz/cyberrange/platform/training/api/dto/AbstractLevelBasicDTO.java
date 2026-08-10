@@ -8,16 +8,10 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelBasicD
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Contains generally safe, descriptive-only data accessible by both organizers and trainees. */
-@EqualsAndHashCode
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "AbstractLevelBasicDTO",
     subTypes = {

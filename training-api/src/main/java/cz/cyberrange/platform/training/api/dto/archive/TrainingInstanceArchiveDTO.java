@@ -7,17 +7,13 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import java.util.Set;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /** Encapsulates information about Training instance. Used for archiving */
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @ApiModel(
     value = "TrainingInstanceArchiveDTO",
     description =

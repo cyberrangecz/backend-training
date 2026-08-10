@@ -5,15 +5,11 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /** Encapsulates information about training definition and its levels. */
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 @ApiModel(
     value = "ExportTrainingDefinitionAndLevelsDTO",

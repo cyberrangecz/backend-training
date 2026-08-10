@@ -6,20 +6,14 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * One training run of the instance, with the trainee behind it, the span it occupied, and every
  * score and tally derived for it.
  */
-@EqualsAndHashCode
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @ApiModel(

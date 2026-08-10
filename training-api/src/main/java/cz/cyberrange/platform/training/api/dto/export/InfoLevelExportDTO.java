@@ -2,13 +2,13 @@ package cz.cyberrange.platform.training.api.dto.export;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /** Encapsulates information about info level. Inherits from {@link AbstractLevelExportDTO} */
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @ApiModel(
     value = "InfoLevelExportDTO",

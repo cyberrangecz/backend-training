@@ -6,15 +6,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@EqualsAndHashCode
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "AbstractEventDTO",
     description = "Parent class for all event DTOs (training events and commands)",

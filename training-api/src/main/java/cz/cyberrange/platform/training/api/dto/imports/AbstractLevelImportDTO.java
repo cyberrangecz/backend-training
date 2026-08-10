@@ -8,18 +8,14 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Encapsulates information about abstract level. Extended by {@link AssessmentLevelImportDTO},
  * {@link TrainingLevelImportDTO}, {@link AccessLevelImportDTO} and {@link InfoLevelImportDTO}
  */
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 @ApiModel(
     value = "AbstractLevelImportDTO",

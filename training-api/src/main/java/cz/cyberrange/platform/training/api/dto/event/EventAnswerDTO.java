@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /**
  * Base type for a single trainee answer to one assessment question exposed on the {@code
@@ -15,9 +13,7 @@ import lombok.ToString;
  * adds the answer value in the shape appropriate to its question type. The {@code type} property
  * discriminates the subtype.
  */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "EventAnswerDTO",
     description = "A single trainee answer discriminated by question type")

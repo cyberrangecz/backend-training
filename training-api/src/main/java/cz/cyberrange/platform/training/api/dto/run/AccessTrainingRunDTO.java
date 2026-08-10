@@ -10,14 +10,10 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about Training Run, intended as a response to run accessing. */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(value = "AccessTrainingRunDTO", description = "Just accessed training run.")
 public class AccessTrainingRunDTO {
 

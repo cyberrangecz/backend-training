@@ -7,16 +7,10 @@ import cz.cyberrange.platform.training.api.enums.TRState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Contains generally safe, descriptive-only data accessible by both organizers and trainees. */
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @ApiModel(
     value = "TrainingRunBasicDTO",
     description =

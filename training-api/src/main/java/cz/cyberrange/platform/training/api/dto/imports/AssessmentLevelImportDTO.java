@@ -7,13 +7,13 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /** Encapsulates information about assessment level. Inherits from {@link AbstractLevelImportDTO} */
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @ApiModel(
     value = "AssessmentLevelImportDTO",

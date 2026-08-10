@@ -7,14 +7,14 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 /** Encapsulates information about training level. Inherits from {@link AbstractLevelExportDTO} */
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @NoArgsConstructor
 @ApiModel(

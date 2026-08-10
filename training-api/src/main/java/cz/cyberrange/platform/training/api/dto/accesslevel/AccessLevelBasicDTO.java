@@ -2,12 +2,12 @@ package cz.cyberrange.platform.training.api.dto.accesslevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import io.swagger.annotations.ApiModel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @ApiModel(
     value = "AccessLevelBasicDTO",

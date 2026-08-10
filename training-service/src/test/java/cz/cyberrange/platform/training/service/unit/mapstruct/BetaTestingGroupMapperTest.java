@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -38,6 +39,7 @@ import org.springframework.data.domain.PageRequest;
 class BetaTestingGroupMapperTest {
 
   private static final Long ENTITY_ID = 42L;
+  private static final Long OTHER_ENTITY_ID = 43L;
   private static final Long ORGANIZER_REF_ID_1 = 100L;
   private static final Long ORGANIZER_REF_ID_2 = 200L;
 
@@ -291,12 +293,29 @@ class BetaTestingGroupMapperTest {
     @Test
     @DisplayName("should map collection of entities to set of DTOs")
     void shouldMapCollectionOfEntitiesToSetOfDTOs() {
-      Collection<BetaTestingGroup> entities = List.of(entity, entity);
+      BetaTestingGroup otherEntity = new BetaTestingGroup();
+      otherEntity.setId(OTHER_ENTITY_ID);
+      otherEntity.setOrganizers(new HashSet<>(Set.of(organizer1)));
+      Collection<BetaTestingGroup> entities = List.of(entity, otherEntity);
 
       Set<BetaTestingGroupDTO> result = sut.mapToSetDTO(entities);
 
       assertNotNull(result);
       assertEquals(2, result.size());
+      assertEquals(
+          Set.of(ENTITY_ID, OTHER_ENTITY_ID),
+          result.stream().map(BetaTestingGroupDTO::getId).collect(Collectors.toSet()));
+    }
+
+    @Test
+    @DisplayName("should collapse equal entities into one DTO")
+    void shouldCollapseEqualEntitiesIntoOneDto() {
+      Collection<BetaTestingGroup> entities = List.of(entity, entity);
+
+      Set<BetaTestingGroupDTO> result = sut.mapToSetDTO(entities);
+
+      assertNotNull(result);
+      assertEquals(1, result.size());
     }
 
     @Test

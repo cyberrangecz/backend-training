@@ -5,13 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(value = "QuestionAnswerDTO")
 public class QuestionAnswerDTO {
 
