@@ -390,7 +390,6 @@ public class TrainingRunFacade {
           trainingRun.getParticipantRef().getUserRefId(),
           trainingRun.getTrainingInstance().getSandboxDefinitionId());
     }
-    abstractLevelDTO.setTrainingDefinition(null);
     return abstractLevelDTO;
   }
 
@@ -581,9 +580,7 @@ public class TrainingRunFacade {
   public AbstractLevelDTO getVisitedLevel(Long trainingRunId, Long levelId) {
     AbstractLevel abstractLevel = trainingRunService.getVisitedLevel(trainingRunId, levelId);
     TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
-    AbstractLevelDTO abstractLevelDTO = getAbstractLevelPreviewDTO(abstractLevel, trainingRun);
-    abstractLevelDTO.setTrainingDefinition(null);
-    return abstractLevelDTO;
+    return getAbstractLevelPreviewDTO(abstractLevel, trainingRun);
   }
 
   /**
