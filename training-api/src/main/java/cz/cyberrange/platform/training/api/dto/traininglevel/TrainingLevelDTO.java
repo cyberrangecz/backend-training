@@ -71,4 +71,10 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
           "Indicates if at least one command has to be executed to complete the level. Default is true.",
       example = "true")
   private boolean commandsRequired;
+
+  @ApiModelProperty(
+      value =
+          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+      example = "5")
+  private Integer minimalPossibleSolveTime;
 }

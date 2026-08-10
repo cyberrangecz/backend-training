@@ -30,4 +30,10 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
 
   @ApiModelProperty(value = "Type of assessment.", example = "TEST")
   private AssessmentType assessmentType;
+
+  @ApiModelProperty(
+      value =
+          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+      example = "5")
+  private Integer minimalPossibleSolveTime;
 }

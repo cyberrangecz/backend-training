@@ -389,6 +389,7 @@ public class TrainingDefinitionService {
    */
   public TrainingLevel updateTrainingLevel(
       TrainingLevel updatedTrainingLevel, TrainingLevel persistedTrainingLevel) {
+    updatedTrainingLevel.setAttachments(new HashSet<>(persistedTrainingLevel.getAttachments()));
     this.updateCommonLevelData(updatedTrainingLevel, persistedTrainingLevel);
     this.updateMitreTechniques(updatedTrainingLevel, persistedTrainingLevel);
     this.checkSumOfHintPenalties(updatedTrainingLevel);
@@ -410,6 +411,7 @@ public class TrainingDefinitionService {
    */
   public AccessLevel updateAccessLevel(
       AccessLevel updatedAccessLevel, AccessLevel persistedAccessLevel) {
+    this.retainTimingDataAbsentFromUpdate(updatedAccessLevel, persistedAccessLevel);
     this.updateCommonLevelData(updatedAccessLevel, persistedAccessLevel);
     return accessLevelRepository.save(updatedAccessLevel);
   }
@@ -441,6 +443,7 @@ public class TrainingDefinitionService {
    *     definition.
    */
   public InfoLevel updateInfoLevel(InfoLevel updatedInfoLevel, InfoLevel persistedInfoLevel) {
+    this.retainTimingDataAbsentFromUpdate(updatedInfoLevel, persistedInfoLevel);
     this.updateCommonLevelData(updatedInfoLevel, persistedInfoLevel);
     return infoLevelRepository.save(updatedInfoLevel);
   }
@@ -479,6 +482,19 @@ public class TrainingDefinitionService {
     updatedAssessmentLevel.setMaxScore(
         updatedAssessmentLevel.getQuestions().stream().mapToInt(Question::getPoints).sum());
     return assessmentLevelRepository.save(updatedAssessmentLevel);
+  }
+
+  /**
+   * Carries the stored duration and minimal solve time over to a level whose update request cannot
+   * express them, so that saving the level leaves both values untouched.
+   *
+   * @param updatedLevel the level built from the update request
+   * @param persistedLevel the level as currently stored
+   */
+  private void retainTimingDataAbsentFromUpdate(
+      AbstractLevel updatedLevel, AbstractLevel persistedLevel) {
+    updatedLevel.setEstimatedDuration(persistedLevel.getEstimatedDuration());
+    updatedLevel.setMinimalPossibleSolveTime(persistedLevel.getMinimalPossibleSolveTime());
   }
 
   private void updateCommonLevelData(AbstractLevel updatedLevel, AbstractLevel persistedLevel) {
