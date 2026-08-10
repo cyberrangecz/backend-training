@@ -18,6 +18,7 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
@@ -219,6 +220,40 @@ public class TrainingDefinitionsRestController {
         trainingDefinitionFacade.findAllForOrganizers(state, pageable);
     Squiggly.init(objectMapper, fields);
     return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
+  }
+
+  /**
+   * Get MITRE techniques used by released Training Definitions.
+   *
+   * @return released Training Definitions using MITRE techniques, each flagged as played or not
+   *     played by the requesting user.
+   */
+  @ApiOperation(
+      httpMethod = "GET",
+      value = "Get MITRE techniques of released Training Definitions.",
+      response = TrainingDefinitionMitreTechniquesDTO.class,
+      responseContainer = "List",
+      nickname = "findPlayedMitreTechniques",
+      notes =
+          "Returns released training definitions that use at least one MITRE technique, each with"
+              + " its distinct technique keys and a flag telling whether the requesting user has"
+              + " played it.",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            code = 200,
+            message = "The MITRE techniques have been found.",
+            response = TrainingDefinitionMitreTechniquesDTO.class,
+            responseContainer = "List"),
+        @ApiResponse(
+            code = 500,
+            message = "Unexpected condition was encountered.",
+            response = ApiError.class)
+      })
+  @GetMapping(path = "/played-mitre-techniques", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<TrainingDefinitionMitreTechniquesDTO>> findPlayedMitreTechniques() {
+    return ResponseEntity.ok(trainingDefinitionFacade.findPlayedMitreTechniques());
   }
 
   /**

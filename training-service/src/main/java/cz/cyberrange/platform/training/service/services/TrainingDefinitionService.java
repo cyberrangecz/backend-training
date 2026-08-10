@@ -178,13 +178,24 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Find all played by a user.
+   * Finds ids of all Training Definitions played by a user.
    *
    * @param userId a user id
-   * @return the list of definitions
+   * @return the ids of played definitions
    */
-  public List<TrainingDefinition> findAllPlayedByUser(Long userId) {
-    return trainingDefinitionRepository.findAllPlayedByUser(userId);
+  public Set<Long> findPlayedDefinitionIdsByUser(Long userId) {
+    return trainingDefinitionRepository.findPlayedDefinitionIdsByUser(userId);
+  }
+
+  /**
+   * Finds every MITRE technique key used by a training level of a released Training Definition.
+   *
+   * @return the MITRE technique usages, ordered by definition title, definition id and technique
+   *     key
+   */
+  public List<TrainingDefinitionRepository.MitreTechniqueUsage>
+      findMitreTechniqueUsagesOfReleasedDefinitions() {
+    return trainingDefinitionRepository.findMitreTechniqueUsagesByState(TDState.RELEASED);
   }
 
   /**

@@ -15,6 +15,7 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
@@ -39,9 +40,11 @@ import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingOption;
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
+import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
+import cz.cyberrange.platform.training.service.annotations.security.IsTrainee;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
@@ -57,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -185,6 +189,36 @@ public class TrainingDefinitionFacade {
           !definitionIdsWithRunningInstance.contains(trainingDefinitionDTO.getId()));
     }
     return resource;
+  }
+
+  /**
+   * Finds released Training Definitions using MITRE techniques, each flagged with whether the
+   * requesting user has played it. Definitions without any MITRE technique are not included.
+   *
+   * @return the {@link TrainingDefinitionMitreTechniquesDTO} of definitions using MITRE techniques
+   */
+  @IsTrainee
+  @TransactionalRO
+  public List<TrainingDefinitionMitreTechniquesDTO> findPlayedMitreTechniques() {
+    Set<Long> playedDefinitionIds =
+        trainingDefinitionService.findPlayedDefinitionIdsByUser(
+            securityService.getUserRefIdFromUserAndGroup());
+    Map<Long, TrainingDefinitionMitreTechniquesDTO> techniquesByDefinition = new LinkedHashMap<>();
+    for (TrainingDefinitionRepository.MitreTechniqueUsage usage :
+        trainingDefinitionService.findMitreTechniqueUsagesOfReleasedDefinitions()) {
+      techniquesByDefinition
+          .computeIfAbsent(
+              usage.getDefinitionId(),
+              definitionId ->
+                  new TrainingDefinitionMitreTechniquesDTO(
+                      definitionId,
+                      usage.getTitle(),
+                      playedDefinitionIds.contains(definitionId),
+                      new ArrayList<>()))
+          .getMitreTechniques()
+          .add(usage.getTechniqueKey());
+    }
+    return List.copyOf(techniquesByDefinition.values());
   }
 
   /**

@@ -11,6 +11,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,7 +114,7 @@ public class TrainingDefinitionRepositoryTest {
   }
 
   @Test
-  public void findAllPlayedByUser() {
+  public void findPlayedDefinitionIdsByUser() {
     InfoLevel infoLevel1 = testDataFactory.getInfoLevel1();
     InfoLevel infoLevel2 = testDataFactory.getInfoLevel2();
     InfoLevel infoLevel3 = testDataFactory.getInfoLevel1();
@@ -168,9 +169,9 @@ public class TrainingDefinitionRepositoryTest {
     entityManager.persist(trainingRun3);
     entityManager.persist(trainingRun4);
 
-    List<TrainingDefinition> trainingDefinitions =
-        trainingDefinitionRepository.findAllPlayedByUser(participantRef1.getUserRefId());
-    assertTrue(trainingDefinitions.containsAll(List.of(trainingDefinition1, trainingDefinition2)));
-    assertEquals(2, trainingDefinitions.size());
+    Set<Long> playedDefinitionIds =
+        trainingDefinitionRepository.findPlayedDefinitionIdsByUser(participantRef1.getUserRefId());
+    assertEquals(
+        Set.of(trainingDefinition1.getId(), trainingDefinition2.getId()), playedDefinitionIds);
   }
 }

@@ -9,10 +9,12 @@ import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
@@ -111,12 +113,56 @@ public interface TrainingDefinitionRepository
   Optional<TrainingDefinition> findById(Long id);
 
   /**
-   * Find all definition played by user.
+   * Find ids of all training definitions the given user has a training run in.
    *
    * @param userRefId the user ref id
-   * @return the list of training definitions
+   * @return the ids of played training definitions
    */
-  List<TrainingDefinition> findAllPlayedByUser(@Param("userRefId") Long userRefId);
+  Set<Long> findPlayedDefinitionIdsByUser(@Param("userRefId") Long userRefId);
+
+  /**
+   * Find every MITRE technique key used by a training level of a training definition in the given
+   * state, as one row per definition and technique key.
+   *
+   * @param state the state of training definition
+   * @return the MITRE technique usages, ordered by definition title, definition id and technique
+   *     key
+   */
+  @Query(
+      "SELECT DISTINCT definition.id AS definitionId, "
+          + "definition.title AS title, "
+          + "technique.techniqueKey AS techniqueKey "
+          + "FROM TrainingLevel trainingLevel "
+          + "JOIN trainingLevel.trainingDefinition definition "
+          + "JOIN trainingLevel.mitreTechniques technique "
+          + "WHERE definition.state = :state "
+          + "ORDER BY definition.title, definition.id, technique.techniqueKey")
+  List<MitreTechniqueUsage> findMitreTechniqueUsagesByState(@Param("state") TDState state);
 
   List<TrainingDefinition> findAllByIdIn(Collection<Long> ids);
+
+  /** A single MITRE technique key used by a training definition. */
+  interface MitreTechniqueUsage {
+
+    /**
+     * Gets the id of the training definition using the technique.
+     *
+     * @return the training definition id
+     */
+    Long getDefinitionId();
+
+    /**
+     * Gets the title of the training definition using the technique.
+     *
+     * @return the training definition title
+     */
+    String getTitle();
+
+    /**
+     * Gets the key of the used MITRE technique.
+     *
+     * @return the MITRE technique key
+     */
+    String getTechniqueKey();
+  }
 }
