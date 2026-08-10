@@ -1,26 +1,23 @@
 package cz.cyberrange.platform.training.service.mapping.mapstruct;
 
+import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
+import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 
 /**
  * The TrainingDefinitionMapper is an utility class to map items into data transfer objects. It
@@ -31,21 +28,41 @@ import org.springframework.data.domain.PageImpl;
     componentModel = "spring",
     uses = {EnumMapper.class, UserRefMapper.class, BetaTestingGroupMapper.class},
     nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-    unmappedTargetPolicy = ReportingPolicy.IGNORE)
+    unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface TrainingDefinitionMapper extends ParentMapper {
 
-  TrainingDefinition mapToEntity(TrainingDefinitionByIdDTO dto);
+  TrainingDefinition mapToEntity(TrainingDefinitionWithLevelsDTO dto);
 
-  TrainingDefinitionByIdDTO mapToDTOById(TrainingDefinition entity);
+  /**
+   * Maps a training definition entity together with its levels to a {@link
+   * TrainingDefinitionWithLevelsDTO}.
+   *
+   * @param entity the training definition to map
+   * @param levels the full levels of the definition, in the order they are presented in
+   * @return the definition DTO carrying the given levels
+   */
+  @Mapping(target = "betaTestingGroupId", source = "entity.betaTestingGroup.id")
+  @Mapping(target = "levels", source = "levels")
+  @Mapping(target = "canBeArchived", ignore = true)
+  TrainingDefinitionWithLevelsDTO mapToDTOWithLevels(
+      TrainingDefinition entity, List<AbstractLevelDTO> levels);
 
+  @Named("trainingDefinitionToDTO")
   @Mapping(target = "betaTestingGroupId", source = "betaTestingGroup.id")
+  @Mapping(target = "canBeArchived", ignore = true)
   TrainingDefinitionDTO mapToDTO(TrainingDefinition entity);
 
-  @Named("trainingDefinitionToBasicDTO")
-  TrainingDefinitionBasicDTO mapToBasicDTO(TrainingDefinition entity);
-
-  @IterableMapping(qualifiedByName = "trainingDefinitionToBasicDTO")
-  List<TrainingDefinitionBasicDTO> mapToBasicDtoList(List<TrainingDefinition> entities);
+  /**
+   * Maps a training definition entity together with its levels to a {@link
+   * TrainingDefinitionBasicDTO}, the projection reachable by trainees.
+   *
+   * @param entity the training definition to map
+   * @param levels the trainee-safe levels of the definition, in the order they are presented in
+   * @return the basic definition DTO carrying the given levels
+   */
+  @Mapping(target = "levels", source = "levels")
+  TrainingDefinitionBasicDTO mapToBasicDTO(
+      TrainingDefinition entity, List<AbstractLevelBasicDTO> levels);
 
   TrainingDefinitionInfoDTO mapToInfoDTO(TrainingDefinition entity);
 
@@ -53,43 +70,10 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
   TrainingDefinition mapUpdateToEntity(TrainingDefinitionUpdateDTO dto);
 
-  List<TrainingDefinition> mapToList(Collection<TrainingDefinitionByIdDTO> dtos);
-
-  List<TrainingDefinitionByIdDTO> mapToListDTO(Collection<TrainingDefinition> entities);
-
-  Set<TrainingDefinition> mapToSet(Collection<TrainingDefinitionByIdDTO> dtos);
-
-  Set<TrainingDefinitionByIdDTO> mapToSetDTO(Collection<TrainingDefinition> entities);
-
-  default Optional<TrainingDefinition> mapToEntityOptional(TrainingDefinitionByIdDTO dto) {
-    return Optional.ofNullable(mapToEntity(dto));
-  }
-
-  default Optional<TrainingDefinitionByIdDTO> mapToDTOOptional(TrainingDefinition entity) {
-    return Optional.ofNullable(mapToDTOById(entity));
-  }
-
-  default Page<TrainingDefinitionByIdDTO> mapToPageDTO(Page<TrainingDefinition> objects) {
-    List<TrainingDefinitionByIdDTO> mapped = mapToListDTO(objects.getContent());
-    return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
-  }
-
-  default Page<TrainingDefinition> mapToPage(Page<TrainingDefinitionByIdDTO> objects) {
-    List<TrainingDefinition> mapped = mapToList(objects.getContent());
-    return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
-  }
-
   default PageResultResource<TrainingDefinitionDTO> mapToPageResultResource(
       Page<TrainingDefinition> objects) {
     List<TrainingDefinitionDTO> mapped = new ArrayList<>();
-    objects.forEach(
-        object -> {
-          TrainingDefinitionDTO objectDTO = mapToDTO(object);
-          if (object.getBetaTestingGroup() != null) {
-            objectDTO.setBetaTestingGroupId(object.getBetaTestingGroup().getId());
-          }
-          mapped.add(objectDTO);
-        });
+    objects.forEach(object -> mapped.add(mapToDTO(object)));
     return new PageResultResource<>(mapped, createPagination(objects));
   }
 

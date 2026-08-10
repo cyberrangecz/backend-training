@@ -8,7 +8,7 @@ import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAn
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.service.facade.ExportImportFacade;
 import cz.cyberrange.platform.training.service.utils.AbstractFileExtensions;
@@ -120,7 +120,7 @@ public class ExportImportRestController {
   @ApiOperation(
       httpMethod = "POST",
       value = "Import training definition with levels.",
-      response = TrainingDefinitionByIdDTO.class,
+      response = TrainingDefinitionWithLevelsDTO.class,
       nickname = "importTrainingDefinition",
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -129,7 +129,7 @@ public class ExportImportRestController {
         @ApiResponse(
             code = 200,
             message = "Training definition imported.",
-            response = TrainingDefinitionByIdDTO.class),
+            response = TrainingDefinitionWithLevelsDTO.class),
         @ApiResponse(
             code = 422,
             message =
@@ -150,7 +150,7 @@ public class ExportImportRestController {
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
           @RequestParam(value = "fields", required = false)
           String fields) {
-    TrainingDefinitionByIdDTO trainingDefinitionResource =
+    TrainingDefinitionWithLevelsDTO trainingDefinitionResource =
         exportImportFacade.dbImport(importTrainingDefinitionDTO);
     Squiggly.init(objectMapper, fields);
     return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));

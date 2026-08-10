@@ -20,7 +20,7 @@ import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionD
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
@@ -188,11 +188,11 @@ public class ExportImportFacade {
    * Imports training definition.
    *
    * @param importTrainingDefinitionDTO the training definition to be imported
-   * @return the {@link TrainingDefinitionByIdDTO}
+   * @return the {@link TrainingDefinitionWithLevelsDTO}
    */
   @IsDesignerOrAdmin
   @TransactionalWO
-  public TrainingDefinitionByIdDTO dbImport(
+  public TrainingDefinitionWithLevelsDTO dbImport(
       ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
     importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
     if (importTrainingDefinitionDTO.getTitle() != null) {
@@ -227,7 +227,13 @@ public class ExportImportFacade {
       exportImportService.createLevel(newLevel, newTrainingDefinition);
       createdLevels.add(newLevel);
     }
-    return trainingDefinitionMapper.mapToDTOById(newTrainingDefinition);
+    TrainingDefinitionWithLevelsDTO importedDefinition =
+        trainingDefinitionMapper.mapToDTOWithLevels(
+            newTrainingDefinition,
+            createdLevels.stream().map(levelMapper::mapToDTO).collect(Collectors.toList()));
+    importedDefinition.setCanBeArchived(
+        trainingDefinitionService.canBeArchived(importedDefinition.getId()));
+    return importedDefinition;
   }
 
   private void setAnswerAndAnswerVariableNameToNullIfBlank(TrainingLevel trainingLevel) {

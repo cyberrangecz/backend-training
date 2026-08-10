@@ -17,7 +17,7 @@ import cz.cyberrange.platform.training.api.dto.cheatingdetection.MinimalSolveTim
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.NoCommandsDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.TimeProximityDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
 import cz.cyberrange.platform.training.rest.utils.annotations.ApiPageableSwagger;
@@ -110,7 +110,7 @@ public class CheatingDetectionsRestController {
   @ApiOperation(
       httpMethod = "POST",
       value = "Create and Execute cheating detection",
-      response = TrainingDefinitionByIdDTO.class,
+      response = TrainingDefinitionWithLevelsDTO.class,
       nickname = "createAndExecuteCheatingDetection",
       notes = "This can only be done by organizer of training instance or administrator.",
       consumes = MediaType.APPLICATION_JSON_VALUE)

@@ -690,6 +690,19 @@ public class TrainingDefinitionService {
   }
 
   /**
+   * Decides whether the given training definition can be archived, which is the case exactly when
+   * none of its training instances ends in the future.
+   *
+   * @param definitionId id of the definition to decide for
+   * @return true when the definition has no instance ending after the current moment
+   */
+  public boolean canBeArchived(Long definitionId) {
+    return findDefinitionIdsWithInstanceEndingAfter(
+            Set.of(definitionId), LocalDateTime.now(Clock.systemUTC()))
+        .isEmpty();
+  }
+
+  /**
    * Finds specific level by id with associated training definition
    *
    * @param levelId - id of wanted level

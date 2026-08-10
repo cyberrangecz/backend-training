@@ -37,7 +37,7 @@ import lombok.ToString;
   @JsonSubTypes.Type(value = AssessmentLevelDTO.class, name = "AssessmentLevelDTO"),
   @JsonSubTypes.Type(value = InfoLevelDTO.class, name = "InfoLevelDTO")
 })
-public class AbstractLevelDTO extends AbstractLevelBasicDTO {
+public abstract class AbstractLevelDTO extends AbstractLevelBasicDTO {
 
   @ApiModelProperty(value = "Training definition to which is this level assigned.", example = "2")
   protected TrainingDefinitionDTO trainingDefinition;

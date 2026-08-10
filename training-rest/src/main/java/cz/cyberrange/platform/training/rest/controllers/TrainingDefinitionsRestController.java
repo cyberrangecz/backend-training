@@ -15,11 +15,11 @@ import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUp
 import cz.cyberrange.platform.training.api.dto.hint.HintBasicDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.enums.TDState;
@@ -105,7 +105,7 @@ public class TrainingDefinitionsRestController {
   @ApiOperation(
       httpMethod = "GET",
       value = "Get Training Definition by Id.",
-      response = TrainingDefinitionByIdDTO.class,
+      response = TrainingDefinitionWithLevelsDTO.class,
       nickname = "findTrainingDefinitionById",
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiResponses(
@@ -113,7 +113,7 @@ public class TrainingDefinitionsRestController {
         @ApiResponse(
             code = 200,
             message = "The Training definition has been found.",
-            response = TrainingDefinitionByIdDTO.class),
+            response = TrainingDefinitionWithLevelsDTO.class),
         @ApiResponse(
             code = 404,
             message = "The Training definition has not been found.",
@@ -131,7 +131,8 @@ public class TrainingDefinitionsRestController {
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
           @RequestParam(value = "fields", required = false)
           String fields) {
-    TrainingDefinitionByIdDTO trainingDefinitionResource = trainingDefinitionFacade.findById(id);
+    TrainingDefinitionWithLevelsDTO trainingDefinitionResource =
+        trainingDefinitionFacade.findById(id);
     Squiggly.init(objectMapper, fields);
     return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
   }
@@ -155,7 +156,7 @@ public class TrainingDefinitionsRestController {
         @ApiResponse(
             code = 200,
             message = "The requested resources have been found.",
-            response = TrainingDefinitionByIdDTO.class,
+            response = TrainingDefinitionWithLevelsDTO.class,
             responseContainer = "List"),
         @ApiResponse(
             code = 500,
@@ -230,7 +231,7 @@ public class TrainingDefinitionsRestController {
   @ApiOperation(
       httpMethod = "POST",
       value = "Create Training Definition",
-      response = TrainingDefinitionByIdDTO.class,
+      response = TrainingDefinitionWithLevelsDTO.class,
       nickname = "createTrainingDefinition",
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -239,7 +240,7 @@ public class TrainingDefinitionsRestController {
         @ApiResponse(
             code = 200,
             message = "The Training definition has been created.",
-            response = TrainingDefinitionByIdDTO.class),
+            response = TrainingDefinitionWithLevelsDTO.class),
         @ApiResponse(
             code = 400,
             message = "The provided training definition is not valid",
@@ -258,7 +259,7 @@ public class TrainingDefinitionsRestController {
       @ApiParam(value = "Fields which should be returned in REST API response", required = false)
           @RequestParam(value = "fields", required = false)
           String fields) {
-    TrainingDefinitionByIdDTO trainingDefinitionResource =
+    TrainingDefinitionWithLevelsDTO trainingDefinitionResource =
         trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
     Squiggly.init(objectMapper, fields);
     return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
@@ -317,7 +318,7 @@ public class TrainingDefinitionsRestController {
       httpMethod = "POST",
       value = "Clone training definition",
       notes = "Only released and archived training definitions can be cloned",
-      response = TrainingDefinitionByIdDTO.class,
+      response = TrainingDefinitionWithLevelsDTO.class,
       nickname = "cloneTrainingDefinition",
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiResponses(
@@ -325,7 +326,7 @@ public class TrainingDefinitionsRestController {
         @ApiResponse(
             code = 200,
             message = "The Training definition has been cloned.",
-            response = TrainingDefinitionByIdDTO.class),
+            response = TrainingDefinitionWithLevelsDTO.class),
         @ApiResponse(
             code = 404,
             message = "The Training definition has not been found.",
@@ -336,15 +337,16 @@ public class TrainingDefinitionsRestController {
             response = ApiError.class)
       })
   @PostMapping(path = "/{definitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<TrainingDefinitionByIdDTO> cloneTrainingDefinition(
+  public ResponseEntity<TrainingDefinitionWithLevelsDTO> cloneTrainingDefinition(
       @ApiParam(value = "Id of training definition to be cloned", required = true)
           @PathVariable("definitionId")
           Long id,
       @ApiParam(value = "Title of cloned definition", required = true)
           @RequestParam(value = "title")
           String title) {
-    TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = trainingDefinitionFacade.clone(id, title);
-    return ResponseEntity.ok(trainingDefinitionByIdDTO);
+    TrainingDefinitionWithLevelsDTO trainingDefinitionWithLevelsDTO =
+        trainingDefinitionFacade.clone(id, title);
+    return ResponseEntity.ok(trainingDefinitionWithLevelsDTO);
   }
 
   /**
@@ -1218,11 +1220,11 @@ public class TrainingDefinitionsRestController {
       description =
           "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
   private static class TrainingDefinitionRestResource
-      extends PageResultResource<TrainingDefinitionByIdDTO> {
+      extends PageResultResource<TrainingDefinitionWithLevelsDTO> {
 
     @JsonProperty(required = true)
     @ApiModelProperty(value = "Retrieved Training Definitions from databases.")
-    private List<TrainingDefinitionByIdDTO> content;
+    private List<TrainingDefinitionWithLevelsDTO> content;
 
     @JsonProperty(required = true)
     @ApiModelProperty(

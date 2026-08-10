@@ -29,11 +29,11 @@ import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
@@ -193,7 +193,15 @@ public class TestDataFactory {
           "start-training");
 
   private AbstractLevelDTO abstractLevelDTO =
-      generateAbstractLevelDTO("AbstractLevelDTO", 8, LevelType.TRAINING_LEVEL, 8);
+      generateTrainingLevelDTO(
+          "Abstract level answer",
+          "Abstract level content",
+          "Abstract level solution",
+          true,
+          8,
+          "AbstractLevelDTO",
+          8,
+          8);
   private BasicLevelInfoDTO basicTrainingLevelInfoDTO =
       generateBasicLevelInfoDTO("Basic Training Level info", LevelType.TRAINING_LEVEL);
   private BasicLevelInfoDTO basicInfoLevelInfoDTO =
@@ -276,8 +284,8 @@ public class TestDataFactory {
           new String[] {"ip1", "ip2"},
           new String[] {"io1", "io2"},
           cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED);
-  private TrainingDefinitionByIdDTO trainingDefinitionByIdDTO =
-      generateTrainingDefinitionByIdDTO(
+  private TrainingDefinitionWithLevelsDTO trainingDefinitionWithLevelsDTO =
+      generateTrainingDefinitionWithLevelsDTO(
           "TDbyId",
           "Definition by id",
           new String[] {"p8", "p9"},
@@ -690,12 +698,12 @@ public class TestDataFactory {
     return clone(importTrainingDefinitionDTO, ImportTrainingDefinitionDTO.class);
   }
 
-  public TrainingDefinitionByIdDTO getTrainingDefinitionByIdDTO() {
-    return clone(trainingDefinitionByIdDTO, TrainingDefinitionByIdDTO.class);
+  public TrainingDefinitionWithLevelsDTO getTrainingDefinitionWithLevelsDTO() {
+    return clone(trainingDefinitionWithLevelsDTO, TrainingDefinitionWithLevelsDTO.class);
   }
 
   public AbstractLevelDTO getAbstractLevelDTO() {
-    return clone(abstractLevelDTO, AbstractLevelDTO.class);
+    return clone(abstractLevelDTO, TrainingLevelDTO.class);
   }
 
   public BasicLevelInfoDTO getBasicTrainingLevelInfoDTO() {
@@ -1209,7 +1217,7 @@ public class TestDataFactory {
     return importTrainingDefinitionDTO;
   }
 
-  private TrainingDefinitionByIdDTO generateTrainingDefinitionByIdDTO(
+  private TrainingDefinitionWithLevelsDTO generateTrainingDefinitionWithLevelsDTO(
       String title,
       String description,
       String[] prerequisites,
@@ -1219,27 +1227,18 @@ public class TestDataFactory {
       long estimatedDuration,
       LocalDateTime lastEdited,
       LocalDateTime createdAt) {
-    TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = new TrainingDefinitionByIdDTO();
-    trainingDefinitionByIdDTO.setTitle(title);
-    trainingDefinitionByIdDTO.setDescription(description);
-    trainingDefinitionByIdDTO.setPrerequisites(prerequisites);
-    trainingDefinitionByIdDTO.setOutcomes(outcomes);
-    trainingDefinitionByIdDTO.setState(state);
-    trainingDefinitionByIdDTO.setCanBeArchived(canBeArchived);
-    trainingDefinitionByIdDTO.setEstimatedDuration(estimatedDuration);
-    trainingDefinitionByIdDTO.setLastEdited(lastEdited);
-    trainingDefinitionByIdDTO.setCreatedAt(createdAt);
-    return trainingDefinitionByIdDTO;
-  }
-
-  private AbstractLevelDTO generateAbstractLevelDTO(
-      String title, int maxScore, LevelType type, int estimatedDuration) {
-    AbstractLevelDTO abstractLevelDTO = new AbstractLevelDTO();
-    abstractLevelDTO.setTitle(title);
-    abstractLevelDTO.setMaxScore(maxScore);
-    abstractLevelDTO.setLevelType(type);
-    abstractLevelDTO.setEstimatedDuration(estimatedDuration);
-    return abstractLevelDTO;
+    TrainingDefinitionWithLevelsDTO trainingDefinitionWithLevelsDTO =
+        new TrainingDefinitionWithLevelsDTO();
+    trainingDefinitionWithLevelsDTO.setTitle(title);
+    trainingDefinitionWithLevelsDTO.setDescription(description);
+    trainingDefinitionWithLevelsDTO.setPrerequisites(prerequisites);
+    trainingDefinitionWithLevelsDTO.setOutcomes(outcomes);
+    trainingDefinitionWithLevelsDTO.setState(state);
+    trainingDefinitionWithLevelsDTO.setCanBeArchived(canBeArchived);
+    trainingDefinitionWithLevelsDTO.setEstimatedDuration(estimatedDuration);
+    trainingDefinitionWithLevelsDTO.setLastEdited(lastEdited);
+    trainingDefinitionWithLevelsDTO.setCreatedAt(createdAt);
+    return trainingDefinitionWithLevelsDTO;
   }
 
   private BasicLevelInfoDTO generateBasicLevelInfoDTO(String title, LevelType levelType) {

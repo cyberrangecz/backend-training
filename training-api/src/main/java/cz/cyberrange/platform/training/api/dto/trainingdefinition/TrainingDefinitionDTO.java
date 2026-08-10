@@ -11,13 +11,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Encapsulates information about Training Definition */
+/**
+ * Encapsulates information about Training Definition including its authoring and lifecycle data.
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(value = "TrainingDefinitionDTO", description = "A blueprint of abstract levels.")
-public class TrainingDefinitionDTO extends TrainingDefinitionBasicDTO {
+public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
 
   @ApiModelProperty(
       value = "List of knowledge and skills necessary to complete the training.",

@@ -10,14 +10,14 @@ import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintBasicDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.AbstractTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
 import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.enums.TDState;
@@ -111,45 +111,28 @@ public class TrainingDefinitionFacade {
    * Finds specific Training Definition by id
    *
    * @param id of a Training Definition that would be returned
-   * @return specific {@link TrainingDefinitionByIdDTO}
+   * @return specific {@link TrainingDefinitionWithLevelsDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
   @TransactionalRO
-  public TrainingDefinitionByIdDTO findById(Long id) {
+  public TrainingDefinitionWithLevelsDTO findById(Long id) {
     TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
-    TrainingDefinitionByIdDTO trainingDefinitionByIdDTO =
-        trainingDefinitionMapper.mapToDTOById(trainingDefinition);
-    trainingDefinitionByIdDTO.setLevels(gatherLevels(id));
-    if (trainingDefinition.getBetaTestingGroup() != null) {
-      trainingDefinitionByIdDTO.setBetaTestingGroupId(
-          trainingDefinition.getBetaTestingGroup().getId());
-    }
-    return trainingDefinitionByIdDTO;
+    return addArchivingInfo(
+        trainingDefinitionMapper.mapToDTOWithLevels(trainingDefinition, gatherLevels(id)));
+  }
+
+  private <T extends TrainingDefinitionDTO> T addArchivingInfo(T trainingDefinitionDTO) {
+    trainingDefinitionDTO.setCanBeArchived(
+        trainingDefinitionService.canBeArchived(trainingDefinitionDTO.getId()));
+    return trainingDefinitionDTO;
   }
 
   private List<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId) {
-    List<AbstractLevel> levels =
-        trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
-    List<BasicLevelInfoDTO> levelInfoDTOs = new ArrayList<>();
-
-    levels.forEach(
-        level -> {
-          BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
-          basicLevelInfoDTO.setId(level.getId());
-          basicLevelInfoDTO.setTitle(level.getTitle());
-          basicLevelInfoDTO.setOrder(level.getOrder());
-          if (level instanceof TrainingLevel)
-            basicLevelInfoDTO.setLevelType(LevelType.TRAINING_LEVEL);
-          else if (level instanceof AssessmentLevel)
-            basicLevelInfoDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-          else if (level instanceof AccessLevel)
-            basicLevelInfoDTO.setLevelType(LevelType.ACCESS_LEVEL);
-          else basicLevelInfoDTO.setLevelType(LevelType.INFO_LEVEL);
-          levelInfoDTOs.add(basicLevelInfoDTO);
-        });
-    return levelInfoDTOs;
+    return trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
+        .map(this.levelMapper::mapToBasicLevelInfoDTO)
+        .collect(Collectors.toList());
   }
 
   private List<AbstractLevelDTO> gatherLevels(Long definitionId) {
@@ -192,17 +175,12 @@ public class TrainingDefinitionFacade {
         trainingDefinitionMapper.mapToPageResultResource(trainingDefinitionPage);
     List<Long> definitionIds =
         resource.getContent().stream()
-            .map(TrainingDefinitionBasicDTO::getId)
+            .map(AbstractTrainingDefinitionDTO::getId)
             .collect(Collectors.toList());
-    Map<Long, List<AbstractLevelBasicDTO>> levelsByDefinitionId =
-        gatherBasicLevelsByDefinitionId(definitionIds);
     Set<Long> definitionIdsWithRunningInstance =
         trainingDefinitionService.findDefinitionIdsWithInstanceEndingAfter(
             definitionIds, LocalDateTime.now(Clock.systemUTC()));
     for (TrainingDefinitionDTO trainingDefinitionDTO : resource.getContent()) {
-      trainingDefinitionDTO.setLevels(
-          levelsByDefinitionId.getOrDefault(
-              trainingDefinitionDTO.getId(), Collections.emptyList()));
       trainingDefinitionDTO.setCanBeArchived(
           !definitionIdsWithRunningInstance.contains(trainingDefinitionDTO.getId()));
     }
@@ -253,7 +231,7 @@ public class TrainingDefinitionFacade {
    */
   @IsDesignerOrAdmin
   @TransactionalWO
-  public TrainingDefinitionByIdDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
+  public TrainingDefinitionWithLevelsDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
     TrainingDefinition newTrainingDefinition =
         trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
     if (trainingDefinition.getBetaTestingGroup() != null) {
@@ -263,13 +241,9 @@ public class TrainingDefinitionFacade {
     TrainingDefinition createdTrainingDefinition =
         trainingDefinitionService.create(
             newTrainingDefinition, trainingDefinition.isDefaultContent());
-    TrainingDefinitionByIdDTO trainingDefinitionByIdDTO =
-        trainingDefinitionMapper.mapToDTOById(createdTrainingDefinition);
-    if (createdTrainingDefinition.getBetaTestingGroup() != null) {
-      trainingDefinitionByIdDTO.setBetaTestingGroupId(
-          createdTrainingDefinition.getBetaTestingGroup().getId());
-    }
-    return trainingDefinitionByIdDTO;
+    return addArchivingInfo(
+        trainingDefinitionMapper.mapToDTOWithLevels(
+            createdTrainingDefinition, gatherLevels(createdTrainingDefinition.getId())));
   }
 
   /**
@@ -326,17 +300,17 @@ public class TrainingDefinitionFacade {
    *
    * @param id of definition to be cloned
    * @param title the title of cloned definition
-   * @return DTO of cloned definition, {@link TrainingDefinitionByIdDTO}
+   * @return DTO of cloned definition, {@link TrainingDefinitionWithLevelsDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
   @TransactionalWO
-  public TrainingDefinitionByIdDTO clone(Long id, String title) {
-    TrainingDefinitionByIdDTO clonedDefinition =
-        trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
-    clonedDefinition.setLevels(gatherLevels(clonedDefinition.getId()));
-    return clonedDefinition;
+  public TrainingDefinitionWithLevelsDTO clone(Long id, String title) {
+    TrainingDefinition clonedDefinition = trainingDefinitionService.clone(id, title);
+    return addArchivingInfo(
+        trainingDefinitionMapper.mapToDTOWithLevels(
+            clonedDefinition, gatherLevels(clonedDefinition.getId())));
   }
 
   /**
@@ -662,18 +636,16 @@ public class TrainingDefinitionFacade {
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.participatesInTrainingDefinitions(#ids)")
   public List<TrainingDefinitionBasicDTO> findTrainingDefinitionsByIds(List<Long> ids) {
-    List<TrainingDefinitionBasicDTO> definitions =
-        trainingDefinitionMapper.mapToBasicDtoList(trainingDefinitionService.findAllByIds(ids));
+    List<TrainingDefinition> definitions = trainingDefinitionService.findAllByIds(ids);
     Map<Long, List<AbstractLevelBasicDTO>> levelsByDefinitionId =
         gatherBasicLevelsByDefinitionId(
-            definitions.stream()
-                .map(TrainingDefinitionBasicDTO::getId)
-                .collect(Collectors.toList()));
-    definitions.forEach(
-        definition ->
-            definition.setLevels(
-                levelsByDefinitionId.getOrDefault(definition.getId(), Collections.emptyList())));
-    return definitions;
+            definitions.stream().map(TrainingDefinition::getId).collect(Collectors.toList()));
+    return definitions.stream()
+        .map(
+            definition ->
+                trainingDefinitionMapper.mapToBasicDTO(
+                    definition, levelsByDefinitionId.getOrDefault(definition.getId(), List.of())))
+        .collect(Collectors.toList());
   }
 
   /**

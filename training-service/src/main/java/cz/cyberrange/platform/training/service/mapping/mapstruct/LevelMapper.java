@@ -2,7 +2,6 @@ package cz.cyberrange.platform.training.service.mapping.mapstruct;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelDTO;
@@ -30,8 +29,6 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPrevie
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelViewDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
-import cz.cyberrange.platform.training.api.enums.LevelType;
-import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
@@ -44,6 +41,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
+import org.mapstruct.SubclassExhaustiveStrategy;
+import org.mapstruct.SubclassMapping;
 
 /**
  * The InfoLevelMapper is an utility class to map items into data transfer objects. It provides the
@@ -60,10 +59,10 @@ import org.mapstruct.ReportingPolicy;
       MitreTechniqueMapper.class
     },
     nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+    subclassExhaustiveStrategy = SubclassExhaustiveStrategy.RUNTIME_EXCEPTION,
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LevelMapper extends ParentMapper {
   // INFO LEVEL
-  InfoLevel mapToEntity(InfoLevelDTO dto);
 
   @Mapping(target = "levelType", constant = "INFO_LEVEL")
   BasicLevelInfoDTO mapTo(InfoLevel infoLevel);
@@ -78,10 +77,10 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "INFO_LEVEL")
   InfoLevelBasicDTO mapToInfoLevelBasicDTO(InfoLevel entity);
 
+  @Mapping(target = "levelType", constant = "INFO_LEVEL")
   InfoLevelExportDTO mapToExportInfoLevelDTO(InfoLevel entity);
 
   // ASSESSMENT LEVEL
-  AssessmentLevel mapToEntity(AssessmentLevelDTO dto);
 
   @Mapping(source = "type", target = "assessmentType")
   AssessmentLevel mapUpdateToEntity(AssessmentLevelUpdateDTO dto);
@@ -100,6 +99,7 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
   AssessmentLevelPreviewDTO mapToAssessmentLevelPreviewDTO(AssessmentLevel entity);
 
+  @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
   @Mapping(source = "questions", target = "questions", qualifiedByName = "questionWithoutId")
   AssessmentLevelExportDTO mapToExportAssessmentLevelDTO(AssessmentLevel entity);
 
@@ -107,7 +107,6 @@ public interface LevelMapper extends ParentMapper {
       cz.cyberrange.platform.training.persistence.model.enums.AssessmentType assessmentType);
 
   // TRAINING LEVEL
-  TrainingLevel mapToEntity(TrainingLevelDTO dto);
 
   @Mapping(
       target = "answer",
@@ -124,12 +123,14 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
   BasicLevelInfoDTO mapTo(TrainingLevel trainingLevel);
 
+  @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
   TrainingLevelDTO mapToTrainingLevelDTO(TrainingLevel entity);
 
   @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
   @Mapping(source = "hints", target = "hints", qualifiedByName = "hintsToBasicDtoSet")
   TrainingLevelBasicDTO mapToTrainingLevelBasicDTO(TrainingLevel entity);
 
+  @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
   @Mapping(source = "mitreTechniques", target = "mitreTechniques", qualifiedByName = "ignoreIds")
   TrainingLevelExportDTO mapToExportTrainingLevelDTO(TrainingLevel entity);
 
@@ -151,7 +152,6 @@ public interface LevelMapper extends ParentMapper {
   }
 
   // ACCESS LEVEL
-  AccessLevel mapToEntity(AccessLevelDTO dto);
 
   AccessLevel mapUpdateToEntity(AccessLevelUpdateDTO dto);
 
@@ -166,6 +166,7 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
   AccessLevelBasicDTO mapToAccessLevelBasicDTO(AccessLevel entity);
 
+  @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
   AccessLevelExportDTO mapToExportAccessLevelDTO(AccessLevel entity);
 
   @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
@@ -173,103 +174,62 @@ public interface LevelMapper extends ParentMapper {
 
   // ABSTRACT
 
-  List<AbstractLevel> mapToLevels(List<AbstractLevelUpdateDTO> dtos);
+  /**
+   * Maps a level entity to the full {@link AbstractLevelDTO} subtype matching its concrete type.
+   *
+   * @param entity the level entity to map
+   * @return the DTO of the subtype corresponding to the entity's concrete type
+   */
+  @SubclassMapping(source = TrainingLevel.class, target = TrainingLevelDTO.class)
+  @SubclassMapping(source = InfoLevel.class, target = InfoLevelDTO.class)
+  @SubclassMapping(source = AssessmentLevel.class, target = AssessmentLevelDTO.class)
+  @SubclassMapping(source = AccessLevel.class, target = AccessLevelDTO.class)
+  AbstractLevelDTO mapToDTO(AbstractLevel entity);
 
-  default AbstractLevel mapToAbstractLevel(AbstractLevelUpdateDTO dto) {
-    if (dto.getLevelType() == LevelType.TRAINING_LEVEL) {
-      return mapUpdateToEntity((TrainingLevelUpdateDTO) dto);
-    } else if (dto.getLevelType() == LevelType.INFO_LEVEL) {
-      return mapUpdateToEntity((InfoLevelUpdateDTO) dto);
-    } else if (dto.getLevelType() == LevelType.ASSESSMENT_LEVEL) {
-      return mapUpdateToEntity((AssessmentLevelUpdateDTO) dto);
-    } else {
-      throw new InternalServerErrorException(
-          "Level with id: "
-              + dto.getId()
-              + " and with title: "
-              + dto.getTitle()
-              + " is not instance of assessment, training or info level.");
-    }
-  }
+  /**
+   * Maps a level entity to the {@link AbstractLevelBasicDTO} subtype matching its concrete type.
+   *
+   * @param entity the level entity to map
+   * @return the basic DTO of the subtype corresponding to the entity's concrete type
+   */
+  @SubclassMapping(source = TrainingLevel.class, target = TrainingLevelBasicDTO.class)
+  @SubclassMapping(source = InfoLevel.class, target = InfoLevelBasicDTO.class)
+  @SubclassMapping(source = AssessmentLevel.class, target = AssessmentLevelBasicDTO.class)
+  @SubclassMapping(source = AccessLevel.class, target = AccessLevelBasicDTO.class)
+  AbstractLevelBasicDTO mapToBasicDTO(AbstractLevel entity);
 
-  default AbstractLevelDTO mapToDTO(AbstractLevel entity) {
-    AbstractLevelDTO abstractLevelDTO;
-    if (entity instanceof TrainingLevel) {
-      abstractLevelDTO = mapToTrainingLevelDTO((TrainingLevel) entity);
-      abstractLevelDTO.setLevelType(LevelType.TRAINING_LEVEL);
-    } else if (entity instanceof InfoLevel) {
-      abstractLevelDTO = mapToInfoLevelDTO((InfoLevel) entity);
-      abstractLevelDTO.setLevelType(LevelType.INFO_LEVEL);
-    } else if (entity instanceof AssessmentLevel) {
-      abstractLevelDTO = mapToAssessmentLevelDTO((AssessmentLevel) entity);
-      abstractLevelDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-    } else if (entity instanceof AccessLevel) {
-      abstractLevelDTO = mapToAccessLevelDTO((AccessLevel) entity);
-      abstractLevelDTO.setLevelType(LevelType.ACCESS_LEVEL);
-    } else {
-      throw new InternalServerErrorException(
-          "Level with id: "
-              + entity.getId()
-              + " in given training definition with id: "
-              + entity.getTrainingDefinition().getId()
-              + " is not instance of assessment, training or info level.");
-    }
+  /**
+   * Maps a level entity to the {@link AbstractLevelExportDTO} subtype matching its concrete type.
+   *
+   * @param entity the level entity to map
+   * @return the export DTO of the subtype corresponding to the entity's concrete type
+   */
+  @SubclassMapping(source = TrainingLevel.class, target = TrainingLevelExportDTO.class)
+  @SubclassMapping(source = InfoLevel.class, target = InfoLevelExportDTO.class)
+  @SubclassMapping(source = AssessmentLevel.class, target = AssessmentLevelExportDTO.class)
+  @SubclassMapping(source = AccessLevel.class, target = AccessLevelExportDTO.class)
+  AbstractLevelExportDTO mapToExportDTO(AbstractLevel entity);
 
-    return abstractLevelDTO;
-  }
+  /**
+   * Maps a level entity to a {@link BasicLevelInfoDTO} carrying the level type of its concrete
+   * type.
+   *
+   * @param entity the level entity to map
+   * @return the level info DTO with the level type of the entity's concrete type
+   */
+  @SubclassMapping(source = TrainingLevel.class, target = BasicLevelInfoDTO.class)
+  @SubclassMapping(source = InfoLevel.class, target = BasicLevelInfoDTO.class)
+  @SubclassMapping(source = AssessmentLevel.class, target = BasicLevelInfoDTO.class)
+  @SubclassMapping(source = AccessLevel.class, target = BasicLevelInfoDTO.class)
+  BasicLevelInfoDTO mapToBasicLevelInfoDTO(AbstractLevel entity);
 
+  /**
+   * Maps level entities to their basic DTOs, preserving the order of the input.
+   *
+   * @param entities the level entities to map
+   * @return the basic DTOs, each of the subtype corresponding to its entity's concrete type
+   */
   default List<AbstractLevelBasicDTO> mapToBasicDtoList(List<AbstractLevel> entities) {
     return entities.stream().map(this::mapToBasicDTO).collect(Collectors.toList());
-  }
-
-  default AbstractLevelBasicDTO mapToBasicDTO(AbstractLevel entity) {
-    AbstractLevelBasicDTO abstractLevelBasicDTO;
-    if (entity instanceof TrainingLevel) {
-      abstractLevelBasicDTO = mapToTrainingLevelBasicDTO((TrainingLevel) entity);
-      abstractLevelBasicDTO.setLevelType(LevelType.TRAINING_LEVEL);
-    } else if (entity instanceof InfoLevel) {
-      abstractLevelBasicDTO = mapToInfoLevelBasicDTO((InfoLevel) entity);
-      abstractLevelBasicDTO.setLevelType(LevelType.INFO_LEVEL);
-    } else if (entity instanceof AssessmentLevel) {
-      abstractLevelBasicDTO = mapToAssessmentLevelBasicDTO((AssessmentLevel) entity);
-      abstractLevelBasicDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-    } else if (entity instanceof AccessLevel) {
-      abstractLevelBasicDTO = mapToAccessLevelBasicDTO((AccessLevel) entity);
-      abstractLevelBasicDTO.setLevelType(LevelType.ACCESS_LEVEL);
-    } else {
-      throw new InternalServerErrorException(
-          "Level with id: "
-              + entity.getId()
-              + " in given training definition with id: "
-              + entity.getTrainingDefinition().getId()
-              + " is not instance of assessment, training or info level.");
-    }
-
-    return abstractLevelBasicDTO;
-  }
-
-  default AbstractLevelExportDTO mapToExportDTO(AbstractLevel entity) {
-    AbstractLevelExportDTO abstractLevelExportDTO;
-    if (entity instanceof TrainingLevel) {
-      abstractLevelExportDTO = mapToExportTrainingLevelDTO((TrainingLevel) entity);
-      abstractLevelExportDTO.setLevelType(LevelType.TRAINING_LEVEL);
-    } else if (entity instanceof InfoLevel) {
-      abstractLevelExportDTO = mapToExportInfoLevelDTO((InfoLevel) entity);
-      abstractLevelExportDTO.setLevelType(LevelType.INFO_LEVEL);
-    } else if (entity instanceof AssessmentLevel) {
-      abstractLevelExportDTO = mapToExportAssessmentLevelDTO((AssessmentLevel) entity);
-      abstractLevelExportDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
-    } else if (entity instanceof AccessLevel) {
-      abstractLevelExportDTO = mapToExportAccessLevelDTO((AccessLevel) entity);
-      abstractLevelExportDTO.setLevelType(LevelType.ACCESS_LEVEL);
-    } else {
-      throw new InternalServerErrorException(
-          "Level with id: "
-              + entity.getId()
-              + " in given training definition with id: "
-              + entity.getTrainingDefinition().getId()
-              + " is not instance of assessment, training or info level.");
-    }
-    return abstractLevelExportDTO;
   }
 }

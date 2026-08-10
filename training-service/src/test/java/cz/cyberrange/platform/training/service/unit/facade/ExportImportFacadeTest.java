@@ -5,13 +5,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
+import cz.cyberrange.platform.training.api.dto.imports.AbstractLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.opensearch.events.commands.query.CommandEventsService;
 import cz.cyberrange.platform.training.opensearch.events.training.query.TrainingEventsService;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
@@ -30,6 +32,7 @@ import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
 import cz.cyberrange.platform.training.service.services.score.ScoreReportService;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -166,16 +169,32 @@ public class ExportImportFacadeTest {
     given(trainingDefinitionService.create(any(TrainingDefinition.class), any(Boolean.class)))
         .willReturn(trainingDefinitionImported);
 
-    TrainingDefinitionByIdDTO trainingDefinitionByIdDTO =
+    TrainingDefinitionWithLevelsDTO trainingDefinitionWithLevelsDTO =
         exportImportFacade.dbImport(importTrainingDefinitionDTO);
-    TrainingDefinitionByIdDTO trainingDefinitionByIdDTOImported =
-        trainingDefinitionMapper.mapToDTOById(trainingDefinitionImported);
+    TrainingDefinitionWithLevelsDTO trainingDefinitionWithLevelsDTOImported =
+        trainingDefinitionMapper.mapToDTOWithLevels(
+            trainingDefinitionImported, trainingDefinitionWithLevelsDTO.getLevels());
 
-    deepEqualsTrainingDefinitionDTO(trainingDefinitionByIdDTOImported, trainingDefinitionByIdDTO);
+    deepEqualsTrainingDefinitionDTO(
+        trainingDefinitionWithLevelsDTOImported, trainingDefinitionWithLevelsDTO);
+    assertEquals(
+        importTrainingDefinitionDTO.getLevels().stream()
+            .map(AbstractLevelImportDTO::getLevelType)
+            .collect(Collectors.toList()),
+        trainingDefinitionWithLevelsDTO.getLevels().stream()
+            .map(AbstractLevelBasicDTO::getLevelType)
+            .collect(Collectors.toList()));
+    assertEquals(
+        importTrainingDefinitionDTO.getLevels().stream()
+            .map(AbstractLevelImportDTO::getOrder)
+            .collect(Collectors.toList()),
+        trainingDefinitionWithLevelsDTO.getLevels().stream()
+            .map(AbstractLevelBasicDTO::getOrder)
+            .collect(Collectors.toList()));
   }
 
   private void deepEqualsTrainingDefinitionDTO(
-      TrainingDefinitionByIdDTO t1, TrainingDefinitionByIdDTO t2) {
+      TrainingDefinitionWithLevelsDTO t1, TrainingDefinitionWithLevelsDTO t2) {
     assertEquals(t1.getId(), t2.getId());
     assertEquals(t1.getState(), t2.getState());
     assertEquals(t1.getDescription(), t2.getDescription());

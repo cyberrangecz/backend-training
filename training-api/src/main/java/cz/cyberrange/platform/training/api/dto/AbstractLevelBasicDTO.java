@@ -34,7 +34,7 @@ import lombok.ToString;
   @JsonSubTypes.Type(value = AssessmentLevelBasicDTO.class, name = "AssessmentLevelBasicDTO"),
   @JsonSubTypes.Type(value = InfoLevelBasicDTO.class, name = "InfoLevelBasicDTO")
 })
-public class AbstractLevelBasicDTO {
+public abstract class AbstractLevelBasicDTO {
 
   @ApiModelProperty(value = "Main identifier of level.", example = "1")
   protected Long id;

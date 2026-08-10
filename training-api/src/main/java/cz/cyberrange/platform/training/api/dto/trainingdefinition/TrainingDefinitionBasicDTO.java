@@ -10,29 +10,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@EqualsAndHashCode
+/**
+ * Encapsulates information about Training Definition together with the outline of its levels held
+ * as {@link AbstractLevelBasicDTO}, which is safe for both organizers and trainees.
+ */
+@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(value = "TrainingDefinitionBasicDTO", description = "A blueprint of abstract levels.")
-public class TrainingDefinitionBasicDTO {
-  @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
-  protected Long id;
-
-  @ApiModelProperty(
-      value = "A name of the training/game (e.g., Photo Hunter) .",
-      example = "TrainingDefinition2")
-  protected String title;
-
-  @ApiModelProperty(
-      value = "Description of training definition that is visible to the participant.",
-      example = "Unreleased training definition")
-  protected String description;
-
-  @ApiModelProperty(
-      value = "Estimated time it takes to finish runs created from this definition.",
-      example = "5")
-  protected long estimatedDuration;
+public class TrainingDefinitionBasicDTO extends AbstractTrainingDefinitionDTO {
 
   @ApiModelProperty(value = "All levels in the training definition, ordered by their order.")
   protected List<AbstractLevelBasicDTO> levels = new ArrayList<>();

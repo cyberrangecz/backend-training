@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
@@ -44,11 +45,19 @@ public interface TrainingInstanceMapper extends ParentMapper {
   @IterableMapping(qualifiedByName = "trainingInstanceToBasicDTO")
   List<TrainingInstanceBasicDTO> mapToBasicDtoList(List<TrainingInstance> allByIds);
 
+  @Mapping(
+      target = "trainingDefinition",
+      source = "trainingDefinition",
+      qualifiedByName = "trainingDefinitionToDTO")
   TrainingInstanceDTO mapToDTO(TrainingInstance entity);
 
   @Named("trainingInstanceToBasicDTO")
   TrainingInstanceBasicDTO mapToBasicDTO(TrainingInstance entity);
 
+  @Mapping(
+      target = "trainingDefinition",
+      source = "trainingDefinition",
+      qualifiedByName = "trainingDefinitionToDTO")
   TrainingInstanceFindAllResponseDTO mapToFindAllViewDTO(TrainingInstance entity);
 
   List<TrainingInstance> mapToList(Collection<TrainingInstanceDTO> dtos);

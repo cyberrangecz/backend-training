@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
@@ -37,7 +37,7 @@ public class BeanMappingTest {
   @Autowired private TrainingDefinitionMapperImpl trainingDefinitionMapper;
 
   private TrainingDefinition tD;
-  private TrainingDefinitionByIdDTO tDDTO;
+  private TrainingDefinitionWithLevelsDTO tDDTO;
   private UserRef aR;
   private UserRefDTO aRDTO;
   private InfoLevel iL1, iL2;
@@ -59,7 +59,7 @@ public class BeanMappingTest {
     tD = testDataFactory.getUnreleasedDefinition();
     tD.setId(1L);
 
-    tDDTO = new TrainingDefinitionByIdDTO();
+    tDDTO = new TrainingDefinitionWithLevelsDTO();
     tDDTO.setId(tD.getId());
     tDDTO.setTitle(tD.getTitle());
     tDDTO.setDescription(tD.getDescription());
@@ -96,7 +96,8 @@ public class BeanMappingTest {
 
   @Test
   public void testMapEntityToDTO() {
-    TrainingDefinitionByIdDTO dto = trainingDefinitionMapper.mapToDTOById(tD);
+    TrainingDefinitionWithLevelsDTO dto =
+        trainingDefinitionMapper.mapToDTOWithLevels(tD, new ArrayList<>(levelsDTO));
 
     assertEquals(tD.getId(), dto.getId());
     assertEquals(tD.getTitle(), dto.getTitle());
