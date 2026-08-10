@@ -12,7 +12,7 @@ import lombok.ToString;
 /** Encapsulates information needed to update info level. */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
 public class InfoLevelUpdateDTO extends AbstractLevelUpdateDTO {
 

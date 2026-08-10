@@ -22,7 +22,7 @@ import lombok.ToString;
 /** Encapsulates information needed to update training level. */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(value = "TrainingLevelUpdateDTO", description = "Training level to update.")
 public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
 

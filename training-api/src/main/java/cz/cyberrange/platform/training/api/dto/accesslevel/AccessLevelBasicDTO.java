@@ -8,7 +8,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "AccessLevelBasicDTO",
     description = "A level containing instructions on how to connect to the virtual machines.",

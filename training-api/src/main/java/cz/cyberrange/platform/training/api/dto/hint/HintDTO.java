@@ -10,10 +10,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 /** Encapsulates information about Hint. */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(value = "HintDTO", description = "A brief textual description to aid the participant.")
 public class HintDTO extends HintBasicDTO {
 

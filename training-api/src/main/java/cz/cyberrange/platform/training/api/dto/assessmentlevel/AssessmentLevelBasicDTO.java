@@ -11,7 +11,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "AssessmentLevelBasicDTO",
     description = "A questionnaire or a test that is displayed to the participant.",

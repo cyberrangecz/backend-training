@@ -3,7 +3,7 @@ package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 import io.swagger.annotations.ApiModel;
 import lombok.ToString;
 
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "NoCommandsDetectionEventDTO",
     description = "A detection event of type No Commands.",

@@ -8,10 +8,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(value = "CommandEventDTO", description = "Command event from training run")
 public class CommandEventDTO extends AbstractEventDTO {
 

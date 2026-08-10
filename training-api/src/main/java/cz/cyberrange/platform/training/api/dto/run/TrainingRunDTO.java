@@ -10,8 +10,8 @@ import lombok.ToString;
 /** Encapsulates information about Training Run. */
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @ApiModel(
     value = "TrainingRunDTO",
     description =

@@ -10,7 +10,7 @@ import lombok.ToString;
 /** Encapsulates information about training level. Inherits from {@link AbstractLevelDTO} */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "AccessLevelDTO",
     description = "A level containing instructions on how to connect to the virtual machines.",

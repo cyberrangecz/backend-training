@@ -14,7 +14,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "TrainingLevelBasicDTO",
     description = "An assignment containing security tasks whose completion yields a answer.",

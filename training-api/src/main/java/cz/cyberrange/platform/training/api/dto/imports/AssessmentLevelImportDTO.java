@@ -14,7 +14,7 @@ import lombok.ToString;
 /** Encapsulates information about assessment level. Inherits from {@link AbstractLevelImportDTO} */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "AssessmentLevelImportDTO",
     description = "Imported assessment level.",

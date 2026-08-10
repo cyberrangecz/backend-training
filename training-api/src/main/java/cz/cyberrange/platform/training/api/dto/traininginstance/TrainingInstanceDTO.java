@@ -14,10 +14,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 /** Encapsulates information about Training Instance */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "TrainingInstanceDTO",
     description =

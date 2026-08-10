@@ -9,8 +9,8 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @ApiModel(
     value = "TimeProximityDetectionEventDTO",
     description = "A detection event of type Time Proximity.",

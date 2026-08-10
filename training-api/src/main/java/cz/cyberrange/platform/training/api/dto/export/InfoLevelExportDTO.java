@@ -9,7 +9,7 @@ import lombok.ToString;
 /** Encapsulates information about info level. Inherits from {@link AbstractLevelExportDTO} */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "InfoLevelExportDTO",
     description = "Exported info level.",

@@ -13,7 +13,7 @@ import lombok.ToString;
 /** Encapsulates basic information about training level. */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "TrainingLevelPreviewDTO",
     description = "An assignment containing security tasks whose completion yields a answer.",

@@ -18,7 +18,7 @@ import lombok.ToString;
 /** Encapsulates information needed to update assessment level. */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
 @JsonIgnoreProperties(value = {"max_score"})
 public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {

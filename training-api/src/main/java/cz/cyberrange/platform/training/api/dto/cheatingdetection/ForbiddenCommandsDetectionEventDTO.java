@@ -10,8 +10,8 @@ import lombok.ToString;
 /** Encapsulates information about forbidden commands detection event. */
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @ApiModel(
     value = "ForbiddenCommandsDetectionEventDTO",
     description = "A detection event of type Forbidden Commands.",

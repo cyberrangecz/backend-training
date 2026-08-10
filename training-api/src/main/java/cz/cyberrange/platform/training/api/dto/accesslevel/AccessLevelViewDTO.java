@@ -10,7 +10,7 @@ import lombok.ToString;
 /** Encapsulates basic information about access level. */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "AccessLevelViewDTO",
     description = "A level containing instructions on how to connect to the virtual machines.",

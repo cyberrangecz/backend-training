@@ -15,7 +15,7 @@ import lombok.ToString;
 /** Encapsulates information about training level. Inherits from {@link AbstractLevelDTO} */
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @ApiModel(
     value = "TrainingLevelDTO",
     description = "An assignment containing security tasks whose completion yields a answer.",
