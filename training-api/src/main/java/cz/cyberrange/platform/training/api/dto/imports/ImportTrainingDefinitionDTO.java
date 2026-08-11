@@ -20,9 +20,9 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @ApiModel(value = "ImportTrainingDefinitionDTO", description = "A basic information about hint.")
-@JsonIgnoreProperties({
-  "show_stepper_bar"
-}) // show_stepper_bar is allowed for backwards compatibility with old training definitions
+// Properties accepted and discarded so that training definitions exported by earlier versions
+// remain importable
+@JsonIgnoreProperties({"show_stepper_bar", "variant_sandboxes"})
 public class ImportTrainingDefinitionDTO {
 
   @ApiModelProperty(
@@ -59,12 +59,6 @@ public class ImportTrainingDefinitionDTO {
       value = "Estimated time it takes to finish runs created from this definition.",
       example = "5")
   private Integer estimatedDuration;
-
-  @ApiModelProperty(
-      value =
-          "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.",
-      example = "false")
-  private boolean variantSandboxes;
 
   /**
    * Sets levels.

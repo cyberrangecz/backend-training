@@ -49,10 +49,4 @@ public class ExportTrainingDefinitionAndLevelsDTO {
           "Estimated time (minutes) taken by the player to finish run created from this definition.",
       example = "5")
   private int estimatedDuration;
-
-  @ApiModelProperty(
-      value =
-          "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.",
-      example = "false")
-  private boolean variantSandboxes;
 }

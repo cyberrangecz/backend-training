@@ -128,7 +128,6 @@ class ExportImportMapperTest {
     importDto.setOutcomes(OUTCOMES);
     importDto.setState(STATE);
     importDto.setEstimatedDuration((int) ESTIMATED_DURATION);
-    importDto.setVariantSandboxes(false);
 
     exportDto = new ExportTrainingDefinitionAndLevelsDTO();
     exportDto.setTitle(TITLE);
@@ -137,7 +136,6 @@ class ExportImportMapperTest {
     exportDto.setOutcomes(OUTCOMES);
     exportDto.setState(STATE);
     exportDto.setEstimatedDuration((int) ESTIMATED_DURATION);
-    exportDto.setVariantSandboxes(false);
 
     instanceArchiveDto = new TrainingInstanceArchiveDTO();
     instanceArchiveDto.setId(ENTITY_ID);
