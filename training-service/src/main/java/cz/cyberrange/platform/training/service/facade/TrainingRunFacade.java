@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -549,7 +550,42 @@ public class TrainingRunFacade {
             }
           });
     }
+    resolveParticipantRefs(runs);
     return runs;
+  }
+
+  /**
+   * Replaces the participant reference of each given training run with a reference resolved from
+   * the user management service. A reference mapped from the database carries only the user
+   * reference id; the descriptive fields are held by the user management service. References are
+   * resolved in a single request, and one whose user the service does not return is left unchanged.
+   *
+   * @param runs the training runs whose participant references are replaced in place
+   */
+  private void resolveParticipantRefs(List<? extends TrainingRunBasicDTO> runs) {
+    List<Long> participantRefIds =
+        runs.stream()
+            .map(TrainingRunBasicDTO::getParticipantRef)
+            .filter(Objects::nonNull)
+            .map(UserRefDTO::getUserRefId)
+            .distinct()
+            .toList();
+    if (participantRefIds.isEmpty()) {
+      return;
+    }
+    Map<Long, UserRefDTO> resolvedByUserRefId =
+        userService.getUsersRefDTOByGivenUserIds(participantRefIds).stream()
+            .collect(
+                Collectors.toMap(
+                    UserRefDTO::getUserRefId, Function.identity(), (kept, ignored) -> kept));
+    runs.forEach(
+        run -> {
+          UserRefDTO participantRef = run.getParticipantRef();
+          if (participantRef != null) {
+            run.setParticipantRef(
+                resolvedByUserRefId.getOrDefault(participantRef.getUserRefId(), participantRef));
+          }
+        });
   }
 
   /**
