@@ -31,6 +31,10 @@ import org.springframework.data.domain.PageImpl;
 public interface TrainingRunMapper extends ParentMapper {
   TrainingRun mapToEntity(TrainingRunDTO dto);
 
+  @Mapping(target = "trainingInstanceId", source = "trainingInstance.id")
+  @Mapping(target = "trainingDefinitionId", source = "trainingInstance.trainingDefinition.id")
+  @Mapping(target = "currentLevelId", source = "currentLevel.id")
+  @Mapping(target = "currentLevelOrder", source = "currentLevel.order")
   TrainingRunDTO mapToDTO(TrainingRun entity);
 
   @Named("trainingRunToBasicDTO")

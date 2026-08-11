@@ -49,6 +49,7 @@ public interface TrainingInstanceMapper extends ParentMapper {
       target = "trainingDefinition",
       source = "trainingDefinition",
       qualifiedByName = "trainingDefinitionToDTO")
+  @Mapping(target = "definitionId", source = "trainingDefinition.id")
   TrainingInstanceDTO mapToDTO(TrainingInstance entity);
 
   @Named("trainingInstanceToBasicDTO")

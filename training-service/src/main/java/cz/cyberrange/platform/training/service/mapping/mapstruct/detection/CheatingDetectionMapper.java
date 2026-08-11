@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CheatingDetectionMapper extends ParentMapper {
 
+  @Mapping(target = "forbiddenCommands", source = "commands")
   CheatingDetectionDTO mapToDTO(CheatingDetection entity);
 
   CheatingDetection mapToEntity(CheatingDetectionDTO dto);
