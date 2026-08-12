@@ -597,7 +597,7 @@ public class TrainingRunFacade {
   @TransactionalRO
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) or "
-          + "@securityService.sharesCommonTrainingInstance(ids)")
+          + "@securityService.sharesCommonTrainingInstance(#ids)")
   public List<UserRefDTO> findUsersByIds(List<Long> ids) {
     return userService.getUsersRefDTOByGivenUserIds(ids);
   }
