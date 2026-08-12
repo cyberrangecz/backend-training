@@ -45,7 +45,7 @@ public class TrainingScoreAggregationService {
   private static final String TIMESTAMP_FIELD = "timestamp";
   private static final String TRAINING_RUN_ID_FIELD = "training_run_id";
   private static final String TRAINING_INSTANCE_ID_FIELD = "training_instance_id";
-  private static final String TYPE_FIELD = "type";
+  private static final String TYPE_KEYWORD_FIELD = "type.keyword";
   private static final String LEVEL_FIELD = "level";
 
   private static final String BY_RUN_AGGREGATION = "by_run";
@@ -174,7 +174,7 @@ public class TrainingScoreAggregationService {
             aggregation
                 .filter(
                     matchesAll(
-                        matchesAnyString(TYPE_FIELD, List.of(completionEventType)),
+                        matchesAnyString(TYPE_KEYWORD_FIELD, List.of(completionEventType)),
                         matchesAnyLong(LEVEL_FIELD, levelIds)))
                 .aggregations(
                     BY_LEVEL_AGGREGATION,
@@ -188,7 +188,7 @@ public class TrainingScoreAggregationService {
             aggregation
                 .filter(
                     matchesAll(
-                        matchesAnyString(TYPE_FIELD, countedEventTypes),
+                        matchesAnyString(TYPE_KEYWORD_FIELD, countedEventTypes),
                         matchesAnyLong(LEVEL_FIELD, levelIds)))
                 .aggregations(
                     BY_TYPE_AGGREGATION,
@@ -196,7 +196,10 @@ public class TrainingScoreAggregationService {
                         byType ->
                             byType
                                 .terms(
-                                    terms -> terms.field(TYPE_FIELD).size(countedEventTypes.size()))
+                                    terms ->
+                                        terms
+                                            .field(TYPE_KEYWORD_FIELD)
+                                            .size(countedEventTypes.size()))
                                 .aggregations(
                                     BY_LEVEL_AGGREGATION,
                                     groupByLevel(levelIds.size(), null, null)))));
