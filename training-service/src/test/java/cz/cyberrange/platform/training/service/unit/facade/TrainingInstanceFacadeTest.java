@@ -25,7 +25,6 @@ import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
-import cz.cyberrange.platform.training.service.facade.strategy.OrganizerEventQueryStrategy;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.AttachmentMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.BetaTestingGroupMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapperImpl;
@@ -89,7 +88,6 @@ public class TrainingInstanceFacadeTest {
   @MockBean private CommandEventsService commandEventsService;
   @MockBean private TrainingEventsService trainingEventsService;
   @MockBean private EventMapper eventMapper;
-  @MockBean private OrganizerEventQueryStrategy organizerEventQueryStrategy;
   @MockBean private TrainingEventAccessService trainingEventAccessService;
 
   private TrainingInstance trainingInstance1, trainingInstance2;
@@ -120,7 +118,6 @@ public class TrainingInstanceFacadeTest {
             commandEventsService,
             trainingEventsService,
             eventMapper,
-            organizerEventQueryStrategy,
             trainingEventAccessService);
 
     pageable = PageRequest.of(0, 5);

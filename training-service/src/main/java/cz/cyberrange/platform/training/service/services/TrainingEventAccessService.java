@@ -1,5 +1,6 @@
 package cz.cyberrange.platform.training.service.services;
 
+import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.opensearch.events.commands.model.TrainingCommand;
 import cz.cyberrange.platform.training.opensearch.events.commands.query.CommandEventsService;
 import cz.cyberrange.platform.training.opensearch.events.training.model.AbstractAuditPOJO;
@@ -35,20 +36,24 @@ public class TrainingEventAccessService {
   private final TrainingEventsService trainingEventsService;
   private final CommandEventsService commandEventsService;
   private final TrainingRunService trainingRunService;
+  private final TrainingInstanceService trainingInstanceService;
 
   /**
    * @param trainingEventsService infrastructure service for training audit event queries
    * @param commandEventsService infrastructure service for console command queries
    * @param trainingRunService used to resolve a trainee's sandbox from their training run
+   * @param trainingInstanceService used to resolve the pool holding an instance's console commands
    */
   @Autowired
   public TrainingEventAccessService(
       TrainingEventsService trainingEventsService,
       CommandEventsService commandEventsService,
-      TrainingRunService trainingRunService) {
+      TrainingRunService trainingRunService,
+      TrainingInstanceService trainingInstanceService) {
     this.trainingEventsService = trainingEventsService;
     this.commandEventsService = commandEventsService;
     this.trainingRunService = trainingRunService;
+    this.trainingInstanceService = trainingInstanceService;
   }
 
   /**
@@ -81,27 +86,39 @@ public class TrainingEventAccessService {
    * Fetches console command events, restricting to the caller's own sandbox when operating in
    * trainee mode.
    *
-   * <p>Commands are stored per-sandbox in separate indices. Restriction is achieved by targeting
-   * the trainee's specific sandbox index rather than the pool-wide wildcard, avoiding any
-   * post-fetch filtering overhead.
+   * <p>Commands are stored per-sandbox in separate indices under the pool holding the instance, so
+   * the pool is resolved from the instance itself. Restriction is achieved by targeting the
+   * trainee's specific sandbox index rather than the pool-wide wildcard, avoiding any post-fetch
+   * filtering overhead.
    *
-   * @param instanceId training instance id — used to resolve the trainee's sandbox
-   * @param poolId pool id; always required to construct the target index
+   * <p>Either scoping key may fail to resolve — an instance holds no pool, or a restricted caller
+   * has no sandbox — and each yields no commands rather than a wider query.
+   *
+   * @param instanceId training instance id — resolves both the pool and the trainee's sandbox
    * @param sinceTimestampMs epoch ms lower bound (exclusive)
    * @param restrictToUserRefId when non-null, resolves the trainee's sandbox and queries only that
    *     index; when null, queries all sandboxes in the pool
-   * @return matching commands, never null
+   * @return matching commands, never null; empty when the instance holds no pool, or when a
+   *     restricted caller has no resolvable sandbox in it
+   * @throws EntityNotFoundException if {@code instanceId} does not resolve to a training instance
    */
   public List<TrainingCommand> fetchCommandEventsWithRestrictions(
-      Long instanceId, Long poolId, long sinceTimestampMs, Long restrictToUserRefId) {
+      Long instanceId, long sinceTimestampMs, Long restrictToUserRefId) {
 
-    String sandboxIdFilter =
-        (restrictToUserRefId != null)
-            ? resolveTraineeSandboxId(instanceId, restrictToUserRefId)
-            : null;
+    Long poolId = trainingInstanceService.findById(instanceId).getPoolId();
+    if (poolId == null) {
+      return List.of();
+    }
 
-    return commandEventsService.findFilteredCommandEvents(
-        poolId, sinceTimestampMs, sandboxIdFilter);
+    if (restrictToUserRefId == null) {
+      return commandEventsService.findFilteredCommandEvents(poolId, sinceTimestampMs, null);
+    }
+
+    String traineeSandboxId = resolveTraineeSandboxId(instanceId, restrictToUserRefId);
+    return traineeSandboxId == null
+        ? List.of()
+        : commandEventsService.findFilteredCommandEvents(
+            poolId, sinceTimestampMs, traineeSandboxId);
   }
 
   /**
