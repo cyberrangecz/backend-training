@@ -8,6 +8,7 @@ import cz.cyberrange.platform.training.api.dto.cheatingdetection.CheatingDetecti
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.detection.CheatingDetection;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.detection.CheatingDetectionMapper;
+import cz.cyberrange.platform.training.service.mapping.mapstruct.detection.ForbiddenCommandMapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,8 +22,11 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 
-/** Unit tests for {@link CheatingDetectionMapper}. */
+/**
+ * Unit tests for {@link CheatingDetectionMapper}.
+ */
 @DisplayName("CheatingDetectionMapper")
 class CheatingDetectionMapperTest {
 
@@ -47,6 +51,10 @@ class CheatingDetectionMapperTest {
   @BeforeEach
   void setUp() {
     sut = Mappers.getMapper(CheatingDetectionMapper.class);
+    // The mapper delegates the forbidden commands of an entity to {@link ForbiddenCommandMapper}, so
+    // that collaborator is injected into the generated implementation before any mapping runs.
+    ReflectionTestUtils.setField(
+        sut, "forbiddenCommandMapper", Mappers.getMapper(ForbiddenCommandMapper.class));
 
     entity = new CheatingDetection();
     entity.setId(ENTITY_ID);
