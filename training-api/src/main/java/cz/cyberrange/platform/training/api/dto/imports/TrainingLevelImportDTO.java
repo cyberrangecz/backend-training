@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.imports;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.cyberrange.platform.training.api.dto.export.AbstractLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
 import io.swagger.annotations.ApiModel;
@@ -26,6 +27,9 @@ import lombok.ToString;
     value = "TrainingLevelImportDTO",
     description = "Imported training level.",
     parent = AbstractLevelExportDTO.class)
+// Properties accepted and discarded so that training definitions exported by earlier versions
+// remain importable
+@JsonIgnoreProperties({"reference_solution"})
 public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
 
   @ApiModelProperty(
