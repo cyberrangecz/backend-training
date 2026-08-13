@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import cz.cyberrange.platform.commons.security.enums.OIDCItems;
+import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -27,11 +28,11 @@ import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.Question
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
@@ -155,7 +156,7 @@ public class TrainingDefinitionsIT {
 
   private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO, invalidDefinitionUpdateDTO;
   private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
-  private TrainingDefinitionByIdDTO invalidDefinitionDTO;
+  private TrainingDefinitionWithLevelsDTO invalidDefinitionDTO;
   private TrainingDefinition releasedTrainingDefinition,
       unreleasedTrainingDefinition,
       archivedTrainingDefinition;
@@ -217,7 +218,7 @@ public class TrainingDefinitionsIT {
 
     trainingDefinitionCreateDTO = testDataFactory.getTrainingDefinitionCreateDTO();
 
-    invalidDefinitionDTO = new TrainingDefinitionByIdDTO();
+    invalidDefinitionDTO = new TrainingDefinitionWithLevelsDTO();
 
     releasedTrainingDefinition = testDataFactory.getReleasedDefinition();
     releasedTrainingDefinition.setAuthors(new HashSet<>(List.of(author1)));
@@ -331,15 +332,17 @@ public class TrainingDefinitionsIT {
             .andReturn()
             .getResponse();
 
-    TrainingDefinitionByIdDTO definitionDTO = trainingDefinitionMapper.mapToDTOById(expected);
     TrainingLevelDTO trainingLevelDTO = levelMapper.mapToTrainingLevelDTO(trainingLevel1);
     trainingLevelDTO.setLevelType(LevelType.TRAINING_LEVEL);
-    definitionDTO.setLevels(new ArrayList<>(Collections.singleton(trainingLevelDTO)));
+    TrainingDefinitionWithLevelsDTO definitionDTO =
+        trainingDefinitionMapper.mapToDTOWithLevels(
+            expected, List.<AbstractLevelDTO>of(trainingLevelDTO));
+    definitionDTO.setCanBeArchived(true);
     assertEquals(
         definitionDTO,
         convertJsonBytesToObject(
             convertJsonBytesToObject(result.getContentAsString()),
-            TrainingDefinitionByIdDTO.class));
+            TrainingDefinitionWithLevelsDTO.class));
   }
 
   @Test
@@ -520,13 +523,14 @@ public class TrainingDefinitionsIT {
 
     Optional<TrainingDefinition> newDefinition = trainingDefinitionRepository.findById(1L);
     assertTrue(newDefinition.isPresent());
-    TrainingDefinitionByIdDTO newDefinitionDTO =
-        trainingDefinitionMapper.mapToDTOById(newDefinition.get());
+    TrainingDefinitionWithLevelsDTO newDefinitionDTO =
+        trainingDefinitionMapper.mapToDTOWithLevels(newDefinition.get(), List.of());
+    newDefinitionDTO.setCanBeArchived(true);
     assertEquals(
         newDefinitionDTO,
         convertJsonBytesToObject(
             convertJsonBytesToObject(result.getContentAsString()),
-            TrainingDefinitionByIdDTO.class));
+            TrainingDefinitionWithLevelsDTO.class));
   }
 
   @Test
@@ -661,9 +665,6 @@ public class TrainingDefinitionsIT {
     trainingLevel1.setTrainingDefinition(unreleasedTrainingDefinition);
     trainingLevelRepository.save(trainingLevel1);
     mockSpringSecurityContextForGet(List.of(RoleTypeSecurity.ROLE_TRAINING_DESIGNER.name()));
-    TrainingDefinitionByIdDTO trainingDefinitionByIdDTO =
-        trainingDefinitionMapper.mapToDTOById(unreleasedTrainingDefinition);
-    trainingDefinitionByIdDTO.setLevels(List.of(levelMapper.mapToDTO(trainingLevel1)));
 
     MockHttpServletResponse result =
         mvc.perform(

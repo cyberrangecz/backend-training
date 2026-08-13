@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
 
@@ -24,6 +25,7 @@ import org.mapstruct.ReportingPolicy;
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EventMapper {
 
+  @Mapping(target = "type", constant = "COMMAND")
   CommandEventDTO mapToDTO(TrainingCommand command);
 
   List<CommandEventDTO> mapToListDTO(List<TrainingCommand> commands);

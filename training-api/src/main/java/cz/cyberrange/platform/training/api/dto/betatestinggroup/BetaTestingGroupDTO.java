@@ -3,14 +3,10 @@ package cz.cyberrange.platform.training.api.dto.betatestinggroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Set;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about Beta testing group. */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "BetaTestingGroupDTO",
     description =

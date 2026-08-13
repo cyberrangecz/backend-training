@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.service.unit.mapstruct;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -38,6 +39,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class ExportImportMapperTest {
 
   private static final Long ENTITY_ID = 42L;
+  private static final Long INSTANCE_DEFINITION_ID = 77L;
   private static final Long PARTICIPANT_REF_ID = 100L;
   private static final String TITLE = "Test Training";
   private static final String DESCRIPTION = "Test Description";
@@ -106,6 +108,10 @@ class ExportImportMapperTest {
     trainingInstanceEntity.setLastEdited(START_TIME);
     trainingInstanceEntity.setLastEditedBy(LAST_EDITED_BY);
 
+    TrainingDefinition instanceDefinition = new TrainingDefinition();
+    instanceDefinition.setId(INSTANCE_DEFINITION_ID);
+    trainingInstanceEntity.setTrainingDefinition(instanceDefinition);
+
     trainingRunEntity = new TrainingRun();
     trainingRunEntity.setId(ENTITY_ID);
     trainingRunEntity.setStartTime(START_TIME);
@@ -122,7 +128,6 @@ class ExportImportMapperTest {
     importDto.setOutcomes(OUTCOMES);
     importDto.setState(STATE);
     importDto.setEstimatedDuration((int) ESTIMATED_DURATION);
-    importDto.setVariantSandboxes(false);
 
     exportDto = new ExportTrainingDefinitionAndLevelsDTO();
     exportDto.setTitle(TITLE);
@@ -131,7 +136,6 @@ class ExportImportMapperTest {
     exportDto.setOutcomes(OUTCOMES);
     exportDto.setState(STATE);
     exportDto.setEstimatedDuration((int) ESTIMATED_DURATION);
-    exportDto.setVariantSandboxes(false);
 
     instanceArchiveDto = new TrainingInstanceArchiveDTO();
     instanceArchiveDto.setId(ENTITY_ID);
@@ -266,6 +270,8 @@ class ExportImportMapperTest {
 
       assertNotNull(result);
       assertEquals(trainingInstanceEntity.getId(), result.getId());
+      assertEquals(INSTANCE_DEFINITION_ID, result.getDefinitionId());
+      assertNotEquals(result.getId(), result.getDefinitionId());
       assertEquals(trainingInstanceEntity.getTitle(), result.getTitle());
       assertEquals(trainingInstanceEntity.getStartTime(), result.getStartTime());
       assertEquals(trainingInstanceEntity.getEndTime(), result.getEndTime());

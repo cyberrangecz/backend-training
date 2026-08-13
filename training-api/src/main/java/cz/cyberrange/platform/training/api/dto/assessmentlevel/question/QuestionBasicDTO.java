@@ -6,13 +6,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
+@Data
 @JsonInclude
 @ApiModel(value = "QuestionBasicDTO", description = "Question in an assessment level.")
 public class QuestionBasicDTO {

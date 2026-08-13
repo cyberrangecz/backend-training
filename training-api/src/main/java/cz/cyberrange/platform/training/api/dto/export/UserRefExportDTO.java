@@ -2,14 +2,10 @@ package cz.cyberrange.platform.training.api.dto.export;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about user reference. */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(value = "UserRefExportDTO", description = "An exported information about user reference.")
 public class UserRefExportDTO {
 

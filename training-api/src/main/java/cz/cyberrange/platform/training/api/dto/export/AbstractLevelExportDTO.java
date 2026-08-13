@@ -3,18 +3,14 @@ package cz.cyberrange.platform.training.api.dto.export;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Encapsulates information about abstract level. Extended by {@link AssessmentLevelExportDTO},
  * {@link TrainingLevelExportDTO}, {@link AccessLevelExportDTO} and {@link InfoLevelExportDTO}
  */
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 @ApiModel(
     value = "AbstractLevelExportDTO",

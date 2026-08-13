@@ -8,7 +8,13 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(
     value = "TrainingLevelBasicDTO",
     description = "An assignment containing security tasks whose completion yields a answer.",

@@ -3,10 +3,7 @@ package cz.cyberrange.platform.training.api.dto.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /**
  * A single value the trainee selected for an assessment question together with whether that
@@ -16,10 +13,7 @@ import lombok.ToString;
  * @param <T> type of the selected value; the answer text for free-form answers, the option order
  *     for multiple-choice and extended-matching answers
  */
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @ApiModel(
     value = "AnswerSelectionDTO",
     description = "A submitted value together with whether that selection is correct")

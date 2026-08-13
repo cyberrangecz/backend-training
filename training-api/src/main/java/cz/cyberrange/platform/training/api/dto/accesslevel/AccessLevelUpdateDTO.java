@@ -6,14 +6,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /** Encapsulates information needed to update training level. */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(value = "AccessLevelUpdateDTO", description = "Access level to update.")
 public class AccessLevelUpdateDTO extends AbstractLevelUpdateDTO {
 

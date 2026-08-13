@@ -2,14 +2,10 @@ package cz.cyberrange.platform.training.api.dto.traininginstance;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates the information stating if training instance has finished. */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "TrainingInstanceIsFinishedInfoDTO",
     description = "Information stating if training instance has finished.")

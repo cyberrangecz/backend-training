@@ -1,17 +1,18 @@
 package cz.cyberrange.platform.training.service.unit.mapstruct;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelBasicDTO;
+import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.BetaTestingGroup;
@@ -23,8 +24,6 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinit
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -38,15 +37,15 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * Unit tests for {@link TrainingDefinitionMapper}.
  *
- * <p>Tests all mapping methods including the special {@code mapToPageResultResource} behavior that
- * sets {@code betaTestingGroupId} when the entity's betaTestingGroup is not null. Uses constructor
- * injection with manually constructed impl since the mapper has non-empty {@code uses}.
+ * <p>Covers every mapping method of the mapper. Uses constructor injection with manually
+ * constructed impl since the mapper has non-empty {@code uses}.
  */
 @DisplayName("TrainingDefinitionMapper")
 class TrainingDefinitionMapperTest {
 
   private static final Long ENTITY_ID = 42L;
   private static final Long BTG_ID = 7L;
+  private static final Long LEVEL_ID = 3L;
   private static final String TITLE = "Test Training";
   private static final String DESCRIPTION = "Test description";
   private static final String[] PREREQUISITES = {"networking"};
@@ -93,13 +92,13 @@ class TrainingDefinitionMapperTest {
   }
 
   @Nested
-  @DisplayName("mapToEntity(TrainingDefinitionByIdDTO)")
+  @DisplayName("mapToEntity(TrainingDefinitionWithLevelsDTO)")
   class MapToEntity {
 
     @Test
     @DisplayName("should map all DTO fields to entity")
     void shouldMapAllFieldsFromDtoToEntity() {
-      TrainingDefinitionByIdDTO dto = new TrainingDefinitionByIdDTO();
+      TrainingDefinitionWithLevelsDTO dto = new TrainingDefinitionWithLevelsDTO();
       dto.setId(ENTITY_ID);
       dto.setTitle(TITLE);
       dto.setDescription(DESCRIPTION);
@@ -126,7 +125,7 @@ class TrainingDefinitionMapperTest {
     @Test
     @DisplayName("should map DTO with null fields")
     void shouldMapDtoWithNullFields() {
-      TrainingDefinitionByIdDTO dto = new TrainingDefinitionByIdDTO();
+      TrainingDefinitionWithLevelsDTO dto = new TrainingDefinitionWithLevelsDTO();
       dto.setId(null);
       dto.setTitle(null);
       dto.setDescription(null);
@@ -145,19 +144,35 @@ class TrainingDefinitionMapperTest {
   }
 
   @Nested
-  @DisplayName("mapToDTOById(TrainingDefinition)")
-  class MapToDTOById {
+  @DisplayName("mapToDTOWithLevels(TrainingDefinition, List)")
+  class MapToDTOWithLevels {
 
     @Test
-    @DisplayName("should map entity to ByIdDTO")
-    void shouldMapEntityToByIdDTO() {
-      TrainingDefinitionByIdDTO result = sut.mapToDTOById(entity);
+    @DisplayName("should map entity to DTO with levels")
+    void shouldMapEntityToDtoWithLevels() {
+      entity.setBetaTestingGroup(betaTestingGroup);
+
+      TrainingDefinitionWithLevelsDTO result = sut.mapToDTOWithLevels(entity, List.of());
 
       assertNotNull(result);
       assertEquals(entity.getId(), result.getId());
       assertEquals(entity.getTitle(), result.getTitle());
       assertEquals(entity.getDescription(), result.getDescription());
       assertEquals(enumMapper.mapTDState(entity.getState()), result.getState());
+      assertEquals(BTG_ID, result.getBetaTestingGroupId());
+    }
+
+    @Test
+    @DisplayName("should map the given levels onto the DTO")
+    void shouldMapGivenLevelsOntoDto() {
+      InfoLevelDTO level = new InfoLevelDTO();
+      level.setId(LEVEL_ID);
+
+      TrainingDefinitionWithLevelsDTO result = sut.mapToDTOWithLevels(entity, List.of(level));
+
+      assertNotNull(result.getLevels());
+      assertEquals(1, result.getLevels().size());
+      assertEquals(LEVEL_ID, result.getLevels().get(0).getId());
     }
 
     @Test
@@ -168,7 +183,7 @@ class TrainingDefinitionMapperTest {
       entity.setOutcomes(null);
       entity.setBetaTestingGroup(null);
 
-      TrainingDefinitionByIdDTO result = sut.mapToDTOById(entity);
+      TrainingDefinitionWithLevelsDTO result = sut.mapToDTOWithLevels(entity, List.of());
 
       assertNotNull(result);
       assertEquals(entity.getId(), result.getId());
@@ -236,13 +251,13 @@ class TrainingDefinitionMapperTest {
   }
 
   @Nested
-  @DisplayName("mapToBasicDTO(TrainingDefinition)")
+  @DisplayName("mapToBasicDTO(TrainingDefinition, List)")
   class MapToBasicDTO {
 
     @Test
     @DisplayName("should map entity to basic DTO")
     void shouldMapEntityToBasicDto() {
-      TrainingDefinitionBasicDTO result = sut.mapToBasicDTO(entity);
+      TrainingDefinitionBasicDTO result = sut.mapToBasicDTO(entity, List.of());
 
       assertNotNull(result);
       assertEquals(entity.getId(), result.getId());
@@ -258,7 +273,7 @@ class TrainingDefinitionMapperTest {
       entity.setTitle(null);
       entity.setDescription(null);
 
-      TrainingDefinitionBasicDTO result = sut.mapToBasicDTO(entity);
+      TrainingDefinitionBasicDTO result = sut.mapToBasicDTO(entity, List.of());
 
       assertNotNull(result);
       assertNull(result.getId());
@@ -267,10 +282,23 @@ class TrainingDefinitionMapperTest {
     }
 
     @Test
+    @DisplayName("should map the given levels onto the basic DTO")
+    void shouldMapGivenLevelsOntoBasicDto() {
+      InfoLevelBasicDTO level = new InfoLevelBasicDTO();
+      level.setId(LEVEL_ID);
+
+      TrainingDefinitionBasicDTO result = sut.mapToBasicDTO(entity, List.of(level));
+
+      assertNotNull(result.getLevels());
+      assertEquals(1, result.getLevels().size());
+      assertEquals(LEVEL_ID, result.getLevels().get(0).getId());
+    }
+
+    @Test
     @DisplayName(
         "should expose levels as an empty, non-null array when the definition has no levels")
     void shouldDefaultLevelsToEmptyArray() {
-      TrainingDefinitionBasicDTO result = sut.mapToBasicDTO(entity);
+      TrainingDefinitionBasicDTO result = sut.mapToBasicDTO(entity, List.of());
 
       assertNotNull(result.getLevels());
       assertTrue(result.getLevels().isEmpty());
@@ -382,286 +410,6 @@ class TrainingDefinitionMapperTest {
       assertNull(result.getTitle());
       assertNull(result.getDescription());
       assertNull(result.getState());
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToList(Collection)")
-  class MapToList {
-
-    @Test
-    @DisplayName("should map collection of DTOs to list of entities")
-    void shouldMapCollectionOfDtosToEntities() {
-      TrainingDefinitionByIdDTO dto1 = new TrainingDefinitionByIdDTO();
-      dto1.setId(1L);
-      dto1.setTitle("TD1");
-      dto1.setState(STATE);
-      TrainingDefinitionByIdDTO dto2 = new TrainingDefinitionByIdDTO();
-      dto2.setId(2L);
-      dto2.setTitle("TD2");
-      dto2.setState(STATE);
-
-      List<TrainingDefinition> result = sut.mapToList(List.of(dto1, dto2));
-
-      assertNotNull(result);
-      assertEquals(2, result.size());
-      assertEquals("TD1", result.get(0).getTitle());
-      assertEquals("TD2", result.get(1).getTitle());
-    }
-
-    @Test
-    @DisplayName("should return empty list for empty input")
-    void shouldReturnEmptyListForEmptyInput() {
-      List<TrainingDefinition> result = sut.mapToList(Collections.emptyList());
-
-      assertNotNull(result);
-      assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("should return null for null input")
-    void shouldReturnNullForNullInput() {
-      List<TrainingDefinition> result = sut.mapToList(null);
-
-      assertNull(result);
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToListDTO(Collection)")
-  class MapToListDto {
-
-    @Test
-    @DisplayName("should map collection of entities to list of DTOs")
-    void shouldMapCollectionOfEntitiesToDtos() {
-      TrainingDefinition entity1 = new TrainingDefinition();
-      entity1.setId(1L);
-      entity1.setTitle("TD1");
-      entity1.setState(cz.cyberrange.platform.training.persistence.model.enums.TDState.UNRELEASED);
-      entity1.setLastEdited(LAST_EDITED);
-      entity1.setLastEditedBy(LAST_EDITED_BY);
-      entity1.setCreatedAt(CREATED_AT);
-      TrainingDefinition entity2 = new TrainingDefinition();
-      entity2.setId(2L);
-      entity2.setTitle("TD2");
-      entity2.setState(cz.cyberrange.platform.training.persistence.model.enums.TDState.UNRELEASED);
-      entity2.setLastEdited(LAST_EDITED);
-      entity2.setLastEditedBy(LAST_EDITED_BY);
-      entity2.setCreatedAt(CREATED_AT);
-
-      List<TrainingDefinitionByIdDTO> result = sut.mapToListDTO(List.of(entity1, entity2));
-
-      assertNotNull(result);
-      assertEquals(2, result.size());
-      assertEquals("TD1", result.get(0).getTitle());
-      assertEquals("TD2", result.get(1).getTitle());
-    }
-
-    @Test
-    @DisplayName("should return empty list for empty input")
-    void shouldReturnEmptyListForEmptyInput() {
-      List<TrainingDefinitionByIdDTO> result = sut.mapToListDTO(Collections.emptyList());
-
-      assertNotNull(result);
-      assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("should return null for null input")
-    void shouldReturnNullForNullInput() {
-      List<TrainingDefinitionByIdDTO> result = sut.mapToListDTO(null);
-
-      assertNull(result);
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToSet(Collection)")
-  class MapToSet {
-
-    @Test
-    @DisplayName("should map collection of DTOs to set of entities")
-    void shouldMapCollectionOfDtosToSet() {
-      TrainingDefinitionByIdDTO dto = new TrainingDefinitionByIdDTO();
-      dto.setId(ENTITY_ID);
-      dto.setTitle(TITLE);
-      dto.setState(STATE);
-
-      Set<TrainingDefinition> result = sut.mapToSet(List.of(dto));
-
-      assertNotNull(result);
-      assertEquals(1, result.size());
-    }
-
-    @Test
-    @DisplayName("should return empty set for empty input")
-    void shouldReturnEmptySetForEmptyInput() {
-      Set<TrainingDefinition> result = sut.mapToSet(Collections.emptyList());
-
-      assertNotNull(result);
-      assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("should return null for null input")
-    void shouldReturnNullForNullInput() {
-      Set<TrainingDefinition> result = sut.mapToSet(null);
-
-      assertNull(result);
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToSetDTO(Collection)")
-  class MapToSetDto {
-
-    @Test
-    @DisplayName("should map collection of entities to set of DTOs")
-    void shouldMapCollectionOfEntitiesToSet() {
-      entity.setLastEdited(LAST_EDITED);
-      entity.setLastEditedBy(LAST_EDITED_BY);
-      entity.setCreatedAt(CREATED_AT);
-
-      Set<TrainingDefinitionByIdDTO> result = sut.mapToSetDTO(List.of(entity));
-
-      assertNotNull(result);
-      assertEquals(1, result.size());
-    }
-
-    @Test
-    @DisplayName("should return empty set for empty input")
-    void shouldReturnEmptySetForEmptyInput() {
-      Set<TrainingDefinitionByIdDTO> result = sut.mapToSetDTO(Collections.emptyList());
-
-      assertNotNull(result);
-      assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("should return null for null input")
-    void shouldReturnNullForNullInput() {
-      Set<TrainingDefinitionByIdDTO> result = sut.mapToSetDTO(null);
-
-      assertNull(result);
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToOptional(TrainingDefinitionByIdDTO)")
-  class MapToOptionalDto {
-
-    @Test
-    @DisplayName("should return present Optional for non-null DTO")
-    void shouldReturnPresentOptionalForNonNullDto() {
-      TrainingDefinitionByIdDTO dto = new TrainingDefinitionByIdDTO();
-      dto.setId(ENTITY_ID);
-      dto.setTitle(TITLE);
-      dto.setState(STATE);
-
-      Optional<TrainingDefinition> result = sut.mapToEntityOptional(dto);
-
-      assertNotNull(result);
-      assertTrue(result.isPresent());
-      assertEquals(dto.getId(), result.get().getId());
-    }
-
-    @Test
-    @DisplayName("should return empty Optional for null DTO")
-    void shouldReturnEmptyOptionalForNullDto() {
-      Optional<TrainingDefinition> result = sut.mapToEntityOptional(null);
-
-      assertNotNull(result);
-      assertFalse(result.isPresent());
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToOptional(TrainingDefinition)")
-  class MapToOptionalEntity {
-
-    @Test
-    @DisplayName("should return present Optional for non-null entity")
-    void shouldReturnPresentOptionalForNonNullEntity() {
-      Optional<TrainingDefinitionByIdDTO> result = sut.mapToDTOOptional(entity);
-
-      assertNotNull(result);
-      assertTrue(result.isPresent());
-      assertEquals(entity.getId(), result.get().getId());
-    }
-
-    @Test
-    @DisplayName("should return empty Optional for null entity")
-    void shouldReturnEmptyOptionalForNullEntity() {
-      Optional<TrainingDefinitionByIdDTO> result = sut.mapToDTOOptional(null);
-
-      assertNotNull(result);
-      assertFalse(result.isPresent());
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToPageDTO(Page)")
-  class MapToPageDto {
-
-    @Test
-    @DisplayName("should map page of entities to page of DTOs")
-    void shouldMapPageOfEntitiesToPageOfDtos() {
-      entity.setLastEdited(LAST_EDITED);
-      entity.setLastEditedBy(LAST_EDITED_BY);
-      entity.setCreatedAt(CREATED_AT);
-      Page<TrainingDefinition> page = new PageImpl<>(List.of(entity), PageRequest.of(0, 10), 1);
-
-      var result = sut.mapToPageDTO(page);
-
-      assertNotNull(result);
-      assertEquals(1, result.getContent().size());
-      assertEquals(entity.getId(), result.getContent().get(0).getId());
-      assertEquals(0, result.getPageable().getPageNumber());
-    }
-
-    @Test
-    @DisplayName("should return empty page for empty input")
-    void shouldReturnEmptyPageForEmptyInput() {
-      Page<TrainingDefinition> page =
-          new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 10), 0);
-
-      var result = sut.mapToPageDTO(page);
-
-      assertNotNull(result);
-      assertEquals(0, result.getContent().size());
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToPage(Page)")
-  class MapToPage {
-
-    @Test
-    @DisplayName("should map page of DTOs to page of entities")
-    void shouldMapPageOfDtosToPageOfEntities() {
-      TrainingDefinitionByIdDTO dto = new TrainingDefinitionByIdDTO();
-      dto.setId(ENTITY_ID);
-      dto.setTitle(TITLE);
-      dto.setState(STATE);
-      Page<TrainingDefinitionByIdDTO> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
-
-      var result = sut.mapToPage(page);
-
-      assertNotNull(result);
-      assertEquals(1, result.getContent().size());
-      assertEquals(dto.getId(), result.getContent().get(0).getId());
-    }
-
-    @Test
-    @DisplayName("should return empty page for empty input")
-    void shouldReturnEmptyPageForEmptyInput() {
-      Page<TrainingDefinitionByIdDTO> page =
-          new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 10), 0);
-
-      var result = sut.mapToPage(page);
-
-      assertNotNull(result);
-      assertEquals(0, result.getContent().size());
     }
   }
 

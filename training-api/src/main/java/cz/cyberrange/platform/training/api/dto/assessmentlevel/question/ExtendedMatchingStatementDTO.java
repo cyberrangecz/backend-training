@@ -5,13 +5,9 @@ import cz.cyberrange.platform.training.api.validation.Ordered;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedMatchingStatementDTO implements Ordered {
 

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,6 +18,7 @@ public interface ForbiddenCommandMapper extends ParentMapper {
 
   ForbiddenCommand mapToEntity(ForbiddenCommandDTO dto);
 
+  @Mapping(target = "cheatingDetectionId", source = "cheatingDetection.id")
   ForbiddenCommandDTO mapToDTO(ForbiddenCommand entity);
 
   List<ForbiddenCommand> mapToList(Collection<ForbiddenCommandDTO> dtos);

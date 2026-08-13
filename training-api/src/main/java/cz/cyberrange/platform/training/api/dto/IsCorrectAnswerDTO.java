@@ -2,16 +2,10 @@ package cz.cyberrange.platform.training.api.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Response to attempt of answer input */
-@EqualsAndHashCode
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "IsCorrectAnswerDTO",
     description =

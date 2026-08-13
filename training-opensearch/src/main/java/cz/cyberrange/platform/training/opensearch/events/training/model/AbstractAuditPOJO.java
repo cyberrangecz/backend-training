@@ -2,11 +2,15 @@ package cz.cyberrange.platform.training.opensearch.events.training.model;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.annotations.ApiModel;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -25,6 +29,7 @@ import lombok.experimental.SuperBuilder;
             + " It provides 2 member variables 'timestamp' and 'type': 'timestamp' is generated based on current time; 'type'"
             + " is defined by the `TYPE` constant in each subclass")
 @JsonPropertyOrder({"type", "timestamp"})
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
@@ -44,7 +49,6 @@ import lombok.experimental.SuperBuilder;
   @JsonSubTypes.Type(
       value = WrongAnswerSubmitted.class,
       name = "cz.cyberrange.platform.events.trainings.WrongFlagSubmitted"),
-  @JsonSubTypes.Type(value = WrongAnswerSubmitted.class, name = WrongAnswerSubmitted.TYPE),
 })
 @SuperBuilder
 @Getter
@@ -108,6 +112,30 @@ public abstract class AbstractAuditPOJO {
   // Total score of the player achieved in the assessment levels
   @JsonProperty(value = "total_assessment_level_score", required = true)
   private int totalAssessmentScore;
+
+  private static final Map<Class<?>, String> REGISTERED_TYPES =
+      Arrays.stream(AbstractAuditPOJO.class.getAnnotation(JsonSubTypes.class).value())
+          .collect(
+              Collectors.toMap(
+                  JsonSubTypes.Type::value,
+                  JsonSubTypes.Type::name,
+                  (registeredName, alias) -> registeredName));
+
+  /**
+   * Resolves the polymorphic type name under which the given event class is registered.
+   *
+   * @param eventClass audit event class to resolve the type name for
+   * @return the registered type name of the class
+   * @throws IllegalArgumentException when the class is not registered as a subtype
+   */
+  public static String resolveEventType(Class<? extends AbstractAuditPOJO> eventClass) {
+    String registeredName = REGISTERED_TYPES.get(eventClass);
+    if (registeredName == null) {
+      throw new IllegalArgumentException(
+          eventClass.getName() + " is not registered as an audit event subtype");
+    }
+    return registeredName;
+  }
 
   /** Instantiates a new Abstract audit pojo. */
   protected AbstractAuditPOJO() {}

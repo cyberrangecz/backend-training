@@ -68,9 +68,6 @@ public interface QuestionMapper extends ParentMapper {
       qualifiedByName = "extendedMatchingOptionWithoutId")
   QuestionDTO mapToQuestionDTOWithoutId(Question entity);
 
-  @Named("questionDTO")
-  QuestionDTO mapToQuestionDTO(Question entity);
-
   QuestionBasicDTO mapToBasicDTO(Question entity);
 
   QuestionPreviewDTO mapToQuestionPreviewDTO(Question entity);

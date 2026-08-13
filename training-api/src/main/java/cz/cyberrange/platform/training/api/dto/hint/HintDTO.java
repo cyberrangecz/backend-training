@@ -4,16 +4,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 /** Encapsulates information about Hint. */
-@EqualsAndHashCode
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(value = "HintDTO", description = "A brief textual description to aid the participant.")
 public class HintDTO extends HintBasicDTO {
 

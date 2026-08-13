@@ -17,11 +17,12 @@ import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
+import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.enums.TDState;
@@ -90,7 +91,7 @@ public class TrainingDefinitionsRestControllerTest {
   private AutoCloseable closeable;
 
   private TrainingDefinition trainingDefinition1, trainingDefinition2;
-  private TrainingDefinitionByIdDTO trainingDefinitionDTO1, trainingDefinitionDTO2;
+  private TrainingDefinitionWithLevelsDTO trainingDefinitionDTO1, trainingDefinitionDTO2;
   private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
   private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO;
 
@@ -155,10 +156,10 @@ public class TrainingDefinitionsRestControllerTest {
     designerDTO2 = testDataFactory.getUserRefDTO2();
     organizerDTO = testDataFactory.getUserRefDTO3();
 
-    trainingDefinitionDTO1 = testDataFactory.getTrainingDefinitionByIdDTO();
+    trainingDefinitionDTO1 = testDataFactory.getTrainingDefinitionWithLevelsDTO();
     trainingDefinitionDTO1.setId(1L);
 
-    trainingDefinitionDTO2 = testDataFactory.getTrainingDefinitionByIdDTO();
+    trainingDefinitionDTO2 = testDataFactory.getTrainingDefinitionWithLevelsDTO();
     trainingDefinitionDTO2.setId(2L);
     trainingDefinitionDTO2.setTitle("TDbyId2");
 
@@ -210,7 +211,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionDTO1,
         convertJsonBytesToObject(
             convertJsonBytesToObject(result.getContentAsString()),
-            TrainingDefinitionByIdDTO.class));
+            TrainingDefinitionWithLevelsDTO.class));
   }
 
   @Test
@@ -288,7 +289,7 @@ public class TrainingDefinitionsRestControllerTest {
         trainingDefinitionDTO1,
         convertJsonBytesToObject(
             convertJsonBytesToObject(result.getContentAsString()),
-            TrainingDefinitionByIdDTO.class));
+            TrainingDefinitionWithLevelsDTO.class));
     then(trainingDefinitionFacade).should().create(any(TrainingDefinitionCreateDTO.class));
   }
 
@@ -357,7 +358,8 @@ public class TrainingDefinitionsRestControllerTest {
             .getResponse();
     assertEquals(
         trainingDefinitionDTO1,
-        convertJsonBytesToObject(result.getContentAsString(), TrainingDefinitionByIdDTO.class));
+        convertJsonBytesToObject(
+            result.getContentAsString(), TrainingDefinitionWithLevelsDTO.class));
   }
 
   @Test
@@ -666,7 +668,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         abstractLevelDTO,
         convertJsonBytesToObject(
-            convertJsonBytesToObject(result.getContentAsString()), AbstractLevelDTO.class));
+            convertJsonBytesToObject(result.getContentAsString()), TrainingLevelDTO.class));
   }
 
   @Test

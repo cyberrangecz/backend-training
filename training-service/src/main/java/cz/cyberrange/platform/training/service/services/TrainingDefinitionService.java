@@ -19,6 +19,7 @@ import cz.cyberrange.platform.training.service.startup.DefaultLevelsLoader;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -177,13 +178,24 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Find all played by a user.
+   * Finds ids of all Training Definitions played by a user.
    *
    * @param userId a user id
-   * @return the list of definitions
+   * @return the ids of played definitions
    */
-  public List<TrainingDefinition> findAllPlayedByUser(Long userId) {
-    return trainingDefinitionRepository.findAllPlayedByUser(userId);
+  public Set<Long> findPlayedDefinitionIdsByUser(Long userId) {
+    return trainingDefinitionRepository.findPlayedDefinitionIdsByUser(userId);
+  }
+
+  /**
+   * Finds every MITRE technique key used by a training level of a released Training Definition.
+   *
+   * @return the MITRE technique usages, ordered by definition title, definition id and technique
+   *     key
+   */
+  public List<TrainingDefinitionRepository.MitreTechniqueUsage>
+      findMitreTechniqueUsagesOfReleasedDefinitions() {
+    return trainingDefinitionRepository.findMitreTechniqueUsagesByState(TDState.RELEASED);
   }
 
   /**
@@ -388,6 +400,7 @@ public class TrainingDefinitionService {
    */
   public TrainingLevel updateTrainingLevel(
       TrainingLevel updatedTrainingLevel, TrainingLevel persistedTrainingLevel) {
+    updatedTrainingLevel.setAttachments(new HashSet<>(persistedTrainingLevel.getAttachments()));
     this.updateCommonLevelData(updatedTrainingLevel, persistedTrainingLevel);
     this.updateMitreTechniques(updatedTrainingLevel, persistedTrainingLevel);
     this.checkSumOfHintPenalties(updatedTrainingLevel);
@@ -409,6 +422,7 @@ public class TrainingDefinitionService {
    */
   public AccessLevel updateAccessLevel(
       AccessLevel updatedAccessLevel, AccessLevel persistedAccessLevel) {
+    this.retainTimingDataAbsentFromUpdate(updatedAccessLevel, persistedAccessLevel);
     this.updateCommonLevelData(updatedAccessLevel, persistedAccessLevel);
     return accessLevelRepository.save(updatedAccessLevel);
   }
@@ -440,6 +454,7 @@ public class TrainingDefinitionService {
    *     definition.
    */
   public InfoLevel updateInfoLevel(InfoLevel updatedInfoLevel, InfoLevel persistedInfoLevel) {
+    this.retainTimingDataAbsentFromUpdate(updatedInfoLevel, persistedInfoLevel);
     this.updateCommonLevelData(updatedInfoLevel, persistedInfoLevel);
     return infoLevelRepository.save(updatedInfoLevel);
   }
@@ -478,6 +493,19 @@ public class TrainingDefinitionService {
     updatedAssessmentLevel.setMaxScore(
         updatedAssessmentLevel.getQuestions().stream().mapToInt(Question::getPoints).sum());
     return assessmentLevelRepository.save(updatedAssessmentLevel);
+  }
+
+  /**
+   * Carries the stored duration and minimal solve time over to a level whose update request cannot
+   * express them, so that saving the level leaves both values untouched.
+   *
+   * @param updatedLevel the level built from the update request
+   * @param persistedLevel the level as currently stored
+   */
+  private void retainTimingDataAbsentFromUpdate(
+      AbstractLevel updatedLevel, AbstractLevel persistedLevel) {
+    updatedLevel.setEstimatedDuration(persistedLevel.getEstimatedDuration());
+    updatedLevel.setMinimalPossibleSolveTime(persistedLevel.getMinimalPossibleSolveTime());
   }
 
   private void updateCommonLevelData(AbstractLevel updatedLevel, AbstractLevel persistedLevel) {
@@ -643,6 +671,49 @@ public class TrainingDefinitionService {
   }
 
   /**
+   * Finds all levels belonging to any of the given definitions.
+   *
+   * @param definitionIds ids of the definitions
+   * @return list of {@link AbstractLevel} associated with any of the given training definitions,
+   *     ordered by level order
+   */
+  public List<AbstractLevel> findAllLevelsFromDefinitions(Collection<Long> definitionIds) {
+    return definitionIds.isEmpty()
+        ? List.of()
+        : abstractLevelRepository.findAllLevelsByTrainingDefinitionIdIn(definitionIds);
+  }
+
+  /**
+   * Finds which of the given definitions still have a training instance running at or after the
+   * given moment.
+   *
+   * @param definitionIds ids of the definitions to restrict the lookup to
+   * @param time the moment an instance has to end after
+   * @return ids of the definitions with at least one such instance
+   */
+  public Set<Long> findDefinitionIdsWithInstanceEndingAfter(
+      Collection<Long> definitionIds, LocalDateTime time) {
+    return definitionIds.isEmpty()
+        ? Set.of()
+        : new HashSet<>(
+            trainingInstanceRepository.findTrainingDefinitionIdsWithInstanceEndingAfter(
+                definitionIds, time));
+  }
+
+  /**
+   * Decides whether the given training definition can be archived, which is the case exactly when
+   * none of its training instances ends in the future.
+   *
+   * @param definitionId id of the definition to decide for
+   * @return true when the definition has no instance ending after the current moment
+   */
+  public boolean canBeArchived(Long definitionId) {
+    return findDefinitionIdsWithInstanceEndingAfter(
+            Set.of(definitionId), LocalDateTime.now(Clock.systemUTC()))
+        .isEmpty();
+  }
+
+  /**
    * Finds specific level by id with associated training definition
    *
    * @param levelId - id of wanted level
@@ -674,17 +745,6 @@ public class TrainingDefinitionService {
                 new EntityNotFoundException(
                     new EntityErrorDetail(
                         AbstractLevel.class, "id", levelId.getClass(), levelId, LEVEL_NOT_FOUND)));
-  }
-
-  /**
-   * Find all training instances associated with training definition by id.
-   *
-   * @param id the id of training definition
-   * @return the list of all {@link TrainingInstance}s associated with wanted {@link
-   *     TrainingDefinition}
-   */
-  public List<TrainingInstance> findAllTrainingInstancesByTrainingDefinitionId(Long id) {
-    return trainingInstanceRepository.findAllByTrainingDefinitionId(id);
   }
 
   /**

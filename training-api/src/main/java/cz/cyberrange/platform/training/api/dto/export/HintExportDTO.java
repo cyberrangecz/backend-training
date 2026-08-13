@@ -2,18 +2,12 @@ package cz.cyberrange.platform.training.api.dto.export;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /** Encapsulates information about Hint. */
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
-@EqualsAndHashCode
 @ApiModel(
     value = "HintExportDTO",
     description = "An exported brief textual description to aid the participant.")

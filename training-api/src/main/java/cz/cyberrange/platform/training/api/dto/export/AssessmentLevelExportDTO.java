@@ -5,14 +5,14 @@ import cz.cyberrange.platform.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /** Encapsulates information about assessment level. Inherits from {@link AbstractLevelExportDTO} */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(
     value = "AssessmentLevelExportDTO",
     description = "Exported assessment level.",

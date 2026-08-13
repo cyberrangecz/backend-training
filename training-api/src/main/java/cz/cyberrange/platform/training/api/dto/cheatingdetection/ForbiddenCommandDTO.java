@@ -3,15 +3,9 @@ package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 import cz.cyberrange.platform.training.api.enums.CommandType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @ApiModel(value = "ForbiddenCommandDTO", description = "Basic information about forbidden command.")
 public class ForbiddenCommandDTO {
 

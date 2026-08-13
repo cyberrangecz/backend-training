@@ -7,14 +7,10 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about Training definition, intended for creation of new definition. */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training definition to create.")
 public class TrainingDefinitionCreateDTO {
 

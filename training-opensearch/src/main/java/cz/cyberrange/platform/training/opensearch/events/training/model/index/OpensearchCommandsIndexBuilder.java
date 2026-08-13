@@ -19,7 +19,7 @@ package cz.cyberrange.platform.training.opensearch.events.training.model.index;
  */
 public class OpensearchCommandsIndexBuilder {
 
-  private static final String TEMPLATE = "crczp.logs.console.pool={}.sandbox={}";
+  private static final String TEMPLATE = "crczp.logs.console.pool=%s.sandbox=%s";
   private static final String WILDCARD = "*";
 
   private Long pool = null;

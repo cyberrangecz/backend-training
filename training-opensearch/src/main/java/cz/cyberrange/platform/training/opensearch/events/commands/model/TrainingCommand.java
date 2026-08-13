@@ -6,11 +6,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
+@Slf4j
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TrainingCommand {
+
+  // Timestamp assigned to a command whose logged time is missing or unparsable
+  private static final LocalDateTime EPOCH_START = LocalDateTime.of(1970, 1, 1, 0, 0);
 
   // OpenSearch document id of the event
   @JsonIgnore private String eventId;
@@ -34,6 +40,7 @@ public class TrainingCommand {
   @JsonProperty("cmd")
   private void deserializeCmd(String command) {
     if (command == null || command.isBlank()) {
+      log.warn("Command event has no 'cmd' value; recording an empty command.");
       this.command = "";
       this.commandArguments = "";
       return;
@@ -46,7 +53,20 @@ public class TrainingCommand {
 
   @JsonProperty("timestamp_str")
   private void deserializeTime(String time) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-    this.timestamp = LocalDateTime.parse(time.substring(0, 19), formatter);
+    if (time == null || time.isBlank()) {
+      log.warn("Command event has no 'timestamp_str' value; falling back to {}.", EPOCH_START);
+      this.timestamp = EPOCH_START;
+      return;
+    }
+    try {
+      this.timestamp = LocalDateTime.parse(time.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    } catch (DateTimeParseException e) {
+      log.warn(
+          "Command event has unparsable 'timestamp_str' value '{}'; falling back to {}.",
+          time,
+          EPOCH_START,
+          e);
+      this.timestamp = EPOCH_START;
+    }
   }
 }

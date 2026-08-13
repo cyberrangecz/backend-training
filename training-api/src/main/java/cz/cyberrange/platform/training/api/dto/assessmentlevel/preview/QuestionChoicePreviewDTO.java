@@ -4,13 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import cz.cyberrange.platform.training.api.validation.Ordered;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QuestionChoicePreviewDTO implements Serializable, Ordered {
 

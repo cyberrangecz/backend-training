@@ -6,14 +6,10 @@ import cz.cyberrange.platform.training.api.enums.TRState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about Training run. Used for archiving */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "TrainingRunArchiveDTO",
     description = "An archived run of training instance of a particular participant.")

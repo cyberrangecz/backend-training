@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
@@ -30,9 +31,17 @@ import org.springframework.data.domain.PageImpl;
 public interface TrainingRunMapper extends ParentMapper {
   TrainingRun mapToEntity(TrainingRunDTO dto);
 
+  @Mapping(target = "trainingInstanceId", source = "trainingInstance.id")
+  @Mapping(target = "trainingDefinitionId", source = "trainingInstance.trainingDefinition.id")
+  @Mapping(target = "currentLevelId", source = "currentLevel.id")
+  @Mapping(target = "currentLevelOrder", source = "currentLevel.order")
   TrainingRunDTO mapToDTO(TrainingRun entity);
 
   @Named("trainingRunToBasicDTO")
+  @Mapping(target = "trainingInstanceId", source = "trainingInstance.id")
+  @Mapping(target = "trainingDefinitionId", source = "trainingInstance.trainingDefinition.id")
+  @Mapping(target = "currentLevelId", source = "currentLevel.id")
+  @Mapping(target = "currentLevelOrder", source = "currentLevel.order")
   TrainingRunBasicDTO mapToBasicDTO(TrainingRun entity);
 
   @IterableMapping(qualifiedByName = "trainingRunToBasicDTO")

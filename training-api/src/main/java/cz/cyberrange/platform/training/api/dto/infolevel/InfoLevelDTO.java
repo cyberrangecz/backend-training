@@ -3,14 +3,14 @@ package cz.cyberrange.platform.training.api.dto.infolevel;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /** Encapsulates information about info level. Inherits from {@link AbstractLevelDTO} */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(
     value = "InfoLevelDTO",
     description = "A HTML content for the participant to read.",

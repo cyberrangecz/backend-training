@@ -8,14 +8,14 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /** Encapsulates information about training level. Inherits from {@link AbstractLevelDTO} */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(
     value = "TrainingLevelDTO",
     description = "An assignment containing security tasks whose completion yields a answer.",
@@ -71,4 +71,10 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
           "Indicates if at least one command has to be executed to complete the level. Default is true.",
       example = "true")
   private boolean commandsRequired;
+
+  @ApiModelProperty(
+      value =
+          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+      example = "5")
+  private Integer minimalPossibleSolveTime;
 }

@@ -32,6 +32,7 @@ public interface ExportImportMapper extends ParentMapper {
   TrainingDefinition mapToEntity(ImportTrainingDefinitionDTO dto);
 
   @Mapping(target = "organizersRefIds", source = "organizers")
+  @Mapping(target = "definitionId", source = "trainingDefinition.id")
   TrainingInstanceArchiveDTO mapToDTO(TrainingInstance entity);
 
   TrainingRunExportDTO mapToDTO(TrainingRun entity);

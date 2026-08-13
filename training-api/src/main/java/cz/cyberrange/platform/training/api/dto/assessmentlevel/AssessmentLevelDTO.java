@@ -6,14 +6,14 @@ import cz.cyberrange.platform.training.api.enums.AssessmentType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /** Encapsulates information about assessment level. Inherits from {@link AbstractLevelDTO} */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(
     value = "AssessmentLevelDTO",
     description = "A questionnaire or a test that is displayed to the participant.",
@@ -30,4 +30,10 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
 
   @ApiModelProperty(value = "Type of assessment.", example = "TEST")
   private AssessmentType assessmentType;
+
+  @ApiModelProperty(
+      value =
+          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+      example = "5")
+  private Integer minimalPossibleSolveTime;
 }

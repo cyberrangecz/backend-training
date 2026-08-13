@@ -3,14 +3,10 @@ package cz.cyberrange.platform.training.api.dto.traininginstance;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about Training Instance, intended for assigning pool id. */
-@Getter
-@Setter
-@ToString
+@Data
 @ApiModel(
     value = "TrainingInstanceAssignPoolIdDTO",
     description = "Training Instance assign pool ID.")

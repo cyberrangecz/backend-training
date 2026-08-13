@@ -45,12 +45,12 @@ import javax.persistence.*;
               + "LEFT JOIN td.authors aut "
               + "WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'"),
   @NamedQuery(
-      name = "TrainingDefinition.findAllPlayedByUser",
+      name = "TrainingDefinition.findPlayedDefinitionIdsByUser",
       query =
-          "SELECT DISTINCT td FROM TrainingRun tr "
-              + "LEFT JOIN tr.participantRef pr "
-              + "LEFT JOIN tr.trainingInstance ti "
-              + "LEFT JOIN ti.trainingDefinition td "
+          "SELECT DISTINCT td.id FROM TrainingRun tr "
+              + "JOIN tr.participantRef pr "
+              + "JOIN tr.trainingInstance ti "
+              + "JOIN ti.trainingDefinition td "
               + "WHERE pr.userRefId = :userRefId")
 })
 public class TrainingDefinition extends AbstractEntity<Long> {

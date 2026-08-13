@@ -54,7 +54,7 @@ public class AuditService {
     try {
       pojoClass.setTimestamp(
           System.currentTimeMillis() + (long) priority * DEFAULT_TIMESTAMP_DELAY_MS);
-      pojoClass.setType(pojoClass.getClass().getName());
+      pojoClass.setType(AbstractAuditPOJO.resolveEventType(pojoClass.getClass()));
 
       logger.info(objectMapper.writeValueAsString(pojoClass));
     } catch (JsonProcessingException e) {

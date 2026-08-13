@@ -636,7 +636,6 @@ public class TrainingInstancesRestController {
    * @param eventType the type of events to retrieve.
    * @param sinceTimestamp lower bound timestamp in epoch milliseconds; only events after this time
    *     are returned.
-   * @param poolId optional pool id required for pool-scoped event types (e.g. COMMAND).
    * @return list of events matching the given criteria.
    */
   @ApiOperation(
@@ -644,7 +643,10 @@ public class TrainingInstancesRestController {
       value = "Get events of training instance.",
       response = AbstractEventDTO.class,
       nickname = "getTrainingInstanceEvents",
-      notes = "Returns events for a training instance filtered by event type and timestamp.",
+      notes =
+          "Returns events for a training instance filtered by event type and timestamp. Console"
+              + " command events are read from the pool assigned to the instance; an instance with"
+              + " no assigned pool yields an empty list.",
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiResponses(
       value = {
@@ -671,15 +673,9 @@ public class TrainingInstancesRestController {
           String eventType,
       @ApiParam(value = "Lower bound timestamp in epoch milliseconds.", required = true)
           @RequestParam(value = "sinceTimestamp")
-          long sinceTimestamp,
-      @ApiParam(
-              value = "Pool ID required for pool-scoped event types (e.g. COMMAND).",
-              required = false)
-          @RequestParam(value = "poolId", required = false)
-          Long poolId) {
+          long sinceTimestamp) {
     List<AbstractEventDTO> events =
-        trainingInstanceFacade.getTrainingInstanceEvents(
-            instanceId, eventType, sinceTimestamp, poolId);
+        trainingInstanceFacade.getTrainingInstanceEvents(instanceId, eventType, sinceTimestamp);
     return ResponseEntity.ok(events);
   }
 

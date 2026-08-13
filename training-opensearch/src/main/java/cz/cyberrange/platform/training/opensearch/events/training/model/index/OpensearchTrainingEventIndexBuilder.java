@@ -20,7 +20,7 @@ package cz.cyberrange.platform.training.opensearch.events.training.model.index;
 public class OpensearchTrainingEventIndexBuilder {
 
   private static final String TEMPLATE =
-      "crczp.events.trainings.pool={}.sandbox={}.definition={}.instance={}.run={}";
+      "crczp.events.trainings.pool=%s.sandbox=%s.definition=%s.instance=%s.run=%s";
   private static final String WILDCARD = "*";
 
   private Long pool = null;

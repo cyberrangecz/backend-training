@@ -4,15 +4,9 @@ import cz.cyberrange.platform.training.api.enums.CommandType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @ApiModel(
     value = "DetectedForbiddenCommandDTO",
     description = "Basic information about detected forbidden command.")

@@ -6,16 +6,10 @@ import cz.cyberrange.platform.training.api.enums.Actions;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /** Encapsulates information about already accessed training run. */
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @ApiModel(
     value = "AccessedTrainingRunDTO",
     description = "Already accessed training run by some participant.")

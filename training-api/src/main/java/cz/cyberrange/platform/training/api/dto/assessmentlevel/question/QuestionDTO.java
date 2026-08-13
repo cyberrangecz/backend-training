@@ -14,7 +14,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class QuestionDTO extends QuestionBasicDTO {
 

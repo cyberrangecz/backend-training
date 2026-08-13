@@ -2,18 +2,14 @@ package cz.cyberrange.platform.training.api.dto.traininginstance;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /** Encapsulates basic information about Training Instance */
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 public class TrainingInstanceFindAllResponseDTO {
 
@@ -37,7 +33,7 @@ public class TrainingInstanceFindAllResponseDTO {
 
   @ApiModelProperty(
       value = "Reference to training definition from which is training instance created.")
-  private TrainingDefinitionByIdDTO trainingDefinition;
+  private TrainingDefinitionDTO trainingDefinition;
 
   @ApiModelProperty(
       value = "Token used to access training run.",

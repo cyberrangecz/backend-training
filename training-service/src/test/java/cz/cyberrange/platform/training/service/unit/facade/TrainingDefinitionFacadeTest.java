@@ -10,10 +10,10 @@ import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionByIdDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.RoleType;
@@ -192,7 +192,7 @@ public class TrainingDefinitionFacadeTest {
     given(trainingDefinitionService.findById(1L)).willReturn(trainingDefinition1);
     given(trainingDefinitionService.findAllLevelsFromDefinition(anyLong()))
         .willReturn(List.of(trainingLevel));
-    TrainingDefinitionByIdDTO definition = trainingDefinitionFacade.findById(1L);
+    TrainingDefinitionWithLevelsDTO definition = trainingDefinitionFacade.findById(1L);
     assertEquals(1, definition.getLevels().size());
     AbstractLevelDTO level = definition.getLevels().get(0);
     assertEquals(trainingLevel.getTitle(), level.getTitle());
@@ -265,7 +265,7 @@ public class TrainingDefinitionFacadeTest {
         .willReturn(trainingDefinition1);
     given(trainingDefinitionService.findAllLevelsFromDefinition(anyLong()))
         .willReturn(List.of(trainingLevel));
-    TrainingDefinitionByIdDTO definition =
+    TrainingDefinitionWithLevelsDTO definition =
         trainingDefinitionFacade.clone(trainingDefinition1.getId(), "title");
     assertEquals(1, definition.getLevels().size());
     AbstractLevelDTO level = definition.getLevels().get(0);

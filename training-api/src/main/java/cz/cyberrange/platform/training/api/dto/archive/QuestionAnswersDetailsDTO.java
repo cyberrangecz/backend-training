@@ -3,13 +3,9 @@ package cz.cyberrange.platform.training.api.dto.archive;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
+@Data
 public class QuestionAnswersDetailsDTO {
   private String question;
   private Map<String, Integer> answers = new HashMap<>();

@@ -8,7 +8,7 @@ import lombok.Setter;
 
 /**
  * Class representing levels from Training definition. This class is extended by TrainingLevel,
- * InfoLevel and AssessmentLevel.
+ * InfoLevel, AssessmentLevel and AccessLevel.
  */
 @Getter
 @Setter
@@ -34,6 +34,11 @@ import lombok.Setter;
       name = "AbstractLevel.findAllLevelsByTrainingDefinitionId",
       query =
           "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order"),
+  @NamedQuery(
+      name = "AbstractLevel.findAllLevelsByTrainingDefinitionIdIn",
+      query =
+          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id IN :trainingDefinitionIds "
+              + "ORDER BY l.order"),
   @NamedQuery(
       name = "AbstractLevel.findFirstLevelByTrainingDefinitionId",
       query =

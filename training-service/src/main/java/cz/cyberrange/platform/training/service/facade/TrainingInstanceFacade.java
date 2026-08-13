@@ -15,6 +15,7 @@ import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstance
 import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
+import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
@@ -30,9 +31,6 @@ import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerO
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
-import cz.cyberrange.platform.training.service.facade.strategy.EventQueryStrategy;
-import cz.cyberrange.platform.training.service.facade.strategy.OrganizerEventQueryStrategy;
-import cz.cyberrange.platform.training.service.facade.strategy.TraineeEventQueryStrategy;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EventMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
@@ -66,6 +64,9 @@ import org.springframework.util.StringUtils;
 @Service
 public class TrainingInstanceFacade {
 
+  /** Event type discriminator selecting console commands, stored per pool rather than per run. */
+  private static final String COMMAND_EVENT_TYPE = "COMMAND";
+
   private final TrainingInstanceService trainingInstanceService;
   private final TrainingDefinitionService trainingDefinitionService;
   private final TrainingRunService trainingRunService;
@@ -78,7 +79,6 @@ public class TrainingInstanceFacade {
   private final CommandEventsService commandEventsService;
   private final TrainingEventsService trainingEventsService;
   private final EventMapper eventMapper;
-  private final OrganizerEventQueryStrategy organizerEventQueryStrategy;
   private final TrainingEventAccessService trainingEventAccessService;
 
   /**
@@ -96,7 +96,6 @@ public class TrainingInstanceFacade {
    * @param commandEventsService the command events service
    * @param trainingEventsService the training events service
    * @param eventMapper mapper for converting event POJOs to DTOs
-   * @param organizerEventQueryStrategy strategy for organizer/admin event queries
    * @param trainingEventAccessService service enforcing event-fetch access restrictions
    */
   @Autowired
@@ -113,7 +112,6 @@ public class TrainingInstanceFacade {
       CommandEventsService commandEventsService,
       TrainingEventsService trainingEventsService,
       EventMapper eventMapper,
-      OrganizerEventQueryStrategy organizerEventQueryStrategy,
       TrainingEventAccessService trainingEventAccessService) {
     this.trainingInstanceService = trainingInstanceService;
     this.trainingDefinitionService = trainingDefinitionService;
@@ -127,7 +125,6 @@ public class TrainingInstanceFacade {
     this.commandEventsService = commandEventsService;
     this.trainingEventsService = trainingEventsService;
     this.eventMapper = eventMapper;
-    this.organizerEventQueryStrategy = organizerEventQueryStrategy;
     this.trainingEventAccessService = trainingEventAccessService;
   }
 
@@ -610,8 +607,9 @@ public class TrainingInstanceFacade {
    * <p>Access rules applied per caller role:
    *
    * <ul>
-   *   <li><b>Organizer / Administrator:</b> all events returned with full field set.
-   *   <li><b>Trainee:</b> answer events ({@code CorrectAnswerSubmitted}, {@code
+   *   <li><b>Administrator / organizer of the instance:</b> all events returned with full field
+   *       set.
+   *   <li><b>Every other caller:</b> answer events ({@code CorrectAnswerSubmitted}, {@code
    *       WrongAnswerSubmitted}, {@code AssessmentAnswers}) restricted to their own submissions;
    *       console commands restricted to their own sandbox index; {@code sandbox_id} field replaced
    *       with its SHA-256 hash on every event whose sandbox is not the caller's own run (the
@@ -620,70 +618,71 @@ public class TrainingInstanceFacade {
    *
    * <p>All restrictions are enforced at OpenSearch query level — no post-fetch filtering.
    *
+   * <p>Console commands live in a pool-scoped index; the pool is resolved from the instance itself,
+   * and an instance holding no pool yields no commands.
+   *
    * @param instanceId training instance id
    * @param eventType OpenSearch type discriminator string (e.g. {@code "level_started"}); pass
    *     {@code "COMMAND"} for console commands
    * @param sinceTimestampMs epoch milliseconds lower bound (exclusive)
-   * @param poolId required when {@code eventType} is {@code "COMMAND"}; null otherwise
    * @return list of events mapped to {@link AbstractEventDTO}, never null; the {@code sandbox_id}
    *     field holds the plain sandbox UUID for administrators and organizers of the instance; for
    *     other callers only their own run's sandbox UUID is plain and all other sandbox identifiers
    *     are replaced by their SHA-256 hash
-   * @throws BadRequestException if {@code eventType} is {@code "COMMAND"} and {@code poolId} is
-   *     null
+   * @throws EntityNotFoundException if {@code instanceId} does not resolve to a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + " or @securityService.isOrganizerOfGivenTrainingInstance(#instanceId)"
-          + " or hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
+          + " or @securityService.isParticipantOfGivenTrainingInstances({#instanceId})")
   @TransactionalRO
   public List<AbstractEventDTO> getTrainingInstanceEvents(
-      Long instanceId, String eventType, long sinceTimestampMs, Long poolId) {
+      Long instanceId, String eventType, long sinceTimestampMs) {
 
-    boolean callerIsTrainee = securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_TRAINEE);
-    boolean callerIsPrivileged = isCallerAuthorizedToSeeSandboxIds(instanceId);
-    Long callerUserRefId =
-        callerIsTrainee || !callerIsPrivileged
-            ? securityService.getUserRefIdFromUserAndGroup()
-            : null;
+    Long restrictToUserRefId =
+        hasUnrestrictedEventAccess(instanceId)
+            ? null
+            : securityService.getUserRefIdFromUserAndGroup();
 
-    EventQueryStrategy strategy =
-        callerIsTrainee
-            ? new TraineeEventQueryStrategy(trainingEventAccessService, callerUserRefId)
-            : organizerEventQueryStrategy;
-
-    boolean isCommandEventType = "COMMAND".equals(eventType);
-    if (isCommandEventType && poolId == null) {
-      throw new BadRequestException("poolId is required for COMMAND event type");
-    }
-
-    List<AbstractEventDTO> mappedEvents;
-    if (isCommandEventType) {
+    if (COMMAND_EVENT_TYPE.equals(eventType)) {
       List<TrainingCommand> commands =
-          strategy.fetchCommandEvents(instanceId, poolId, sinceTimestampMs);
-      mappedEvents = new ArrayList<>(eventMapper.mapToListDTO(commands));
-    } else {
-      List<AbstractAuditPOJO> trainingEvents =
-          strategy.fetchTrainingEvents(instanceId, eventType, sinceTimestampMs);
-      mappedEvents = new ArrayList<>(eventMapper.mapToEventListDTO(trainingEvents));
+          trainingEventAccessService.fetchCommandEventsWithRestrictions(
+              instanceId, sinceTimestampMs, restrictToUserRefId);
+      return new ArrayList<>(eventMapper.mapToListDTO(commands));
     }
 
-    if (!callerIsPrivileged) {
-      String callerSandboxId =
-          trainingEventAccessService.resolveTraineeSandboxId(instanceId, callerUserRefId);
-      mappedEvents.forEach(
-          event -> {
-            String eventSandboxId = event.getSandboxId();
-            if (eventSandboxId != null && !eventSandboxId.equals(callerSandboxId)) {
-              event.setSandboxId(SandboxIdHasher.hash(eventSandboxId));
-            }
-          });
-    }
+    List<AbstractAuditPOJO> trainingEvents =
+        trainingEventAccessService.fetchTrainingEventsWithRestrictions(
+            instanceId, eventType, sinceTimestampMs, restrictToUserRefId);
+    List<AbstractEventDTO> mappedEvents =
+        new ArrayList<>(eventMapper.mapToEventListDTO(trainingEvents));
 
+    if (restrictToUserRefId != null) {
+      maskForeignSandboxIds(
+          mappedEvents,
+          trainingEventAccessService.resolveTraineeSandboxId(instanceId, restrictToUserRefId));
+    }
     return mappedEvents;
   }
 
-  private boolean isCallerAuthorizedToSeeSandboxIds(Long instanceId) {
+  /**
+   * Replaces the sandbox identifier of every event not belonging to the given sandbox with its
+   * SHA-256 hash, leaving that sandbox's own identifier in plain text.
+   *
+   * @param events events to mask in place
+   * @param ownSandboxId sandbox identifier to leave plain; null masks every identifier present
+   */
+  private void maskForeignSandboxIds(List<AbstractEventDTO> events, String ownSandboxId) {
+    events.forEach(
+        event -> {
+          String eventSandboxId = event.getSandboxId();
+          if (eventSandboxId != null && !eventSandboxId.equals(ownSandboxId)) {
+            event.setSandboxId(SandboxIdHasher.hash(eventSandboxId));
+          }
+        });
+  }
+
+  private boolean hasUnrestrictedEventAccess(Long instanceId) {
     return securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)
         || securityService.isOrganizerOfGivenTrainingInstance(instanceId);
   }

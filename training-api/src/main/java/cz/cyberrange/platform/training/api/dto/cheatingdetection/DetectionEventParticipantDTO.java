@@ -5,15 +5,9 @@ import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @ApiModel(
     value = "DetectionEventParticipantDTO",
     description = "Basic Information about a detection event participant.")

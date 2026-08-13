@@ -4,18 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Map;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
  * Extended-matching assessment answer holding, per statement order, the option the trainee matched
  * to it together with whether that individual pairing is correct.
  */
+@Data
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
 @ToString(callSuper = true)
 @ApiModel(
     value = "ExtendedMatchingEventAnswerDTO",

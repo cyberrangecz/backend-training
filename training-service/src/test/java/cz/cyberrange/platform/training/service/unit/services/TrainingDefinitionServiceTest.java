@@ -60,8 +60,7 @@ public class TrainingDefinitionServiceTest {
   @MockBean private AssessmentLevelRepository assessmentLevelRepository;
   @MockBean private TrainingInstanceRepository trainingInstanceRepository;
   @MockBean private MitreTechniqueRepository mitreTechniqueRepository;
-
-  private HintRepository hintRepository;
+  @MockBean private HintRepository hintRepository;
   @MockBean private UserRefRepository userRefRepository;
   @MockBean private SecurityService securityService;
   @MockBean private UserService userService;

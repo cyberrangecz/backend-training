@@ -3,17 +3,17 @@ package cz.cyberrange.platform.training.api.dto.imports;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
  * The type Info level import dto. * Encapsulates information about info level. Inherits from {@link
  * AbstractLevelImportDTO}
  */
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(
     value = "InfoLevelImportDTO",
     description = "An imported info level.",
