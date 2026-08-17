@@ -44,7 +44,7 @@ import cz.cyberrange.platform.training.persistence.repository.TrainingDefinition
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
-import cz.cyberrange.platform.training.service.annotations.security.IsTrainee;
+import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
@@ -198,7 +198,7 @@ public class TrainingDefinitionFacade {
    *
    * @return the {@link TrainingDefinitionMitreTechniquesDTO} of definitions using MITRE techniques
    */
-  @IsTrainee
+  @IsTraineeOrAdmin
   @TransactionalRO
   public List<TrainingDefinitionMitreTechniquesDTO> findPlayedMitreTechniques() {
     Set<Long> playedDefinitionIds =
