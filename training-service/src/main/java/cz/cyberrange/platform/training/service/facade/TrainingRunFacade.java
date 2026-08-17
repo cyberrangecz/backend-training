@@ -492,7 +492,9 @@ public class TrainingRunFacade {
    * @param trainingRunId id of Training Run to be finish.
    * @param responsesToQuestions responses to assessment
    */
-  @IsTrainee
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   @TransactionalWO
   public void evaluateResponsesToAssessment(
       Long trainingRunId, List<QuestionAnswerDTO> responsesToQuestions) {
