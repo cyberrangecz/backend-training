@@ -56,7 +56,8 @@ public class CheatingDetectionExportFacade {
    * @return the file containing cheating detection, {@link FileToReturnDTO}
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenCheatingDetection(#cheatingDetectionId)")
   @TransactionalRO
   public FileToReturnDTO archiveCheatingDetectionResults(Long cheatingDetectionId) {
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream();

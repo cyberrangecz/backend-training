@@ -11,12 +11,16 @@ import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
+import cz.cyberrange.platform.training.persistence.model.detection.CheatingDetection;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
 import cz.cyberrange.platform.training.persistence.repository.HintRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingLevelRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingRunRepository;
+import cz.cyberrange.platform.training.persistence.repository.detection.AbstractDetectionEventRepository;
+import cz.cyberrange.platform.training.persistence.repository.detection.CheatingDetectionRepository;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import java.util.List;
@@ -44,6 +48,8 @@ public class SecurityService {
   private final AbstractLevelRepository abstractLevelRepository;
   private final TrainingLevelRepository trainingLevelRepository;
   private final HintRepository hintRepository;
+  private final AbstractDetectionEventRepository abstractDetectionEventRepository;
+  private final CheatingDetectionRepository cheatingDetectionRepository;
 
   /**
    * Instantiates a new Security service.
@@ -52,6 +58,8 @@ public class SecurityService {
    * @param trainingDefinitionRepository the training definition repository
    * @param trainingRunRepository the training run repository
    * @param userManagementWebClient the java rest template
+   * @param abstractDetectionEventRepository the abstract detection event repository
+   * @param cheatingDetectionRepository the cheating detection repository
    */
   @Autowired
   public SecurityService(
@@ -62,7 +70,9 @@ public class SecurityService {
       UserService userService,
       AbstractLevelRepository abstractLevelRepository,
       TrainingLevelRepository trainingLevelRepository,
-      HintRepository hintRepository) {
+      HintRepository hintRepository,
+      AbstractDetectionEventRepository abstractDetectionEventRepository,
+      CheatingDetectionRepository cheatingDetectionRepository) {
     this.trainingDefinitionRepository = trainingDefinitionRepository;
     this.trainingInstanceRepository = trainingInstanceRepository;
     this.trainingRunRepository = trainingRunRepository;
@@ -71,6 +81,8 @@ public class SecurityService {
     this.abstractLevelRepository = abstractLevelRepository;
     this.trainingLevelRepository = trainingLevelRepository;
     this.hintRepository = hintRepository;
+    this.abstractDetectionEventRepository = abstractDetectionEventRepository;
+    this.cheatingDetectionRepository = cheatingDetectionRepository;
   }
 
   /**
@@ -138,6 +150,52 @@ public class SecurityService {
                             "The necessary permissions are required for a resource.")));
     return trainingRun.getTrainingInstance().getOrganizers().stream()
         .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+  }
+
+  /**
+   * Is organizer of given detection event.
+   *
+   * @param eventId the detection event id
+   * @return the boolean
+   * @throws EntityNotFoundException when the detection event with the given id does not exist
+   */
+  public boolean isOrganizerOfGivenDetectionEvent(Long eventId) {
+    AbstractDetectionEvent detectionEvent =
+        abstractDetectionEventRepository
+            .findById(eventId)
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        new EntityErrorDetail(
+                            AbstractDetectionEvent.class,
+                            "id",
+                            eventId.getClass(),
+                            eventId,
+                            "The necessary permissions are required for a resource.")));
+    return isOrganizerOfGivenTrainingInstance(detectionEvent.getTrainingInstanceId());
+  }
+
+  /**
+   * Is organizer of given cheating detection.
+   *
+   * @param cheatingDetectionId the cheating detection id
+   * @return the boolean
+   * @throws EntityNotFoundException when the cheating detection with the given id does not exist
+   */
+  public boolean isOrganizerOfGivenCheatingDetection(Long cheatingDetectionId) {
+    CheatingDetection cheatingDetection =
+        cheatingDetectionRepository
+            .findById(cheatingDetectionId)
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        new EntityErrorDetail(
+                            CheatingDetection.class,
+                            "id",
+                            cheatingDetectionId.getClass(),
+                            cheatingDetectionId,
+                            "The necessary permissions are required for a resource.")));
+    return isOrganizerOfGivenTrainingInstance(cheatingDetection.getTrainingInstanceId());
   }
 
   /**

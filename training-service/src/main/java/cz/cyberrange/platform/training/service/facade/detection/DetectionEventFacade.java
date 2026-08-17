@@ -95,7 +95,7 @@ public class DetectionEventFacade {
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
+          + "or @securityService.isOrganizerOfGivenCheatingDetection(#cheatingDetectionId)")
   @TransactionalWO
   public PageResultResource<AbstractDetectionEventDTO> findAllDetectionEventsOfCheatingDetection(
       Long cheatingDetectionId, Pageable pageable, Predicate predicate, Long trainingInstanceId) {
@@ -111,7 +111,8 @@ public class DetectionEventFacade {
    * @param pageable the pageable
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public PageResultResource<DetectionEventParticipantDTO> findAllParticipantsOfDetectionEvent(
       Long eventId, Pageable pageable) {
@@ -126,7 +127,8 @@ public class DetectionEventFacade {
    * @param pageable the pageable
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public PageResultResource<DetectedForbiddenCommandDTO> findAllForbiddenCommandsOfDetectionEvent(
       Long eventId, Pageable pageable) {
@@ -140,7 +142,8 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public List<DetectedForbiddenCommandDTO> findAllForbiddenCommandsOfDetectionEvent(Long eventId) {
     return detectedForbiddenCommandMapper.mapToListDTO(
@@ -153,7 +156,8 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public AbstractDetectionEventDTO findDetectionEventById(Long eventId) {
     return detectionEventMapper.mapToDTO(
@@ -166,7 +170,8 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public AnswerSimilarityDetectionEventDTO findAnswerSimilarityEventById(Long eventId) {
     return detectionEventMapper.mapToAnswerSimilarityDetectionEventDTO(
@@ -179,7 +184,8 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public LocationSimilarityDetectionEventDTO findLocationSimilarityEventById(Long eventId) {
     return detectionEventMapper.mapToLocationSimilarityDetectionEventDTO(
@@ -192,7 +198,8 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public TimeProximityDetectionEventDTO findTimeProximityEventById(Long eventId) {
     return detectionEventMapper.mapToTimeProximityDetectionEventDTO(
@@ -205,7 +212,8 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public MinimalSolveTimeDetectionEventDTO findMinimalSolveTimeEventById(Long eventId) {
     return detectionEventMapper.mapToMinimalSolveTimeDetectionEventDTO(
@@ -218,7 +226,8 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public NoCommandsDetectionEventDTO findNoCommandsEventById(Long eventId) {
     return detectionEventMapper.mapToNoCommandsDetectionEventDTO(
@@ -231,7 +240,8 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    */
   @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public ForbiddenCommandsDetectionEventDTO findForbiddenCommandsEventById(Long eventId) {
     return detectionEventMapper.mapToForbiddenCommandsDetectionEventDTO(

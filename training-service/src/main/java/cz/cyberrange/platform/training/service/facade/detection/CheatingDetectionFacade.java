@@ -67,7 +67,7 @@ public class CheatingDetectionFacade {
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
+          + "or @securityService.isOrganizerOfGivenCheatingDetection(#cheatingDetectionId)")
   @TransactionalWO
   public void rerunCheatingDetection(Long cheatingDetectionId, Long trainingInstanceId) {
     this.detectionEventService.deleteDetectionEvents(cheatingDetectionId);
@@ -82,7 +82,8 @@ public class CheatingDetectionFacade {
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
+          + "or (@securityService.isOrganizerOfGivenCheatingDetection(#cheatingDetectionId)"
+          + " and @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId))")
   @TransactionalWO
   public void deleteCheatingDetection(Long cheatingDetectionId, Long trainingInstanceId) {
     this.cheatingDetectionService.deleteCheatingDetection(cheatingDetectionId, trainingInstanceId);
