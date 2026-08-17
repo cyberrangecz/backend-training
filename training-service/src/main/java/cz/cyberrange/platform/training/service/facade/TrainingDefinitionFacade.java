@@ -119,7 +119,8 @@ public class TrainingDefinitionFacade {
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
+          + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)"
+          + "or @securityService.isOrganizerForGivenTrainingDefinition(#id)")
   @TransactionalRO
   public TrainingDefinitionWithLevelsDTO findById(Long id) {
     TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
