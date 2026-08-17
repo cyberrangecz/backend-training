@@ -5,8 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,7 +62,7 @@ public class TrainingCommand {
       return;
     }
     try {
-      this.timestamp = LocalDateTime.parse(time.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+      this.timestamp = toUtcDateTime(time.trim());
     } catch (DateTimeParseException e) {
       log.warn(
           "Command event has unparsable 'timestamp_str' value '{}'; falling back to {}.",
@@ -68,5 +71,14 @@ public class TrainingCommand {
           e);
       this.timestamp = EPOCH_START;
     }
+  }
+
+  // Reads an ISO-8601 date-time as UTC, taking a value that carries no zone to already be UTC
+  private static LocalDateTime toUtcDateTime(String time) {
+    TemporalAccessor parsed =
+        DateTimeFormatter.ISO_DATE_TIME.parseBest(time, OffsetDateTime::from, LocalDateTime::from);
+    return parsed instanceof OffsetDateTime zoneQualified
+        ? zoneQualified.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime()
+        : (LocalDateTime) parsed;
   }
 }
