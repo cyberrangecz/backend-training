@@ -109,9 +109,11 @@ public interface TrainingRunRepository
       @Param("userRefId") Long userRefId, Pageable pageable);
 
   /**
-   * Find all training runs accessed by participant by their user ref id.
+   * Find all training runs accessed by the participant holding the given user-and-group id. Matches
+   * on {@code participantRef.userRefId} through the named query of the same name, not on the
+   * participant row's primary key.
    *
-   * @param userRefId the participant ref id
+   * @param userRefId the user-and-group id of the participant
    * @return the list of all {@link TrainingRun}s accessed by participant
    */
   List<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId);
@@ -211,5 +213,14 @@ public interface TrainingRunRepository
    */
   boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 
-  List<TrainingRun> findAllByParticipantRefIdIn(List<Long> userIds);
+  /**
+   * Find all training runs whose participant row has one of the given primary keys. Derived from
+   * the method name, so it matches on {@code participantRef.id} — the training service's own key,
+   * not the user-and-group id that {@link #findAllByParticipantRefId(Long)} takes despite the
+   * matching name. A caller holding user-and-group ids resolves them to participant rows first.
+   *
+   * @param participantRefIds the primary keys of the participant rows
+   * @return the list of all {@link TrainingRun}s accessed by those participants
+   */
+  List<TrainingRun> findAllByParticipantRefIdIn(List<Long> participantRefIds);
 }

@@ -361,7 +361,12 @@ public class SecurityService {
 
     Set<Long> sourceUserInstanceIds = Sets.union(participatesIn, organizes);
 
-    List<TrainingRun> runsByUserIds = trainingRunRepository.findAllByParticipantRefIdIn(userIds);
+    List<Long> participantRefIds =
+        userIds.stream()
+            .map(id -> userService.getUserByUserRefId(id).getId())
+            .collect(Collectors.toList());
+    List<TrainingRun> runsByUserIds =
+        trainingRunRepository.findAllByParticipantRefIdIn(participantRefIds);
     List<Set<Long>> userInstanceIds =
         userIds.stream()
             .map(
