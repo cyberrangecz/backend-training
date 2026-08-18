@@ -35,6 +35,11 @@ import javax.persistence.UniqueConstraint;
 })
 public class UserRef extends AbstractEntity<Long> {
 
+  /**
+   * Identifies the user in the user-and-group microservice, and is the value the REST API, the
+   * OpenSearch event documents and every other service speak in. Distinct from the inherited
+   * primary key, which numbers the row in this service's own database and never leaves it.
+   */
   @Column(name = "user_ref_id", nullable = false)
   private Long userRefId;
 
@@ -51,7 +56,9 @@ public class UserRef extends AbstractEntity<Long> {
   public UserRef() {}
 
   /**
-   * Gets unique identification number of user reference
+   * Gets the primary key of this row in the training service database. Never accepted from nor
+   * exposed to a caller outside this service; a user arriving over the API is identified by {@link
+   * #getUserRefId()}.
    *
    * @return the id
    */
@@ -69,7 +76,8 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets user ref id.
+   * Gets the user-and-group identifier of the referenced user, which is the identifier used across
+   * service boundaries.
    *
    * @return the user ref id
    */
