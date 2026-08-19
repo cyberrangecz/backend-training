@@ -53,21 +53,25 @@ To build and run the project in docker it is necessary to prepare several config
 
 * Fill OIDC credentials gained from the previous step and set additional settings in the [training.properties](https://github.com/cyberrangecz/backend-training/blob/master/etc/training.properties) file and save it.
 
+* By default, the provided configuration uses the in-memory H2 database. To use PostgreSQL instead, point the `spring.datasource.*` properties in `training.properties` to your PostgreSQL instance (run as its own, separate service/container).
+
+* This service calls out to other CyberRangeCZ Platform microservices, configured via the following properties in `training.properties`:
+  * `user-and-group-server.uri` &mdash; [backend-user-and-group](https://github.com/cyberrangecz/backend-user-and-group)
+  * `sandbox-service.uri` &mdash; [backend-sandbox-service](https://github.com/cyberrangecz/backend-sandbox-service)
+  * `answers-storage.uri` &mdash; [backend-answers-storage](https://github.com/cyberrangecz/backend-answers-storage)
+  * `opensearch.host` / `opensearch.port` &mdash; OpenSearch instance used for storing and querying training events
+
 #### 2. Build Docker Image
 In the project root folder (folder with Dockerfile), run the following command:
 ```shell
 $ sudo docker build \
-  --build-arg PROPRIETARY_REPO_URL=https://gitlab.ics.muni.cz/api/v4/projects/2358/packages/maven \
   -t training-image \
   .
 ```
 
-Dockefile contains several default arguments:
-* USERNAME=postgres - the name of the user to connect to the database. 
-* PASSWORD=postgres - user password.
-* POSRGRES_DB=training - the name of the created database.
-* PROJECT_ARTIFACT_ID=training - the name of the project artifact.
-* PROPRIETARY_REPO_URL=YOUR-PATH-TO-PROPRIETARY_REPO.
+The Dockerfile accepts the following build arguments:
+* PROJECT_ARTIFACT_ID=training - the name of the project artifact whose jar gets packaged and run.
+* MAVEN_CLI_OPTS - extra options passed to the Maven build (e.g. `-s etc/ci_settings.xml`).
 
 Those arguments can be overwritten during the build of the image, by adding the following option for each argument: 
 ```bash
@@ -75,7 +79,7 @@ Those arguments can be overwritten during the build of the image, by adding the 
 ``` 
 
 #### 3. Start the Project
-Start the project by running docker container, but at first make sure that your ***OIDC Provider*** and [user-and-group](https://github.com/cyberrangecz/backend-user-and-group) service is running. Instead of usage of the PostgreSQL database, you can use the in-memory database H2. It just depends on the provided configuration. To run a docker container, run the following command: 
+Start the project by running docker container, but at first make sure that your ***OIDC Provider*** and the dependent services listed above (user-and-group, sandbox-service, answers-storage, OpenSearch, and PostgreSQL if configured) are running. To run a docker container, run the following command:
 ```shell
 $  sudo docker run \
    --name training-container -it \
@@ -89,12 +93,7 @@ Add the following option to use the custom property file:
 -v {path to your config file}:/app/etc/training.properties
 ```
 
-To create a backup for your database add the following docker option:
+Add the following environment variable to wait for other services until they are up and running (space-separated `host:port` pairs):
 ```shell
--v db_data_training:/var/lib/postgresql/11/main/
-```
-
-Add the following environment variable to wait for other services until they are up and running:
-```shell
--e SERVICE_PRECONDITION="localhost:8084, localhost:8082"
+-e SERVICE_PRECONDITION="localhost:8084 localhost:8080 localhost:8087"
 ```  
