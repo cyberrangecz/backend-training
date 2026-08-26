@@ -111,6 +111,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
       example = "true")
   private boolean commandsRequired;
 
+  /** Sets the level type discriminator to training level. */
   public TrainingLevelUpdateDTO() {
     this.levelType = LevelType.TRAINING_LEVEL;
   }

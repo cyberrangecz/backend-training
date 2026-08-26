@@ -7,8 +7,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This class is used to replace Page class and reduce number of returned elements (standard Page
- * class contains fields, which are not usefull (backward compatability)).
+ * Carries one page of results as a content list alongside its pagination metadata.
+ *
+ * @param <E> the type of element held in the page.
  */
 @ApiModel(
     value = "PageResultResouce",
@@ -39,6 +40,12 @@ public class PageResultResource<E> {
     this.pagination = pageMetadata;
   }
 
+  /**
+   * Returns the page content as an unmodifiable view.
+   *
+   * @return the page content; changes to the underlying list are reflected, but not permitted
+   *     through the returned view.
+   */
   public List<E> getContent() {
     return Collections.unmodifiableList(content);
   }

@@ -64,6 +64,12 @@ import org.mapstruct.SubclassMapping;
 public interface LevelMapper extends ParentMapper {
   // INFO LEVEL
 
+  /**
+   * Maps an info level to a {@link BasicLevelInfoDTO} labelled with the info level type.
+   *
+   * @param infoLevel the info level to map
+   * @return the basic level information
+   */
   @Mapping(target = "levelType", constant = "INFO_LEVEL")
   BasicLevelInfoDTO mapTo(InfoLevel infoLevel);
 
@@ -82,11 +88,25 @@ public interface LevelMapper extends ParentMapper {
 
   // ASSESSMENT LEVEL
 
+  /**
+   * Maps an assessment level update into a new entity, converting its {@code type} field into the
+   * entity's assessment type.
+   *
+   * @param dto the assessment level update to map
+   * @return the mapped assessment level
+   */
   @Mapping(source = "type", target = "assessmentType")
   AssessmentLevel mapUpdateToEntity(AssessmentLevelUpdateDTO dto);
 
   AssessmentLevel mapImportToEntity(AssessmentLevelImportDTO dto);
 
+  /**
+   * Maps an assessment level to a {@link BasicLevelInfoDTO} labelled with the assessment level
+   * type.
+   *
+   * @param assessmentLevel the assessment level to map
+   * @return the basic level information
+   */
   @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
   BasicLevelInfoDTO mapTo(AssessmentLevel assessmentLevel);
 
@@ -108,6 +128,13 @@ public interface LevelMapper extends ParentMapper {
 
   // TRAINING LEVEL
 
+  /**
+   * Maps a training level update into a new entity, converting a blank answer or a blank answer
+   * variable name into {@code null}.
+   *
+   * @param dto the training level update to map
+   * @return the mapped training level
+   */
   @Mapping(
       target = "answer",
       expression =
@@ -120,6 +147,12 @@ public interface LevelMapper extends ParentMapper {
 
   TrainingLevel mapImportToEntity(TrainingLevelImportDTO dto);
 
+  /**
+   * Maps a training level to a {@link BasicLevelInfoDTO} labelled with the training level type.
+   *
+   * @param trainingLevel the training level to map
+   * @return the basic level information
+   */
   @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
   BasicLevelInfoDTO mapTo(TrainingLevel trainingLevel);
 
@@ -157,6 +190,12 @@ public interface LevelMapper extends ParentMapper {
 
   AccessLevel mapImportToEntity(AccessLevelImportDTO dto);
 
+  /**
+   * Maps an access level to a {@link BasicLevelInfoDTO} labelled with the access level type.
+   *
+   * @param trainingLevel the access level to map
+   * @return the basic level information
+   */
   @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
   BasicLevelInfoDTO mapTo(AccessLevel trainingLevel);
 

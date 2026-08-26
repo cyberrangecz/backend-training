@@ -274,11 +274,23 @@ public class TrainingLevel extends AbstractLevel {
     this.mitreTechniques = mitreTechniques;
   }
 
+  /**
+   * Adds the technique to this level's set and registers this level on the technique's own side of
+   * the association.
+   *
+   * @param mitreTechnique the technique to add
+   */
   public void addMitreTechnique(MitreTechnique mitreTechnique) {
     this.mitreTechniques.add(mitreTechnique);
     mitreTechnique.addTrainingLevel(this);
   }
 
+  /**
+   * Removes the technique from this level's set and unregisters this level on the technique's own
+   * side of the association.
+   *
+   * @param mitreTechnique the technique to remove
+   */
   public void removeMitreTechnique(MitreTechnique mitreTechnique) {
     this.mitreTechniques.remove(mitreTechnique);
     mitreTechnique.removeTrainingLevel(this);

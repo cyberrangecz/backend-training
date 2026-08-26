@@ -156,7 +156,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
    * Gets skill prerequisites that trainee should have to be able to complete training runs created
    * from this Training definition
    *
-   * @return the string [ ]
+   * @return the prerequisite descriptions
    */
   public String[] getPrerequisites() {
     return prerequisites;
@@ -175,7 +175,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   /**
    * Gets knowledge that trainee can learn from training runs created from this Training definition
    *
-   * @return the string [ ]
+   * @return the outcome descriptions
    */
   public String[] getOutcomes() {
     return outcomes;

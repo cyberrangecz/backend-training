@@ -24,9 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Unit tests for {@link CheatingDetectionMapper}.
- */
+/** Unit tests for {@link CheatingDetectionMapper}. */
 @DisplayName("CheatingDetectionMapper")
 class CheatingDetectionMapperTest {
 
@@ -51,7 +49,8 @@ class CheatingDetectionMapperTest {
   @BeforeEach
   void setUp() {
     sut = Mappers.getMapper(CheatingDetectionMapper.class);
-    // The mapper delegates the forbidden commands of an entity to {@link ForbiddenCommandMapper}, so
+    // The mapper delegates the forbidden commands of an entity to {@link ForbiddenCommandMapper},
+    // so
     // that collaborator is injected into the generated implementation before any mapping runs.
     ReflectionTestUtils.setField(
         sut, "forbiddenCommandMapper", Mappers.getMapper(ForbiddenCommandMapper.class));

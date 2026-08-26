@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates information about assessment level. Inherits from {@link AbstractLevelDTO} */
+/** A level that poses one or more questions the participant must answer. */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -31,6 +31,7 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
   @ApiModelProperty(value = "Type of assessment.", example = "TEST")
   private AssessmentType assessmentType;
 
+  /** Minimum time, in minutes, that must elapse before the level counts as solved. */
   @ApiModelProperty(
       value =
           "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",

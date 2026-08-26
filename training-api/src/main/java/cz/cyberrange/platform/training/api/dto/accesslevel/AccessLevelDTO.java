@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates information about training level. Inherits from {@link AbstractLevelDTO} */
+/** A level whose content instructs the participant how to connect to their virtual machines. */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

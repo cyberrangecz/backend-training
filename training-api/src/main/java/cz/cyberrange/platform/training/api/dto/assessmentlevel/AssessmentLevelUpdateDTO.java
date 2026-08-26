@@ -52,6 +52,7 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
       example = "5")
   protected Integer minimalPossibleSolveTime;
 
+  /** Sets the level type discriminator to assessment level. */
   public AssessmentLevelUpdateDTO() {
     this.levelType = LevelType.ASSESSMENT_LEVEL;
   }

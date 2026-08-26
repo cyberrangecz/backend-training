@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
+/** A MITRE ATT&amp;CK technique associated with a training level. */
 @Data
 @ApiModel(
     value = "MitreTechniqueDTO",

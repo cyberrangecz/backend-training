@@ -50,6 +50,7 @@ public class TrainingDefinitionCreateDTO {
   @Valid
   private BetaTestingGroupCreateDTO betaTestingGroup;
 
+  /** Governs whether the newly created definition is populated with a default set of levels. */
   @ApiModelProperty(value = "Sign if default levels should be created.", example = "false")
   private boolean defaultContent;
 }

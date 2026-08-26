@@ -112,10 +112,13 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Finds specific Training Definition by id
+   * Finds one training definition together with the full detail of every level it holds and with
+   * the flag telling whether it can be archived.
    *
-   * @param id of a Training Definition that would be returned
-   * @return specific {@link TrainingDefinitionWithLevelsDTO}
+   * @param id id of the training definition to return
+   * @return the {@link TrainingDefinitionWithLevelsDTO} of that definition, its levels in
+   *     presentation order
+   * @throws EntityNotFoundException when no training definition with the given id exists
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -128,24 +131,53 @@ public class TrainingDefinitionFacade {
         trainingDefinitionMapper.mapToDTOWithLevels(trainingDefinition, gatherLevels(id)));
   }
 
+  /**
+   * Sets the archiving flag on the given definition DTO according to whether the definition it
+   * describes can currently be archived.
+   *
+   * @param trainingDefinitionDTO the DTO to complete, carrying the id of the definition to decide
+   *     for
+   * @return the same instance, with the flag set
+   */
   private <T extends TrainingDefinitionDTO> T addArchivingInfo(T trainingDefinitionDTO) {
     trainingDefinitionDTO.setCanBeArchived(
         trainingDefinitionService.canBeArchived(trainingDefinitionDTO.getId()));
     return trainingDefinitionDTO;
   }
 
+  /**
+   * Collects the basic level information of every level of the given definition, in presentation
+   * order.
+   *
+   * @param definitionId id of the definition whose levels are collected
+   * @return the levels' basic information, empty when the definition holds none
+   */
   private List<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId) {
     return trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
         .map(this.levelMapper::mapToBasicLevelInfoDTO)
         .collect(Collectors.toList());
   }
 
+  /**
+   * Collects the full detail of every level of the given definition, each mapped to the DTO subtype
+   * matching its concrete level type.
+   *
+   * @param definitionId id of the definition whose levels are collected
+   * @return the levels in presentation order, empty when the definition holds none
+   */
   private List<AbstractLevelDTO> gatherLevels(Long definitionId) {
     List<AbstractLevel> levels =
         trainingDefinitionService.findAllLevelsFromDefinition(definitionId);
     return levels.stream().map(this.levelMapper::mapToDTO).collect(Collectors.toList());
   }
 
+  /**
+   * Collects the basic level information of every level belonging to any of the given definitions,
+   * grouped by the id of the definition each level belongs to.
+   *
+   * @param definitionIds ids of the definitions whose levels are collected
+   * @return the levels grouped by definition id; a definition with no levels has no entry
+   */
   private Map<Long, List<AbstractLevelBasicDTO>> gatherBasicLevelsByDefinitionId(
       Collection<Long> definitionIds) {
     return trainingDefinitionService.findAllLevelsFromDefinitions(definitionIds).stream()
@@ -156,11 +188,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Find all Training Definitions.
+   * Finds Training Definitions matching the given predicate. An administrator sees every matching
+   * definition; any other caller sees only definitions where they are an author or a beta testing
+   * organizer.
    *
    * @param predicate represents a predicate (boolean-valued function) of one argument.
    * @param pageable pageable parameter with information about pagination.
-   * @return page of all {@link TrainingDefinitionDTO}
+   * @return page of matching {@link TrainingDefinitionDTO}, each flagged with whether it can be
+   *     archived
    */
   @IsDesignerOrAdmin
   @TransactionalRO
@@ -174,6 +209,13 @@ public class TrainingDefinitionFacade {
     }
   }
 
+  /**
+   * Maps a page of training definition entities to their DTOs and sets each one's archiving flag
+   * according to whether any of its training instances ends in the future.
+   *
+   * @param trainingDefinitionPage the page of entities to map
+   * @return the mapped page, with the archiving flag set on every DTO
+   */
   private PageResultResource<TrainingDefinitionDTO> mapToDtoAndAddArchivingInfo(
       Page<TrainingDefinition> trainingDefinitionPage) {
     PageResultResource<TrainingDefinitionDTO> resource =
@@ -223,11 +265,16 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Find all Training Definitions.
+   * Finds Training Definitions in the given state, restricted to those the caller may see. For
+   * {@link TDState#RELEASED} every released definition is returned. For {@link TDState#UNRELEASED},
+   * an administrator sees every unreleased definition; a caller holding both the designer and
+   * organizer roles sees unreleased definitions where they are a designer or organizer; any other
+   * caller sees only unreleased definitions where they are an organizer.
    *
-   * @param state represents a string if the training definitions should be released or not.
+   * @param state whether released or unreleased definitions are wanted
    * @param pageable pageable parameter with information about pagination.
-   * @return page of all {@link TrainingDefinitionInfoDTO} accessible for organizers
+   * @return page of matching {@link TrainingDefinitionInfoDTO}
+   * @throws InternalServerErrorException when {@code state} is neither released nor unreleased
    */
   @IsOrganizerOrAdmin
   @TransactionalRO
@@ -259,10 +306,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Creates new training definition
+   * Creates a new training definition, assigning the requesting user as an author and, when a beta
+   * testing group is given, creating that group with its organizers. When the request asks for
+   * default content, a first info level and a first access level with default content are created
+   * alongside it.
    *
-   * @param trainingDefinition to be created
-   * @return DTO of created definition, {@link TrainingDefinitionCreateDTO}
+   * @param trainingDefinition the definition to create
+   * @return the created definition together with its levels, {@link
+   *     TrainingDefinitionWithLevelsDTO}
    */
   @IsDesignerOrAdmin
   @TransactionalWO
@@ -282,9 +333,17 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Updates training definition
+   * Updates a training definition, carrying its creation timestamp and estimated duration over
+   * from the stored definition, and its existing authors joined by the requesting user.
+   * Reachable only by an administrator or by a designer of the definition being updated. The beta
+   * testing group cannot be removed by this call: if the request carries none while the stored
+   * definition has one, the update is refused.
    *
-   * @param trainingDefinitionUpdateDTO to be updated
+   * @param trainingDefinitionUpdateDTO the update, carrying the id of the definition to update
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws EntityConflictException when the stored definition's beta testing group would be
+   *     removed, or when the definition is not {@link TDState#UNRELEASED} or already has a
+   *     training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -318,6 +377,14 @@ public class TrainingDefinitionFacade {
     trainingDefinitionService.update(mappedTrainingDefinition);
   }
 
+  /**
+   * Replaces the organizers of the given training definition's beta testing group with the users
+   * carrying the given ids, creating a local user reference for any of them that does not have one
+   * yet.
+   *
+   * @param trainingDefinition the definition whose beta testing group's organizers are replaced
+   * @param userRefIds cross-service ids of the users to set as organizers
+   */
   private void addOrganizersToTrainingDefinition(
       TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
     trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
@@ -331,11 +398,15 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Clones Training Definition by id
+   * Clones a training definition together with its levels, assigning the requesting user as an
+   * author of the clone. Reachable only by an administrator or by a designer of the definition
+   * being cloned.
    *
-   * @param id of definition to be cloned
-   * @param title the title of cloned definition
-   * @return DTO of cloned definition, {@link TrainingDefinitionWithLevelsDTO}
+   * @param id id of the definition to clone
+   * @param title the title to give the clone
+   * @return the cloned definition together with its levels, {@link
+   *     TrainingDefinitionWithLevelsDTO}
+   * @throws EntityNotFoundException when no training definition with the given id exists
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -349,14 +420,16 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Swaps between levels. Swap basically means swapping the order attribute between these two
-   * levels.
+   * Swaps the order of two levels within a training definition, so each takes the other's
+   * position, and records the definition as edited.
    *
-   * @param definitionId - Id of definition containing levels, this training definition is updating
-   *     its last edited column.
-   * @param swapLevelFrom - Id of a first level to be swapped.
-   * @param swapLevelTo - Id of a second level to be swapped.
-   * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
+   * @param definitionId id of the definition containing the levels
+   * @param swapLevelFrom id of the first level to swap
+   * @param swapLevelTo id of the second level to swap
+   * @return the basic information of every level of the definition, in presentation order
+   * @throws EntityNotFoundException when the definition or either level does not exist
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -369,14 +442,18 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Move level to the different position and modify orders of levels between moved level and new
-   * position.
+   * Moves a level to a new position within its definition, shifting the levels between the old
+   * and new position to close the gap, and records the definition as edited. A requested
+   * position outside the definition's range is clamped to the nearest valid position rather than
+   * rejected.
    *
-   * @param definitionId - Id of definition containing levels, this training definition is updating
-   *     its last edited column.
-   * @param levelIdToBeMoved - id of the level to be moved to the new position
-   * @param newPosition - position where level will be moved
-   * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
+   * @param definitionId id of the definition containing the level
+   * @param levelIdToBeMoved id of the level to move
+   * @param newPosition position to move the level to
+   * @return the basic information of every level of the definition, in presentation order
+   * @throws EntityNotFoundException when the definition or the level does not exist
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -389,9 +466,12 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Deletes specific training instance based on id
+   * Deletes a training definition together with all of its levels.
    *
-   * @param id of definition to be deleted
+   * @param id id of the definition to delete
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws EntityConflictException when the definition is {@link TDState#RELEASED} or already
+   *     has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -402,11 +482,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * deletes specific level by id
+   * Deletes a level, shifting the order of every level after it back by one and reducing the
+   * definition's estimated duration by the deleted level's own estimated duration.
    *
    * @param definitionId - id of definition containing level to be deleted
    * @param levelId - id of level to be deleted
    * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
+   * @throws EntityNotFoundException when the definition or the level does not exist
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -418,10 +501,19 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * updates info level from training definition
+   * Updates several levels of one training definition in a single call, dispatching each update to
+   * the handling matching its level type. For an assessment level of type {@link
+   * AssessmentType#TEST}, the correct option of every extended matching statement is resolved and
+   * set before the level is saved.
    *
    * @param definitionId - id of training definition containing levels to be updated
    * @param updatedLevelDTOs updated levels to be stored
+   * @throws EntityNotFoundException when the definition does not exist, or when one of the given
+   *     levels does not belong to it
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
+   * @throws BadRequestException when a TEST assessment level leaves the correct option of an
+   *     extended matching statement unset
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -478,10 +570,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * updates training level from training definition
+   * Updates a training level of the given training definition.
    *
    * @param definitionId - id of training definition containing level to be updated
    * @param trainingLevel to be updated
+   * @throws EntityNotFoundException when the definition does not exist, the level does not exist,
+   *     or the level does not belong to the definition
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -495,10 +591,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * updates info level from training definition
+   * Updates an info level of the given training definition.
    *
    * @param definitionId - id of training definition containing level to be updated
    * @param infoLevel to be updated
+   * @throws EntityNotFoundException when the definition does not exist, the level does not exist,
+   *     or the level does not belong to the definition
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -512,10 +612,18 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * updates assessment level from training definition
+   * Updates an assessment level of the given training definition. When the assessment is of type
+   * {@link AssessmentType#TEST}, the correct option of every extended matching statement is
+   * resolved and set before the level is saved.
    *
    * @param definitionId - id of training definition containing level to be updated
    * @param assessmentLevelToUpdate to be updated
+   * @throws EntityNotFoundException when the definition does not exist, the level does not exist,
+   *     or the level does not belong to the definition
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
+   * @throws BadRequestException when a TEST assessment leaves the correct option of an extended
+   *     matching statement unset
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -532,6 +640,15 @@ public class TrainingDefinitionFacade {
     this.trainingDefinitionService.auditAndSave(updatedAssessmentLevel.getTrainingDefinition());
   }
 
+  /**
+   * Resolves and sets the correct extended matching option of every extended matching statement of
+   * every EMI question in the given assessment level, matching statement and option by their order
+   * within the question.
+   *
+   * @param assessmentLevel the mapped assessment level whose statements are completed in place
+   * @param assessmentLevelUpdateDTO the update carrying the correct option order for each statement
+   * @throws BadRequestException when a statement leaves its correct option order unset
+   */
   private void checkAndSetCorrectOptionsOfStatements(
       AssessmentLevel assessmentLevel, AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
     assessmentLevelUpdateDTO.getQuestions().stream()
@@ -559,10 +676,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * creates new info level in training definition
+   * Creates a new info level with default content, appended after the definition's current last
+   * level.
    *
    * @param definitionId - id of definition in which level will be created
    * @return {@link BasicLevelInfoDTO} of new info level
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -574,10 +695,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * creates new training level in training definition
+   * Creates a new training level with default placeholder content, appended after the definition's
+   * current last level.
    *
    * @param definitionId - id of definition in which level will be created
    * @return {@link BasicLevelInfoDTO} of new training level
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -589,10 +714,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Creates new access level in training definition
+   * Creates a new access level with default content, appended after the definition's current last
+   * level.
    *
    * @param definitionId - id of definition in which level will be created
    * @return {@link BasicLevelInfoDTO} of new access level
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -604,10 +733,14 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * creates new assessment level in training definition
+   * Creates a new assessment level of type {@link AssessmentType#QUESTIONNAIRE} with default
+   * placeholder content, appended after the definition's current last level.
    *
    * @param definitionId - id of definition in which level will be created
    * @return {@link BasicLevelInfoDTO} of new assessment level
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
+   *     already has a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -620,10 +753,12 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Finds specific level by id
+   * Finds a level by id. Reachable by any designer or administrator, regardless of whether they
+   * are a designer of the level's own training definition.
    *
    * @param levelId - id of wanted level
    * @return wanted {@link AbstractLevelDTO}
+   * @throws EntityNotFoundException when no level with the given id exists
    */
   @IsDesignerOrAdmin
   @TransactionalRO
@@ -632,13 +767,17 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Get users with given role
+   * Asks the user-and-group service for one page of the users holding the given role.
    *
-   * @param roleType the wanted role type
+   * @param roleType the role its holders are requested for
    * @param pageable pageable parameter with information about pagination.
-   * @param givenName the given name
-   * @param familyName the family name
-   * @return list of users {@link UserRefDTO}
+   * @param givenName restricts the result to users whose given name matches, no restriction when
+   *     null
+   * @param familyName restricts the result to users whose family name matches, no restriction
+   *     when null
+   * @return the requested page of users holding that role
+   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
+   *     to the user-and-group service fails
    */
   @IsDesignerOrAdmin
   @TransactionalRO
@@ -648,10 +787,17 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Switch state of definition to unreleased
+   * Switches the state of a training definition. Only {@link TDState#UNRELEASED} to {@link
+   * TDState#RELEASED}, {@link TDState#RELEASED} to {@link TDState#ARCHIVED}, and {@link
+   * TDState#RELEASED} back to {@link TDState#UNRELEASED} are allowed transitions; requesting the
+   * definition's current state is a no-op. Switching a released definition back to unreleased is
+   * refused while it has a training instance.
    *
    * @param definitionId - id of training definition
-   * @param state - new state of TD
+   * @param state - the state to switch to
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws EntityConflictException when the transition is not one of the allowed ones, or when
+   *     switching from released to unreleased while a training instance still exists
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -661,10 +807,11 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Finds Training Definitions by their ids.
+   * Finds Training Definitions by their ids, together with the basic detail of their levels. An
+   * id matching no training definition is silently omitted from the result.
    *
    * @param ids the ids of Training Definitions to return.
-   * @return List of requested {@link TrainingDefinitionBasicDTO}.
+   * @return the matching {@link TrainingDefinitionBasicDTO}s, each carrying its levels
    */
   @TransactionalRO
   @PreAuthorize(
@@ -684,10 +831,11 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Finds Levels by their ids.
+   * Finds levels by their ids, each mapped to the basic DTO subtype matching its concrete level
+   * type. An id matching no level is silently omitted from the result.
    *
    * @param ids the ids of Levels to return.
-   * @return List of requested {@link AbstractLevelBasicDTO}.
+   * @return the matching {@link AbstractLevelBasicDTO}s.
    */
   @TransactionalRO
   @PreAuthorize(
@@ -698,10 +846,10 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Finds Hints by their ids.
+   * Finds hints by their ids. An id matching no hint is silently omitted from the result.
    *
    * @param ids the ids of Hints to return.
-   * @return List of requested {@link HintBasicDTO}.
+   * @return the matching {@link HintBasicDTO}s.
    */
   @TransactionalRO
   @PreAuthorize(
@@ -712,13 +860,19 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Retrieve all authors for given training definition.
+   * Retrieves one page of the given training definition's authors from the user-and-group
+   * service, identified by their cross-service user reference ids.
    *
-   * @param trainingDefinitionId id of the training definition for which to get the authors
+   * @param trainingDefinitionId id of the training definition whose authors are retrieved
    * @param pageable pageable parameter with information about pagination.
-   * @param givenName optional parameter used for filtration
-   * @param familyName optional parameter used for filtration
-   * @return returns all authors in given training definition.
+   * @param givenName restricts the result to authors whose given name matches, no restriction
+   *     when null
+   * @param familyName restricts the result to authors whose family name matches, no restriction
+   *     when null
+   * @return the requested page of authors
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
+   *     to the user-and-group service fails
    */
   @IsDesignerOrOrganizerOrAdmin
   public PageResultResource<UserRefDTO> getAuthors(
@@ -733,11 +887,17 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Retrieve all beta testers for given training definition.
+   * Retrieves one page of a training definition's beta testing group organizers from the
+   * user-and-group service, identified by their cross-service user reference ids. Returns an
+   * empty page, without contacting that service, when the definition has no beta testing group
+   * or that group has no organizer.
    *
-   * @param trainingDefinitionId id of the training definition for which to get the beta testers
+   * @param trainingDefinitionId id of the training definition whose beta testers are retrieved
    * @param pageable pageable parameter with information about pagination.
-   * @return returns all beta testers in given training definition.
+   * @return the requested page of beta testers, empty when the definition has none
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
+   *     to the user-and-group service fails
    */
   @IsDesignerOrOrganizerOrAdmin
   public PageResultResource<UserRefDTO> getBetaTesters(
@@ -759,14 +919,20 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Retrieve all designers not in the given training definition.
+   * Retrieves one page of the users holding the training designer role from the user-and-group
+   * service, excluding the given training definition's current authors.
    *
-   * @param trainingDefinitionId id of the training definition which users should be excluded from
-   *     the result list.
+   * @param trainingDefinitionId id of the training definition whose authors are excluded from the
+   *     result list.
    * @param pageable pageable parameter with information about pagination.
-   * @param givenName optional parameter used for filtration
-   * @param familyName optional parameter used for filtration
-   * @return returns all designers not in the given training definition.
+   * @param givenName restricts the result to designers whose given name matches, no restriction
+   *     when null
+   * @param familyName restricts the result to designers whose family name matches, no
+   *     restriction when null
+   * @return the requested page of designers, excluding the definition's authors
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
+   *     to the user-and-group service fails
    */
   @IsDesignerOrOrganizerOrAdmin
   @TransactionalRO
@@ -783,12 +949,16 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Concurrently add authors to the given training definition and remove authors from the training
-   * definition.
+   * Adds and removes authors of a training definition in one operation, and records the
+   * definition as edited. The logged in user is never removed, even when present in the removal
+   * set.
    *
-   * @param trainingDefinitionId if of the training definition to be updated
-   * @param authorsAddition ids of the authors to be added to the training definition
-   * @param authorsRemoval ids of the authors to be removed from the training definition.
+   * @param trainingDefinitionId id of the training definition to be updated
+   * @param authorsAddition cross-service user reference ids of the authors to add, no addition
+   *     when null or empty
+   * @param authorsRemoval cross-service user reference ids of the authors to remove, no removal
+   *     when null or empty
+   * @throws EntityNotFoundException when no training definition with the given id exists
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -809,6 +979,14 @@ public class TrainingDefinitionFacade {
     trainingDefinitionService.auditAndSave(trainingDefinition);
   }
 
+  /**
+   * Adds the users carrying the given cross-service user reference ids as authors of a training
+   * definition, creating a local user reference for any of them not already stored and skipping
+   * any already listed as an author.
+   *
+   * @param trainingDefinition the definition to add authors to
+   * @param userRefIds cross-service user reference ids of the users to add
+   */
   private void addAuthorsToTrainingDefinition(
       TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
     List<UserRefDTO> authors = getAllUsersRefsByGivenUsersIds(new ArrayList<>(userRefIds));
@@ -825,6 +1003,15 @@ public class TrainingDefinitionFacade {
     }
   }
 
+  /**
+   * Retrieves the users carrying the given cross-service user reference ids in full, walking
+   * every page the user-and-group service reports.
+   *
+   * @param participantsRefIds cross-service user reference ids of the users to retrieve
+   * @return all matching users, unfiltered by name
+   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when any of
+   *     the calls to the user-and-group service fails
+   */
   private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
     List<UserRefDTO> users = new ArrayList<>();
     PageResultResource<UserRefDTO> usersPageResultResource;

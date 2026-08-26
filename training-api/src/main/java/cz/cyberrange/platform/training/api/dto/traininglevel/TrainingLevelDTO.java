@@ -12,7 +12,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates information about training level. Inherits from {@link AbstractLevelDTO} */
+/** A level built around an assignment whose completion requires submitting a correct answer. */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -27,11 +27,13 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
       example = "secretAnswer")
   private String answer;
 
+  /** Key used to look up the answer's value in the external answer storage service. */
   @ApiModelProperty(
       value = "Identifier that is used to obtain answer from remote storage.",
       example = "username")
   private String answerVariableName;
 
+  /** The task description presented to the participant while attempting the level. */
   @ApiModelProperty(
       value = "The information and experiences that are directed towards a participant.",
       example = "Play me")
@@ -53,6 +55,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
       example = "5")
   private int incorrectAnswerLimit;
 
+  /** Whether the answer is randomly generated so that each trainee receives a different value. */
   @ApiModelProperty(
       value =
           "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.",
@@ -72,6 +75,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
       example = "true")
   private boolean commandsRequired;
 
+  /** Minimum time, in minutes, that must elapse before the level counts as solved. */
   @ApiModelProperty(
       value =
           "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",

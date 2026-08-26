@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates information about info level. Inherits from {@link AbstractLevelDTO} */
+/** A level that presents read-only informational content to the participant. */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

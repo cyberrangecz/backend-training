@@ -40,6 +40,12 @@ public interface BetaTestingGroupMapper extends ParentMapper {
     return organizers.stream().map(UserRef::getUserRefId).collect(Collectors.toSet());
   }
 
+  /**
+   * Maps a beta testing group update into a new entity, leaving its organizers unpopulated.
+   *
+   * @param dto the beta testing group update to map
+   * @return the mapped beta testing group
+   */
   BetaTestingGroup mapCreateToEntity(BetaTestingGroupUpdateDTO dto);
 
   List<BetaTestingGroup> mapToList(Collection<BetaTestingGroupDTO> dtos);

@@ -41,6 +41,7 @@ public abstract class AbstractLevelBasicDTO {
       example = "20")
   protected int maxScore;
 
+  /** Zero-based position of the level within its training definition's sequence of levels. */
   @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
   protected int order;
 

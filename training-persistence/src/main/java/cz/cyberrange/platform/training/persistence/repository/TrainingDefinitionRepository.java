@@ -50,7 +50,8 @@ public interface TrainingDefinitionRepository
   }
 
   /**
-   * Find all training definitions
+   * Find all training definitions matching the given predicate, with authors and the beta testing
+   * group's organizers loaded eagerly along with each one.
    *
    * @param predicate the predicate
    * @param pageable the pageable
@@ -82,9 +83,11 @@ public interface TrainingDefinitionRepository
   Page<TrainingDefinition> findAllByState(@Param("state") TDState state, Pageable pageable);
 
   /**
-   * Find all for organizers unreleased page.
+   * Find unreleased training definitions whose beta testing group lists the given user as an
+   * organizer.
    *
-   * @param userRefId the user ref id
+   * @param userRefId the cross-service user reference id to match against the beta testing
+   *     group's organizers
    * @param pageable the pageable
    * @return the page
    */
@@ -92,9 +95,11 @@ public interface TrainingDefinitionRepository
       @Param("userRefId") Long userRefId, Pageable pageable);
 
   /**
-   * Find all for designers and organizers unreleased page.
+   * Find unreleased training definitions where the given user is either an author or an
+   * organizer of the beta testing group.
    *
-   * @param userRefId the user ref id
+   * @param userRefId the cross-service user reference id to match against the definition's
+   *     authors and its beta testing group's organizers
    * @param pageable the pageable
    * @return the page
    */
@@ -102,10 +107,11 @@ public interface TrainingDefinitionRepository
       @Param("userRefId") Long userRefId, Pageable pageable);
 
   /**
-   * Find training definition by id
+   * Find training definition by id, its authors, its beta testing group and that group's organizers
+   * loaded along with it.
    *
    * @param id the id of training definition
-   * @return {@link TrainingDefinition}
+   * @return the {@link TrainingDefinition}, empty when no row carries the given id
    */
   @EntityGraph(
       value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",

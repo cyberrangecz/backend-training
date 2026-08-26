@@ -22,6 +22,7 @@ public class InfoLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @NotEmpty(message = "{infoLevel.content.NotEmpty.message}")
   private String content;
 
+  /** Sets the level type discriminator to info level. */
   public InfoLevelUpdateDTO() {
     this.levelType = LevelType.INFO_LEVEL;
   }

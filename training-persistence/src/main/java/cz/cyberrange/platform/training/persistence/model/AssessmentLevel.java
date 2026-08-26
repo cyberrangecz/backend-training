@@ -25,6 +25,7 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "id")
 public class AssessmentLevel extends AbstractLevel {
 
+  /** Ordered by each question's position within the assessment. */
   @OrderBy("order asc")
   @OneToMany(
       mappedBy = "assessmentLevel",
@@ -41,7 +42,8 @@ public class AssessmentLevel extends AbstractLevel {
   private AssessmentType assessmentType;
 
   /**
-   * Sets questions that trainee must answer
+   * Assigns the assessment's questions, linking each one back to this level and ordering them by
+   * their position.
    *
    * @param questions the questions
    */

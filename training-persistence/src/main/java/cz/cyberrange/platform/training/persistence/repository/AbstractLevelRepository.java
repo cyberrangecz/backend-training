@@ -17,7 +17,7 @@ public interface AbstractLevelRepository
     extends JpaRepository<AbstractLevel, Long>, QuerydslPredicateExecutor<AbstractLevel> {
 
   /**
-   * Find all levels by training definition id.
+   * Find all levels by training definition id, ordered by level order within the definition.
    *
    * @param trainingDefinitionId the training definition id
    * @return list of {@link AbstractLevel}s associated with {@link
@@ -27,8 +27,9 @@ public interface AbstractLevelRepository
       @Param("trainingDefinitionId") Long trainingDefinitionId);
 
   /**
-   * Find all levels belonging to any of the given training definitions, ordered by training
-   * definition and by level order within it.
+   * Find all levels belonging to any of the given training definitions, ordered by level order;
+   * levels from different definitions are interleaved by that order rather than grouped by
+   * definition.
    *
    * @param trainingDefinitionIds the training definition ids
    * @return list of {@link AbstractLevel}s associated with any of the given {@link
@@ -38,11 +39,12 @@ public interface AbstractLevelRepository
       @Param("trainingDefinitionIds") Collection<Long> trainingDefinitionIds);
 
   /**
-   * Find all levels by level ids.
+   * Find all levels by level ids, confined to one training definition.
    *
    * @param levelIds the ids of the levels
-   * @param trainingDefinitionId the training definition id
-   * @return list of {@link AbstractLevel}s with the given ids
+   * @param trainingDefinitionId the training definition the levels have to belong to
+   * @return list of {@link AbstractLevel}s carrying one of the given ids and belonging to that
+   *     definition, a level of another definition being left out without notice
    */
   List<AbstractLevel> findAllByIdIsInAndTrainingDefinitionId(
       List<Long> levelIds, Long trainingDefinitionId);
@@ -69,7 +71,8 @@ public interface AbstractLevelRepository
       @Param("trainingDefinitionId") Long trainingDefinitionId, @Param("levelId") Long levelId);
 
   /**
-   * Find by id including definition optional.
+   * Find a level by id, with its training definition, that definition's authors and, when
+   * present, its beta testing group's organizers loaded eagerly along with it.
    *
    * @param levelId the level id
    * @return {@link AbstractLevel} with its associated {@link
@@ -78,19 +81,22 @@ public interface AbstractLevelRepository
   Optional<AbstractLevel> findByIdIncludingDefinition(@Param("levelId") Long levelId);
 
   /**
-   * Gets current max order.
+   * Gets the highest level order value used within the given training definition.
    *
    * @param trainingDefinitionId the training definition id
    * @return the current max order of {@link AbstractLevel} in given {@link
-   *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition}
+   *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition}, or -1 when the
+   *     definition has no levels
    */
   Integer getCurrentMaxOrder(@Param("trainingDefinitionId") Long trainingDefinitionId);
 
   /**
-   * Increase level order from given order to the given order.
+   * Adds 1 to the order of every level of the given training definition whose order lies between
+   * the given bounds, both inclusive.
    *
-   * @param fromOrder first level which order will be increased
-   * @param toOrder last level which order will be increased.
+   * @param trainingDefinitionId the training definition whose levels are affected
+   * @param fromOrder lowest order value to increase
+   * @param toOrder highest order value to increase
    */
   @Modifying
   void increaseOrderOfLevels(
@@ -99,10 +105,12 @@ public interface AbstractLevelRepository
       @Param("toOrder") Integer toOrder);
 
   /**
-   * Decrease level order from given order to the given order.
+   * Subtracts 1 from the order of every level of the given training definition whose order lies
+   * between the given bounds, both inclusive.
    *
-   * @param fromOrder first level which order will be decreased
-   * @param toOrder last level which order will be decreased.
+   * @param trainingDefinitionId the training definition whose levels are affected
+   * @param fromOrder lowest order value to decrease
+   * @param toOrder highest order value to decrease
    */
   @Modifying
   void decreaseOrderOfLevels(

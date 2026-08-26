@@ -37,6 +37,7 @@ public class AccessLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @NotEmpty(message = "{accessLevel.localContent.NotEmpty.message}")
   private String localContent;
 
+  /** Sets the level type discriminator to access level. */
   public AccessLevelUpdateDTO() {
     this.levelType = LevelType.ACCESS_LEVEL;
   }

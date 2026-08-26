@@ -23,43 +23,97 @@ import org.mapstruct.ReportingPolicy;
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CloneMapper {
 
+  /**
+   * Copies a training definition, resetting its state to {@code UNRELEASED}, clearing its
+   * authors, and leaving its identifier and beta testing group unset.
+   *
+   * @param entity the training definition to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "state", constant = "UNRELEASED")
   @Mapping(target = "authors", expression = "java(new java.util.HashSet<>())")
   @Mapping(target = "betaTestingGroup", ignore = true)
   TrainingDefinition clone(TrainingDefinition entity);
 
+  /**
+   * Copies an info level, leaving its identifier and training definition unset for the caller to
+   * assign.
+   *
+   * @param entity the info level to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "trainingDefinition", ignore = true)
   InfoLevel clone(InfoLevel entity);
 
+  /**
+   * Copies an access level, leaving its identifier and training definition unset for the caller
+   * to assign.
+   *
+   * @param entity the access level to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "trainingDefinition", ignore = true)
   AccessLevel clone(AccessLevel entity);
 
+  /**
+   * Copies a training level, leaving its identifier, training definition, hints, and attachments
+   * unset for the caller to assign.
+   *
+   * @param entity the training level to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "trainingDefinition", ignore = true)
   @Mapping(target = "hints", ignore = true)
   @Mapping(target = "attachments", ignore = true)
   TrainingLevel clone(TrainingLevel entity);
 
+  /**
+   * Copies a hint, leaving its identifier and training level unset.
+   *
+   * @param entity the hint to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "trainingLevel", ignore = true)
   Hint clone(Hint entity);
 
   Set<Hint> cloneHints(Set<Hint> entity);
 
+  /**
+   * Copies an attachment, leaving its identifier and training level unset.
+   *
+   * @param entity the attachment to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "trainingLevel", ignore = true)
   Attachment clone(Attachment entity);
 
   Set<Attachment> cloneAttachments(Set<Attachment> entity);
 
+  /**
+   * Copies an assessment level, leaving its identifier, training definition, and questions unset
+   * for the caller to assign.
+   *
+   * @param entity the assessment level to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "trainingDefinition", ignore = true)
   @Mapping(target = "questions", ignore = true)
   AssessmentLevel clone(AssessmentLevel entity);
 
+  /**
+   * Copies a question, leaving its identifier, assessment level, choices, extended matching
+   * statements, and extended matching options unset for the caller to assign.
+   *
+   * @param entity the question to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "assessmentLevel", ignore = true)
   @Mapping(target = "choices", ignore = true)
@@ -67,12 +121,25 @@ public interface CloneMapper {
   @Mapping(target = "extendedMatchingOptions", ignore = true)
   Question clone(Question entity);
 
+  /**
+   * Copies a question choice, leaving its identifier and question unset for the caller to assign.
+   *
+   * @param entity the question choice to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "question", ignore = true)
   QuestionChoice clone(QuestionChoice entity);
 
   List<QuestionChoice> cloneChoices(List<QuestionChoice> entities);
 
+  /**
+   * Copies an extended matching statement, leaving its identifier, question, and extended
+   * matching option unset for the caller to assign.
+   *
+   * @param entity the extended matching statement to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "question", ignore = true)
   @Mapping(target = "extendedMatchingOption", ignore = true)
@@ -81,6 +148,13 @@ public interface CloneMapper {
   List<ExtendedMatchingStatement> cloneExtendedMatchingStatements(
       List<ExtendedMatchingStatement> entities);
 
+  /**
+   * Copies an extended matching option, leaving its identifier and question unset for the caller
+   * to assign.
+   *
+   * @param entity the extended matching option to copy
+   * @return the copy
+   */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "question", ignore = true)
   ExtendedMatchingOption clone(ExtendedMatchingOption entity);

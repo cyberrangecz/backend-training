@@ -69,9 +69,11 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
   @Column(name = "estimated_duration")
   private long estimatedDuration;
 
+  /** Minimum time, in minutes, that must elapse before the level counts as solved. */
   @Column(name = "minimal_possible_solve_time")
   private Long minimalPossibleSolveTime;
 
+  /** Zero-based position of the level within its training definition's sequence of levels. */
   @Column(name = "order_in_training_definition", nullable = false)
   private int order;
 

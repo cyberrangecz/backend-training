@@ -199,10 +199,11 @@ public class SecurityService {
   }
 
   /**
-   * Is designer of given training definition boolean.
+   * Decides whether the logged in user authors the given training definition.
    *
-   * @param definitionId the definition id
-   * @return the boolean
+   * @param definitionId id of the training definition whose authors are examined
+   * @return true when the logged in user is one of the definition's authors
+   * @throws EntityNotFoundException when no training definition with the given id exists
    */
   public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
     TrainingDefinition trainingDefinition =
@@ -222,10 +223,12 @@ public class SecurityService {
   }
 
   /**
-   * Is organizer of one of the training instances from the given training definition
+   * Decides whether the logged in user organizes any training instance created from the given
+   * training definition.
    *
-   * @param definitionId the definition id
-   * @return the boolean
+   * @param definitionId id of the training definition whose instances are examined
+   * @return true when the logged in user organizes at least one of those instances, false also when
+   *     the definition has no instance at all
    */
   public boolean isOrganizerForGivenTrainingDefinition(Long definitionId) {
     List<TrainingInstance> instances =
@@ -238,6 +241,12 @@ public class SecurityService {
     return false;
   }
 
+  /**
+   * Decides whether the logged in user is one of the organizers of the given training instance.
+   *
+   * @param trainingInstance the training instance whose organizers are examined
+   * @return true when the logged in user is among them
+   */
   private boolean isOrganizerOfGivenInstance(TrainingInstance trainingInstance) {
     return trainingInstance.getOrganizers().stream()
         .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
@@ -303,10 +312,10 @@ public class SecurityService {
   }
 
   /**
-   * Has role boolean.
+   * Decides whether the authentication token of the current request grants the given role.
    *
-   * @param roleTypeSecurity the role type security
-   * @return the boolean
+   * @param roleTypeSecurity the role to look for among the granted authorities
+   * @return true when the token carries that role
    */
   public boolean hasRole(RoleTypeSecurity roleTypeSecurity) {
     JwtAuthenticationToken authentication =
@@ -320,9 +329,12 @@ public class SecurityService {
   }
 
   /**
-   * Gets user ref id from user and group.
+   * Asks the user-and-group service who the logged in user is and reports the identifier that user
+   * carries across service boundaries, which is not the primary key of the local {@link
+   * cz.cyberrange.platform.training.persistence.model.UserRef} row.
    *
-   * @return the user ref id from user and group
+   * @return the cross-service user reference id of the logged in user
+   * @throws MicroserviceApiException when the call to the user-and-group service fails
    */
   public Long getUserRefIdFromUserAndGroup() {
     try {
@@ -381,12 +393,29 @@ public class SecurityService {
         .allMatch(instanceIds -> !Sets.intersection(sourceUserInstanceIds, instanceIds).isEmpty());
   }
 
+  /**
+   * Decides whether the logged in user is involved in every one of the given training definitions,
+   * either by having a training run in one of their instances or by organizing one of their
+   * instances.
+   *
+   * @param trainingDefinitionIds ids of the training definitions that all have to be covered
+   * @return true when the user is involved in all of them, true as well for an empty list
+   */
   public boolean participatesInTrainingDefinitions(List<Long> trainingDefinitionIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
 
     return getParticipatedDefinitions(userRefId).containsAll(trainingDefinitionIds);
   }
 
+  /**
+   * Decides whether the logged in user is involved in the training definitions the given levels
+   * belong to, involvement meaning a training run in one of their instances or organizing one of
+   * their instances.
+   *
+   * @param levelIds ids of the levels whose definitions all have to be covered
+   * @return true when the user is involved in every definition those levels belong to, a level id
+   *     matching no level imposing no requirement
+   */
   public boolean participatesInLevels(List<Long> levelIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
 
@@ -398,6 +427,14 @@ public class SecurityService {
     return getParticipatedDefinitions(userRefId).containsAll(requestedDefinitionIds);
   }
 
+  /**
+   * Decides whether every one of the given hints belongs to a training level of a training
+   * definition the logged in user is involved in, involvement meaning a training run in one of its
+   * instances or organizing one of its instances.
+   *
+   * @param hintIds ids of the hints that all have to be covered
+   * @return true when all of them are reachable that way
+   */
   public boolean participatesInLevelsWithHints(List<Long> hintIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
 
@@ -413,6 +450,13 @@ public class SecurityService {
     return availableHintIds.containsAll(hintIds);
   }
 
+  /**
+   * Collects the training definitions the given user is involved in, both those whose instances the
+   * user has a training run in and those whose instances the user organizes.
+   *
+   * @param userRefId the cross-service user reference id of the user in question
+   * @return ids of the training definitions reached either way, empty when there are none
+   */
   private Set<Long> getParticipatedDefinitions(Long userRefId) {
     UserRef userRef = userService.getUserByUserRefId(userRefId);
     Set<Long> participatedDefinitions =

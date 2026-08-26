@@ -50,7 +50,8 @@ public interface TrainingInstanceRepository
   }
 
   /**
-   * Find all training instances by id of associated training definition.
+   * Find all training instances by id of associated training definition, with that training
+   * definition loaded eagerly along with each one.
    *
    * @param trainingDefId the training def id
    * @return the list of {@link TrainingInstance}s associated to {@link TrainingDefinition}
@@ -142,10 +143,10 @@ public interface TrainingInstanceRepository
   Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
 
   /**
-   * Find training instance by pool id.
+   * Find training instance by pool id, associations left to be loaded on demand.
    *
    * @param poolId the pool id
-   * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
+   * @return the {@link TrainingInstance} assigned that pool, empty when no instance is
    */
   Optional<TrainingInstance> findByPoolId(@Param("poolId") Long poolId);
 
