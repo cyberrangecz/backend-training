@@ -7,14 +7,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Level started event, carrying the {@code type} value {@code level_started}. */
+/** Level started event, carrying the {@code type} value {@code level_started} */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @ApiModel(value = "LevelStartedDTO", description = "Level started event")
 public class LevelStartedDTO extends TrainingEventDTO {
 
-  /** Name of the started level's {@code EventLevelType} constant (for example {@code TRAINING}). */
+  /** Name of the started level's {@code EventLevelType} constant (for example {@code TRAINING}) */
   @ApiModelProperty(value = "Level type")
   @JsonProperty("level_type")
   private String levelType;

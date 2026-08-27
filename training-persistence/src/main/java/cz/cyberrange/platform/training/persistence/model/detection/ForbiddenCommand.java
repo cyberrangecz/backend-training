@@ -26,11 +26,11 @@ import lombok.ToString;
 @Table(name = "forbidden_command")
 public class ForbiddenCommand extends AbstractEntity<Long> {
 
-  /** Matched as a substring of a recorded command line, not as the whole of it. */
+  /** Matched as a substring of a recorded command line, not as the whole of it */
   @Column(name = "command", nullable = false)
   private String command;
 
-  /** The console the command must have been entered in for a match to count. */
+  /** The console the command must have been entered in for a match to count */
   @Column(name = "command_type", nullable = false)
   private CommandType type;
 

@@ -27,7 +27,7 @@ public class QuestionBasicDTO {
   /**
    * Points added to the participant's assessment score when this question is answered correctly in
    * a TEST-type assessment; also contributes to the owning level's maximal score, which is
-   * recomputed from every question's points whenever the level is saved.
+   * recomputed from every question's points whenever the level is saved
    */
   @ApiModelProperty(
       value =
@@ -39,7 +39,7 @@ public class QuestionBasicDTO {
   /**
    * Points subtracted from the participant's assessment score when this question is answered
    * incorrectly in a TEST-type assessment; has no effect on any other assessment type, whose
-   * responses are recorded without being scored.
+   * responses are recorded without being scored
    */
   @ApiModelProperty(
       value =

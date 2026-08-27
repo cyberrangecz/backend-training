@@ -9,10 +9,10 @@ import java.util.Objects;
  */
 public class LockedPoolInfo {
 
-  /** Identifies the lock itself, as the sandbox service numbers its locks. */
+  /** Identifies the lock itself, as the sandbox service numbers its locks */
   private long id;
 
-  /** Identifies the pool the lock was placed on, in the sandbox service's pool numbering. */
+  /** Identifies the pool the lock was placed on, in the sandbox service's pool numbering */
   @JsonProperty(value = "pool_id")
   private long poolId;
 

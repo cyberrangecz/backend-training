@@ -123,7 +123,7 @@ public class TimeProximityService {
 
   /**
    * Marks the submission's run as having a detection event, and adds the submission's trainee to
-   * {@code participants} when not already present.
+   * {@code participants} when not already present
    */
   private void generateEventParticipants(
       Set<DetectionEventParticipant> participants, Submission submission) {

@@ -24,7 +24,7 @@ public class TrainingInstanceDTO extends TrainingInstanceBasicDTO {
 
   /**
    * Mapped through {@code TrainingDefinitionMapper.mapToDTO}; its {@code canBeArchived} is never
-   * patched afterward here, so it always carries that flag's default value of false.
+   * patched afterward here, so it always carries that flag's default value of false
    */
   @ApiModelProperty(
       value = "Reference to training definition from which is training instance created.")
@@ -32,7 +32,7 @@ public class TrainingInstanceDTO extends TrainingInstanceBasicDTO {
 
   /**
    * Carries the full token as stored on the instance, including the pin suffix the service appended
-   * when it was generated.
+   * when it was generated
    */
   @ApiModelProperty(
       value = "Token used to access training run.",
@@ -43,7 +43,7 @@ public class TrainingInstanceDTO extends TrainingInstanceBasicDTO {
   @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
   private Long poolId;
 
-  /** Never populated by the mapper or the facade; stays the empty list it is declared with. */
+  /** Never populated by the mapper or the facade; stays the empty list it is declared with */
   @ApiModelProperty(
       value = "Ids of sandboxes which are assigned to training run.",
       example = "[3,15]")

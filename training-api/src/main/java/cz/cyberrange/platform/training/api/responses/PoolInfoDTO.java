@@ -18,7 +18,7 @@ public class PoolInfoDTO {
   @JsonProperty(value = "max_size")
   private Long maxSize;
 
-  /** Identifies the lock currently held over the pool; null when the pool is not locked. */
+  /** Identifies the lock currently held over the pool; null when the pool is not locked */
   @JsonProperty(value = "lock_id")
   private Long lockId;
 

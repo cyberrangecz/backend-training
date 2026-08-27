@@ -25,7 +25,7 @@ public class ExtendedMatchingStatementDTO implements Ordered {
   /**
    * Position of the statement within its question's list of statements, zero-based and expected
    * contiguous; when a level update resolves its correct option, the statement being completed is
-   * looked up by indexing that list at this value.
+   * looked up by indexing that list at this value
    */
   @ApiModelProperty(value = "The order of the statement in question of type EMI.", example = "0")
   @Min(value = 0, message = "{emiStatement.order.Min.message}")

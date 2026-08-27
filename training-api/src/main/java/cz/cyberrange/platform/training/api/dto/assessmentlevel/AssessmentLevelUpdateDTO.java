@@ -67,7 +67,7 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
   /**
    * Threshold, in minutes, below which a participant's time spent on the level is flagged as an
-   * unusually fast solve by cheating detection.
+   * unusually fast solve by cheating detection
    */
   @ApiModelProperty(
       value =
@@ -75,7 +75,7 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
       example = "5")
   protected Integer minimalPossibleSolveTime;
 
-  /** Sets the level type discriminator to assessment level. */
+  /** Sets the level type discriminator to assessment level */
   public AssessmentLevelUpdateDTO() {
     this.levelType = LevelType.ASSESSMENT_LEVEL;
   }

@@ -27,7 +27,7 @@ public class CorrectAnswerDTO {
 
   /**
    * Holds the level's static answer, or, for a level using variant answers, whatever value the
-   * variant-answer lookup resolved for it, which may be null when that lookup found none.
+   * variant-answer lookup resolved for it, which may be null when that lookup found none
    */
   @ApiModelProperty(
       value = "Correct answer (static or variable) of the training level.",
@@ -36,7 +36,7 @@ public class CorrectAnswerDTO {
 
   /**
    * Names the answer variable the level was configured with; unset when the level uses a single
-   * static answer.
+   * static answer
    */
   @ApiModelProperty(value = "Identifier of the variant answer.", example = "username")
   private String variableName;

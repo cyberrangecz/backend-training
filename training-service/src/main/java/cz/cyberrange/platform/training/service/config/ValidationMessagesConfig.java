@@ -11,7 +11,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 /**
  * Wires validation failure messages to the bundled message files, so that a constraint's message
- * key resolves to readable text rather than being shown as the key.
+ * key resolves to readable text rather than being shown as the key
  */
 @Configuration
 public class ValidationMessagesConfig {

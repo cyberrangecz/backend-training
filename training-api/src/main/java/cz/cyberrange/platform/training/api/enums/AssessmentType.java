@@ -2,14 +2,14 @@ package cz.cyberrange.platform.training.api.enums;
 
 /**
  * Classifies whether an assessment level's submitted answers are graded against correct answers or
- * only collected.
+ * only collected
  */
 public enum AssessmentType {
 
   /**
    * Requires the correct option of every extended matching statement to be resolved when the level
    * is saved, has submitted answers evaluated against those answers, and counts toward the training
-   * run's score.
+   * run's score
    */
   TEST,
   /**

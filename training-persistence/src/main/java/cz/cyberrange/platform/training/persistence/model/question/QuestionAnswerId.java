@@ -11,7 +11,7 @@ import lombok.Setter;
 
 /**
  * Composite primary key of a {@link QuestionAnswer}, pairing the primary key of the answered
- * question with that of the training run in which it was answered.
+ * question with that of the training run in which it was answered
  */
 @Getter
 @Setter
@@ -20,11 +20,11 @@ import lombok.Setter;
 @Embeddable
 public class QuestionAnswerId implements Serializable {
 
-  /** Primary key of the answered {@link Question}. */
+  /** Primary key of the answered {@link Question} */
   @Column(name = "question_id")
   private Long questionId;
 
-  /** Primary key of the {@code TrainingRun} in which the question was answered. */
+  /** Primary key of the {@code TrainingRun} in which the question was answered */
   @Column(name = "training_run_id")
   private Long trainingRunId;
 

@@ -10,13 +10,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class SandboxInfo {
 
-  /** Identifies the sandbox in the sandbox service; textual rather than numeric. */
+  /** Identifies the sandbox in the sandbox service; textual rather than numeric */
   private String id;
 
   @JsonProperty(value = "lock_id")
   private Integer lockId;
 
-  /** Identifies the allocation the sandbox was created by, in the sandbox service's numbering. */
+  /** Identifies the allocation the sandbox was created by, in the sandbox service's numbering */
   @JsonProperty(value = "allocation_unit_id")
   private Integer allocationUnitId;
 

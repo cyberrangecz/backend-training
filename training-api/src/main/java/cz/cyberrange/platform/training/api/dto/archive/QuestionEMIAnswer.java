@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * One statement-to-option pairing chosen for an extended-matching question, deserialized from the
- * raw JSON stored in a submitted question answer.
+ * raw JSON stored in a submitted question answer
  */
 @Data
 @NoArgsConstructor
@@ -15,12 +15,12 @@ import lombok.NoArgsConstructor;
 public class QuestionEMIAnswer {
 
   /**
-   * Index into the question's list of extended-matching statements naming the matched statement.
+   * Index into the question's list of extended-matching statements naming the matched statement
    */
   @JsonProperty("statementOrder")
   private Integer statementOrder;
 
-  /** Index into the question's list of extended-matching options naming the matched option. */
+  /** Index into the question's list of extended-matching options naming the matched option */
   @JsonProperty("optionOrder")
   private Integer optionOrder;
 }

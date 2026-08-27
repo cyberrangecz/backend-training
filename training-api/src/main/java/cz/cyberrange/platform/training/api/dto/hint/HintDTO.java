@@ -10,7 +10,7 @@ import lombok.ToString;
 
 /**
  * A hint including the advice it gives, as a designer submits it with a training level and as it is
- * handed to a trainee who has taken it.
+ * handed to a trainee who has taken it
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -24,7 +24,7 @@ public class HintDTO extends HintBasicDTO {
   @NotEmpty(message = "{hint.content.NotEmpty.message}")
   private String content;
 
-  /** Position of the hint within its level's sequence of hints. */
+  /** Position of the hint within its level's sequence of hints */
   @ApiModelProperty(value = "The order of hint in training level", example = "1")
   @Min(value = 0, message = "{hint.order.Min.message}")
   private int order;

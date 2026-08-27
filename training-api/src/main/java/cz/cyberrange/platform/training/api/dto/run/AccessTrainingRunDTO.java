@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 
-/** Encapsulates information about Training Run, intended as a response to run accessing. */
+/** Encapsulates information about Training Run, intended as a response to run accessing */
 @Data
 @ApiModel(value = "AccessTrainingRunDTO", description = "Just accessed training run.")
 public class AccessTrainingRunDTO {
@@ -23,13 +23,13 @@ public class AccessTrainingRunDTO {
   @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
   private boolean showStepperBar;
 
-  /** Plain sandbox UUID, never hashed; the caller is always this run's owner or an admin. */
+  /** Plain sandbox UUID, never hashed; the caller is always this run's owner or an admin */
   @ApiModelProperty(
       value = "Main identifier of sandbox which is assigned to training run.",
       example = "2")
   private String sandboxInstanceRefId;
 
-  /** The training run's current level, not necessarily the first level of the definition. */
+  /** The training run's current level, not necessarily the first level of the definition */
   @ApiModelProperty(value = "First level in the current training run.")
   private AbstractLevelDTO abstractLevelDTO;
 

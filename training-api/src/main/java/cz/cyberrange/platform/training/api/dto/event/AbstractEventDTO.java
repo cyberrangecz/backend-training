@@ -36,7 +36,7 @@ public abstract class AbstractEventDTO {
   /**
    * The literal {@code COMMAND} for a console command, mapped from the fixed constant {@code
    * EventMapper} assigns it; for a training event, the {@code TYPE} constant declared on the audit
-   * POJO the event was recorded as, copied through unchanged.
+   * POJO the event was recorded as, copied through unchanged
    */
   @ApiModelProperty(value = "Type of the event")
   private String type;

@@ -31,13 +31,13 @@ public class Question implements Serializable {
   /**
    * Which shape of answer this question takes, which in turn decides which content collection is
    * populated and which of {@link #choices}' or {@link #extendedMatchingStatements}' correctness
-   * data is consulted when scoring a submitted answer.
+   * data is consulted when scoring a submitted answer
    */
   @Enumerated(EnumType.STRING)
   @Column(name = "question_type")
   private QuestionType questionType;
 
-  /** The question's prompt, shown to the participant. */
+  /** The question's prompt, shown to the participant */
   @Column(name = "text")
   private String text;
 
@@ -75,7 +75,7 @@ public class Question implements Serializable {
   private boolean answerRequired;
 
   /**
-   * The assessment level this question belongs to, assigned when that level's question list is set.
+   * The assessment level this question belongs to, assigned when that level's question list is set
    */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assessment_level_id")

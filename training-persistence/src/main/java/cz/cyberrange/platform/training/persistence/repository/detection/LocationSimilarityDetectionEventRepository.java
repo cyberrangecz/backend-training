@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 /**
  * Manages {@link LocationSimilarityDetectionEvent} findings, the joined-inheritance subtype of
  * {@code AbstractDetectionEvent} recording that several trainees submitted from the same network
- * location.
+ * location
  */
 public interface LocationSimilarityDetectionEventRepository
     extends JpaRepository<LocationSimilarityDetectionEvent, Long>,

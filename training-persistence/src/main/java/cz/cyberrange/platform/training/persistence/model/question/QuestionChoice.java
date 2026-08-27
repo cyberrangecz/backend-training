@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * A row of the {@code question_choice} table: one answer option of an FFQ or MCQ {@link Question}.
+ * A row of the {@code question_choice} table: one answer option of an FFQ or MCQ {@link Question}
  */
 @Getter
 @Setter
@@ -46,7 +46,7 @@ public class QuestionChoice implements Serializable {
   @Column(name = "order_in_question")
   private int order;
 
-  /** The question this choice belongs to. */
+  /** The question this choice belongs to */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "question_id")
   private Question question;

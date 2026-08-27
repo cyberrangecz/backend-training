@@ -44,7 +44,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
   @Column(name = "training_instance_id", nullable = false)
   private Long trainingInstanceId;
 
-  /** Display name of the user who asked for the sweep, kept as text rather than as a reference. */
+  /** Display name of the user who asked for the sweep, kept as text rather than as a reference */
   @Column(name = "executed_by")
   private String executedBy;
 
@@ -58,7 +58,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
   @Column(name = "current_state", nullable = false)
   private CheatingDetectionState currentState;
 
-  /** How many findings the sweep has made, recounted as the detections report. */
+  /** How many findings the sweep has made, recounted as the detections report */
   @Column(name = "results")
   private Long results;
 
@@ -107,7 +107,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
 
   /**
    * Marks the sweep as running and queues each of the six detections that was not left out, so that
-   * every detection is either waiting to run or explicitly excluded.
+   * every detection is either waiting to run or explicitly excluded
    */
   public void setExecuteStates() {
     this.setCurrentState(CheatingDetectionState.RUNNING);

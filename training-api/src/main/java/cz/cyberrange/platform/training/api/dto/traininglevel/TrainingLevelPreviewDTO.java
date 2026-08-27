@@ -12,7 +12,7 @@ import lombok.ToString;
 
 /**
  * A previously visited level replayed back to the trainee who visited it, as part of a training
- * run.
+ * run
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -28,13 +28,13 @@ public class TrainingLevelPreviewDTO extends AbstractLevelDTO {
       example = "Play me")
   private String content;
 
-  /** Hints this trainee actually took while visiting the level, rebuilt from their run history. */
+  /** Hints this trainee actually took while visiting the level, rebuilt from their run history */
   @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<TakenHintDTO> hints = new HashSet<>();
 
   /**
    * The solution as recorded for this trainee's run, with any embedded answer placeholder resolved
-   * to their own answer; null if this trainee has not displayed it.
+   * to their own answer; null if this trainee has not displayed it
    */
   @ApiModelProperty(
       value = "Instruction how to get answer in training.",

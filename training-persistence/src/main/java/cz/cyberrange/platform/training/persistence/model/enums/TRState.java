@@ -7,8 +7,8 @@ package cz.cyberrange.platform.training.persistence.model.enums;
  */
 public enum TRState {
   RUNNING,
-  /** The trainee has worked through the last level. */
+  /** The trainee has worked through the last level */
   FINISHED,
-  /** Kept for the record with its sandbox given up. */
+  /** Kept for the record with its sandbox given up */
   ARCHIVED;
 }

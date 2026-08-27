@@ -15,7 +15,7 @@ import lombok.ToString;
 /**
  * A question as shown to a participant looking at a level they have already reached, which may be
  * the level they are working on right now, carrying whatever they have submitted but never the
- * correct answers.
+ * correct answers
  */
 @Getter
 @Setter
@@ -55,14 +55,14 @@ public class QuestionPreviewDTO {
 
   /**
    * Statements displayed to the participant in case of EMI, each carrying the participant's chosen
-   * option order but never the correct one.
+   * option order but never the correct one
    */
   @ApiModelProperty(value = "Statements displayed to the participant in case of EMI.")
   private List<ExtendedMatchingStatementPreviewDTO> extendedMatchingStatements = new ArrayList<>();
 
   /**
    * The participant's submitted answers for a free-form or multiple-choice question; left unset for
-   * an extended matching question, whose answers are carried on the statements instead.
+   * an extended matching question, whose answers are carried on the statements instead
    */
   @ApiModelProperty(value = "User answers to the question", example = "[\"An answer\"]")
   private Set<String> userAnswers;

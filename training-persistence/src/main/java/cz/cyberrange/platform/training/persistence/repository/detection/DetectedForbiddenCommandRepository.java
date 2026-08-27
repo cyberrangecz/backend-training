@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 /**
  * Manages {@link DetectedForbiddenCommand} rows, each one console command recorded as matching a
- * forbidden command of a {@code ForbiddenCommandsDetectionEvent} finding.
+ * forbidden command of a {@code ForbiddenCommandsDetectionEvent} finding
  */
 public interface DetectedForbiddenCommandRepository
     extends JpaRepository<DetectedForbiddenCommand, Long>,

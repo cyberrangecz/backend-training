@@ -58,7 +58,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The rest controller for Training definitions. */
+/** The rest controller for Training definitions */
 @Api(
     value = "/training-definitions",
     tags = "Training definitions",
@@ -1333,7 +1333,7 @@ public class TrainingDefinitionsRestController {
     private Pagination pagination;
   }
 
-  /** The type User info rest resource. */
+  /** The type User info rest resource */
   @ApiModel(
       value = "UserInfoRestResource",
       description =

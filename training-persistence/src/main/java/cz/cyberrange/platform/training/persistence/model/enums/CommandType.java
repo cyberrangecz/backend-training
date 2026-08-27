@@ -6,8 +6,8 @@ package cz.cyberrange.platform.training.persistence.model.enums;
  */
 public enum CommandType {
 
-  /** The shell console. */
+  /** The shell console */
   BASH,
-  /** The Metasploit console. */
+  /** The Metasploit console */
   MSF;
 }

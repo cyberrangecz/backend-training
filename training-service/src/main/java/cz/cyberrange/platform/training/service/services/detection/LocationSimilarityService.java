@@ -109,7 +109,7 @@ public class LocationSimilarityService {
         .forEach(submissions -> evaluateLocationSimilarityByLevels(submissions, cd));
   }
 
-  /** Groups the level's submissions by IP-address similarity and audits each resulting group. */
+  /** Groups the level's submissions by IP-address similarity and audits each resulting group */
   private void evaluateLocationSimilarityByLevels(
       List<Submission> submissions, CheatingDetection cd) {
 

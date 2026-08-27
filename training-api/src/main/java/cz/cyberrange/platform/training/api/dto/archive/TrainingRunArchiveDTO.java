@@ -10,7 +10,7 @@ import lombok.Data;
 
 /**
  * Snapshot of one participant's training run, written as a single JSON file into the training runs
- * folder of the training instance archive.
+ * folder of the training instance archive
  */
 @Data
 @ApiModel(
@@ -45,7 +45,7 @@ public class TrainingRunArchiveDTO {
 
   /**
    * User reference id ({@code UserRef.userRefId}) of the run's participant, not the participant's
-   * local primary key.
+   * local primary key
    */
   @ApiModelProperty(value = "Reference to participant of training run.", example = "5")
   private Long participantRefId;

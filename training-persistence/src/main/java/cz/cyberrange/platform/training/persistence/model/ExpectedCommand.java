@@ -6,7 +6,7 @@ import javax.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
 
-/** Holds a single console command string recorded for a training level. */
+/** Holds a single console command string recorded for a training level */
 @Getter
 @Setter
 @Embeddable

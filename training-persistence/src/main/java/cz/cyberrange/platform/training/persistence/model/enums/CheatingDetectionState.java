@@ -6,15 +6,15 @@ package cz.cyberrange.platform.training.persistence.model.enums;
  */
 public enum CheatingDetectionState {
 
-  /** Accepted and waiting to be executed. */
+  /** Accepted and waiting to be executed */
   QUEUED,
-  /** Executing now. */
+  /** Executing now */
   RUNNING,
   /**
    * Excluded from the run. A detection asked for in this state is left in it rather than queued, so
    * it never executes.
    */
   DISABLED,
-  /** Executed to completion; any findings it made are recorded. */
+  /** Executed to completion; any findings it made are recorded */
   FINISHED;
 }

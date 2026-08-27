@@ -66,13 +66,13 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
   @Column(name = "title", nullable = false)
   private String title;
 
-  /** Score credited for solving the level, before any hint or solution penalty is subtracted. */
+  /** Score credited for solving the level, before any hint or solution penalty is subtracted */
   @Column(name = "max_score", nullable = false)
   private int maxScore;
 
   /**
    * Added to the owning training definition's total estimated duration whenever the level is added,
-   * removed, or edited.
+   * removed, or edited
    */
   @Column(name = "estimated_duration")
   private long estimatedDuration;
@@ -85,7 +85,7 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
   @Column(name = "minimal_possible_solve_time")
   private Long minimalPossibleSolveTime;
 
-  /** Zero-based position of the level within its training definition's sequence of levels. */
+  /** Zero-based position of the level within its training definition's sequence of levels */
   @Column(name = "order_in_training_definition", nullable = false)
   private int order;
 

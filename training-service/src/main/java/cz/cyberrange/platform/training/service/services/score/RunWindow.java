@@ -9,24 +9,24 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-/** The span a training run occupied, measured against the lifetime of the instance hosting it. */
+/** The span a training run occupied, measured against the lifetime of the instance hosting it */
 @Getter
 @ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RunWindow {
 
-  /** Whether the run has ended, by its own state or because its instance has. */
+  /** Whether the run has ended, by its own state or because its instance has */
   private final boolean finished;
 
-  /** Run start, in epoch milliseconds. */
+  /** Run start, in epoch milliseconds */
   private final long startMillis;
 
-  /** Run end capped at the instance end, in epoch milliseconds; null while the run is going. */
+  /** Run end capped at the instance end, in epoch milliseconds; null while the run is going */
   private final Long endMillis;
 
   /**
    * Length of the span in milliseconds, never negative, measured to the current instant while the
-   * run is still going so that it can be ranked.
+   * run is still going so that it can be ranked
    */
   private final long elapsedMillis;
 

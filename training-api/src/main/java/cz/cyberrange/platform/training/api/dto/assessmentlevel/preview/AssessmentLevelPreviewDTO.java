@@ -11,7 +11,7 @@ import lombok.ToString;
 
 /**
  * An assessment level as shown for a level the participant has already visited, carrying the
- * participant's own submitted answers but never disclosing which choice or option was correct.
+ * participant's own submitted answers but never disclosing which choice or option was correct
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

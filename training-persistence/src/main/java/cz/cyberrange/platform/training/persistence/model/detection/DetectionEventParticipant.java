@@ -54,7 +54,7 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
 
   /**
    * The trainee's {@code userRefId}, the id spoken outside this service, rather than the primary
-   * key of their {@code user_ref} row.
+   * key of their {@code user_ref} row
    */
   @Column(name = "user_id", nullable = false)
   private Long userId;

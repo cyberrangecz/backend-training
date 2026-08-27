@@ -132,7 +132,7 @@ public class NoCommandsService {
 
   /**
    * Reports whether one of the given audit events records the solution of the submission's level
-   * having been revealed.
+   * having been revealed
    */
   private boolean wasSolutionDisplayed(List<AbstractAuditPOJO> events, Submission submission) {
     for (AbstractAuditPOJO event : events) {
@@ -146,7 +146,7 @@ public class NoCommandsService {
 
   /**
    * Builds a participant record for every submission caught on one level and marks each
-   * submission's training run as carrying a detection event.
+   * submission's training run as carrying a detection event
    */
   private void generateParticipantsOfEvent(
       Set<DetectionEventParticipant> participants, Map.Entry<Long, List<Submission>> submissions) {
@@ -231,7 +231,7 @@ public class NoCommandsService {
 
   /**
    * Marks the training run of the first submission as carrying a detection event, then records a
-   * finding for that submission's level implicating every given participant.
+   * finding for that submission's level implicating every given participant
    */
   private void auditNoCommandsEvent(
       Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {

@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 
 /**
  * Records a trainee revealing a training level's solution, carried under the {@code
- * solution_displayed} type.
+ * solution_displayed} type
  */
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -23,7 +23,7 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
 
   public static final String TYPE = "solution_displayed";
 
-  /** The level's remaining score after the solution penalty, if any, is applied. */
+  /** The level's remaining score after the solution penalty, if any, is applied */
   @JsonProperty(value = "penalty_points", required = true)
   private int penaltyPoints;
 }

@@ -19,6 +19,6 @@ import io.swagger.annotations.ApiModel;
 })
 public abstract class ApiSubError {
 
-  /** Returns the message this sub-error carries for reporting. */
+  /** Returns the message this sub-error carries for reporting */
   public abstract String getMessage();
 }

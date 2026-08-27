@@ -8,7 +8,7 @@ import lombok.Data;
 
 /**
  * One recorded console command that matched a forbidden one, kept with the machine it ran on and
- * the moment it was entered.
+ * the moment it was entered
  */
 @Data
 @ApiModel(
@@ -16,7 +16,7 @@ import lombok.Data;
     description = "Basic information about detected forbidden command.")
 public class DetectedForbiddenCommandDTO {
 
-  /** The command line as it was recorded, not the forbidden text that matched it. */
+  /** The command line as it was recorded, not the forbidden text that matched it */
   @ApiModelProperty(value = "Command.", example = "nmap")
   private String command;
 

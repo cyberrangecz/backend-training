@@ -21,7 +21,7 @@ import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link TrainingDefinition} instances. */
+/** The JPA repository interface to manage {@link TrainingDefinition} instances */
 @Repository
 public interface TrainingDefinitionRepository
     extends JpaRepository<TrainingDefinition, Long>,
@@ -147,7 +147,7 @@ public interface TrainingDefinitionRepository
 
   List<TrainingDefinition> findAllByIdIn(Collection<Long> ids);
 
-  /** A single MITRE technique key used by a training definition. */
+  /** A single MITRE technique key used by a training definition */
   interface MitreTechniqueUsage {
 
     /**

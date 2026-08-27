@@ -109,7 +109,7 @@ public class TrainingScoreAggregationService {
   }
 
   /**
-   * Reads one run's bucket into the projection, leaving the standing null when it holds no event.
+   * Reads one run's bucket into the projection, leaving the standing null when it holds no event
    */
   private static RunEventAggregate toAggregate(LongTermsBucket runBucket) {
     RunScoreSnapshot latestScore =
@@ -125,7 +125,7 @@ public class TrainingScoreAggregationService {
 
   /**
    * Takes the score each level ended on from the newest completion event within that level, and
-   * yields nothing for a level that was never completed.
+   * yields nothing for a level that was never completed
    */
   private static Map<Long, Integer> scoreByLevel(LongTermsBucket runBucket) {
     Map<Long, Integer> scoreByLevelId = new HashMap<>();
@@ -146,7 +146,7 @@ public class TrainingScoreAggregationService {
 
   /**
    * Reads the per-level document counts of each counted event type, omitting a type or a level that
-   * produced nothing rather than recording a zero.
+   * produced nothing rather than recording a zero
    */
   private static Map<String, Map<Long, Long>> countByEventTypeAndLevel(LongTermsBucket runBucket) {
     Map<String, Map<Long, Long>> countByEventType = new HashMap<>();
@@ -168,7 +168,7 @@ public class TrainingScoreAggregationService {
 
   /**
    * Recovers the single newest event a bucket kept, empty when the bucket kept none or its document
-   * carried no body.
+   * carried no body
    */
   private static Optional<AbstractAuditPOJO> latestEventOf(MultiBucketBase bucket) {
     Aggregate latest = bucket.aggregations().get(LATEST_AGGREGATION);

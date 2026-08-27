@@ -34,7 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-/** The type Training definition service. */
+/** The type Training definition service */
 @Service
 public class TrainingDefinitionService {
 

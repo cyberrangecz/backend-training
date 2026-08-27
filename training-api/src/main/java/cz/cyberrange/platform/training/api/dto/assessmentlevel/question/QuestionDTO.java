@@ -14,7 +14,7 @@ import lombok.ToString;
 
 /**
  * A question of an assessment level, together with the answer options relevant to its question
- * type.
+ * type
  */
 @Getter
 @Setter
@@ -28,19 +28,19 @@ public class QuestionDTO extends QuestionBasicDTO {
   @NotEmpty(message = "{question.text.NotEmpty.message}")
   private String text = "Example Question";
 
-  /** Answer choices offered when the question type is free-form or multiple-choice. */
+  /** Answer choices offered when the question type is free-form or multiple-choice */
   @ApiModelProperty(value = "Choices displayed to the participant in case of FFQ or MCQ.")
   @Valid
   @ValidOrder
   private List<QuestionChoiceDTO> choices = new ArrayList<>();
 
-  /** Answer options offered when the question type is extended matching. */
+  /** Answer options offered when the question type is extended matching */
   @ApiModelProperty(value = "Options displayed to the participant in case of EMI.")
   @Valid
   @ValidOrder
   private List<ExtendedMatchingOptionDTO> extendedMatchingOptions = new ArrayList<>();
 
-  /** Statements to be matched against options when the question type is extended matching. */
+  /** Statements to be matched against options when the question type is extended matching */
   @ApiModelProperty(value = "Statements displayed to the participant in case of EMI.")
   @Valid
   @ValidOrder

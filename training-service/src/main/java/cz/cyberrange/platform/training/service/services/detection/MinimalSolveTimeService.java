@@ -189,7 +189,7 @@ public class MinimalSolveTimeService {
 
   /**
    * Appends the submission to the level's list in {@code detectedByLevel}, creating it if absent,
-   * and records its solve duration in {@code submissionTimes} under its submission id.
+   * and records its solve duration in {@code submissionTimes} under its submission id
    */
   private static void addMinimalSolveTimeDataToMaps(
       Map<Long, List<Submission>> detectedByLevel,
@@ -209,7 +209,7 @@ public class MinimalSolveTimeService {
    * For each level in {@code suspiciousSubmissionsByLevel}, marks every implicated run as having a
    * detection event, builds one participant per submission carrying its recorded solve time, and
    * persists a single {@link MinimalSolveTimeDetectionEvent} for the level regardless of how many
-   * trainees ended up as participants.
+   * trainees ended up as participants
    */
   private void generateMinimalSolveTimeEvents(
       CheatingDetection cd,

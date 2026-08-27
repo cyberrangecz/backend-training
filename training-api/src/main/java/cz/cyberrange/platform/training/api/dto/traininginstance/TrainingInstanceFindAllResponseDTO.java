@@ -33,7 +33,7 @@ public class TrainingInstanceFindAllResponseDTO {
 
   /**
    * Mapped through {@code TrainingDefinitionMapper.mapToDTO}; its {@code canBeArchived} is never
-   * patched afterward here, so it always carries that flag's default value of false.
+   * patched afterward here, so it always carries that flag's default value of false
    */
   @ApiModelProperty(
       value = "Reference to training definition from which is training instance created.")

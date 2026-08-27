@@ -7,7 +7,7 @@ import lombok.ToString;
 
 /**
  * A row of the {@code extended_matching_statement} table: one statement of an EMI {@link Question},
- * to be paired by the participant with one of the question's {@link ExtendedMatchingOption}s.
+ * to be paired by the participant with one of the question's {@link ExtendedMatchingOption}s
  */
 @Getter
 @Setter
@@ -26,7 +26,7 @@ public class ExtendedMatchingStatement {
   @Column(name = "extended_matching_statement_id", nullable = false, unique = true)
   private Long id;
 
-  /** The statement's text, shown to the participant. */
+  /** The statement's text, shown to the participant */
   @Column(name = "text")
   private String text;
 
@@ -38,7 +38,7 @@ public class ExtendedMatchingStatement {
   @Column(name = "order_in_column")
   private int order;
 
-  /** The question this statement belongs to. */
+  /** The question this statement belongs to */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "question_id")
   private Question question;

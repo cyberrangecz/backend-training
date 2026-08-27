@@ -9,7 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link Submission} instances. */
+/** The JPA repository interface to manage {@link Submission} instances */
 @Repository
 public interface SubmissionRepository
     extends JpaRepository<Submission, Long>, QuerydslPredicateExecutor<InfoLevel> {

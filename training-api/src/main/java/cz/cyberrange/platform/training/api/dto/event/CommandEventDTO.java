@@ -9,7 +9,7 @@ import lombok.ToString;
 
 /**
  * A single console command captured as an audit event, together with the host, user, and working
- * directory it ran under.
+ * directory it ran under
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -20,7 +20,7 @@ import lombok.ToString;
     parent = AbstractDetectionEventDTO.class)
 public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDTO {
 
-  /** How many forbidden commands this finding gathered, counting every occurrence. */
+  /** How many forbidden commands this finding gathered, counting every occurrence */
   @ApiModelProperty(value = "count of forbidden commands.", example = "10")
   private int commandCount;
 }

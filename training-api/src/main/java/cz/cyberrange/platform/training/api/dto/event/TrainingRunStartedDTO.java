@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Training run started event, carrying the {@code type} value {@code training_run_started}. */
+/** Training run started event, carrying the {@code type} value {@code training_run_started} */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

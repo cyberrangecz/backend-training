@@ -54,7 +54,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The rest controller for Cheating detections. */
+/** The rest controller for Cheating detections */
 @Api(
     value = "/cheating-detections",
     tags = "Cheating detection",
@@ -752,7 +752,7 @@ public class CheatingDetectionsRestController {
         SquigglyUtils.stringify(objectMapper, cheatingDetectionResource), HttpStatus.OK);
   }
 
-  /** The type Detection Event rest resource. */
+  /** The type Detection Event rest resource */
   @ApiModel(
       value = "DetectionEventRestResource",
       description =
@@ -770,7 +770,7 @@ public class CheatingDetectionsRestController {
     private Pagination pagination;
   }
 
-  /** The type Cheating Detection rest resource. */
+  /** The type Cheating Detection rest resource */
   @ApiModel(
       value = "CheatingDetectionRestResource",
       description =
@@ -788,7 +788,7 @@ public class CheatingDetectionsRestController {
     private Pagination pagination;
   }
 
-  /** The type Detection event participant rest resource. */
+  /** The type Detection event participant rest resource */
   @ApiModel(
       value = "DetectionEventParticipantRestResource",
       description =

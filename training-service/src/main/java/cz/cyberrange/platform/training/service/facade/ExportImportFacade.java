@@ -84,7 +84,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Moves training content across the service boundary: a definition out as a JSON file and back in
  * as a new definition, an instance out as a zip archive of its runs, events, commands and answers,
- * and an instance's participant standings out as a score report.
+ * and an instance's participant standings out as a score report
  */
 @Service
 @Transactional

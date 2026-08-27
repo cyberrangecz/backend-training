@@ -7,7 +7,7 @@ import lombok.Data;
 
 /**
  * The group of users who may see and run a training definition while it is still unreleased, as it
- * leaves the service.
+ * leaves the service
  */
 @Data
 @ApiModel(

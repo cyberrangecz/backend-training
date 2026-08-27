@@ -5,7 +5,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-/** Custom {@link TrainingDefinition} lookup, restricted to one user's own definitions. */
+/** Custom {@link TrainingDefinition} lookup, restricted to one user's own definitions */
 public interface TrainingDefinitionRepositoryCustom {
 
   /**

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Manages the {@link AbstractDetectionEvent} rows shared by every kind of cheating-detection
- * finding, the root of a JOINED-inheritance hierarchy each concrete finding extends.
+ * finding, the root of a JOINED-inheritance hierarchy each concrete finding extends
  */
 @Repository
 public interface AbstractDetectionEventRepository
@@ -31,7 +31,7 @@ public interface AbstractDetectionEventRepository
 
   /**
    * Binds every {@code String} property so that, when queried through a Querydsl web binding, it
-   * matches case-insensitively and by substring, ANDing together every value supplied for it.
+   * matches case-insensitively and by substring, ANDing together every value supplied for it
    */
   @Override
   default void customize(

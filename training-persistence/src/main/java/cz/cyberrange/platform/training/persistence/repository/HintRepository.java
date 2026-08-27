@@ -9,7 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link Hint} instances. */
+/** The JPA repository interface to manage {@link Hint} instances */
 @Repository
 public interface HintRepository extends JpaRepository<Hint, Long>, QuerydslPredicateExecutor<Hint> {
 

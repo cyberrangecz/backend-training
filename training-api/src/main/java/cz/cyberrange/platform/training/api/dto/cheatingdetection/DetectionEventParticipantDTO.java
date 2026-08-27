@@ -9,7 +9,7 @@ import lombok.Data;
 
 /**
  * One trainee implicated in a detection finding, together with the submission of theirs that put
- * them there.
+ * them there
  */
 @Data
 @ApiModel(
@@ -26,7 +26,7 @@ public class DetectionEventParticipantDTO {
 
   /**
    * How long this trainee took over the level, in seconds, carried only by a finding that turns on
-   * solving speed and left unset otherwise.
+   * solving speed and left unset otherwise
    */
   @ApiModelProperty(value = "Time in which the level was solved.", example = "20")
   private Long solvedInTime;
@@ -36,7 +36,7 @@ public class DetectionEventParticipantDTO {
 
   /**
    * The trainee's {@code userRefId}, the id spoken outside this service, rather than the local
-   * primary key of the user row.
+   * primary key of the user row
    */
   @ApiModelProperty(value = "User id of participant.", example = "6")
   private Long userId;

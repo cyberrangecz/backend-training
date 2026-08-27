@@ -28,7 +28,7 @@ import org.springframework.http.HttpStatus;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
 
-  /** Epoch millisecond at which the handler that produced this error ran. */
+  /** Epoch millisecond at which the handler that produced this error ran */
   @ApiModelProperty(
       value = "The time when the exception occurred",
       example = "1574062900 (different for each type of exception)")
@@ -36,7 +36,7 @@ public class ApiError {
 
   /**
    * Status carried in the error body, which the handler also sets as the actual HTTP response
-   * status.
+   * status
    */
   @ApiModelProperty(
       value = "The HTTP response status code",
@@ -58,7 +58,7 @@ public class ApiError {
 
   /**
    * Single-element list holding the caught exception's own message, set through {@link
-   * #setError(String)}.
+   * #setError(String)}
    */
   @ApiModelProperty(
       value = "The list of main reasons of the ApiError.",
@@ -160,7 +160,7 @@ public class ApiError {
     this.errors = errors;
   }
 
-  /** Replaces {@link #getErrors()} with a single-element list holding {@code error}. */
+  /** Replaces {@link #getErrors()} with a single-element list holding {@code error} */
   public void setError(final String error) {
     errors = Arrays.asList(error);
   }

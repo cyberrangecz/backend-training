@@ -117,7 +117,7 @@ public class JavaApiError extends ApiSubError {
     this.timestamp = timestamp;
   }
 
-  /** Returns the error message, or a placeholder when none was set. */
+  /** Returns the error message, or a placeholder when none was set */
   @Override
   public String getMessage() {
     return message == null ? "No specific message provided." : message;

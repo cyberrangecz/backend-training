@@ -195,7 +195,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
   /**
    * Returns how far along its life this training definition is; see {@link TDState} for the
-   * possible values.
+   * possible values
    */
   public TDState getState() {
     return state;

@@ -29,7 +29,7 @@ public class TrainingLevelViewDTO extends AbstractLevelDTO {
       example = "Play me")
   private String content;
 
-  /** Whether requesting the solution reduces the score awardable for the level to zero. */
+  /** Whether requesting the solution reduces the score awardable for the level to zero */
   @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
   private boolean solutionPenalized;
 
@@ -40,14 +40,14 @@ public class TrainingLevelViewDTO extends AbstractLevelDTO {
 
   /**
    * Number of incorrect answer submissions allowed for the level, against which the number of
-   * remaining attempts is calculated.
+   * remaining attempts is calculated
    */
   @ApiModelProperty(
       value = "How many times player can submit incorrect answer before displaying solution.",
       example = "5")
   private int incorrectAnswerLimit;
 
-  /** Hints as configured for the level, each with its title and point cost, advice withheld. */
+  /** Hints as configured for the level, each with its title and point cost, advice withheld */
   @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<HintForTrainingLevelViewDTO> hints = new HashSet<>();
 }

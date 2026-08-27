@@ -24,7 +24,7 @@ import lombok.ToString;
 public class AccessLevelViewDTO extends AbstractLevelDTO {
 
   /**
-   * Instructions for reaching the level's virtual machines from a cloud environment, as authored.
+   * Instructions for reaching the level's virtual machines from a cloud environment, as authored
    */
   @ApiModelProperty(
       value = "The instructions on how to connect to the machine in cloud environment.",
@@ -33,7 +33,7 @@ public class AccessLevelViewDTO extends AbstractLevelDTO {
 
   /**
    * Instructions for reaching the level's virtual machines from a local, non-cloud environment,
-   * with its runtime placeholders already substituted for the requesting participant.
+   * with its runtime placeholders already substituted for the requesting participant
    */
   @ApiModelProperty(
       value = "The instructions on how to connect to the machine in local (non-cloud) environment.",

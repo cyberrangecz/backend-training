@@ -22,7 +22,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 
-/** The type User service. */
+/** The type User service */
 @Service
 public class UserService {
 

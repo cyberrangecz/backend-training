@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Encapsulates information about Training Instance, intended for assigning pool id. */
+/** Encapsulates information about Training Instance, intended for assigning pool id */
 @Data
 @ApiModel(
     value = "TrainingInstanceAssignPoolIdDTO",

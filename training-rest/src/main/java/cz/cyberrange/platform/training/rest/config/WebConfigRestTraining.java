@@ -13,15 +13,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * Configures content negotiation to recognize the {@code .yml} and {@code .yaml} path extensions
  * alongside JSON, and registers a message converter for the media types those extensions resolve
- * to.
+ * to
  */
 @Configuration
 public class WebConfigRestTraining implements WebMvcConfigurer {
 
-  /** Media type matched by the {@code .yaml} path extension. */
+  /** Media type matched by the {@code .yaml} path extension */
   private static final MediaType MEDIA_TYPE_YAML = MediaType.valueOf("text/yaml");
 
-  /** Media type matched by the {@code .yml} path extension. */
+  /** Media type matched by the {@code .yml} path extension */
   private static final MediaType MEDIA_TYPE_YML = MediaType.valueOf("text/yml");
 
   @Autowired private ObjectMapper objectMapper;
@@ -29,7 +29,7 @@ public class WebConfigRestTraining implements WebMvcConfigurer {
   /**
    * Resolves the response content type from the request path extension or the {@code Accept}
    * header, defaulting to JSON, and additionally recognizes the {@code .yml} and {@code .yaml}
-   * extensions.
+   * extensions
    */
   @Override
   public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
@@ -45,7 +45,7 @@ public class WebConfigRestTraining implements WebMvcConfigurer {
 
   /**
    * Appends a converter that serializes a response declared under the {@code text/yaml} or {@code
-   * text/yml} media type through the application's autowired {@link ObjectMapper}.
+   * text/yml} media type through the application's autowired {@link ObjectMapper}
    */
   @Override
   public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {

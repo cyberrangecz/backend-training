@@ -15,7 +15,7 @@ public abstract class ExceptionWithEntity extends RuntimeException {
 
   /**
    * Attaches {@code entityErrorDetail} to the exception, filling in its reason from {@link
-   * #createDefaultReason} when the caller left it unset.
+   * #createDefaultReason} when the caller left it unset
    */
   protected ExceptionWithEntity(EntityErrorDetail entityErrorDetail) {
     this.entityErrorDetail = entityErrorDetail;
@@ -26,7 +26,7 @@ public abstract class ExceptionWithEntity extends RuntimeException {
 
   /**
    * Attaches {@code entityErrorDetail} and {@code cause} to the exception, filling in the detail's
-   * reason from {@link #createDefaultReason} when the caller left it unset.
+   * reason from {@link #createDefaultReason} when the caller left it unset
    */
   protected ExceptionWithEntity(EntityErrorDetail entityErrorDetail, Throwable cause) {
     super(cause);
@@ -42,7 +42,7 @@ public abstract class ExceptionWithEntity extends RuntimeException {
 
   /**
    * Returns the entity detail attached to this exception, or {@code null} when it was constructed
-   * without one.
+   * without one
    */
   public EntityErrorDetail getEntityErrorDetail() {
     return entityErrorDetail;

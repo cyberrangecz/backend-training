@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Serves the endpoints that carry training content out of the service as a downloadable file and
- * back in from a submitted one.
+ * back in from a submitted one
  */
 @Api(
     value = "/",

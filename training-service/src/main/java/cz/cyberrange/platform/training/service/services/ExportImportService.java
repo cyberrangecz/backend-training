@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Reads the training definitions, levels, instances, runs and assessment answers that make up an
- * export or an archive, and writes the levels of an imported definition back.
+ * export or an archive, and writes the levels of an imported definition back
  */
 @Service
 public class ExportImportService {

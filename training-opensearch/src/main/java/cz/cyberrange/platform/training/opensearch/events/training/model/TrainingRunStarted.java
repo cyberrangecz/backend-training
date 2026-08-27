@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** Records a training run starting, carried under the {@code training_run_started} type. */
+/** Records a training run starting, carried under the {@code training_run_started} type */
 @SuperBuilder
 @NoArgsConstructor
 @Getter

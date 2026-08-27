@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-/** Supplies the JSON mapper the service uses by default wherever one is injected unqualified. */
+/** Supplies the JSON mapper the service uses by default wherever one is injected unqualified */
 @Configuration
 public class ObjectMappersConfiguration {
 

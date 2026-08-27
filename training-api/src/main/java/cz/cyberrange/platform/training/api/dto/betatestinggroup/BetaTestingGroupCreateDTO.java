@@ -8,7 +8,7 @@ import lombok.Data;
 
 /**
  * The membership submitted for the group that may see a training definition while it is still
- * unreleased, carried as part of a definition being created.
+ * unreleased, carried as part of a definition being created
  */
 @Data
 @ApiModel(
@@ -16,7 +16,7 @@ import lombok.Data;
     description = "BetaTestingGroup to create. (Deprecated)")
 public class BetaTestingGroupCreateDTO {
 
-  /** Carries each organizer's {@code userRefId}, not the local primary key. */
+  /** Carries each organizer's {@code userRefId}, not the local primary key */
   @ApiModelProperty(
       value = "Logins of users who is allowed to see training definition.",
       required = true)

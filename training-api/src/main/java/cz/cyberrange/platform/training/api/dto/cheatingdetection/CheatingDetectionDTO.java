@@ -11,7 +11,7 @@ import lombok.Data;
 
 /**
  * One run of the cheating detections over a training instance: who started it, when, how each of
- * the six kinds of detection is progressing, and how much it has turned up.
+ * the six kinds of detection is progressing, and how much it has turned up
  */
 @Data
 @ApiModel(
@@ -24,7 +24,7 @@ public class CheatingDetectionDTO {
       example = "1")
   private Long trainingInstanceId;
 
-  /** Display name of the user who started the run, as the user service reported it at the time. */
+  /** Display name of the user who started the run, as the user service reported it at the time */
   @ApiModelProperty(value = "Name of user who executed the detection.", example = "John Doe")
   private String executedBy;
 
@@ -44,11 +44,11 @@ public class CheatingDetectionDTO {
   @ApiModelProperty(value = "id of cheating detection.", example = "1")
   private Long id;
 
-  /** Where the run as a whole stands, moved on as the individual detections are worked through. */
+  /** Where the run as a whole stands, moved on as the individual detections are worked through */
   @ApiModelProperty(value = "State of the detection.", example = "RUNNING")
   private CheatingDetectionState currentState;
 
-  /** How many findings the run has recorded so far; zero until the first detection reports. */
+  /** How many findings the run has recorded so far; zero until the first detection reports */
   @ApiModelProperty(value = "Number of detected events in detection.", example = "20")
   private Long results;
 

@@ -18,7 +18,7 @@ import lombok.ToString;
 @ApiModel(value = "WrongAnswerSubmittedDTO", description = "Wrong answer submitted event")
 public class WrongAnswerSubmittedDTO extends TrainingEventDTO {
 
-  /** The training level answer text the trainee submitted. */
+  /** The training level answer text the trainee submitted */
   @ApiModelProperty(value = "Answer content")
   @JsonProperty("answer_content")
   private String answerContent;
@@ -26,7 +26,7 @@ public class WrongAnswerSubmittedDTO extends TrainingEventDTO {
   /**
    * Running count of wrong submissions made so far in the current level, copied from {@code
    * TrainingRun.incorrectAnswerCount} at the time this event was recorded; not a count of attempts
-   * remaining.
+   * remaining
    */
   @ApiModelProperty(value = "Attempt count")
   @JsonProperty("count")

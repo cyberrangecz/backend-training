@@ -74,7 +74,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The type Training definition facade. */
+/** The type Training definition facade */
 @Service
 @Transactional
 public class TrainingDefinitionFacade {

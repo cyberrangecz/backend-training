@@ -39,7 +39,7 @@ public class Hint extends AbstractEntity<Long> {
   @Column(name = "content", nullable = false)
   private String content;
 
-  /** Added to the training run's current penalty for the level each time this hint is taken. */
+  /** Added to the training run's current penalty for the level each time this hint is taken */
   @Column(name = "hint_penalty", nullable = false)
   private Integer hintPenalty;
 

@@ -32,13 +32,13 @@ public class QuestionAnswer implements Serializable {
 
   @EmbeddedId private QuestionAnswerId questionAnswerId;
 
-  /** The question this answer responds to. */
+  /** The question this answer responds to */
   @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("questionId")
   @JoinColumn(name = "question_id")
   private Question question;
 
-  /** The training run in which this answer was submitted. */
+  /** The training run in which this answer was submitted */
   @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("trainingRunId")
   @JoinColumn(name = "training_run_id")
@@ -48,7 +48,7 @@ public class QuestionAnswer implements Serializable {
    * The submitted answer, in the form decided by {@link #question}'s {@code questionType}: for an
    * FFQ question, the typed text; for an MCQ question, the text of every choice selected; for an
    * EMI question, one {@code { "statementOrder": ..., "optionOrder": ... }} string per statement
-   * the participant paired with an option.
+   * the participant paired with an option
    */
   @ElementCollection
   @CollectionTable(

@@ -19,7 +19,7 @@ import lombok.Data;
     description = "BetaTesting group to update. (Deprecated)")
 public class BetaTestingGroupUpdateDTO {
 
-  /** Carries each organizer's {@code userRefId}, not the local primary key. */
+  /** Carries each organizer's {@code userRefId}, not the local primary key */
   @ApiModelProperty(
       value = "Logins of users who is allowed to see training definition.",
       required = true)

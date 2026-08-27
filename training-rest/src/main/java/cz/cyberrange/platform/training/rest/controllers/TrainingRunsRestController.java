@@ -42,7 +42,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-/** The rest controller for Training runs. */
+/** The rest controller for Training runs */
 @Api(
     value = "/training-runs",
     tags = "Training runs",

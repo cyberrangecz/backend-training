@@ -22,7 +22,7 @@ import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link TrainingInstance} instances. */
+/** The JPA repository interface to manage {@link TrainingInstance} instances */
 @Repository
 public interface TrainingInstanceRepository
     extends JpaRepository<TrainingInstance, Long>,

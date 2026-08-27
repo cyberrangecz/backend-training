@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Encapsulates information about Training Instance, intended for creation of new instance. */
+/** Encapsulates information about Training Instance, intended for creation of new instance */
 @Getter
 @Setter
 @ToString
@@ -43,7 +43,7 @@ public class TrainingInstanceCreateDTO {
 
   /**
    * Trimmed and used as a prefix: the service appends a generated pin to it to form the actual
-   * stored access token.
+   * stored access token
    */
   @ApiModelProperty(
       value = "AccessToken which will be modified and then used for accessing training run.",
@@ -54,7 +54,7 @@ public class TrainingInstanceCreateDTO {
 
   /**
    * Primary key of the training definition to base the instance on; resolved by the facade, not the
-   * mapper.
+   * mapper
    */
   @ApiModelProperty(
       value = "Reference to training definition from which is training instance created.",

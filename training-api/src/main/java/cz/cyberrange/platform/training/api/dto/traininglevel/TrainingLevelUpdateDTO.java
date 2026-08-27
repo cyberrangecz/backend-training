@@ -39,7 +39,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @Max(value = 100, message = "{trainingLevel.maxScore.Max.message}")
   private int maxScore;
 
-  /** A blank submission is converted to a null answer when the entity is built. */
+  /** A blank submission is converted to a null answer when the entity is built */
   @ApiModelProperty(
       value = "Keyword found in training, used for access next level.",
       required = true,
@@ -47,7 +47,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @Size(max = 50, message = "{trainingLevel.answer.Size.message}")
   private String answer;
 
-  /** A blank submission is converted to a null answer variable name when the entity is built. */
+  /** A blank submission is converted to a null answer variable name when the entity is built */
   @ApiModelProperty(
       value = "Identifier that is used to obtain answer from remote storage.",
       example = "username")
@@ -66,7 +66,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @NotEmpty(message = "{trainingLevel.solution.NotEmpty.message}")
   private String solution;
 
-  /** Whether requesting the solution reduces the score awardable for the level to zero. */
+  /** Whether requesting the solution reduces the score awardable for the level to zero */
   @ApiModelProperty(
       value = "Sign if displaying of solution is penalized.",
       required = true,
@@ -81,7 +81,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
   /**
    * Number of incorrect answer submissions allowed for the level, against which the number of
-   * remaining attempts is calculated.
+   * remaining attempts is calculated
    */
   @ApiModelProperty(
       value = "How many times participant can submit incorrect answer before displaying solution.",
@@ -98,7 +98,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
   /**
    * Whether each trainee's answer is resolved from the external answer storage service, keyed by
-   * the answer variable name, instead of taken from the literal answer field.
+   * the answer variable name, instead of taken from the literal answer field
    */
   @ApiModelProperty(
       value =
@@ -116,7 +116,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
   /**
    * Minimum time, in minutes, a trainee is expected to take on the level; the run's cheat-detection
-   * check compares it, converted to seconds, against the elapsed submission time.
+   * check compares it, converted to seconds, against the elapsed submission time
    */
   @ApiModelProperty(
       value =
@@ -135,7 +135,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
       example = "true")
   private boolean commandsRequired;
 
-  /** Sets the level type discriminator to training level. */
+  /** Sets the level type discriminator to training level */
   public TrainingLevelUpdateDTO() {
     this.levelType = LevelType.TRAINING_LEVEL;
   }

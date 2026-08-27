@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 /**
  * Runs a cheating detection sweep across its six kind-specific detectors, tracking a state per
  * detector so a re-execution can skip what already finished and leave out what was disabled, and
- * manages the lifecycle of sweep records and their findings.
+ * manages the lifecycle of sweep records and their findings
  */
 @Service
 public class CheatingDetectionService {

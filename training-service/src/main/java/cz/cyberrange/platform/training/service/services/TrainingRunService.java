@@ -63,7 +63,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 /**
  * Business logic behind a trainee's progression through a training run: level access and
  * completion, answer and passkey evaluation, hints, solutions, assessment scoring, and lifecycle
- * transitions between running, finished and archived.
+ * transitions between running, finished and archived
  */
 @Service
 public class TrainingRunService {
@@ -206,7 +206,7 @@ public class TrainingRunService {
 
   /**
    * Deletes the OpenSearch command data of a training run's sandbox, falling back to its previous
-   * sandbox reference when no current one is set, and deletes the run's training event data.
+   * sandbox reference when no current one is set, and deletes the run's training event data
    */
   private void deleteDataFromOpenSearch(TrainingRun trainingRun) {
     String sandboxId =
@@ -739,7 +739,7 @@ public class TrainingRunService {
 
   /**
    * Records a submission for the training run's current level, carrying the submitted answer, its
-   * type, the current time and the caller's IP address.
+   * type, the current time and the caller's IP address
    */
   private void auditSubmission(
       TrainingRun trainingRun, SubmissionType submissionType, String answer) {
@@ -827,7 +827,7 @@ public class TrainingRunService {
 
   /**
    * Returns the level's solution text, with any {@code ${ANSWER}} placeholder replaced by the
-   * level's correct answer for the given training run.
+   * level's correct answer for the given training run
    */
   private String getSolutionWithReplacedVariable(
       TrainingLevel trainingLevel, TrainingRun trainingRun) {
@@ -1063,7 +1063,7 @@ public class TrainingRunService {
 
   /**
    * Builds one {@link EventAnswer} per question of the level that has a submitted answer, carrying
-   * that question's evaluation when one is present.
+   * that question's evaluation when one is present
    */
   private List<EventAnswer> buildEventAnswers(
       AssessmentLevel assessmentLevel,
@@ -1083,7 +1083,7 @@ public class TrainingRunService {
   /**
    * Builds the free-form, multiple-choice or extended-matching {@link EventAnswer} matching the
    * question's type, carrying the points gained and, when an evaluation is given, the correctness
-   * of the submitted selections.
+   * of the submitted selections
    */
   private EventAnswer toEventAnswer(
       Question question, QuestionAnswerDTO submittedAnswer, AnswerEvaluation evaluation) {
@@ -1131,14 +1131,14 @@ public class TrainingRunService {
     return AnswerSelection.<String>builder().value(answer).correct(correct).build();
   }
 
-  /** Returns one answer from the given set, or null when it is null or empty. */
+  /** Returns one answer from the given set, or null when it is null or empty */
   private String singleAnswer(Set<String> answers) {
     return answers == null || answers.isEmpty() ? null : answers.iterator().next();
   }
 
   /**
    * Checks whether the answer equals the text of any choice of the question, regardless of that
-   * choice's own correct flag.
+   * choice's own correct flag
    */
   private boolean isFreeFormAnswerCorrect(Question question, String answer) {
     return question.getChoices().stream().map(QuestionChoice::getText).anyMatch(answer::equals);
@@ -1146,7 +1146,7 @@ public class TrainingRunService {
 
   /**
    * Builds one selection per choice of the question whose text is among the selected texts, ordered
-   * by choice order, carrying that choice's correct flag when scored.
+   * by choice order, carrying that choice's correct flag when scored
    */
   private List<AnswerSelection<Integer>> selectedOptions(
       Question question, Set<String> selectedTexts, boolean scored) {
@@ -1168,7 +1168,7 @@ public class TrainingRunService {
   /**
    * Builds one selection per submitted statement-to-option pair, keyed by statement order, carrying
    * whether the submitted option matches the question's expected option for that statement when
-   * scored.
+   * scored
    */
   private Map<Integer, AnswerSelection<Integer>> pairSelections(
       Question question, Map<Integer, Integer> submittedPairs, boolean scored) {
@@ -1189,7 +1189,7 @@ public class TrainingRunService {
     return selections;
   }
 
-  /** Maps each extended-matching statement's order to its expected option's order. */
+  /** Maps each extended-matching statement's order to its expected option's order */
   private Map<Integer, Integer> expectedOptionByStatement(Question question) {
     Map<Integer, Integer> expected = new HashMap<>();
     for (ExtendedMatchingStatement statement : question.getExtendedMatchingStatements()) {
@@ -1284,7 +1284,7 @@ public class TrainingRunService {
   /**
    * Evaluates the given answer against the question, by its type, and returns whether it is correct
    * together with the points to award: the question's points when correct, or its penalty taken as
-   * a negative amount otherwise.
+   * a negative amount otherwise
    */
   private AnswerEvaluation evaluateAnswer(Question question, QuestionAnswerDTO userAnswer) {
     boolean correct =
@@ -1299,7 +1299,7 @@ public class TrainingRunService {
 
   /**
    * Checks whether every submitted answer text matches the text of some choice of the question,
-   * treating every choice as an accepted answer regardless of that choice's own correct flag.
+   * treating every choice as an accepted answer regardless of that choice's own correct flag
    */
   private boolean isFreeFormCorrect(Question question, QuestionAnswerDTO userAnswer) {
     List<String> correctAnswers =
@@ -1309,7 +1309,7 @@ public class TrainingRunService {
 
   /**
    * Checks whether the submitted answer texts are exactly the texts of the question's choices
-   * marked correct, regardless of order.
+   * marked correct, regardless of order
    */
   private boolean isMultipleChoiceCorrect(Question question, QuestionAnswerDTO userAnswer) {
     List<String> correctAnswers =
@@ -1323,7 +1323,7 @@ public class TrainingRunService {
 
   /**
    * Checks whether every extended matching statement of the question is paired, in the submitted
-   * answer, with its expected option.
+   * answer, with its expected option
    */
   private boolean isExtendedMatchingCorrect(Question question, QuestionAnswerDTO userAnswer) {
     for (ExtendedMatchingStatement extendedMatchingStatement :
@@ -1338,10 +1338,10 @@ public class TrainingRunService {
     return true;
   }
 
-  /** The outcome of scoring one question's submitted answer. */
+  /** The outcome of scoring one question's submitted answer */
   private record AnswerEvaluation(boolean correct, int pointsGained) {}
 
-  /** The stored answers and their evaluations produced while scoring a test assessment level. */
+  /** The stored answers and their evaluations produced while scoring a test assessment level */
   private record AssessmentEvaluation(
       List<QuestionAnswer> answers, Map<Long, AnswerEvaluation> evaluations) {}
 

@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Custom {@link TrainingRun} lookups keyed by a participant's or an organizer's cross-service id.
+ * Custom {@link TrainingRun} lookups keyed by a participant's or an organizer's cross-service id
  */
 public interface TrainingRunRepositoryCustom {
 

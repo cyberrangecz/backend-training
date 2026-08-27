@@ -74,7 +74,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Orchestrates a trainee's progress through a training run between the REST layer and the
  * underlying services: starting, resuming, answering and finishing a run, retrieving its levels and
- * hints, and reporting run and participant data to organizers and administrators.
+ * hints, and reporting run and participant data to organizers and administrators
  */
 @Service
 public class TrainingRunFacade {

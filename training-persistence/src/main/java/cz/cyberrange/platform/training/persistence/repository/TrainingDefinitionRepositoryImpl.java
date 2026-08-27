@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implements the {@link TrainingDefinition} lookup declared by {@link
- * TrainingDefinitionRepositoryCustom}.
+ * TrainingDefinitionRepositoryCustom}
  */
 @Repository
 public class TrainingDefinitionRepositoryImpl extends QuerydslRepositorySupport

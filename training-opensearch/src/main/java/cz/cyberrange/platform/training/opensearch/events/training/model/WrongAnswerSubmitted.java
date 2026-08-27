@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 
 /**
  * Records a submitted answer that did not match a training level's correct answer, or a submitted
- * access-level passkey, carried under the {@code wrong_answer_submitted} type.
+ * access-level passkey, carried under the {@code wrong_answer_submitted} type
  */
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -24,12 +24,12 @@ public class WrongAnswerSubmitted extends AbstractAuditPOJO {
 
   public static final String TYPE = "wrong_answer_submitted";
 
-  /** The submitted text or passkey. */
+  /** The submitted text or passkey */
   @JsonProperty(value = "answer_content", required = true)
   @JsonAlias("flag_content")
   private String answerContent;
 
-  /** Trainee's incorrect-answer count in the current level as of this event. */
+  /** Trainee's incorrect-answer count in the current level as of this event */
   @JsonProperty(value = "count", required = true)
   private int count;
 }

@@ -7,7 +7,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link TRAcquisitionLock} instances. */
+/** The JPA repository interface to manage {@link TRAcquisitionLock} instances */
 @Repository
 public interface TRAcquisitionLockRepository
     extends JpaRepository<TRAcquisitionLock, Long>,

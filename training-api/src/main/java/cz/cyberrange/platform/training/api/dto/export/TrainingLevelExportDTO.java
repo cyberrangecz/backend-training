@@ -54,7 +54,7 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
       example = "5")
   private int incorrectAnswerLimit;
 
-  /** Carries only each attachment's {@code content}; no other attachment field survives export. */
+  /** Carries only each attachment's {@code content}; no other attachment field survives export */
   @ApiModelProperty(value = "List of attachments.", example = "[]")
   private List<AttachmentImportDTO> attachments;
 
@@ -69,7 +69,7 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
       example = "false")
   private boolean variantAnswers;
 
-  /** Each entry carries no id; only the technique's own data is exported. */
+  /** Each entry carries no id; only the technique's own data is exported */
   @ApiModelProperty(value = "Set of mitre techniques used in the training level.")
   private Set<MitreTechniqueDTO> mitreTechniques;
 

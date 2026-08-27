@@ -3,7 +3,7 @@ package cz.cyberrange.platform.training.opensearch.events.training.logging.excep
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
- * Exception thrown when an error occurs during serialization of log event or query from OpenSearch.
+ * Exception thrown when an error occurs during serialization of log event or query from OpenSearch
  */
 public class OpenSearchSerializeException extends JsonProcessingException {
 

@@ -21,14 +21,14 @@ public class SpringBootRun extends SpringBootServletInitializer {
 
   /**
    * Registers this class as the application's configuration source when deployed as a WAR under an
-   * external servlet container.
+   * external servlet container
    */
   @Override
   protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
     return application.sources(SpringBootRun.class);
   }
 
-  /** Starts the application with an embedded servlet container. */
+  /** Starts the application with an embedded servlet container */
   public static void main(String[] args) {
     SpringApplication.run(SpringBootRun.class, args);
   }

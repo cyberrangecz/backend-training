@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Business logic for creating, updating, deleting and querying training instances, and for the
- * training runs and organizers attached to them.
+ * training runs and organizers attached to them
  */
 @Service
 public class TrainingInstanceService {

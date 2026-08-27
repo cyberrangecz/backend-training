@@ -6,9 +6,9 @@ package cz.cyberrange.platform.training.api.enums;
  */
 public enum Actions {
   NONE,
-  /** Chosen when the run has finished or its training instance's end time has passed. */
+  /** Chosen when the run has finished or its training instance's end time has passed */
   RESULTS,
 
-  /** Chosen when the run has not finished and its training instance is still running. */
+  /** Chosen when the run has not finished and its training instance is still running */
   RESUME;
 }

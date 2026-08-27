@@ -408,18 +408,18 @@ public class TrainingInstance extends AbstractEntity<Long> {
     this.backwardMode = backwardMode;
   }
 
-  /** Returns whether the current moment falls between the instance's start and end time. */
+  /** Returns whether the current moment falls between the instance's start and end time */
   public boolean running() {
     return LocalDateTime.now(Clock.systemUTC()).isAfter(this.startTime)
         && LocalDateTime.now().isBefore(this.endTime);
   }
 
-  /** Returns whether the instance's end time has passed. */
+  /** Returns whether the instance's end time has passed */
   public boolean finished() {
     return LocalDateTime.now(Clock.systemUTC()).isAfter(this.endTime);
   }
 
-  /** Returns whether the instance's start time is still in the future. */
+  /** Returns whether the instance's start time is still in the future */
   public boolean notStarted() {
     return LocalDateTime.now(Clock.systemUTC()).isBefore(this.startTime);
   }

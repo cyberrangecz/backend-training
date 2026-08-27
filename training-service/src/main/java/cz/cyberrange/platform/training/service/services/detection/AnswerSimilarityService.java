@@ -143,7 +143,7 @@ public class AnswerSimilarityService {
   /**
    * Skips the submission when its text matches one of the submitter's own sandbox variant answers
    * for any level, or when its level is absent from the instance's training levels; otherwise
-   * compares the submission against every run of the instance.
+   * compares the submission against every run of the instance
    */
   private void evaluateAnswerSimilarityForSubmission(
       CheatingDetection cd,
@@ -173,7 +173,7 @@ public class AnswerSimilarityService {
 
   /**
    * Reports whether the provided text equals the content of any variant answer in the list,
-   * regardless of which level or answer variable that variant answer belongs to.
+   * regardless of which level or answer variable that variant answer belongs to
    */
   private boolean checkIfAnswerBelongsToDifferentLevel(
       List<VariantAnswer> answers, String provided) {
@@ -183,7 +183,7 @@ public class AnswerSimilarityService {
   /**
    * Skips a run sharing the submitter's own sandbox, then records the submitter as a participant
    * when the submitted text matches the run's variant answer for the submitted level's answer
-   * variable, and persists an event when it does.
+   * variable, and persists an event when it does
    */
   private void validateAndLogAnswerSimilarityEvent(
       TrainingRun run,
@@ -237,7 +237,7 @@ public class AnswerSimilarityService {
 
   /**
    * Adds the submitter as a participant when one of the given variant answers has both the
-   * submitted text and the given answer variable name, and the submitter is not already present.
+   * submitted text and the given answer variable name, and the submitter is not already present
    */
   private void populateParticipants(
       Submission submission,

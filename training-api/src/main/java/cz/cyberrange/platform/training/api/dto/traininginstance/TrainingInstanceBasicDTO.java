@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-/** Contains generally safe, descriptive-only data accessible by both organizers and trainees. */
+/** Contains generally safe, descriptive-only data accessible by both organizers and trainees */
 @Data
 @ApiModel(
     value = "TrainingInstanceBasicDTO",

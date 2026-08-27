@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * Shared steps every cheating detection takes when it turns suspicious submissions into a finding:
  * recognising a trainee already gathered, building the participant record for one submission, and
- * rendering a set of participants as the text a finding carries.
+ * rendering a set of participants as the text a finding carries
  */
 public enum CheatingDetectionUtils {
   ;

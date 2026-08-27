@@ -53,66 +53,66 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public abstract class AbstractAuditPOJO {
 
-  /** OpenSearch document identifier, assigned when an event is read back from the index. */
+  /** OpenSearch document identifier, assigned when an event is read back from the index */
   @JsonIgnore @Setter protected String eventId;
 
-  /** Identifier of the sandbox instance the training run executes in. */
+  /** Identifier of the sandbox instance the training run executes in */
   @JsonProperty(value = "sandbox_id", required = true)
   protected String sandboxId;
 
-  /** Identifier of the sandbox pool the training instance draws sandboxes from. */
+  /** Identifier of the sandbox pool the training instance draws sandboxes from */
   @JsonProperty(value = "pool_id", required = true)
   protected Long poolId;
 
-  /** Primary key of the training definition the run's instance was created from. */
+  /** Primary key of the training definition the run's instance was created from */
   @JsonProperty(value = "training_definition_id", required = true)
   protected long trainingDefinitionId;
 
-  /** Primary key of the training instance the run belongs to. */
+  /** Primary key of the training instance the run belongs to */
   @JsonProperty(value = "training_instance_id", required = true)
   protected long trainingInstanceId;
 
-  /** Primary key of the training run the event was recorded for. */
+  /** Primary key of the training run the event was recorded for */
   @JsonProperty(value = "training_run_id", required = true)
   protected long trainingRunId;
 
-  /** Milliseconds elapsed since the training run started, as of when the event was recorded. */
+  /** Milliseconds elapsed since the training run started, as of when the event was recorded */
   @JsonProperty(value = "training_time", required = true)
   @JsonAlias("game_time")
   protected long trainingTime;
 
-  /** The player's score in the current level as of this event, after any penalties. */
+  /** The player's score in the current level as of this event, after any penalties */
   @JsonProperty(value = "actual_score_in_level", required = true)
   protected int actualScoreInLevel;
 
-  /** Primary key of the level the event occurred in. */
+  /** Primary key of the level the event occurred in */
   @JsonProperty(value = "level", required = true)
   protected long level;
 
-  /** The level's position within the training definition it belongs to. */
+  /** The level's position within the training definition it belongs to */
   @JsonProperty(value = "level_order", required = true)
   protected long levelOrder;
 
-  /** Cross-service reference id of the training run's participant; never the local primary key. */
+  /** Cross-service reference id of the training run's participant; never the local primary key */
   @JsonProperty("user_ref_id")
   protected long userRefId;
 
-  /** Epoch-millisecond instant at which the event was written. */
+  /** Epoch-millisecond instant at which the event was written */
   @JsonProperty(value = "timestamp", required = true)
   @Setter
   protected long timestamp;
 
-  /** Discriminator naming the concrete event type, resolved via {@link #resolveEventType}. */
+  /** Discriminator naming the concrete event type, resolved via {@link #resolveEventType} */
   @JsonProperty(value = "type", required = true)
   @Setter
   protected String type;
 
-  /** Cumulative score across the run's training levels, as of this event. */
+  /** Cumulative score across the run's training levels, as of this event */
   @JsonProperty(value = "total_training_level_score", required = true)
   @JsonAlias("total_game_level_score")
   private int totalTrainingScore;
 
-  /** Cumulative score across the run's assessment levels, as of this event. */
+  /** Cumulative score across the run's assessment levels, as of this event */
   @JsonProperty(value = "total_assessment_level_score", required = true)
   private int totalAssessmentScore;
 

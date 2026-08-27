@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-/** The type Sandbox Api service. */
+/** The type Sandbox Api service */
 @Service
 public class SandboxApiService {
 

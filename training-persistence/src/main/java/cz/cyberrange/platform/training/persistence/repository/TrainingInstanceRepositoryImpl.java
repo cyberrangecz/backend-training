@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implements the {@link TrainingInstance} lookup declared by {@link
- * TrainingInstanceRepositoryCustom}.
+ * TrainingInstanceRepositoryCustom}
  */
 @Repository
 public class TrainingInstanceRepositoryImpl extends QuerydslRepositorySupport
@@ -28,7 +28,7 @@ public class TrainingInstanceRepositoryImpl extends QuerydslRepositorySupport
   @PersistenceContext private EntityManager entityManager;
 
   /**
-   * Configures the QueryDSL support base class to build queries against {@link TrainingInstance}.
+   * Configures the QueryDSL support base class to build queries against {@link TrainingInstance}
    */
   public TrainingInstanceRepositoryImpl() {
     super(TrainingInstance.class);

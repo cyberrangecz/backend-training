@@ -27,7 +27,7 @@ public class EntityNotFoundException extends ExceptionWithEntity {
 
   /**
    * Builds a reason naming the missing entity's class, and, when both are present, the identifier
-   * label and value carried on {@code entityErrorDetail}.
+   * label and value carried on {@code entityErrorDetail}
    */
   protected String createDefaultReason(EntityErrorDetail entityErrorDetail) {
     StringBuilder reason = new StringBuilder("Entity ").append(entityErrorDetail.getEntity());

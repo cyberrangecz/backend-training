@@ -7,11 +7,11 @@ import lombok.Data;
 
 /**
  * Tally of every answer submitted for one question across every training run of a training
- * instance's assessment, written as one JSON entry into the training instance archive.
+ * instance's assessment, written as one JSON entry into the training instance archive
  */
 @Data
 public class QuestionAnswersDetailsDTO {
-  /** Text of the question this tally covers. */
+  /** Text of the question this tally covers */
   private String question;
 
   /**

@@ -22,7 +22,7 @@ import org.springframework.data.domain.PageImpl;
 
 /**
  * Converts a training level's hint between its entity form, its editing and export DTOs, and the
- * snapshot a training run keeps of a hint once taken.
+ * snapshot a training run keeps of a hint once taken
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface HintMapper extends ParentMapper {

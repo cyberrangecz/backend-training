@@ -2,7 +2,7 @@ package cz.cyberrange.platform.training.service.utils;
 
 /**
  * The file extensions this service appends when it names a file it hands back or an entry it writes
- * into an archive.
+ * into an archive
  */
 public abstract class AbstractFileExtensions {
   public static final String JSON_FILE_EXTENSION = ".json";

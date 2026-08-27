@@ -70,7 +70,7 @@ public class PageResultResource<E> {
 
   /**
    * Describes where the enclosing page sits within the whole result set, and how large both the
-   * page and that set are.
+   * page and that set are
    */
   public static class Pagination {
 

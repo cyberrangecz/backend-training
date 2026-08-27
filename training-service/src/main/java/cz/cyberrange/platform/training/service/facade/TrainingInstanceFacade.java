@@ -63,12 +63,12 @@ import org.springframework.util.StringUtils;
 /**
  * Orchestrates training instance lifecycle operations between the REST layer and the underlying
  * services: creation, update and deletion of instances, pool assignment, organizer management, and
- * retrieval of the instance's training runs and audited events.
+ * retrieval of the instance's training runs and audited events
  */
 @Service
 public class TrainingInstanceFacade {
 
-  /** Event type discriminator selecting console commands, stored per pool rather than per run. */
+  /** Event type discriminator selecting console commands, stored per pool rather than per run */
   private static final String COMMAND_EVENT_TYPE = "COMMAND";
 
   private final TrainingInstanceService trainingInstanceService;

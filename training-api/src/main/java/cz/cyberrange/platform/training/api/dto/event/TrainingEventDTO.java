@@ -61,7 +61,7 @@ import lombok.ToString;
 })
 public abstract class TrainingEventDTO extends AbstractEventDTO {
 
-  /** Sandbox pool of the training instance, copied from {@code TrainingInstance.poolId}. */
+  /** Sandbox pool of the training instance, copied from {@code TrainingInstance.poolId} */
   @ApiModelProperty(value = "Pool ID")
   @JsonProperty("pool_id")
   private Long poolId;
@@ -91,7 +91,7 @@ public abstract class TrainingEventDTO extends AbstractEventDTO {
 
   /**
    * Cross-service user reference id of the training run's participant, copied from {@code
-   * UserRef.userRefId}; never the participant's local primary key.
+   * UserRef.userRefId}; never the participant's local primary key
    */
   @ApiModelProperty(value = "User reference ID")
   @JsonProperty("user_ref_id")

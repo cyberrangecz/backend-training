@@ -33,7 +33,7 @@ import lombok.ToString;
 })
 public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 
-  /** How many matching commands the finding gathered, counting every occurrence. */
+  /** How many matching commands the finding gathered, counting every occurrence */
   @Column(name = "command_count", nullable = false)
   private int commandCount;
 }

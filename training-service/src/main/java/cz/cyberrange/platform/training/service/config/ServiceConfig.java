@@ -17,7 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * Assembles the service layer: it registers the services, this configuration package and the
  * startup components, enables asynchronous method execution, and pulls in persistence, audit
- * storage, security and the external service clients.
+ * storage, security and the external service clients
  */
 @Configuration
 @EnableAsync(proxyTargetClass = true)

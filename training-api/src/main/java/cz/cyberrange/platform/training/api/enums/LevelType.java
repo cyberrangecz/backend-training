@@ -2,7 +2,7 @@ package cz.cyberrange.platform.training.api.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-/** Classifies the kind of level held by a training definition. */
+/** Classifies the kind of level held by a training definition */
 public enum LevelType {
   INFO_LEVEL,
   TRAINING_LEVEL,

@@ -66,7 +66,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @NotNull(message = "{trainingLevel.solutionPenalized.NotNull.message}")
   private boolean solutionPenalized;
 
-  /** Rejected on import if the sum of every hint's penalty exceeds {@link #maxScore}. */
+  /** Rejected on import if the sum of every hint's penalty exceeds {@link #maxScore} */
   @Valid
   @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<HintImportDTO> hints = new HashSet<>();
@@ -84,7 +84,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @ApiModelProperty(value = "List of attachments.", example = "[]")
   private List<AttachmentImportDTO> attachments;
 
-  /** Caps the total penalty the level's {@link #hints} may carry; see {@link #hints}. */
+  /** Caps the total penalty the level's {@link #hints} may carry; see {@link #hints} */
   @ApiModelProperty(
       value = "The maximum score a participant can achieve during a level.",
       example = "20")
@@ -95,7 +95,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
 
   /**
    * Selects which of {@link #answer} or {@link #answerVariableName} the import requires: {@code
-   * true} requires {@link #answerVariableName}, {@code false} requires {@link #answer}.
+   * true} requires {@link #answerVariableName}, {@code false} requires {@link #answer}
    */
   @ApiModelProperty(
       value =

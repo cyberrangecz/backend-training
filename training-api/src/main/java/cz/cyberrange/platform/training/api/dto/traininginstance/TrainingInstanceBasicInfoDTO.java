@@ -41,7 +41,7 @@ public class TrainingInstanceBasicInfoDTO {
       example = "hunter")
   private String accessToken;
 
-  /** Reflects the pool just assigned to, or removed from, the instance. */
+  /** Reflects the pool just assigned to, or removed from, the instance */
   @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
   private Long poolId;
 

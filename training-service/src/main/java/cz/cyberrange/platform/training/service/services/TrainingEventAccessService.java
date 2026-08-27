@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TrainingEventAccessService {
 
-  /** Event types that expose per-user answer content — restricted to the owner in trainee mode. */
+  /** Event types that expose per-user answer content — restricted to the owner in trainee mode */
   static final Set<String> ANSWER_EVENT_TYPES =
       Set.of(CorrectAnswerSubmitted.TYPE, WrongAnswerSubmitted.TYPE, AssessmentAnswered.TYPE);
 

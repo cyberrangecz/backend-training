@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Encapsulates information about Training Definition, intended for edit of the definition. */
+/** Encapsulates information about Training Definition, intended for edit of the definition */
 @Data
 @ApiModel(value = "TrainingDefinitionUpdateDTO", description = "Training definition to update.")
 public class TrainingDefinitionUpdateDTO {
@@ -64,7 +64,7 @@ public class TrainingDefinitionUpdateDTO {
 
   /**
    * Required by validation but not read by the mapper or the facade; the training definition entity
-   * carries no such field.
+   * carries no such field
    */
   @ApiModelProperty(
       value = "Sign if stepper bar should be displayed.",

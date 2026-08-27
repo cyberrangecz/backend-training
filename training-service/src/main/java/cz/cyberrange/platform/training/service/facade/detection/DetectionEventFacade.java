@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Retrieves the detection events produced by a cheating detection, their participants and their
  * detected forbidden commands, both in bulk and by individual event kind (answer similarity,
- * location similarity, time proximity, minimal solve time, no commands, forbidden commands).
+ * location similarity, time proximity, minimal solve time, no commands, forbidden commands)
  */
 @Service
 @Transactional

@@ -7,13 +7,13 @@ import lombok.Data;
 
 /**
  * One participant's submitted answers to a single question, written as one JSON line into the
- * assessment answers folder of the training instance archive.
+ * assessment answers folder of the training instance archive
  */
 @Data
 @AllArgsConstructor
 public class QuestionAnswerArchiveDTO {
 
-  /** Text of the question, not its identifier. */
+  /** Text of the question, not its identifier */
   private String question;
 
   /**

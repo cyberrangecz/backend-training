@@ -35,11 +35,11 @@ import lombok.ToString;
 })
 public class DetectedForbiddenCommand extends AbstractEntity<Long> {
 
-  /** The command line as it was recorded, not the forbidden text that matched it. */
+  /** The command line as it was recorded, not the forbidden text that matched it */
   @Column(name = "command", nullable = false)
   private String command;
 
-  /** The console of the forbidden command that matched. */
+  /** The console of the forbidden command that matched */
   @Column(name = "command_type", nullable = false)
   private CommandType type;
 

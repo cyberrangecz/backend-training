@@ -33,7 +33,7 @@ public class UserRefDTO {
   /**
    * Set only by deserializing the user-and-group service's response, from that response's {@code
    * sub} JSON key; {@code UserRefMapper} leaves it unset, since the local {@code UserRef} entity
-   * carries no matching property.
+   * carries no matching property
    */
   @ApiModelProperty(
       value = "Reference to user in another microservice.",
@@ -44,7 +44,7 @@ public class UserRefDTO {
   /**
    * Set only by deserializing the user-and-group service's response, from that response's {@code
    * full_name} JSON key; {@code UserRefMapper} leaves it unset, since the local {@code UserRef}
-   * entity carries no matching property.
+   * entity carries no matching property
    */
   @ApiModelProperty(
       value = "Reference to user in another microservice and get his full name",

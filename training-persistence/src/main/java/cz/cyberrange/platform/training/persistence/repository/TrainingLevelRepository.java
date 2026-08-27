@@ -9,7 +9,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link TrainingLevel} instances. */
+/** The JPA repository interface to manage {@link TrainingLevel} instances */
 @Repository
 public interface TrainingLevelRepository
     extends JpaRepository<TrainingLevel, Long>, QuerydslPredicateExecutor<TrainingLevel> {

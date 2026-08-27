@@ -16,7 +16,7 @@ public class MicroserviceApiException extends RuntimeException {
   private ApiSubError apiSubError;
 
   /**
-   * Builds the exception message by appending {@code apiSubError}'s own message to {@code message}.
+   * Builds the exception message by appending {@code apiSubError}'s own message to {@code message}
    */
   public MicroserviceApiException(String message, HttpStatus statusCode, ApiSubError apiSubError) {
     super(message + " " + apiSubError.getMessage());
@@ -24,14 +24,14 @@ public class MicroserviceApiException extends RuntimeException {
     this.apiSubError = apiSubError;
   }
 
-  /** Delegates to the message-building constructor with a generic default message. */
+  /** Delegates to the message-building constructor with a generic default message */
   public MicroserviceApiException(HttpStatus statusCode, ApiSubError apiSubError) {
     this("Error when calling external microservice.", statusCode, apiSubError);
   }
 
   /**
    * Rebuilds the exception from the status code and sub-error carried by {@code
-   * customWebClientException}.
+   * customWebClientException}
    */
   public MicroserviceApiException(
       String message, CustomWebClientException customWebClientException) {
@@ -41,12 +41,12 @@ public class MicroserviceApiException extends RuntimeException {
         customWebClientException.getApiSubError());
   }
 
-  /** Returns the HTTP status returned by the failing microservice call. */
+  /** Returns the HTTP status returned by the failing microservice call */
   public HttpStatus getStatusCode() {
     return statusCode;
   }
 
-  /** Returns the error body returned by the failing microservice call. */
+  /** Returns the error body returned by the failing microservice call */
   public ApiSubError getApiSubError() {
     return apiSubError;
   }

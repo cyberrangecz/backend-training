@@ -16,7 +16,7 @@ import javax.persistence.UniqueConstraint;
 /**
  * Local row standing in for a user of the user-and-group microservice, so that training
  * definitions, instances and beta testing groups can reference that user without duplicating its
- * profile data.
+ * profile data
  */
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
@@ -74,7 +74,7 @@ public class UserRef extends AbstractEntity<Long> {
 
   /**
    * Returns the user-and-group identifier of the referenced user, the identifier used across
-   * service boundaries.
+   * service boundaries
    */
   public Long getUserRefId() {
     return userRefId;

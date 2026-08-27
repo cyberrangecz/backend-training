@@ -5,7 +5,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-/** Custom {@link TrainingInstance} lookup, restricted to instances one user organizes. */
+/** Custom {@link TrainingInstance} lookup, restricted to instances one user organizes */
 public interface TrainingInstanceRepositoryCustom {
 
   /**

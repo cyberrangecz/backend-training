@@ -35,7 +35,7 @@ public class EntityErrorDetail {
     this.reason = reason;
   }
 
-  /** Attaches the entity's simple class name to {@code reason}, leaving the identifier unset. */
+  /** Attaches the entity's simple class name to {@code reason}, leaving the identifier unset */
   public EntityErrorDetail(@NotNull Class<?> entityClass, @NotBlank String reason) {
     this(reason);
     this.entity = entityClass.getSimpleName();
@@ -44,7 +44,7 @@ public class EntityErrorDetail {
   /**
    * Records the entity's simple class name, a caller-chosen identifier label, and its value
    * alongside an explicit reason, skipping the reason this type would otherwise derive from {@link
-   * ExceptionWithEntity#createDefaultReason}.
+   * ExceptionWithEntity#createDefaultReason}
    */
   public EntityErrorDetail(
       @NotNull Class<?> entityClass,
@@ -60,7 +60,7 @@ public class EntityErrorDetail {
   /**
    * Records the entity's simple class name, a caller-chosen identifier label, and its value,
    * leaving the reason unset so it is derived later from {@link
-   * ExceptionWithEntity#createDefaultReason}.
+   * ExceptionWithEntity#createDefaultReason}
    */
   public EntityErrorDetail(
       @NotNull Class<?> entityClass,

@@ -25,7 +25,7 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
 
   @PersistenceContext private EntityManager entityManager;
 
-  /** Configures the QueryDSL support base class to build queries against {@link TrainingRun}. */
+  /** Configures the QueryDSL support base class to build queries against {@link TrainingRun} */
   public TrainingRunRepositoryImpl() {
     super(TrainingRun.class);
   }

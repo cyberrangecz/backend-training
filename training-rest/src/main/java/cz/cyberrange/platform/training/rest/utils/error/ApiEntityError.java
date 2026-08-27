@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
  * Error body built by {@link CustomRestExceptionHandlerTraining} for {@code
  * EntityNotFoundException}, {@code EntityConflictException}, {@code TooManyRequestsException} and
  * {@code UnprocessableEntityException}, carrying the exception's {@link EntityErrorDetail}
- * alongside the fields inherited from {@link ApiError}.
+ * alongside the fields inherited from {@link ApiError}
  */
 @ApiModel(
     value = "ApiEntityError",
@@ -19,7 +19,7 @@ import org.springframework.http.HttpStatus;
     parent = ApiError.class)
 public class ApiEntityError extends ApiError {
   /**
-   * Entity detail carried by the exception that produced this error, when the exception set one.
+   * Entity detail carried by the exception that produced this error, when the exception set one
    */
   @ApiModelProperty(value = "Detail of the entity which is related to the error.")
   private EntityErrorDetail entityErrorDetail;
@@ -30,7 +30,7 @@ public class ApiEntityError extends ApiError {
 
   /**
    * Builds the error, preferring {@code entityErrorDetail}'s own reason over {@code message} once
-   * one is present.
+   * one is present
    */
   private ApiEntityError(
       HttpStatus httpStatus, String message, String path, EntityErrorDetail entityErrorDetail) {

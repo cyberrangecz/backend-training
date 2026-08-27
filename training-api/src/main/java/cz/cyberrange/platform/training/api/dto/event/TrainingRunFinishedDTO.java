@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Training run finished event, carrying the {@code type} value {@code training_run_finished}. */
+/** Training run finished event, carrying the {@code type} value {@code training_run_finished} */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -16,7 +16,7 @@ public class TrainingRunFinishedDTO extends TrainingEventDTO {
 
   /**
    * Epoch-millisecond instant the training run started, copied unchanged from the audit document;
-   * unlike {@link AbstractEventDTO#getTimestamp()} it is not converted to a {@code LocalDateTime}.
+   * unlike {@link AbstractEventDTO#getTimestamp()} it is not converted to a {@code LocalDateTime}
    */
   @ApiModelProperty(value = "Start time of the training run")
   @JsonProperty("start_time")
@@ -24,7 +24,7 @@ public class TrainingRunFinishedDTO extends TrainingEventDTO {
 
   /**
    * Epoch-millisecond instant the training run finished, copied unchanged from the audit document;
-   * unlike {@link AbstractEventDTO#getTimestamp()} it is not converted to a {@code LocalDateTime}.
+   * unlike {@link AbstractEventDTO#getTimestamp()} it is not converted to a {@code LocalDateTime}
    */
   @ApiModelProperty(value = "End time of the training run")
   @JsonProperty("end_time")

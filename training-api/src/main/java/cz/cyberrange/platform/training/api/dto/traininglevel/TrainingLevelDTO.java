@@ -29,7 +29,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
   /**
    * The literal keyword a submission is compared against when the level's answer is not variant;
    * ignored in favor of a value resolved per trainee from the external answer storage service
-   * otherwise.
+   * otherwise
    */
   @ApiModelProperty(
       value = "Keyword found in training, used for access next level.",
@@ -38,14 +38,14 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
 
   /**
    * Key used to look up the answer's value in the external answer storage service when the level's
-   * answer is variant.
+   * answer is variant
    */
   @ApiModelProperty(
       value = "Identifier that is used to obtain answer from remote storage.",
       example = "username")
   private String answerVariableName;
 
-  /** The task description presented to the participant while attempting the level. */
+  /** The task description presented to the participant while attempting the level */
   @ApiModelProperty(
       value = "The information and experiences that are directed towards a participant.",
       example = "Play me")
@@ -53,14 +53,14 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
 
   /**
    * The solution text as authored for the level, carried here without regard to whether any trainee
-   * has actually displayed it.
+   * has actually displayed it
    */
   @ApiModelProperty(
       value = "Instruction how to get answer in training.",
       example = "This is how you do it")
   private String solution;
 
-  /** Whether requesting the solution reduces the score awardable for the level to zero. */
+  /** Whether requesting the solution reduces the score awardable for the level to zero */
   @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
   private boolean solutionPenalized;
 
@@ -69,7 +69,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
 
   /**
    * Number of incorrect answer submissions allowed for the level, against which the number of
-   * remaining attempts is calculated.
+   * remaining attempts is calculated
    */
   @ApiModelProperty(
       value = "How many times player can submit incorrect answer before displaying solution.",
@@ -78,7 +78,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
 
   /**
    * Whether each trainee's answer is resolved from the external answer storage service, keyed by
-   * the answer variable name, instead of taken from the literal answer field.
+   * the answer variable name, instead of taken from the literal answer field
    */
   @ApiModelProperty(
       value =
@@ -93,7 +93,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
       value = "Set of the expected commands to be executed during the training level.")
   private Set<String> expectedCommands;
 
-  /** Whether the run's cheat-detection check requires at least one submitted command. */
+  /** Whether the run's cheat-detection check requires at least one submitted command */
   @ApiModelProperty(
       value =
           "Indicates if at least one command has to be executed to complete the level. Default is true.",
@@ -102,7 +102,7 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
 
   /**
    * Minimum time, in minutes, a trainee is expected to take on the level; the run's cheat-detection
-   * check compares it, converted to seconds, against the elapsed submission time.
+   * check compares it, converted to seconds, against the elapsed submission time
    */
   @ApiModelProperty(
       value =

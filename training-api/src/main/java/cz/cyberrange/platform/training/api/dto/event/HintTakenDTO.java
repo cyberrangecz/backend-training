@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Hint taken event, carrying the {@code type} value {@code hint_taken}. */
+/** Hint taken event, carrying the {@code type} value {@code hint_taken} */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

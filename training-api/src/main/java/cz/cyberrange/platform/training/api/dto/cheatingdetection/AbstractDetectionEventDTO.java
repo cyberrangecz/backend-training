@@ -77,7 +77,7 @@ public class AbstractDetectionEventDTO {
 
   /**
    * The moment the detection run was executed, shared by every finding of that run, rather than the
-   * moment the trainee did the thing being flagged.
+   * moment the trainee did the thing being flagged
    */
   @ApiModelProperty(value = "Time at which the event was detected.", example = "1.1.2022 5:55:23")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
@@ -89,7 +89,7 @@ public class AbstractDetectionEventDTO {
   @ApiModelProperty(value = "type of the event.", example = "answer similarity")
   private DetectionEventType detectionEventType;
 
-  /** The implicated people's display names, run together into one comma-separated string. */
+  /** The implicated people's display names, run together into one comma-separated string */
   @ApiModelProperty(value = "participants of the event.", example = "John Doe,Jane Doe")
   private String participants;
 }

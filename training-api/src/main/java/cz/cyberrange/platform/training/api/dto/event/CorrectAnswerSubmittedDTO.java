@@ -18,7 +18,7 @@ import lombok.ToString;
 @ApiModel(value = "CorrectAnswerSubmittedDTO", description = "Correct answer submitted event")
 public class CorrectAnswerSubmittedDTO extends TrainingEventDTO {
 
-  /** The training level answer text the trainee submitted. */
+  /** The training level answer text the trainee submitted */
   @ApiModelProperty(value = "Answer content")
   @JsonProperty("answer_content")
   private String answerContent;

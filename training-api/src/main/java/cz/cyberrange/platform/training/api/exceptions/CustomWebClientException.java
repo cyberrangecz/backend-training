@@ -24,13 +24,13 @@ public class CustomWebClientException extends RuntimeException {
    * Returns the error body returned by the failing microservice call, deserialized as a {@link
    * cz.cyberrange.platform.training.api.exceptions.errors.JavaApiError} or {@link
    * cz.cyberrange.platform.training.api.exceptions.errors.PythonApiError} depending on which
-   * microservice was called.
+   * microservice was called
    */
   public ApiSubError getApiSubError() {
     return apiSubError;
   }
 
-  /** Returns the HTTP status returned by the failing microservice call. */
+  /** Returns the HTTP status returned by the failing microservice call */
   public HttpStatus getStatusCode() {
     return statusCode;
   }

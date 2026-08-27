@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * One training run of the instance, with the trainee behind it, the span it occupied, and every
- * score and tally derived for it.
+ * score and tally derived for it
  */
 @Data
 @NoArgsConstructor
@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
     description = "A single participant's standing in the training instance.")
 public class ParticipantScoreRowDTO {
 
-  /** Position among the rows of the same report; one-based, lower is better. */
+  /** Position among the rows of the same report; one-based, lower is better */
   @ApiModelProperty(
       value = "Position by total score descending, resolving ties in favour of the shorter run.",
       example = "1")
@@ -31,7 +31,7 @@ public class ParticipantScoreRowDTO {
   @JsonProperty("training_run_id")
   private Long trainingRunId;
 
-  /** The id the trainee is known by outside this service, not the local {@code UserRef} key. */
+  /** The id the trainee is known by outside this service, not the local {@code UserRef} key */
   @ApiModelProperty(
       value = "Reference to the trainee in the user-and-group microservice.",
       example = "1")
@@ -45,7 +45,7 @@ public class ParticipantScoreRowDTO {
 
   /**
    * Falls back to the login when no display name resolved, and further to the string form of {@link
-   * #userRefId} when the login is empty too.
+   * #userRefId} when the login is empty too
    */
   @ApiModelProperty(
       value = "Trainee display name, falling back to the login and then the reference id.",
@@ -81,19 +81,19 @@ public class ParticipantScoreRowDTO {
 
   /**
    * Holds an entry only for a score-bearing level the run has completed at least once; a
-   * score-bearing level never completed, and any level unable to award score, has none.
+   * score-bearing level never completed, and any level unable to award score, has none
    */
   @ApiModelProperty(
       value = "Score attained per level, keyed by level id, omitting levels never completed.")
   @JsonProperty("score_by_level_id")
   private Map<Long, Integer> scoreByLevelId = new HashMap<>();
 
-  /** Zero when the run produced no audit events at all, rather than left unset. */
+  /** Zero when the run produced no audit events at all, rather than left unset */
   @ApiModelProperty(value = "Cumulative score across training levels.", example = "80")
   @JsonProperty("training_score")
   private int trainingScore;
 
-  /** Zero when the run produced no audit events at all, rather than left unset. */
+  /** Zero when the run produced no audit events at all, rather than left unset */
   @ApiModelProperty(value = "Cumulative score across assessment levels.", example = "20")
   @JsonProperty("assessment_score")
   private int assessmentScore;
@@ -102,14 +102,14 @@ public class ParticipantScoreRowDTO {
   @JsonProperty("total_score")
   private int totalScore;
 
-  /** Zero when the run recorded no hint being taken, rather than left unset. */
+  /** Zero when the run recorded no hint being taken, rather than left unset */
   @ApiModelProperty(value = "Hints taken across the whole run.", example = "4")
   @JsonProperty("hints_taken")
   private int hintsTaken;
 
   /**
    * Excludes wrong answers recorded on a passkey-gated level, since such a level records one for
-   * every attempt at its passkey, the successful attempt included.
+   * every attempt at its passkey, the successful attempt included
    */
   @ApiModelProperty(
       value = "Wrong answers submitted across the whole run, excluding passkey retries.",
@@ -117,7 +117,7 @@ public class ParticipantScoreRowDTO {
   @JsonProperty("wrong_answers")
   private int wrongAnswers;
 
-  /** Zero when the run recorded no solution being revealed, rather than left unset. */
+  /** Zero when the run recorded no solution being revealed, rather than left unset */
   @ApiModelProperty(value = "Solutions revealed across the whole run.", example = "1")
   @JsonProperty("solutions_displayed")
   private int solutionsDisplayed;

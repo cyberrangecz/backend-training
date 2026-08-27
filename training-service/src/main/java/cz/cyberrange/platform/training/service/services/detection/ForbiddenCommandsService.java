@@ -204,7 +204,7 @@ public class ForbiddenCommandsService {
 
   /**
    * Adds a detected entry to {@code commandsList} when the submitted command's type matches the
-   * forbidden command's type and its text contains the forbidden command's text.
+   * forbidden command's type and its text contains the forbidden command's text
    */
   private static void detectForbiddenCommands(
       List<DetectedForbiddenCommand> commandsList,

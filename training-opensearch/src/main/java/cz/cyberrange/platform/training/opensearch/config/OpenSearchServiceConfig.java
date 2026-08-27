@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-/** Configuration class joining all OpenSearch related configurations and component scans. */
+/** Configuration class joining all OpenSearch related configurations and component scans */
 @Configuration
 @Import({ObjectMapperConfigOpenSearch.class, RestClientConfigOpenSearch.class})
 @ComponentScan(

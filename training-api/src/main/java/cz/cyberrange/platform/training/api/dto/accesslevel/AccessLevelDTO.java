@@ -22,14 +22,14 @@ import lombok.ToString;
     parent = AbstractLevelDTO.class)
 public class AccessLevelDTO extends AbstractLevelDTO {
 
-  /** The value a participant must submit to complete the level, compared to it verbatim. */
+  /** The value a participant must submit to complete the level, compared to it verbatim */
   @ApiModelProperty(
       value = "Keyword found in training, used for access next level.",
       example = "secretAnswer")
   private String passkey;
 
   /**
-   * Instructions for reaching the level's virtual machines from a cloud environment, as authored.
+   * Instructions for reaching the level's virtual machines from a cloud environment, as authored
    */
   @ApiModelProperty(
       value = "The instructions on how to connect to the machine in cloud environment.",
@@ -38,7 +38,7 @@ public class AccessLevelDTO extends AbstractLevelDTO {
 
   /**
    * Instructions for reaching the level's virtual machines from a local, non-cloud environment, as
-   * authored.
+   * authored
    */
   @ApiModelProperty(
       value = "The instructions on how to connect to the machine in local (non-cloud) environment.",

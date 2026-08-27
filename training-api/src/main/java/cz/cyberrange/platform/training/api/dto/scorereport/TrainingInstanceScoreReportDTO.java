@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * Standings of every participant of one training instance, alongside the level columns those
- * standings are broken down by.
+ * standings are broken down by
  */
 @Data
 @NoArgsConstructor
@@ -25,7 +25,7 @@ public class TrainingInstanceScoreReportDTO {
   @JsonProperty("training_instance_id")
   private Long trainingInstanceId;
 
-  /** The instant every row's end is capped to when it falls beyond it. */
+  /** The instant every row's end is capped to when it falls beyond it */
   @ApiModelProperty(
       value = "Instance end used to cap every run, in epoch milliseconds.",
       example = "1665140389000")
@@ -34,13 +34,13 @@ public class TrainingInstanceScoreReportDTO {
 
   /**
    * Every level able to award score, in definition order; info levels, access levels and assessment
-   * levels of any kind other than a test are absent.
+   * levels of any kind other than a test are absent
    */
   @ApiModelProperty(value = "Score-bearing levels, in definition order.")
   @JsonProperty("scored_levels")
   private List<AbstractLevelBasicDTO> scoredLevels;
 
-  /** One row per run of the instance, ordered by descending total score. */
+  /** One row per run of the instance, ordered by descending total score */
   @ApiModelProperty(value = "Participants, ordered by rank.")
   private List<ParticipantScoreRowDTO> rows;
 }

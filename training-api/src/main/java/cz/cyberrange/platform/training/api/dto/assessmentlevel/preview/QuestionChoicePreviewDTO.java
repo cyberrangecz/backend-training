@@ -8,7 +8,7 @@ import lombok.Data;
 
 /**
  * A question choice as shown to a participant; it has no correctness flag, so it never discloses
- * which choice is correct.
+ * which choice is correct
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

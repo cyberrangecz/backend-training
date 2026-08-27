@@ -5,10 +5,10 @@ package cz.cyberrange.platform.training.persistence.model.enums;
  * question's collections carry its content and how a submitted answer is marked. Stored by name.
  */
 public enum QuestionType {
-  /** Answered by typing text, which is matched against the accepted answers. */
+  /** Answered by typing text, which is matched against the accepted answers */
   FFQ,
-  /** Answered by pairing each statement with one of the offered options. */
+  /** Answered by pairing each statement with one of the offered options */
   EMI,
-  /** Answered by picking from the offered choices. */
+  /** Answered by picking from the offered choices */
   MCQ;
 }

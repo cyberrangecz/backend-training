@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Orchestrates the lifecycle of cheating detections for a training instance: creating and running
  * one, rerunning an existing one, deleting one together with its detection events, and listing the
- * detections of a training instance.
+ * detections of a training instance
  */
 @Service
 @Transactional

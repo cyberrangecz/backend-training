@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Encapsulates information about Training Definition including its authoring and lifecycle data.
+ * Encapsulates information about Training Definition including its authoring and lifecycle data
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -33,7 +33,7 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
   @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
   private TDState state;
 
-  /** Primary key of the associated beta testing group entity, not a user id. */
+  /** Primary key of the associated beta testing group entity, not a user id */
   @ApiModelProperty(
       value = "Group of organizers who is allowed to see the training definition.",
       example = "14")
@@ -41,7 +41,7 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
 
   /**
    * Left unset by the mapper; the facade always assigns it afterward, from whether any of the
-   * definition's training instances still ends in the future.
+   * definition's training instances still ends in the future
    */
   @ApiModelProperty(
       value = "Sign if training definition can be archived or not.",
@@ -50,7 +50,7 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
 
   /**
    * Overwritten with the current time by the service on every create or update, regardless of any
-   * value supplied by the caller.
+   * value supplied by the caller
    */
   @ApiModelProperty(
       value = "Time of last edit done to definition.",
@@ -60,7 +60,7 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
 
   /**
    * Overwritten with the current user's full name by the service on every create or update,
-   * regardless of any value supplied by the caller.
+   * regardless of any value supplied by the caller
    */
   @ApiModelProperty(
       value = "Name of the user who has done the last edit in definition.",
@@ -68,7 +68,7 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
   private String lastEditedBy;
 
   /**
-   * Stamped once when the definition is created and carried over unchanged on every later update.
+   * Stamped once when the definition is created and carried over unchanged on every later update
    */
   @ApiModelProperty(value = "Time of creation of definition.", example = "2017-10-19 10:23:54+02")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)

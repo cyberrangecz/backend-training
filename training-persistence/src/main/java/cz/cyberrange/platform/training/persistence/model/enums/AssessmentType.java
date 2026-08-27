@@ -8,9 +8,9 @@ public enum AssessmentType {
 
   /**
    * Answers are marked against the correct ones and the level awards score, its maximum being the
-   * sum of its questions' points.
+   * sum of its questions' points
    */
   TEST,
-  /** Answers are collected without being marked, and the level awards no score. */
+  /** Answers are collected without being marked, and the level awards no score */
   QUESTIONNAIRE;
 }

@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** A level that poses questions the participant must answer; it may carry none. */
+/** A level that poses questions the participant must answer; it may carry none */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -33,7 +33,7 @@ public class AssessmentLevelDTO extends AbstractLevelDTO {
 
   /**
    * Threshold, in minutes, below which a participant's time spent on the level is flagged as an
-   * unusually fast solve by cheating detection.
+   * unusually fast solve by cheating detection
    */
   @ApiModelProperty(
       value =

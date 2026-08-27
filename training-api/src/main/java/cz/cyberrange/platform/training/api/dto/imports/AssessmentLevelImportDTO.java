@@ -24,7 +24,7 @@ public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
   /**
    * Has no effect unless {@link #assessmentType} is {@code TEST}, where each question's points are
    * summed into the created level's maximum score, and every extended-matching-item question must
-   * carry a correct option order for each of its statements or the import is rejected.
+   * carry a correct option order for each of its statements or the import is rejected
    */
   @ApiModelProperty(value = "Questions of assessment level to update.")
   @NotNull(message = "{assessmentLevel.questions.NotNull.message}")

@@ -19,14 +19,14 @@ import lombok.ToString;
 @ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
 public class InfoLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
-  /** Text that replaces the level's stored content verbatim when the update is applied. */
+  /** Text that replaces the level's stored content verbatim when the update is applied */
   @ApiModelProperty(
       value = "The information and experiences that are directed towards a participant.",
       example = "Informational stuff")
   @NotEmpty(message = "{infoLevel.content.NotEmpty.message}")
   private String content;
 
-  /** Sets the level type discriminator to info level. */
+  /** Sets the level type discriminator to info level */
   public InfoLevelUpdateDTO() {
     this.levelType = LevelType.INFO_LEVEL;
   }

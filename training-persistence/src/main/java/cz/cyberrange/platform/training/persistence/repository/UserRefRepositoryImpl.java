@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-/** Implements the {@link UserRef} lookup and insert declared by {@link UserRefRepositoryCustom}. */
+/** Implements the {@link UserRef} lookup and insert declared by {@link UserRefRepositoryCustom} */
 @Repository
 public class UserRefRepositoryImpl implements UserRefRepositoryCustom {
 

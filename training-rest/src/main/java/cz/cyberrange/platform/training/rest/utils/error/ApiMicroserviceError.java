@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Error body built by {@link CustomRestExceptionHandlerTraining} for {@code
  * MicroserviceApiException}, carrying the failing microservice's own {@link ApiSubError} alongside
- * the fields inherited from {@link ApiError}.
+ * the fields inherited from {@link ApiError}
  */
 @ApiModel(
     value = "ApiMicroserviceError",
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
     parent = ApiError.class)
 public class ApiMicroserviceError extends ApiError {
 
-  /** Error body returned by the microservice whose call raised the exception. */
+  /** Error body returned by the microservice whose call raised the exception */
   @ApiModelProperty(value = "Detailed error from another microservice.")
   private ApiSubError apiSubError;
 
@@ -30,7 +30,7 @@ public class ApiMicroserviceError extends ApiError {
 
   /**
    * Builds the error, falling back to {@link MicroserviceApiException}'s own
-   * {@code @ResponseStatus} reason when {@code message} is {@code null}.
+   * {@code @ResponseStatus} reason when {@code message} is {@code null}
    */
   private ApiMicroserviceError(
       HttpStatus httpStatus, String message, String path, ApiSubError apiSubError) {

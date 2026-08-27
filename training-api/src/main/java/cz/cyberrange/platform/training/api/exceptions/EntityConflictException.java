@@ -31,7 +31,7 @@ public class EntityConflictException extends ExceptionWithEntity {
 
   /**
    * Builds a reason naming the conflicting entity's class, and, when both are present, the
-   * identifier label and value carried on {@code entityErrorDetail}.
+   * identifier label and value carried on {@code entityErrorDetail}
    */
   protected String createDefaultReason(EntityErrorDetail entityErrorDetail) {
     StringBuilder reason =

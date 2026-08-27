@@ -6,7 +6,7 @@ import lombok.Data;
 
 /**
  * Response to attempt of answer input, built by hand in {@code TrainingRunFacade} for one submitted
- * answer.
+ * answer
  */
 @Data
 @ApiModel(
@@ -22,7 +22,7 @@ public class IsCorrectAnswerDTO {
   @ApiModelProperty(value = "Number of attempts to submit a bad answer.", example = "3")
   private int remainingAttempts;
 
-  /** Set only once {@code remainingAttempts} has reached zero; left unset otherwise. */
+  /** Set only once {@code remainingAttempts} has reached zero; left unset otherwise */
   @ApiModelProperty(
       value = "Instruction how to get answer in training.",
       example = "This is how you do it")

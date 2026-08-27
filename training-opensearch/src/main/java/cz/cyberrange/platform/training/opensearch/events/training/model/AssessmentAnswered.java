@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** The type Assessment answers. */
+/** The type Assessment answers */
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -21,7 +21,7 @@ public class AssessmentAnswered extends AbstractAuditPOJO {
 
   public static final String TYPE = "assessment_answered";
 
-  /** Typed per-question answers submitted by the trainee, one carrier per answered question. */
+  /** Typed per-question answers submitted by the trainee, one carrier per answered question */
   @JsonProperty("answers")
   private List<EventAnswer> answers;
 }

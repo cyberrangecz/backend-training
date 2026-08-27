@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Encapsulates information about Training Instance, intended for edit of the instance. */
+/** Encapsulates information about Training Instance, intended for edit of the instance */
 @Data
 @ApiModel(value = "TrainingInstanceUpdateDTO", description = "Training Instance to update.")
 public class TrainingInstanceUpdateDTO {
@@ -20,7 +20,7 @@ public class TrainingInstanceUpdateDTO {
 
   /**
    * Changing it once the instance is running or finished is refused; it must also not be after
-   * {@code endTime}.
+   * {@code endTime}
    */
   @ApiModelProperty(
       value = "Date when training instance starts.",
@@ -74,7 +74,7 @@ public class TrainingInstanceUpdateDTO {
   @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
   private Long trainingDefinitionId;
 
-  /** Changing it once the instance is running or finished is refused. */
+  /** Changing it once the instance is running or finished is refused */
   @ApiModelProperty(value = "Id of sandbox pool assigned to training instance", example = "1")
   private Long poolId;
 

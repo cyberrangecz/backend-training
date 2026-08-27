@@ -22,7 +22,7 @@ public class ExtendedMatchingOptionDTO implements Ordered {
   /**
    * Position of the option within its question's list of extended matching options, zero-based and
    * expected contiguous; a statement's correct option is looked up by indexing that list at its own
-   * {@code correctOptionOrder} value.
+   * {@code correctOptionOrder} value
    */
   @ApiModelProperty(value = "The order of the option in question of type EMI.", example = "0")
   @Min(value = 0, message = "{emiOption.order.Min.message}")

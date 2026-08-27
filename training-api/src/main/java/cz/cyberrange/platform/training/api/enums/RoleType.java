@@ -2,7 +2,7 @@ package cz.cyberrange.platform.training.api.enums;
 
 /**
  * Classifies a user role, sent by name as the {@code roleType} query parameter when this service
- * asks the user-and-group service for the users holding a role.
+ * asks the user-and-group service for the users holding a role
  */
 public enum RoleType {
   ROLE_TRAINING_ADMINISTRATOR,

@@ -30,7 +30,7 @@ public class TooManyRequestsException extends ExceptionWithEntity {
 
   /**
    * Builds a reason naming the rate-limited entity's class, and, when both are present, the
-   * identifier label and value carried on {@code entityErrorDetail}.
+   * identifier label and value carried on {@code entityErrorDetail}
    */
   protected String createDefaultReason(EntityErrorDetail entityErrorDetail) {
     StringBuilder reason =

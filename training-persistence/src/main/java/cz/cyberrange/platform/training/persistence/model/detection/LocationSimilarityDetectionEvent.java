@@ -36,7 +36,7 @@ public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
   @Column(name = "ip_address")
   private String ipAddress;
 
-  /** Host name the address resolves back to, or {@code unspecified} when it cannot be resolved. */
+  /** Host name the address resolves back to, or {@code unspecified} when it cannot be resolved */
   @Column(name = "dns")
   private String dns;
 

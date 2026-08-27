@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 
 /**
  * Records a trainee resuming an in-progress training run, carried under the {@code
- * training_run_resumed} type.
+ * training_run_resumed} type
  */
 @SuperBuilder
 @NoArgsConstructor

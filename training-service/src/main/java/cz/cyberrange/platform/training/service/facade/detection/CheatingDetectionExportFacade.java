@@ -17,7 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Assembles the results of a cheating detection into a single downloadable zip archive. */
+/** Assembles the results of a cheating detection into a single downloadable zip archive */
 @Service
 @Transactional
 public class CheatingDetectionExportFacade {

@@ -8,7 +8,7 @@ import lombok.ToString;
 
 /**
  * A finding that several trainees submitted from the same network location, evidenced by the
- * address one of those submissions came from.
+ * address one of those submissions came from
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -24,7 +24,7 @@ public class LocationSimilarityDetectionEventDTO extends AbstractDetectionEventD
 
   /**
    * Host name the address resolves back to, or the literal {@code unspecified} when it cannot be
-   * resolved.
+   * resolved
    */
   @ApiModelProperty(value = "DNS of participant.", example = "dns.provider.cz")
   private String dns;

@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 /**
  * Manages {@link ForbiddenCommandsDetectionEvent} findings, the joined-inheritance subtype of
- * {@code AbstractDetectionEvent} recording that a trainee ran a forbidden console command.
+ * {@code AbstractDetectionEvent} recording that a trainee ran a forbidden console command
  */
 public interface ForbiddenCommandsDetectionEventRepository
     extends JpaRepository<ForbiddenCommandsDetectionEvent, Long>,

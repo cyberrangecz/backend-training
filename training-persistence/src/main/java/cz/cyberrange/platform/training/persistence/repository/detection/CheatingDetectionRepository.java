@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
-/** Manages persistence of {@link CheatingDetection} sweep records. */
+/** Manages persistence of {@link CheatingDetection} sweep records */
 public interface CheatingDetectionRepository
     extends JpaRepository<CheatingDetection, Long>, QuerydslPredicateExecutor<CheatingDetection> {
 

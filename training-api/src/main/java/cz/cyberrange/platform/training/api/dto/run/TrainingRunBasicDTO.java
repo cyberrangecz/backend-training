@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-/** The shape of a training run returned to both organizers and trainees of that run. */
+/** The shape of a training run returned to both organizers and trainees of that run */
 @Data
 @ApiModel(
     value = "TrainingRunBasicDTO",

@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Assembles the facade layer: it registers the facades and the mappers, turns on declarative
- * transactions, and pulls in the service and validation configurations the facades depend on.
+ * transactions, and pulls in the service and validation configurations the facades depend on
  */
 @Configuration
 @EnableTransactionManagement

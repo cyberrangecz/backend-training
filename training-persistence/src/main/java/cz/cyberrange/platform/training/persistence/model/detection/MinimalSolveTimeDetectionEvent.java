@@ -35,7 +35,7 @@ public class MinimalSolveTimeDetectionEvent extends AbstractDetectionEvent {
 
   /**
    * The least time the level is held to need, in seconds, converted from the minutes the level
-   * itself is configured in.
+   * itself is configured in
    */
   @Column(name = "minimal_solve_time")
   private Long minimalSolveTime;

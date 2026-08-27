@@ -283,7 +283,7 @@ public class TrainingRun extends AbstractEntity<Long> {
    * Sets the level currently displayed to the trainee, and resets the run's per-level state for it:
    * the current penalty to zero, the maximum score to the new level's own maximum, whether the
    * level counts as answered to whether it is an info level, and whether its solution was taken to
-   * false.
+   * false
    */
   public void setCurrentLevel(AbstractLevel currentLevel) {
     this.currentPenalty = 0;
@@ -639,7 +639,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     this.currentPenalty = currentPenalty;
   }
 
-  /** Returns whether any cheating detection has flagged this run. */
+  /** Returns whether any cheating detection has flagged this run */
   public boolean isHasDetectionEvent() {
     return hasDetectionEvent;
   }

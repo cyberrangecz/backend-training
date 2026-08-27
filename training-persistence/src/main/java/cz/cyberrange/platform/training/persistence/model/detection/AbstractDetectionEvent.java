@@ -75,12 +75,12 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
 
   /**
    * The moment the detection was executed, which every finding of that detection shares, rather
-   * than the moment of the submission being flagged.
+   * than the moment of the submission being flagged
    */
   @Column(name = "detected_at", nullable = false)
   private LocalDateTime detectedAt;
 
-  /** How many trainees the finding implicates. */
+  /** How many trainees the finding implicates */
   @Column(name = "participant_count", nullable = false)
   private int participantCount;
 
@@ -88,7 +88,7 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
   @Column(name = "detection_event_type", nullable = false)
   private DetectionEventType detectionEventType;
 
-  /** The implicated trainees' display names, held as one string rather than as related rows. */
+  /** The implicated trainees' display names, held as one string rather than as related rows */
   @Column(name = "participants", nullable = false)
   private String participants;
 

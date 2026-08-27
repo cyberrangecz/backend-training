@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 /**
  * Manages {@link DetectionEventParticipant} rows, each one trainee implicated in one detection
- * event finding.
+ * event finding
  */
 public interface DetectionEventParticipantRepository
     extends JpaRepository<DetectionEventParticipant, Long>,
