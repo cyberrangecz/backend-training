@@ -35,7 +35,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.reactive.function.client.WebClient;
 
-/** The type Security service. */
+/**
+ * Resolves the identity of the logged in user and evaluates the authorization checks referenced
+ * from {@code @PreAuthorize} expressions across the facades, comparing the cross-service {@code
+ * userRefId} rather than any local primary key. Every method runs in its own new read-only
+ * transaction, independent of the caller's transaction.
+ */
 @Service
 @TransactionalRO(propagation = Propagation.REQUIRES_NEW)
 public class SecurityService {
@@ -51,16 +56,6 @@ public class SecurityService {
   private final AbstractDetectionEventRepository abstractDetectionEventRepository;
   private final CheatingDetectionRepository cheatingDetectionRepository;
 
-  /**
-   * Instantiates a new Security service.
-   *
-   * @param trainingInstanceRepository the training instance repository
-   * @param trainingDefinitionRepository the training definition repository
-   * @param trainingRunRepository the training run repository
-   * @param userManagementWebClient the java rest template
-   * @param abstractDetectionEventRepository the abstract detection event repository
-   * @param cheatingDetectionRepository the cheating detection repository
-   */
   @Autowired
   public SecurityService(
       TrainingInstanceRepository trainingInstanceRepository,
@@ -86,10 +81,12 @@ public class SecurityService {
   }
 
   /**
-   * Is trainee of given training run boolean.
+   * Decides whether the logged in user is the participant of the given training run, comparing
+   * cross-service {@code userRefId}s rather than local primary keys.
    *
    * @param trainingRunId the training run id
-   * @return the boolean
+   * @return true when the logged in user is the run's participant
+   * @throws EntityNotFoundException when no training run with the given id exists
    */
   public boolean isTraineeOfGivenTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun =
@@ -108,10 +105,11 @@ public class SecurityService {
   }
 
   /**
-   * Is organizer of given training instance boolean.
+   * Decides whether the logged in user is one of the organizers of the given training instance.
    *
    * @param instanceId the instance id
-   * @return the boolean
+   * @return true when the logged in user is among its organizers
+   * @throws EntityNotFoundException when no training instance with the given id exists
    */
   public boolean isOrganizerOfGivenTrainingInstance(Long instanceId) {
     TrainingInstance trainingInstance =
@@ -130,10 +128,12 @@ public class SecurityService {
   }
 
   /**
-   * Is organizer of given training run.
+   * Decides whether the logged in user is one of the organizers of the training instance the
+   * given training run belongs to.
    *
    * @param trainingRunId the run id
-   * @return the boolean
+   * @return true when the logged in user is among the instance's organizers
+   * @throws EntityNotFoundException when no training run with the given id exists
    */
   public boolean isOrganizerOfGivenTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun =
@@ -153,10 +153,11 @@ public class SecurityService {
   }
 
   /**
-   * Is organizer of given detection event.
+   * Decides whether the logged in user organizes the training instance the given detection event
+   * was raised in.
    *
    * @param eventId the detection event id
-   * @return the boolean
+   * @return true when the logged in user is among that instance's organizers
    * @throws EntityNotFoundException when the detection event with the given id does not exist
    */
   public boolean isOrganizerOfGivenDetectionEvent(Long eventId) {
@@ -176,10 +177,11 @@ public class SecurityService {
   }
 
   /**
-   * Is organizer of given cheating detection.
+   * Decides whether the logged in user organizes the training instance the given cheating
+   * detection was raised in.
    *
    * @param cheatingDetectionId the cheating detection id
-   * @return the boolean
+   * @return true when the logged in user is among that instance's organizers
    * @throws EntityNotFoundException when the cheating detection with the given id does not exist
    */
   public boolean isOrganizerOfGivenCheatingDetection(Long cheatingDetectionId) {
@@ -253,10 +255,11 @@ public class SecurityService {
   }
 
   /**
-   * Is organizer of all given training instances.
+   * Decides whether the logged in user organizes every one of the given training instances.
    *
    * @param instanceIds the instance ids
-   * @return true if the current user is an organizer of all given training instances
+   * @return true when every id resolves to an instance and the logged in user organizes each of
+   *     them; false if any id does not resolve to an instance; true also for an empty list
    */
   public boolean isOrganizerOfGivenTrainingInstances(List<Long> instanceIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
@@ -272,10 +275,11 @@ public class SecurityService {
   }
 
   /**
-   * Is participant of all given training instances.
+   * Decides whether the logged in user has a training run in every one of the given training
+   * instances.
    *
    * @param instanceIds the instance ids
-   * @return true if the current user is a participant of all given training instances
+   * @return true when the logged in user has a run in each of them, true also for an empty list
    */
   public boolean isParticipantOfGivenTrainingInstances(List<Long> instanceIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
@@ -286,10 +290,12 @@ public class SecurityService {
   }
 
   /**
-   * Is trainee of all given training runs.
+   * Decides whether the logged in user is the participant of every one of the given training
+   * runs.
    *
    * @param trainingRunIds the training run ids
-   * @return true if the current user is the participant of all given training runs
+   * @return true when every id resolves to a run the logged in user participates in; true also
+   *     for an empty list
    */
   public boolean isTraineeOfGivenTrainingRuns(List<Long> trainingRunIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
@@ -299,10 +305,12 @@ public class SecurityService {
   }
 
   /**
-   * Is organizer of all given training runs.
+   * Decides whether the logged in user organizes the training instance of every one of the given
+   * training runs.
    *
    * @param trainingRunIds the training run ids
-   * @return true if the current user is an organizer of the instance for all given training runs
+   * @return true when every id resolves to a run whose instance the logged in user organizes;
+   *     true also for an empty list
    */
   public boolean isOrganizerOfGivenTrainingRuns(List<Long> trainingRunIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
@@ -352,12 +360,28 @@ public class SecurityService {
     }
   }
 
+  /**
+   * Reads the raw bearer token carried by the authentication token of the current request.
+   *
+   * @return the token value
+   */
   public String getBearerToken() {
     JwtAuthenticationToken authentication =
         (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
     return authentication.getToken().getTokenValue();
   }
 
+  /**
+   * Decides whether every one of the given users has a training run in an instance the logged in
+   * user either has a training run in or organizes. A given user's own instances are collected
+   * from their training runs alone; organizing is checked only for the logged in user, not for
+   * the given users.
+   *
+   * @param userIds cross-service user reference ids of the users to check against the logged in
+   *     user
+   * @return true when every given user has such an overlapping instance; true also for an empty
+   *     list
+   */
   public boolean sharesCommonTrainingInstance(List<Long> userIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
     UserRef userRef = userService.getUserByUserRefId(userRefId);

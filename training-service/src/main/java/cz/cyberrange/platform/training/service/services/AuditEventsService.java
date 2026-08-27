@@ -30,26 +30,26 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/** The type Audit events service. */
+/**
+ * Builds one audit event POJO per training run action and hands it to {@link AuditService}, which
+ * writes it as a JSON line to the application log. Every event carries the fields filled in by
+ * {@link #fillInCommonBuilderFields}; some methods also pass a priority so that several events
+ * emitted for the same run action keep a stable relative order.
+ */
 @Service
 public class AuditEventsService {
 
   private final AuditService auditService;
 
-  /**
-   * Instantiates a new Audit events service.
-   *
-   * @param auditService the audit service
-   */
   @Autowired
   public AuditEventsService(AuditService auditService) {
     this.auditService = auditService;
   }
 
   /**
-   * Audit training run started action.
+   * Emits a training-run-started event with its training time forced to zero.
    *
-   * @param trainingRun the training run
+   * @param trainingRun the run being started
    */
   public void auditTrainingRunStartedAction(TrainingRun trainingRun) {
     TrainingRunStarted.TrainingRunStartedBuilder<?, ?> trainingRunStartedBuilder =
@@ -61,9 +61,10 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit level started action.
+   * Emits a level-started event for the run's current level, with a timestamp ordered after a
+   * level-completed event emitted for the same instant.
    *
-   * @param trainingRun the training run
+   * @param trainingRun the run whose current level is starting
    */
   public void auditLevelStartedAction(TrainingRun trainingRun) {
     LevelStarted.LevelStartedBuilder<?, ?> levelStartedBuilder =
@@ -80,9 +81,10 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit level completed action.
+   * Emits a level-completed event for the run's current level, with a timestamp ordered before a
+   * level-started or training-run-finished event emitted for the same instant.
    *
-   * @param trainingRun the training run
+   * @param trainingRun the run whose current level has finished
    */
   public void auditLevelCompletedAction(TrainingRun trainingRun) {
     LevelCompleted.LevelCompletedBuilder<?, ?> levelCompletedBuilder =
@@ -95,10 +97,10 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit hint taken action.
+   * Emits a hint-taken event carrying the hint's identifier, penalty and title.
    *
-   * @param trainingRun the training run
-   * @param hint the hint
+   * @param trainingRun the run the hint was taken in
+   * @param hint the hint that was taken
    */
   public void auditHintTakenAction(TrainingRun trainingRun, Hint hint) {
     HintTaken.HintTakenBuilder<?, ?> hintTakenBuilder =
@@ -115,9 +117,10 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit solution displayed action.
+   * Emits a solution-displayed event carrying the current level's remaining score, its maximum
+   * score minus the run's accumulated penalty in that level.
    *
-   * @param trainingRun the training run
+   * @param trainingRun the run the solution was displayed in
    */
   public void auditSolutionDisplayedAction(TrainingRun trainingRun) {
     SolutionDisplayed.SolutionDisplayedBuilder<?, ?> solutionDisplayedBuilder =
@@ -132,10 +135,10 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit correct answer submitted action.
+   * Emits a correct-answer-submitted event carrying the submitted answer text.
    *
-   * @param trainingRun the training run
-   * @param answer the answer
+   * @param trainingRun the run the answer was submitted in
+   * @param answer the submitted answer text
    */
   public void auditCorrectAnswerSubmittedAction(TrainingRun trainingRun, String answer) {
     CorrectAnswerSubmitted.CorrectAnswerSubmittedBuilder<?, ?> correctAnswerSubmittedBuilder =
@@ -148,10 +151,11 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit wrong answer submitted action.
+   * Emits a wrong-answer-submitted event carrying the submitted answer text and the run's
+   * incorrect-answer count.
    *
-   * @param trainingRun the training run
-   * @param answer the answer
+   * @param trainingRun the run the answer was submitted in
+   * @param answer the submitted answer text
    */
   public void auditWrongAnswerSubmittedAction(TrainingRun trainingRun, String answer) {
     WrongAnswerSubmitted.WrongAnswerSubmittedBuilder<?, ?> wrongAnswerSubmittedBuilder =
@@ -167,9 +171,9 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit assessment answers action.
+   * Emits an assessment-answered event carrying the submitted per-question answers.
    *
-   * @param trainingRun the training run
+   * @param trainingRun the run the answers were submitted in
    * @param answers the typed per-question answers submitted by the trainee
    */
   public void auditAssessmentAnswersAction(TrainingRun trainingRun, List<EventAnswer> answers) {
@@ -182,9 +186,11 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit training run ended action.
+   * Emits a training-run-finished event carrying the run's start time and the current moment as
+   * end time, both as UTC epoch milliseconds, with a timestamp ordered after a level-completed
+   * event emitted for the same instant.
    *
-   * @param trainingRun the training run
+   * @param trainingRun the run that finished
    */
   public void auditTrainingRunEndedAction(TrainingRun trainingRun) {
     TrainingRunFinished.TrainingRunFinishedBuilder<?, ?> trainingRunEndedBuilder =
@@ -201,9 +207,9 @@ public class AuditEventsService {
   }
 
   /**
-   * Audit training run resumed action.
+   * Emits a training-run-resumed event.
    *
-   * @param trainingRun the training run
+   * @param trainingRun the run that resumed
    */
   public void auditTrainingRunResumedAction(TrainingRun trainingRun) {
     TrainingRunResumed.TrainingRunResumedBuilder<?, ?> trainingRunResumedBuilder =
@@ -213,6 +219,17 @@ public class AuditEventsService {
     auditService.saveTrainingRunEvent(trainingRunResumed);
   }
 
+  /**
+   * Fills the fields shared by every audit event: the run, instance, definition and current
+   * level's identifiers, the participant's cross-service user identifier, elapsed training time,
+   * both accumulated scores, the current level's remaining score (its maximum score minus the
+   * run's accumulated penalty in that level), the current level's order, the instance's pool id,
+   * and the run's sandbox reference id.
+   *
+   * @param trainingRun the run the event is being built for
+   * @param builder the builder to fill
+   * @return {@code builder}, for chaining the event-specific fields
+   */
   private AbstractAuditPOJO.AbstractAuditPOJOBuilder<?, ?> fillInCommonBuilderFields(
       TrainingRun trainingRun, AbstractAuditPOJO.AbstractAuditPOJOBuilder<?, ?> builder) {
     TrainingInstance trainingInstance = trainingRun.getTrainingInstance();

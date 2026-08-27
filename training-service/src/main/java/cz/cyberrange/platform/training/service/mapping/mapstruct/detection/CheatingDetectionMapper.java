@@ -20,9 +20,23 @@ import org.springframework.data.domain.PageImpl;
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CheatingDetectionMapper extends ParentMapper {
 
+  /**
+   * Maps a cheating detection entity to a {@link CheatingDetectionDTO}, mapping its commands
+   * through {@link ForbiddenCommandMapper} into {@code forbiddenCommands}.
+   *
+   * @param entity the cheating detection to map
+   * @return the cheating detection DTO
+   */
   @Mapping(target = "forbiddenCommands", source = "commands")
   CheatingDetectionDTO mapToDTO(CheatingDetection entity);
 
+  /**
+   * Maps a cheating detection DTO to a new entity, leaving {@code commands} unset; {@code
+   * forbiddenCommands} carries no source counterpart on the entity side.
+   *
+   * @param dto the cheating detection DTO to map
+   * @return the mapped cheating detection
+   */
   CheatingDetection mapToEntity(CheatingDetectionDTO dto);
 
   List<CheatingDetection> mapToList(Collection<CheatingDetectionDTO> dtos);

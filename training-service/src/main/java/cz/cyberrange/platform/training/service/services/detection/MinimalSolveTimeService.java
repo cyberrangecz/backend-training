@@ -27,6 +27,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Detects a correct submission entered faster than a training level's configured minimal solve
+ * time. Every correct submission of a training instance is timed against when its trainee started
+ * the level (the run's start time when the current submission's run differs from the previous
+ * submission processed, or the date of the trainee's previous correct submission otherwise); a
+ * submission faster than the level's
+ * {@code minimalPossibleSolveTime} (in minutes) is recorded, grouped by level, into a
+ * {@link MinimalSolveTimeDetectionEvent}. Nothing here requires more than one trainee to be
+ * implicated before an event is recorded, so an event commonly names a single trainee.
+ */
 @Service
 public class MinimalSolveTimeService {
   private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
@@ -36,15 +46,6 @@ public class MinimalSolveTimeService {
   private final TrainingRunService trainingRunService;
   private final DetectionEventService detectionEventService;
 
-  /**
-   * Instantiates a new Cheating detection service.
-   *
-   * @param submissionRepository the submission repository
-   * @param minimalSolveTimeDetectionEventRepository the minimal solve time detection event
-   *     repository
-   * @param trainingRunRepository the training run repository
-   * @param trainingRunService the training run service
-   */
   @Autowired
   public MinimalSolveTimeService(
       SubmissionRepository submissionRepository,
@@ -60,10 +61,10 @@ public class MinimalSolveTimeService {
   }
 
   /**
-   * find all minimal solve time events of detection
+   * Finds every minimal solve time event recorded under the given cheating detection.
    *
    * @param cheatingDetectionId the cheating detection id
-   * @return list of events
+   * @return the matching events
    */
   public List<MinimalSolveTimeDetectionEvent> findAllMinimalSolveTimeEventsOfDetection(
       Long cheatingDetectionId) {
@@ -72,21 +73,22 @@ public class MinimalSolveTimeService {
   }
 
   /**
-   * find minimal solve time event by id
+   * Finds a minimal solve time event by its id.
    *
    * @param eventId the event id
-   * @return event
+   * @return the matching event
    */
   public MinimalSolveTimeDetectionEvent findMinimalSolveTimeEventById(Long eventId) {
     return minimalSolveTimeDetectionEventRepository.findMinimalSolveTimeEventById(eventId);
   }
 
   /**
-   * find all minimal solve time events of participants for export
+   * Finds every minimal solve time event of the cheating detection that names at least one of the
+   * given participant ids among its saved participants.
    *
    * @param cheatingDetectionId the cheating detection id
-   * @param participants list of participant ids
-   * @return list of events
+   * @param participants the participant ids ({@code userRefId}, not the local user primary key)
+   * @return the matching events
    */
   List<MinimalSolveTimeDetectionEvent> findAllMinimalSolveTimeEventsOfGroup(
       Long cheatingDetectionId, List<Long> participants) {
@@ -107,9 +109,11 @@ public class MinimalSolveTimeService {
   }
 
   /**
-   * Executes a cheating detection of type MINIMAL_SOLVE_TIME
+   * Finds every correct submission of the cheating detection's training instance solved faster
+   * than its level's minimal solve time, and persists a {@link MinimalSolveTimeDetectionEvent} per
+   * level carrying every such submission found for that level.
    *
-   * @param cd the training instance id
+   * @param cd the cheating detection whose training instance is scanned
    */
   void executeCheatingDetectionOfMinimalSolveTime(CheatingDetection cd) {
     Map<Long, List<Submission>> suspiciousSubmissionsByLevel = new HashMap<>();
@@ -118,6 +122,10 @@ public class MinimalSolveTimeService {
     generateMinimalSolveTimeEvents(cd, suspiciousSubmissionsByLevel, submissionTimes);
   }
 
+  /**
+   * Marks the submission's run as having a detection event, then persists a
+   * {@link MinimalSolveTimeDetectionEvent} carrying the given solve time and participants.
+   */
   private void auditMinimalSolveTimeEvent(
       Submission submission,
       CheatingDetection cd,
@@ -135,6 +143,15 @@ public class MinimalSolveTimeService {
         participants, minimalSolveTimeDetectionEventRepository.save(event).getId(), cd.getId());
   }
 
+  /**
+   * Walks every correct submission of the training instance, ordered by training run then date,
+   * timing each submission whose level carries a minimal solve time against the moment its
+   * trainee started that level: the run's start time when the current submission's run differs
+   * from the previous correct submission's run (eligible or not), otherwise the date of that
+   * previous correct submission. A submission timed under its level's minimal solve time (in
+   * minutes, converted to seconds) is added to {@code detectedByLevel} under its level id and to
+   * {@code submissionTimes} under its own id.
+   */
   private void aggregateMinimalSolveTimeSubmissionsByLevels(
       CheatingDetection cd,
       Map<Long, List<Submission>> detectedByLevel,
@@ -166,6 +183,10 @@ public class MinimalSolveTimeService {
     }
   }
 
+  /**
+   * Appends the submission to the level's list in {@code detectedByLevel}, creating it if absent,
+   * and records its solve duration in {@code submissionTimes} under its submission id.
+   */
   private static void addMinimalSolveTimeDataToMaps(
       Map<Long, List<Submission>> detectedByLevel,
       Map<Long, Long> submissionTimes,
@@ -180,6 +201,12 @@ public class MinimalSolveTimeService {
     submissionTimes.put(current.getId(), levelDuration);
   }
 
+  /**
+   * For each level in {@code suspiciousSubmissionsByLevel}, marks every implicated run as having a
+   * detection event, builds one participant per submission carrying its recorded solve time, and
+   * persists a single {@link MinimalSolveTimeDetectionEvent} for the level regardless of how many
+   * trainees ended up as participants.
+   */
   private void generateMinimalSolveTimeEvents(
       CheatingDetection cd,
       Map<Long, List<Submission>> suspiciousSubmissionsByLevel,

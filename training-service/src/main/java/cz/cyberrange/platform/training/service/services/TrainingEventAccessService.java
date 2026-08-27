@@ -38,12 +38,6 @@ public class TrainingEventAccessService {
   private final TrainingRunService trainingRunService;
   private final TrainingInstanceService trainingInstanceService;
 
-  /**
-   * @param trainingEventsService infrastructure service for training audit event queries
-   * @param commandEventsService infrastructure service for console command queries
-   * @param trainingRunService used to resolve a trainee's sandbox from their training run
-   * @param trainingInstanceService used to resolve the pool holding an instance's console commands
-   */
   @Autowired
   public TrainingEventAccessService(
       TrainingEventsService trainingEventsService,

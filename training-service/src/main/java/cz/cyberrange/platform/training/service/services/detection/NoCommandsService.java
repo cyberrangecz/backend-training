@@ -33,6 +33,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Detects a level marked as requiring console commands being solved without any command recorded
+ * for it. Scans every training run of the instance, skipping a level whose solution was revealed,
+ * and groups every submission caught this way by level id into one finding per level, so a
+ * finding can implicate several trainees.
+ */
 @Service
 public class NoCommandsService {
   private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
@@ -46,16 +52,6 @@ public class NoCommandsService {
   private final TrainingEventsService trainingEventsService;
   private final CommandEventsService commandEventsService;
 
-  /**
-   * Instantiates a new Cheating detection service.
-   *
-   * @param trainingLevelRepository the training level repository
-   * @param trainingRunRepository the training run repository
-   * @param submissionRepository the submission repository
-   * @param noCommandsDetectionEventRepository the no commands detection event repository
-   * @param trainingRunService the training run service
-   * @param trainingInstanceService the training instance service
-   */
   @Autowired
   public NoCommandsService(
       TrainingLevelRepository trainingLevelRepository,
@@ -79,10 +75,10 @@ public class NoCommandsService {
   }
 
   /**
-   * finds all no commands event of cheating detection
+   * Returns every no-commands finding of one sweep.
    *
-   * @param cheatingDetectionId the cheating detection id
-   * @return events
+   * @param cheatingDetectionId the sweep whose findings are returned
+   * @return the matching findings
    */
   public List<NoCommandsDetectionEvent> findAllNoCommandsEventsOfDetection(
       Long cheatingDetectionId) {
@@ -90,19 +86,21 @@ public class NoCommandsService {
   }
 
   /**
-   * finds no command event by id
+   * Returns the no-commands finding with the given primary key.
    *
-   * @param eventId the event id
-   * @return event
+   * @param eventId the primary key of the finding
+   * @return the matching finding
    */
   public NoCommandsDetectionEvent findNoCommandsEventById(Long eventId) {
     return noCommandsDetectionEventRepository.findNoCommandsEventById(eventId);
   }
 
   /**
-   * Executes a cheating detection of type NO_COMMANDS
+   * Runs the no-commands detector over every training run of the sweep's instance, then records
+   * one finding per level for which at least one submission was caught, implicating every trainee
+   * caught on that level.
    *
-   * @param cd the training instance id
+   * @param cd the sweep being executed
    */
   void executeCheatingDetectionOfNoCommands(CheatingDetection cd) {
     Long trainingInstanceId = cd.getTrainingInstanceId();
@@ -128,6 +126,10 @@ public class NoCommandsService {
     }
   }
 
+  /**
+   * Reports whether one of the given audit events records the solution of the submission's level
+   * having been revealed.
+   */
   private boolean wasSolutionDisplayed(List<AbstractAuditPOJO> events, Submission submission) {
     for (AbstractAuditPOJO event : events) {
       if (event.getLevel() == submission.getLevel().getId()
@@ -138,6 +140,10 @@ public class NoCommandsService {
     return false;
   }
 
+  /**
+   * Builds a participant record for every submission caught on one level and marks each
+   * submission's training run as carrying a detection event.
+   */
   private void generateParticipantsOfEvent(
       Set<DetectionEventParticipant> participants, Map.Entry<Long, List<Submission>> submissions) {
     for (var submission : submissions.getValue()) {
@@ -147,6 +153,12 @@ public class NoCommandsService {
     }
   }
 
+  /**
+   * Evaluates one run's correct submissions except the last, each against the interval since the
+   * previous correct submission or, for the first one, the run's start. The last correct
+   * submission is never evaluated, so a level solved last in a run is never caught by this
+   * detector for that run.
+   */
   private void executeNoCommandsDetectionForRun(
       Map<Long, TrainingLevel> trainingLevelsById,
       Map<Long, List<Submission>> detectedSubmissionsByLevels,
@@ -161,6 +173,13 @@ public class NoCommandsService {
     }
   }
 
+  /**
+   * Evaluates one submission against the interval since the previous one (or the run's start).
+   * Passes over a level absent from {@code trainingLevelsById}, a level not marked as requiring
+   * commands, and a submission whose level had its solution revealed. Otherwise, when no console
+   * command was recorded for the run's sandbox in the interval, appends the submission to the
+   * accumulated list kept under its level id.
+   */
   private void evaluateNoCommandsSubmissionsOfTrainingRun(
       Map<Long, TrainingLevel> trainingLevelsById,
       Map<Long, List<Submission>> detectedSubmissionsByLevels,
@@ -193,6 +212,10 @@ public class NoCommandsService {
     }
   }
 
+  /**
+   * Reports whether no console command was recorded for the run's sandbox between {@code from}
+   * and the submission's own date.
+   */
   private boolean evalCheatOfNoCommands(
       String sandboxId, LocalDateTime from, Submission submission) {
     long fromMilli = from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
@@ -202,6 +225,10 @@ public class NoCommandsService {
         .isEmpty();
   }
 
+  /**
+   * Marks the training run of the first submission as carrying a detection event, then records a
+   * finding for that submission's level implicating every given participant.
+   */
   private void auditNoCommandsEvent(
       Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
     TrainingRun run = submission.getTrainingRun();

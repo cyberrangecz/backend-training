@@ -30,6 +30,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Retrieves the detection events produced by a cheating detection, their participants and their
+ * detected forbidden commands, both in bulk and by individual event kind (answer similarity,
+ * location similarity, time proximity, minimal solve time, no commands, forbidden commands).
+ */
 @Service
 @Transactional
 public class DetectionEventFacade {
@@ -46,21 +51,6 @@ public class DetectionEventFacade {
 
   private final DetectedForbiddenCommandMapper detectedForbiddenCommandMapper;
 
-  /**
-   * Instantiates a new Cheating detection facade.
-   *
-   * @param userService the user service
-   * @param detectionEventMapper the cheating detection mapper
-   * @param detectionEventParticipantMapper the detection event participant mapper
-   * @param forbiddenCommandMapper the forbidden command mapper
-   * @param answerSimilarityService the answer similarity service
-   * @param locationSimilarityService the location similarity service
-   * @param minimalSolveTimeService the minimal solve time service
-   * @param timeProximityService the time proximity service
-   * @param noCommandsService the no commands service
-   * @param forbiddenCommandsService the forbidden commands service
-   * @param detectionEventService the detection event service
-   */
   @Autowired
   public DetectionEventFacade(
       UserService userService,
@@ -88,10 +78,12 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Finds all detection events of a cheating detection.
+   * Finds all detection events of a cheating detection, filtered by {@code predicate}. The {@code
+   * trainingInstanceId} parameter takes no part in the query or the authorization check.
    *
    * @param cheatingDetectionId the cheating detection ID
    * @param pageable the pageable
+   * @return page of {@link AbstractDetectionEventDTO} matching the predicate
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -105,10 +97,11 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Finds all participants of detection event.
+   * Finds all participants of a detection event.
    *
    * @param eventId the detection event ID
    * @param pageable the pageable
+   * @return page of {@link DetectionEventParticipantDTO} for the event
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -121,10 +114,11 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Finds all forbidden commands of detection event.
+   * Finds all forbidden commands detected within a forbidden-commands detection event.
    *
    * @param eventId the detection event ID
    * @param pageable the pageable
+   * @return page of {@link DetectedForbiddenCommandDTO} for the event
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -137,9 +131,10 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Finds all forbidden commands of detection event for visualization.
+   * Finds all forbidden commands detected within a forbidden-commands detection event, unpaged.
    *
    * @param eventId the detection event ID
+   * @return every {@link DetectedForbiddenCommandDTO} for the event
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -151,9 +146,10 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Find detection event by its ID.
+   * Finds a detection event by its ID, regardless of its kind.
    *
    * @param eventId the detection event ID
+   * @return the event as {@link AbstractDetectionEventDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -165,9 +161,10 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Find detection event of type answer similarity by its ID.
+   * Finds a detection event of type answer similarity by its ID.
    *
    * @param eventId the detection event ID
+   * @return the event as {@link AnswerSimilarityDetectionEventDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -179,9 +176,10 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Find detection event of type location similarity by its ID.
+   * Finds a detection event of type location similarity by its ID.
    *
    * @param eventId the detection event ID
+   * @return the event as {@link LocationSimilarityDetectionEventDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -193,9 +191,10 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Find detection event of type time proximity by its ID.
+   * Finds a detection event of type time proximity by its ID.
    *
    * @param eventId the detection event ID
+   * @return the event as {@link TimeProximityDetectionEventDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -207,9 +206,10 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Find detection event of type minimal solve time by its ID.
+   * Finds a detection event of type minimal solve time by its ID.
    *
    * @param eventId the detection event ID
+   * @return the event as {@link MinimalSolveTimeDetectionEventDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -221,9 +221,10 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Find detection event of type no commands by its ID.
+   * Finds a detection event of type no commands by its ID.
    *
    * @param eventId the detection event ID
+   * @return the event as {@link NoCommandsDetectionEventDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -235,9 +236,10 @@ public class DetectionEventFacade {
   }
 
   /**
-   * Find detection event of type forbidden commands by its ID.
+   * Finds a detection event of type forbidden commands by its ID.
    *
    * @param eventId the detection event ID
+   * @return the event as {@link ForbiddenCommandsDetectionEventDTO}
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"

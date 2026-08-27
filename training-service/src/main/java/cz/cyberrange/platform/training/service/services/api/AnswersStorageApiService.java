@@ -9,28 +9,28 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-/** The type Answers Storage Api Service. */
+/**
+ * Client for the answer-storage microservice, which holds the generated variable answers for
+ * sandboxes. Each method issues one blocking HTTP call and rewraps a failing response, surfaced by
+ * the underlying {@code WebClient} as a {@link CustomWebClientException}, into a {@link
+ * MicroserviceApiException} carrying a message naming the call that failed.
+ */
 @Service
 public class AnswersStorageApiService {
 
   private final WebClient answersStorageWebClient;
 
-  /**
-   * Instantiates a new AnswersStorageApi service.
-   *
-   * @param answersStorageWebClient the web client
-   */
   public AnswersStorageApiService(WebClient answersStorageWebClient) {
     this.answersStorageWebClient = answersStorageWebClient;
   }
 
   /**
-   * Get correct answer for the given cloud sandbox and with specific answer identifier.
+   * Returns the correct answer stored for one variable of a cloud sandbox.
    *
-   * @param sandboxId id of the sandbox used by trainee.
-   * @param answerVariableName identifier of the answer.
-   * @throws MicroserviceApiException error with specific message when calling answer storage
-   *     microservice.
+   * @param sandboxId the sandbox's reference id
+   * @param answerVariableName the variable's identifier
+   * @return the answer text
+   * @throws MicroserviceApiException when the answer-storage call fails
    */
   public String getCorrectAnswerByCloudSandboxIdAndVariableName(
       String sandboxId, String answerVariableName) {
@@ -53,13 +53,14 @@ public class AnswersStorageApiService {
   }
 
   /**
-   * Get correct answer for the given local sandbox and with specific answer identifier.
+   * Returns the correct answer stored for one variable of a local sandbox, addressed by the
+   * training instance's access token and the owning user's cross-service user reference id.
    *
-   * @param accessToken access token of the training instance.
-   * @param userId id of the user who owns the local sandbox.
-   * @param answerVariableName identifier of the answer.
-   * @throws MicroserviceApiException error with specific message when calling answer storage
-   *     microservice.
+   * @param accessToken the training instance's access token
+   * @param userId the sandbox owner's user reference id
+   * @param answerVariableName the variable's identifier
+   * @return the answer text
+   * @throws MicroserviceApiException when the answer-storage call fails
    */
   public String getCorrectAnswerByLocalSandboxIdAndVariableName(
       String accessToken, Long userId, String answerVariableName) {
@@ -89,11 +90,11 @@ public class AnswersStorageApiService {
   }
 
   /**
-   * Get all answers generated for the given cloud sandbox.
+   * Returns every answer generated for a cloud sandbox.
    *
-   * @param sandboxId id of the sandbox.
-   * @throws MicroserviceApiException error with specific message when calling answer storage
-   *     microservice.
+   * @param sandboxId the sandbox's reference id
+   * @return the sandbox's answers
+   * @throws MicroserviceApiException when the answer-storage call fails
    */
   public SandboxAnswersInfo getAnswersBySandboxId(String sandboxId) {
     try {
@@ -113,12 +114,13 @@ public class AnswersStorageApiService {
   }
 
   /**
-   * Get all answers generated for the given local sandbox.
+   * Returns every answer generated for a local sandbox, addressed by the training instance's
+   * access token and the owning user's cross-service user reference id.
    *
-   * @param accessToken access token of the training instance.
-   * @param userId id of the user.
-   * @throws MicroserviceApiException error with specific message when calling answer storage
-   *     microservice.
+   * @param accessToken the training instance's access token
+   * @param userId the sandbox owner's user reference id
+   * @return the sandbox's answers
+   * @throws MicroserviceApiException when the answer-storage call fails
    */
   public SandboxAnswersInfo getAnswersByAccessTokenAndUserId(String accessToken, Long userId) {
     try {

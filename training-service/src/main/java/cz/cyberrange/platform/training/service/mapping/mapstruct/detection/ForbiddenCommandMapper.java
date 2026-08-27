@@ -16,8 +16,23 @@ import org.springframework.data.domain.PageImpl;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ForbiddenCommandMapper extends ParentMapper {
 
+  /**
+   * Maps a forbidden command DTO to a new entity, leaving its owning cheating detection
+   * association unset; {@code cheatingDetectionId} carries no source counterpart on the entity
+   * side.
+   *
+   * @param dto the forbidden command DTO to map
+   * @return the mapped forbidden command
+   */
   ForbiddenCommand mapToEntity(ForbiddenCommandDTO dto);
 
+  /**
+   * Maps a forbidden command entity to a {@link ForbiddenCommandDTO}, flattening the owning
+   * cheating detection's identifier into {@code cheatingDetectionId}.
+   *
+   * @param entity the forbidden command to map
+   * @return the forbidden command DTO
+   */
   @Mapping(target = "cheatingDetectionId", source = "cheatingDetection.id")
   ForbiddenCommandDTO mapToDTO(ForbiddenCommand entity);
 

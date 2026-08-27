@@ -21,34 +21,80 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 /**
- * The HintMapper is an utility class to map items into data transfer objects. It provides the
- * implementation of mappings between Java bean type HintMapper and DTOs classes. Code is generated
- * during compile time.
+ * Converts a training level's hint between its entity form, its editing and export DTOs, and the
+ * snapshot a training run keeps of a hint once taken.
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface HintMapper extends ParentMapper {
 
+  /**
+   * Maps a hint into a new entity, copying id, content, penalty and order; title falls back to an
+   * empty string when the DTO carries none. The owning training level carries no matching source
+   * field and is left unset.
+   *
+   * @param dto the hint to map
+   * @return the mapped hint entity
+   */
   @Mapping(target = "title", source = "title", defaultValue = "")
   Hint mapToEntity(HintDTO dto);
 
+  /**
+   * Maps a hint to its DTO, copying id, content, penalty and order; title falls back to an empty
+   * string when the entity carries none.
+   *
+   * @param entity the hint to map
+   * @return the mapped DTO
+   */
   @Mapping(target = "title", source = "title", defaultValue = "")
   HintDTO mapToDTO(Hint entity);
 
+  /**
+   * Maps a hint to the DTO exposing only its id, title and penalty, without the advice text.
+   *
+   * @param entity the hint to map
+   * @return the mapped basic DTO
+   */
   @Named("hintToBasicDTO")
   HintBasicDTO mapToBasicDTO(Hint entity);
 
+  /**
+   * Maps each hint to its basic DTO, as {@link #mapToBasicDTO(Hint)}.
+   *
+   * @param entities the hints to map
+   * @return the mapped basic DTOs, in the given order
+   */
   @IterableMapping(qualifiedByName = "hintToBasicDTO")
   List<HintBasicDTO> mapToBasicDtoList(List<Hint> entities);
 
+  /**
+   * Maps each hint to its basic DTO, as {@link #mapToBasicDTO(Hint)}.
+   *
+   * @param entities the hints to map
+   * @return the mapped basic DTOs
+   */
   @Named("hintsToBasicDtoSet")
   @IterableMapping(qualifiedByName = "hintToBasicDTO")
   Set<HintBasicDTO> mapToBasicDtoSet(Collection<Hint> entities);
 
+  /**
+   * Maps a taken hint snapshot to the DTO handed to the trainee who took it, copying its hint id,
+   * title, content and order. The penalty is not carried, since {@link HintInfo} does not record
+   * one.
+   *
+   * @param hintInfo the taken hint snapshot to map
+   * @return the mapped DTO
+   */
   @Mapping(source = "hintId", target = "id")
   @Mapping(source = "hintContent", target = "content")
   @Mapping(source = "hintTitle", target = "title")
   TakenHintDTO mapToDTO(HintInfo hintInfo);
 
+  /**
+   * Maps a hint to its export DTO, copying title, content, penalty and order.
+   *
+   * @param entity the hint to map
+   * @return the exported hint
+   */
   HintExportDTO mapToHintExportDTO(Hint entity);
 
   List<Hint> mapToList(Collection<HintDTO> dtos);
@@ -59,6 +105,12 @@ public interface HintMapper extends ParentMapper {
 
   Set<HintDTO> mapToSetDTO(Collection<Hint> entities);
 
+  /**
+   * Maps each taken hint snapshot to its DTO, as {@link #mapToDTO(HintInfo)}.
+   *
+   * @param entities the taken hint snapshots to map
+   * @return the mapped DTOs
+   */
   Set<TakenHintDTO> mapToSetInfoDTO(Collection<HintInfo> entities);
 
   default Optional<Hint> mapToEntityOptional(HintDTO dto) {

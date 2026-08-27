@@ -29,6 +29,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Detects a trainee running one of the sweep's forbidden console commands. Scans every training
+ * run of the instance over the intervals between its correct submissions, comparing the console
+ * commands recorded for the run's sandbox in each interval against the sweep's forbidden command
+ * list. Every finding implicates exactly one trainee.
+ */
 @Service
 public class ForbiddenCommandsService {
   private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
@@ -41,18 +47,6 @@ public class ForbiddenCommandsService {
   private final DetectionEventService detectionEventService;
   private final CommandEventsService commandEventsService;
 
-  /**
-   * Instantiates a new Cheating detection service.
-   *
-   * @param submissionRepository the submission repository
-   * @param forbiddenCommandsDetectionEventRepository the forbidden commands detection event
-   *     repository
-   * @param detectionEventParticipantRepository the detection event participant repository
-   * @param detectedForbiddenCommandRepository the detected forbidden commands repository
-   * @param trainingRunRepository the training run repository
-   * @param trainingRunService the training run service
-   * @param detectionEventService the detection events service
-   */
   @Autowired
   public ForbiddenCommandsService(
       SubmissionRepository submissionRepository,
@@ -74,10 +68,10 @@ public class ForbiddenCommandsService {
   }
 
   /**
-   * finds all forbidden command events of cheating detection
+   * Returns every forbidden-commands finding of one sweep.
    *
-   * @param cheatingDetectionId the cheating detection id
-   * @return list of events
+   * @param cheatingDetectionId the sweep whose findings are returned
+   * @return the matching findings
    */
   public List<ForbiddenCommandsDetectionEvent> findAllForbiddenCommandsEventsOfDetection(
       Long cheatingDetectionId) {
@@ -86,19 +80,19 @@ public class ForbiddenCommandsService {
   }
 
   /**
-   * finds forbidden command event by id
+   * Returns the forbidden-commands finding with the given primary key.
    *
-   * @param eventId the event id
-   * @return the event
+   * @param eventId the primary key of the finding
+   * @return the matching finding
    */
   public ForbiddenCommandsDetectionEvent findForbiddenCommandsEventById(Long eventId) {
     return forbiddenCommandsDetectionEventRepository.findForbiddenCommandsEventById(eventId);
   }
 
   /**
-   * Executes a cheating detection of type FORBIDDEN_COMMANDS
+   * Runs the forbidden-commands detector over every training run of the sweep's instance.
    *
-   * @param cd the cheating detection
+   * @param cd the sweep being executed
    */
   void executeCheatingDetectionOfForbiddenCommands(CheatingDetection cd) {
     for (var run : trainingRunService.findAllByTrainingInstanceId(cd.getTrainingInstanceId())) {
@@ -106,6 +100,12 @@ public class ForbiddenCommandsService {
     }
   }
 
+  /**
+   * Evaluates one run's correct submissions in sequence, each against the interval since the
+   * previous correct submission (or the run's start, for the first one), plus a trailing interval
+   * from the last correct submission to now while the run is still running. A run with no correct
+   * submissions is skipped.
+   */
   private void executeForbiddenCommandsMethodForRun(CheatingDetection cd, TrainingRun run) {
     List<Submission> submissions;
     submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
@@ -117,6 +117,11 @@ public class ForbiddenCommandsService {
     }
   }
 
+  /**
+   * Resolves the interval one submission index covers and generates a finding from it. The index
+   * one past the last submission covers the trailing interval to now, and is skipped once the run
+   * is no longer running.
+   */
   private void evaluateForbiddenCommandsForSubmission(
       CheatingDetection cd, TrainingRun run, List<Submission> submissions, int submissionIndex) {
     LocalDateTime from;
@@ -141,6 +146,11 @@ public class ForbiddenCommandsService {
     generateForbiddenCommandEvent(cd, run, from, to, currentSubmission);
   }
 
+  /**
+   * Matches the sandbox's console commands over the interval against the sweep's forbidden
+   * command list and, only if at least one match is found, records a finding implicating the
+   * trainee behind the submission.
+   */
   private void generateForbiddenCommandEvent(
       CheatingDetection cd,
       TrainingRun run,
@@ -169,6 +179,11 @@ public class ForbiddenCommandsService {
     return submittedCommands;
   }
 
+  /**
+   * Checks every submitted command against every forbidden command and collects one detected
+   * entry per match; a submitted command matching several forbidden commands yields several
+   * entries.
+   */
   private List<DetectedForbiddenCommand> evaluateForbiddenCommands(
       List<ForbiddenCommand> forbiddenCommands, List<TrainingCommand> submittedCommands) {
     List<DetectedForbiddenCommand> commandsList = new ArrayList<>();
@@ -184,6 +199,10 @@ public class ForbiddenCommandsService {
     return commandsList;
   }
 
+  /**
+   * Adds a detected entry to {@code commandsList} when the submitted command's type matches the
+   * forbidden command's type and its text contains the forbidden command's text.
+   */
   private static void detectForbiddenCommands(
       List<DetectedForbiddenCommand> commandsList,
       TrainingCommand commandObj,

@@ -14,8 +14,23 @@ import org.springframework.data.domain.PageImpl;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DetectionEventParticipantMapper extends ParentMapper {
+  /**
+   * Maps a detection event participant DTO to a new entity, matching every field by name except
+   * {@code cheatingDetectionId}, which carries no source counterpart on the DTO side.
+   *
+   * @param dto the detection event participant DTO to map
+   * @return the mapped detection event participant
+   */
   DetectionEventParticipant mapToEntity(DetectionEventParticipantDTO dto);
 
+  /**
+   * Maps a detection event participant entity to a {@link DetectionEventParticipantDTO},
+   * matching every field by name; the entity's {@code cheatingDetectionId} carries no
+   * counterpart on the DTO side.
+   *
+   * @param entity the detection event participant to map
+   * @return the detection event participant DTO
+   */
   DetectionEventParticipantDTO mapToDTO(DetectionEventParticipant entity);
 
   List<DetectionEventParticipant> mapToList(Collection<DetectionEventParticipantDTO> dtos);

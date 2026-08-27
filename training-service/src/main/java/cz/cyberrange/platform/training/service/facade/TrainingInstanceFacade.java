@@ -60,7 +60,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-/** The type Training instance facade. */
+/**
+ * Orchestrates training instance lifecycle operations between the REST layer and the underlying
+ * services: creation, update and deletion of instances, pool assignment, organizer management, and
+ * retrieval of the instance's training runs and audited events.
+ */
 @Service
 public class TrainingInstanceFacade {
 
@@ -81,23 +85,6 @@ public class TrainingInstanceFacade {
   private final EventMapper eventMapper;
   private final TrainingEventAccessService trainingEventAccessService;
 
-  /**
-   * Instantiates a new Training instance facade.
-   *
-   * @param trainingInstanceService the training instance service
-   * @param trainingDefinitionService the training definition service
-   * @param trainingRunService the training run service
-   * @param cheatingDetectionService the cheating detection service
-   * @param trainingInstanceMapper the training instance mapper
-   * @param trainingRunMapper the training run mapper
-   * @param userService the user service
-   * @param securityService the security service
-   * @param sandboxApiService the sandbox API service
-   * @param commandEventsService the command events service
-   * @param trainingEventsService the training events service
-   * @param eventMapper mapper for converting event POJOs to DTOs
-   * @param trainingEventAccessService service enforcing event-fetch access restrictions
-   */
   @Autowired
   public TrainingInstanceFacade(
       TrainingInstanceService trainingInstanceService,
@@ -175,10 +162,15 @@ public class TrainingInstanceFacade {
   }
 
   /**
-   * Updates training instance
+   * Updates a training instance. Refuses the update if the instance has already started and the
+   * assigned training definition would change. Validates that the instance's local environment and
+   * pool configuration are consistent, and that the sandbox definition or pool exposes every
+   * variable name referenced by the training definition's levels. Locks the new pool when a pool
+   * is assigned for the first time; unlocks and deletes a previously assigned pool's recorded
+   * console commands whenever that pool is replaced or removed.
    *
    * @param trainingInstanceUpdateDTO to be updated
-   * @return new access token if it was changed
+   * @return the access token in effect after the update, whether it changed or was kept
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -321,10 +313,14 @@ public class TrainingInstanceFacade {
   }
 
   /**
-   * Deletes specific training instance based on id
+   * Deletes a training instance together with its training runs, cheating detections and audited
+   * events. Unless {@code forceDelete} is set, refuses to delete an instance that has not finished
+   * and still has training runs, and refuses to delete an instance with a pool still assigned. When
+   * {@code forceDelete} is set on a non-local instance with an assigned pool, unlocks the pool and
+   * deletes its recorded console commands instead of raising either refusal.
    *
    * @param trainingInstanceId of training instance to be deleted
-   * @param forceDelete indicates if this training run should be force deleted.
+   * @param forceDelete indicates if the instance should be deleted regardless of these checks.
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -374,11 +370,12 @@ public class TrainingInstanceFacade {
   }
 
   /**
-   * Assign pool in training instance new training instance
+   * Assigns a sandbox pool to a training instance that currently has none. Refuses instances
+   * running in a local environment and instances that already have a pool assigned.
    *
    * @param trainingInstanceId the training instance id
-   * @param trainingInstanceAssignPoolIdDTO of training instance to be deleted
-   * @return the training instance basic info dto
+   * @param trainingInstanceAssignPoolIdDTO carries the id of the pool to assign
+   * @return the updated training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -410,10 +407,11 @@ public class TrainingInstanceFacade {
   }
 
   /**
-   * Reassign pool in training instance or assignes new training instance
+   * Unassigns the sandbox pool currently assigned to a training instance, unlocking the pool and
+   * deleting its recorded console commands. Refuses an instance with no pool assigned.
    *
-   * @param trainingInstanceId of training instance to be deleted
-   * @return the training instance basic info dto
+   * @param trainingInstanceId of training instance to be updated
+   * @return the updated training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -488,13 +486,6 @@ public class TrainingInstanceFacade {
                     trainingRunDTO.getParticipantRef().getUserRefId())));
   }
 
-  /**
-   * Check if instance can be deleted.
-   *
-   * @param trainingInstanceId the training instance id
-   * @return true if instance can be deleted, false if not and message. {@link
-   *     TrainingInstanceIsFinishedInfoDTO}
-   */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
@@ -561,8 +552,9 @@ public class TrainingInstanceFacade {
   }
 
   /**
-   * Concurrently add organizers to the given training instance and remove authors from the training
-   * instance.
+   * Adds and removes organizers of the given training instance in one call. The caller's own user
+   * reference id is dropped from {@code organizersRemoval} before it is applied, so a caller cannot
+   * remove itself as organizer through this method.
    *
    * @param trainingInstanceId if of the training instance to be updated
    * @param organizersAddition ids of the organizers to be added to the training instance

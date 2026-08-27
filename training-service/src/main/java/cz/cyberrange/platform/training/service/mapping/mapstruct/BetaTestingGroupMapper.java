@@ -19,20 +19,44 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 /**
- * The BetaTestingGroupMapper is an utility class to map items into data transfer objects. It
- * provides the implementation of mappings between Java bean type BetaTestingGroupMapper and DTOs
- * classes. Code is generated during compile time.
+ * Converts a beta testing group between its entity form and the DTOs exposed for it. Declared as
+ * a {@code uses} target of {@link TrainingDefinitionMapper}, though that mapper only extracts the
+ * group's id and never maps a nested {@code BetaTestingGroup} or {@code BetaTestingGroupDTO}
+ * field, so no method here is reached from that composition.
  */
 @Mapper(
     componentModel = "spring",
     uses = {UserRefMapper.class},
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BetaTestingGroupMapper extends ParentMapper {
+
+  /**
+   * Maps a beta testing group into a new entity. Its {@code organizersRefIds} carries member ids
+   * while the entity's {@code organizers} holds member entities, so the field has no automatic
+   * match and is left unset, along with the owning training definition; the primary key is
+   * copied by the same-name match with the DTO's own {@code id}.
+   *
+   * @param dto the beta testing group to map
+   * @return the mapped beta testing group
+   */
   BetaTestingGroup mapToEntity(BetaTestingGroupDTO dto);
 
+  /**
+   * Maps a beta testing group to its DTO, copying the primary key and each organizer's cross
+   * service reference id.
+   *
+   * @param entity the beta testing group to map
+   * @return the mapped DTO
+   */
   @Mapping(target = "organizersRefIds", source = "organizers")
   BetaTestingGroupDTO mapToDTO(BetaTestingGroup entity);
 
+  /**
+   * Collects the cross service reference id of each organizer.
+   *
+   * @param organizers the organizers to read, possibly null
+   * @return one id per organizer, or an empty set when there are none
+   */
   default Set<Long> mapOrganizersToRefIds(Set<UserRef> organizers) {
     if (organizers == null || organizers.isEmpty()) {
       return new HashSet<>();

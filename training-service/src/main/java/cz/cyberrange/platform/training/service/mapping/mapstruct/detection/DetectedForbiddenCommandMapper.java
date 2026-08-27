@@ -15,8 +15,23 @@ import org.springframework.data.domain.PageImpl;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DetectedForbiddenCommandMapper extends ParentMapper {
 
+  /**
+   * Maps a detected forbidden command DTO to a new entity, matching {@code command}, {@code
+   * type}, {@code hostname} and {@code occurredAt} by name and leaving the finding it belongs to
+   * unset; {@code detectionEventId} carries no source counterpart on the DTO side.
+   *
+   * @param dto the detected forbidden command DTO to map
+   * @return the mapped detected forbidden command
+   */
   DetectedForbiddenCommand mapToEntity(DetectedForbiddenCommandDTO dto);
 
+  /**
+   * Maps a detected forbidden command entity to a {@link DetectedForbiddenCommandDTO}, matching
+   * {@code command}, {@code type}, {@code hostname} and {@code occurredAt} by name.
+   *
+   * @param entity the detected forbidden command to map
+   * @return the detected forbidden command DTO
+   */
   DetectedForbiddenCommandDTO mapToDTO(DetectedForbiddenCommand entity);
 
   List<DetectedForbiddenCommand> mapToList(Collection<DetectedForbiddenCommandDTO> dtos);

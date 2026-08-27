@@ -17,7 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The type Cheating Detection facade. */
+/** Assembles the results of a cheating detection into a single downloadable zip archive. */
 @Service
 @Transactional
 public class CheatingDetectionExportFacade {
@@ -29,14 +29,6 @@ public class CheatingDetectionExportFacade {
   private final CheatingDetectionMapper cheatingDetectionMapper;
   private final CheatingDetectionExportService cheatingDetectionExportService;
 
-  /**
-   * Instantiates a new Cheating detection facade.
-   *
-   * @param cheatingDetectionService the cheating detection service
-   * @param userService the user service
-   * @param cheatingDetectionMapper the cheating detection mapper
-   * @param cheatingDetectionExportService the cheating detection export service
-   */
   @Autowired
   public CheatingDetectionExportFacade(
       CheatingDetectionService cheatingDetectionService,
@@ -50,10 +42,13 @@ public class CheatingDetectionExportFacade {
   }
 
   /**
-   * Exports Cheating Detection to file
+   * Builds a zip archive holding the cheating detection's own configuration and one entry per kind
+   * of detection event it produced (answer similarity, location similarity, time proximity, minimal
+   * solve time, no commands, forbidden commands), plus the trainee participant groups it evaluated.
    *
    * @param cheatingDetectionId the id of the cheating detection to be exported
-   * @return the file containing cheating detection, {@link FileToReturnDTO}
+   * @return the zip archive as a {@link FileToReturnDTO}
+   * @throws InternalServerErrorException if writing an entry to the archive fails
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"

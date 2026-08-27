@@ -32,6 +32,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Writes the record and findings of one cheating detection sweep into a zip archive: one JSON
+ * entry per detection event and its participants, plus a per-participant-group CSV summary that
+ * lines up every event a group's trainees share, however many of them a given event implicates.
+ */
 @Service
 public class CheatingDetectionExportService {
   private static final String DETECTION_EVENTS_FOLDER = "detection_events";
@@ -57,20 +62,6 @@ public class CheatingDetectionExportService {
   private final ObjectMapper objectMapper;
   private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-  /**
-   * Instantiates a new Cheating detection facade.
-   *
-   * @param cheatingDetectionService the cheating detection service
-   * @param trainingDefinitionService the training definition service
-   * @param userService the user service
-   * @param detectionEventService the detection event service
-   * @param answerSimilarityService the answer similarity service
-   * @param locationSimilarityService the location similarity service
-   * @param minimalSolveTimeService the minimal solve time service
-   * @param timeProximityService the time proximity service
-   * @param noCommandsService the no commands service
-   * @param forbiddenCommandsService the forbidden commands service
-   */
   @Autowired
   public CheatingDetectionExportService(
       CheatingDetectionService cheatingDetectionService,
@@ -97,6 +88,14 @@ public class CheatingDetectionExportService {
     this.objectMapper = objectMapper;
   }
 
+  /**
+   * Writes the sweep's own record as one JSON zip entry.
+   *
+   * @param zos the archive being written to
+   * @param cheatingDetectionId the sweep whose record is written, used only to name the entry
+   * @param cheatingDetectionDTO the record to serialize
+   * @throws IOException if writing to the archive fails
+   */
   public void writeCheatingDetection(
       ZipOutputStream zos, Long cheatingDetectionId, CheatingDetectionDTO cheatingDetectionDTO)
       throws IOException {
@@ -109,6 +108,14 @@ public class CheatingDetectionExportService {
     zos.write(objectMapper.writeValueAsBytes(cheatingDetectionDTO));
   }
 
+  /**
+   * Writes every answer-similarity finding of one sweep, each as a JSON zip entry alongside a
+   * second entry listing its participants.
+   *
+   * @param zos the archive being written to
+   * @param cheatingDetectionId the sweep whose findings are written
+   * @throws IOException if writing to the archive fails
+   */
   public void writeAnswerSimilarityDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId)
       throws IOException {
     List<AnswerSimilarityDetectionEvent> detectionEventsOfAS =
@@ -118,6 +125,14 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Writes every location-similarity finding of one sweep, each as a JSON zip entry alongside a
+   * second entry listing its participants.
+   *
+   * @param zos the archive being written to
+   * @param cheatingDetectionId the sweep whose findings are written
+   * @throws IOException if writing to the archive fails
+   */
   public void writeLocationSimilarityDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId)
       throws IOException {
     List<LocationSimilarityDetectionEvent> detectionEventsOfLS =
@@ -127,6 +142,14 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Writes every time-proximity finding of one sweep, each as a JSON zip entry alongside a second
+   * entry listing its participants.
+   *
+   * @param zos the archive being written to
+   * @param cheatingDetectionId the sweep whose findings are written
+   * @throws IOException if writing to the archive fails
+   */
   public void writeTimeProximityDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId)
       throws IOException {
     List<TimeProximityDetectionEvent> detectionEventsOfTP =
@@ -136,6 +159,14 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Writes every minimal-solve-time finding of one sweep, each as a JSON zip entry alongside a
+   * second entry listing its participants.
+   *
+   * @param zos the archive being written to
+   * @param cheatingDetectionId the sweep whose findings are written
+   * @throws IOException if writing to the archive fails
+   */
   public void writeMinimalSolveTimeDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId)
       throws IOException {
     List<MinimalSolveTimeDetectionEvent> detectionEventsOfMST =
@@ -145,6 +176,14 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Writes every no-commands finding of one sweep, each as a JSON zip entry alongside a second
+   * entry listing its participants.
+   *
+   * @param zos the archive being written to
+   * @param cheatingDetectionId the sweep whose findings are written
+   * @throws IOException if writing to the archive fails
+   */
   public void writeNoCommandsDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId)
       throws IOException {
     List<NoCommandsDetectionEvent> detectionEventsOfNC =
@@ -154,6 +193,14 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Writes every forbidden-commands finding of one sweep, each as a JSON zip entry alongside a
+   * second entry listing its participants.
+   *
+   * @param zos the archive being written to
+   * @param cheatingDetectionId the sweep whose findings are written
+   * @throws IOException if writing to the archive fails
+   */
   public void writeForbiddenCommandsDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId)
       throws IOException {
     List<ForbiddenCommandsDetectionEvent> detectionEventsOfFC =
@@ -163,6 +210,15 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Writes one detection event as a JSON zip entry under {@code dirName}, followed by a second
+   * entry, named after it with a {@code -participants} suffix, listing the event's participants.
+   *
+   * @param zos the archive being written to
+   * @param event the detection event to serialize
+   * @param dirName the subfolder of the detection-events folder the entries are written under
+   * @throws IOException if writing to the archive fails
+   */
   private void writeDetectionEventToFile(
       ZipOutputStream zos, AbstractDetectionEvent event, String dirName) throws IOException {
     ZipEntry detectionEventEntry =
@@ -190,6 +246,18 @@ public class CheatingDetectionExportService {
     zos.write(objectMapper.writeValueAsBytes(participants));
   }
 
+  /**
+   * Groups the sweep's participants by transitive connection through the detection events they
+   * share, leaving out minimal-solve-time events when forming the groups, and writes one CSV zip
+   * entry per group. Each entry starts with the group's trainees and then, per shared event, the
+   * event's own detail line and its participants; a minimal-solve-time finding is appended
+   * afterwards for every trainee of the group who is one of its participants, even though such
+   * findings play no part in forming the groups themselves.
+   *
+   * @param zos the archive being written to
+   * @param cheatingDetectionId the sweep whose participant groups are written
+   * @throws IOException if writing to the archive fails
+   */
   public void writeTraineeParticipantGroups(ZipOutputStream zos, Long cheatingDetectionId)
       throws IOException {
     List<DetectionEventParticipant> participants =
@@ -245,6 +313,13 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Indexes the given participants by trainee, each mapped to the set of detection events they
+   * were implicated in among those given.
+   *
+   * @param participants the participants to index
+   * @return each trainee's user id mapped to their detection event ids
+   */
   private Map<Long, Set<Long>> mapUsersToEvents(List<DetectionEventParticipant> participants) {
     Map<Long, Set<Long>> userEventMap = new HashMap<>();
     for (DetectionEventParticipant participant : participants) {
@@ -256,6 +331,17 @@ public class CheatingDetectionExportService {
     return userEventMap;
   }
 
+  /**
+   * Walks, depth-first, the connected component of {@code userId} in the bipartite graph linking
+   * trainees to the detection events they share, adding every trainee and event it reaches to
+   * {@code userGroup} and {@code eventGroup} and every visited trainee to {@code visitedUsers}.
+   *
+   * @param userEventMap every trainee's user id mapped to the detection event ids they share in
+   * @param userId the trainee to start the walk from
+   * @param visitedUsers the trainees already walked, extended with every trainee reached
+   * @param userGroup the connected component's trainees, appended to as the walk proceeds
+   * @param eventGroup the connected component's shared events, extended as the walk proceeds
+   */
   private void dfs(
       Map<Long, Set<Long>> userEventMap,
       Long userId,
@@ -279,6 +365,14 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Splits the trainees into their connected components over the given trainee-to-events map,
+   * each component gathered by {@link #dfs}, so that every trainee falls into exactly one group
+   * together with every trainee they are transitively linked to through a shared event.
+   *
+   * @param userEventMap every trainee's user id mapped to the detection event ids they share in
+   * @return each group's trainee ids mapped to the union of the events shared within that group
+   */
   private Map<List<Long>, Set<Long>> createParticipantGroups(Map<Long, Set<Long>> userEventMap) {
     Map<List<Long>, Set<Long>> participantGroups = new HashMap<>();
     Set<Long> visitedUsers = new HashSet<>();
@@ -295,6 +389,14 @@ public class CheatingDetectionExportService {
     return participantGroups;
   }
 
+  /**
+   * Writes the group-participants CSV section: one line per trainee with their user id, display
+   * name and cross-service reference, resolved through the user-and-group service.
+   *
+   * @param userIds the trainees to list
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void auditParticipants(List<Long> userIds, ZipOutputStream zos) throws IOException {
     StringBuilder csvData = new StringBuilder();
 
@@ -311,6 +413,15 @@ public class CheatingDetectionExportService {
     zos.write(bytes, 0, bytes.length);
   }
 
+  /**
+   * Writes, for each of the given detection events, its detail line and its own participants,
+   * dispatched by the event's kind to the matching {@code audit*Group} method. The detected-at
+   * timestamp is written once, ahead of the first event only.
+   *
+   * @param eventIds the detection events to write
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void auditParticipantGroupEvents(Set<Long> eventIds, ZipOutputStream zos)
       throws IOException {
     var first = true;
@@ -347,6 +458,13 @@ public class CheatingDetectionExportService {
     }
   }
 
+  /**
+   * Writes a single line carrying the detection event's detected-at timestamp.
+   *
+   * @param event the detection event whose timestamp is written
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void writeDetectedAt(AbstractDetectionEvent event, ZipOutputStream zos)
       throws IOException {
     byte[] bytes =
@@ -354,6 +472,15 @@ public class CheatingDetectionExportService {
     zos.write(bytes, 0, bytes.length);
   }
 
+  /**
+   * Writes an answer-similarity finding's detail line, then, only when there is more than one
+   * participant, a further line per participant with their submission time.
+   *
+   * @param participants the finding's participants
+   * @param event the finding to write
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void auditAnswerSimilarityGroup(
       List<DetectionEventParticipant> participants,
       AnswerSimilarityDetectionEvent event,
@@ -384,6 +511,15 @@ public class CheatingDetectionExportService {
     zos.write(bytes, 0, bytes.length);
   }
 
+  /**
+   * Writes a location-similarity finding's detail line, then, only when there is more than one
+   * participant, a further line per participant with their submission time and IP address.
+   *
+   * @param participants the finding's participants
+   * @param event the finding to write
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void auditLocationSimilarityGroup(
       List<DetectionEventParticipant> participants,
       LocationSimilarityDetectionEvent event,
@@ -415,6 +551,16 @@ public class CheatingDetectionExportService {
     zos.write(bytes, 0, bytes.length);
   }
 
+  /**
+   * Writes a minimal-solve-time finding's detail line, then, only when there is more than one
+   * participant, a further line per participant with their submission time and the seconds they
+   * took to solve.
+   *
+   * @param participants the finding's participants
+   * @param event the finding to write
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void auditMinimalSolveTimeGroup(
       List<DetectionEventParticipant> participants,
       MinimalSolveTimeDetectionEvent event,
@@ -445,6 +591,15 @@ public class CheatingDetectionExportService {
     zos.write(bytes, 0, bytes.length);
   }
 
+  /**
+   * Writes a time-proximity finding's detail line, then, only when there is more than one
+   * participant, a further line per participant with their submission time.
+   *
+   * @param participants the finding's participants
+   * @param event the finding to write
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void auditTimeProximityGroup(
       List<DetectionEventParticipant> participants,
       TimeProximityDetectionEvent event,
@@ -472,6 +627,15 @@ public class CheatingDetectionExportService {
     zos.write(bytes, 0, bytes.length);
   }
 
+  /**
+   * Writes a no-commands finding's detail line, then, only when there is more than one
+   * participant, a further line per participant with their submission time.
+   *
+   * @param participants the finding's participants
+   * @param event the finding to write
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void auditNoCommandsGroup(
       List<DetectionEventParticipant> participants,
       NoCommandsDetectionEvent event,
@@ -499,6 +663,16 @@ public class CheatingDetectionExportService {
     zos.write(bytes, 0, bytes.length);
   }
 
+  /**
+   * Writes a forbidden-commands finding's detail line, then, only when there is more than one
+   * participant, a further line per participant with their submission time, and finally one line
+   * per command the finding matched, with its type, hostname and time.
+   *
+   * @param participants the finding's participants
+   * @param event the finding to write
+   * @param zos the archive being written to
+   * @throws IOException if writing to the archive fails
+   */
   private void auditForbiddenCommandsGroup(
       List<DetectionEventParticipant> participants,
       ForbiddenCommandsDetectionEvent event,

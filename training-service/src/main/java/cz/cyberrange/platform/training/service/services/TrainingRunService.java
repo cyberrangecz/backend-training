@@ -60,7 +60,11 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-/** The type Training run service. */
+/**
+ * Business logic behind a trainee's progression through a training run: level access and
+ * completion, answer and passkey evaluation, hints, solutions, assessment scoring, and lifecycle
+ * transitions between running, finished and archived.
+ */
 @Service
 public class TrainingRunService {
 
@@ -82,19 +86,6 @@ public class TrainingRunService {
   private final CommandEventsService commandEventsService;
   private final TrainingEventsService trainingEventsService;
 
-  /**
-   * Instantiates a new Training run service.
-   *
-   * @param trainingRunRepository the training run repository
-   * @param abstractLevelRepository the abstract level repository
-   * @param trainingInstanceRepository the training instance repository
-   * @param participantRefRepository the participant ref repository
-   * @param hintRepository the hint repository
-   * @param auditEventsService the audit events service
-   * @param securityService the security service
-   * @param sandboxApiService the python rest template
-   * @param trAcquisitionLockRepository the tr acquisition lock repository
-   */
   @Autowired
   public TrainingRunService(
       TrainingRunRepository trainingRunRepository,
@@ -128,11 +119,12 @@ public class TrainingRunService {
   }
 
   /**
-   * Finds specific Training Run by id.
+   * Finds a training run by its primary key, with its participant reference and training instance
+   * loaded eagerly. The current level is not loaded and reads lazily.
    *
-   * @param runId of a Training Run that would be returned
-   * @return specific {@link TrainingRun} by id
-   * @throws EntityNotFoundException training run is not found.
+   * @param runId the training run's primary key
+   * @return the matching {@link TrainingRun}
+   * @throws EntityNotFoundException when no training run carries that id
    */
   public TrainingRun findById(Long runId) {
     return trainingRunRepository
@@ -144,11 +136,13 @@ public class TrainingRunService {
   }
 
   /**
-   * /** Finds specific Training Run by id including current level.
+   * Finds a training run by its primary key, with its current level, training instance and that
+   * instance's training definition loaded eagerly. Takes a pessimistic write lock on the row for
+   * the rest of the transaction.
    *
-   * @param runId of a Training Run with level that would be returned
-   * @return specific {@link TrainingRun} by id
-   * @throws EntityNotFoundException training run is not found.
+   * @param runId the training run's primary key
+   * @return the matching {@link TrainingRun}
+   * @throws EntityNotFoundException when no training run carries that id
    */
   public TrainingRun findByIdWithLevel(Long runId) {
     return trainingRunRepository
@@ -160,21 +154,28 @@ public class TrainingRunService {
   }
 
   /**
-   * Find all Training Runs.
+   * Finds the training runs matching the given predicate, with each run's participant reference
+   * loaded eagerly.
    *
-   * @param predicate specifies query to the database.
-   * @param pageable pageable parameter with information about pagination.
-   * @return all {@link TrainingRun}s
+   * @param predicate the filter applied to the query
+   * @param pageable the requested page
+   * @return the matching page of {@link TrainingRun}s
    */
   public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
     return trainingRunRepository.findAll(predicate, pageable);
   }
 
   /**
-   * Delete selected training run.
+   * Deletes a training run, its question answers, its submissions and its acquisition lock.
+   * Optionally deletes its recorded command and training event data from OpenSearch.
    *
-   * @param trainingRunId training run to delete
-   * @param forceDelete delete training run in a force manner
+   * @param trainingRunId the training run to delete
+   * @param forceDelete when false, refuses to delete a run whose state is {@link TRState#RUNNING}
+   * @param deleteDataFromOpenSearch whether to also delete the run's command and training event
+   *     data from OpenSearch
+   * @return the deleted {@link TrainingRun}
+   * @throws EntityNotFoundException when no training run carries that id
+   * @throws EntityConflictException when the run is running and {@code forceDelete} is false
    */
   public TrainingRun deleteTrainingRun(
       Long trainingRunId, boolean forceDelete, boolean deleteDataFromOpenSearch) {
@@ -199,6 +200,10 @@ public class TrainingRunService {
     return trainingRun;
   }
 
+  /**
+   * Deletes the OpenSearch command data of a training run's sandbox, falling back to its previous
+   * sandbox reference when no current one is set, and deletes the run's training event data.
+   */
   private void deleteDataFromOpenSearch(TrainingRun trainingRun) {
     String sandboxId =
         trainingRun.getSandboxInstanceRefId() == null
@@ -211,21 +216,22 @@ public class TrainingRunService {
   }
 
   /**
-   * Checks whether any training runs exists for particular training instance
+   * Checks whether any training run exists for the given training instance.
    *
-   * @param trainingInstanceId the training instance id
-   * @return boolean boolean
+   * @param trainingInstanceId the training instance's primary key
+   * @return true when at least one training run belongs to that instance
    */
   public boolean existsAnyForTrainingInstance(Long trainingInstanceId) {
     return trainingRunRepository.existsAnyForTrainingInstance(trainingInstanceId);
   }
 
   /**
-   * Finds all Training Runs of logged in user.
+   * Finds the training runs, additionally narrowed by the given predicate, whose participant is
+   * the currently authenticated user, matched by the cross-service user reference id.
    *
-   * @param predicate represents a predicate (boolean-valued function) of one argument.
-   * @param pageable pageable parameter with information about pagination.
-   * @return {@link TrainingRun}s of logged in user.
+   * @param predicate the filter applied to the query
+   * @param pageable the requested page
+   * @return the matching page of {@link TrainingRun}s
    */
   public Page<TrainingRun> findAllByParticipantRefUserRefId(
       Predicate predicate, Pageable pageable) {
@@ -234,10 +240,11 @@ public class TrainingRunService {
   }
 
   /**
-   * Finds all Training Runs of particular training instance.
+   * Finds every training run of the given training instance, with each run's participant reference
+   * loaded eagerly. The result carries no guaranteed order.
    *
-   * @param trainingInstanceId the training instance id
-   * @return the set
+   * @param trainingInstanceId the training instance's primary key
+   * @return the matching {@link TrainingRun}s, or an empty set if none exist
    */
   public Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId) {
     return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
@@ -254,11 +261,15 @@ public class TrainingRunService {
   }
 
   /**
-   * Move to the next level of given Training Run by setting up a new current level.
+   * Advances a training run to the next level of its training definition, in level order, and
+   * resets its incorrect answer count. Audits the outgoing level as completed only when it is an
+   * {@link InfoLevel}, then audits the new current level as started.
    *
-   * @param runId id of Training Run whose next level should be returned.
-   * @return {@link AbstractLevel}
-   * @throws EntityNotFoundException training run or level is not found.
+   * @param runId the training run's primary key
+   * @return the {@link TrainingRun} with its new current level
+   * @throws EntityNotFoundException when the training run does not exist, or its current level is
+   *     already the last one of the training definition
+   * @throws EntityConflictException when the current level has not been answered yet
    */
   public TrainingRun moveToNextLevel(Long runId) {
     TrainingRun trainingRun = findByIdWithLevel(runId);
@@ -298,11 +309,15 @@ public class TrainingRunService {
   }
 
   /**
-   * Get previous/current level (visited) of given Training Run.
+   * Finds a level of the training run's own training definition that the run has already reached,
+   * meaning its order does not exceed that of the run's current level.
    *
-   * @param runId ID of Training Run whose visited level should be returned.
-   * @param levelId ID of the visited level that should be returned.
-   * @return {@link AbstractLevel}
+   * @param runId the training run's primary key
+   * @param levelId the primary key of the level to retrieve
+   * @return the matching {@link AbstractLevel}
+   * @throws EntityNotFoundException when the training run or the level does not exist
+   * @throws EntityConflictException when the level does not belong to the run's training
+   *     definition, or its order exceeds that of the run's current level
    */
   public AbstractLevel getVisitedLevel(Long runId, Long levelId) {
     TrainingRun trainingRun = findByIdWithLevel(runId);
@@ -337,11 +352,12 @@ public class TrainingRunService {
   }
 
   /**
-   * Finds all Training Runs of specific Training Definition of logged in user.
+   * Finds the training runs of the given training definition whose participant is the currently
+   * authenticated user, matched by the cross-service user reference id.
    *
-   * @param definitionId id of Training Definition
-   * @param pageable pageable parameter with information about pagination.
-   * @return {@link TrainingRun}s of specific Training Definition of logged in user
+   * @param definitionId the training definition's primary key
+   * @param pageable the requested page
+   * @return the matching page of {@link TrainingRun}s
    */
   public Page<TrainingRun> findAllByTrainingDefinitionAndParticipant(
       Long definitionId, Pageable pageable) {
@@ -350,36 +366,35 @@ public class TrainingRunService {
   }
 
   /**
-   * Finds all Training Runs of specific training definition.
+   * Finds every training run of the given training definition.
    *
-   * @param definitionId id of Training Definition whose Training Runs would be returned.
-   * @param pageable pageable parameter with information about pagination.
-   * @return {@link TrainingRun}s of specific Training Definition
+   * @param definitionId the training definition's primary key
+   * @param pageable the requested page
+   * @return the matching page of {@link TrainingRun}s
    */
   public Page<TrainingRun> findAllByTrainingDefinition(Long definitionId, Pageable pageable) {
     return trainingRunRepository.findAllByTrainingDefinitionId(definitionId, pageable);
   }
 
   /**
-   * Gets list of all levels in Training Definition.
+   * Gets every level of the given training definition, ordered by level order.
    *
-   * @param definitionId must be id of first level of some Training Definition.
-   * @return List of {@link AbstractLevel}s
-   * @throws EntityNotFoundException one of the levels is not found.
+   * @param definitionId the training definition's primary key
+   * @return the training definition's {@link AbstractLevel}s
    */
   public List<AbstractLevel> getLevels(Long definitionId) {
     return abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
   }
 
   /**
-   * Access training run based on given accessToken.
+   * Creates a new, running training run on the given training instance's first level, for the
+   * participant carrying the given cross-service user reference id. Creates that participant's
+   * local {@link UserRef} row if it does not already exist.
    *
-   * @param trainingInstance the training instance
-   * @param participantRefId the participant ref id
-   * @return accessed {@link TrainingRun}
-   * @throws EntityNotFoundException no active training instance for given access token, no starting
-   *     level in training definition.
-   * @throws EntityConflictException pool of sandboxes is not created for training instance.
+   * @param trainingInstance the training instance the run belongs to
+   * @param participantRefId the cross-service user reference id of the participant
+   * @return the newly created {@link TrainingRun}
+   * @throws EntityNotFoundException when the training definition has no starting level
    */
   public TrainingRun createTrainingRun(TrainingInstance trainingInstance, Long participantRefId) {
     AbstractLevel initialLevel =
@@ -394,17 +409,24 @@ public class TrainingRunService {
     return trainingRunRepository.save(trainingRun);
   }
 
+  /**
+   * Audits the training run as started, followed by its current level as started.
+   *
+   * @param trainingRun the training run that was started
+   */
   public void auditTrainingRunStarted(TrainingRun trainingRun) {
     auditEventsService.auditTrainingRunStartedAction(trainingRun);
     auditEventsService.auditLevelStartedAction(trainingRun);
   }
 
   /**
-   * Find running training run of user optional.
+   * Finds the training run of the given training instance access token whose participant carries
+   * the given cross-service user reference id, has a sandbox assigned and is not finished. Loads
+   * the run's training instance, participant reference and current level eagerly.
    *
-   * @param accessToken the access token
-   * @param participantRefId the participant ref id
-   * @return the optional
+   * @param accessToken the training instance access token
+   * @param participantRefId the cross-service user reference id of the participant
+   * @return the matching {@link TrainingRun}, empty when none matches
    */
   public Optional<TrainingRun> findRunningTrainingRunOfUser(
       String accessToken, Long participantRefId) {
@@ -412,10 +434,14 @@ public class TrainingRunService {
   }
 
   /**
-   * Gets training instance for particular access token.
+   * Finds the training instance carrying the given access token whose start time is in the past
+   * and whose end time is in the future, with its training definition loaded eagerly.
    *
-   * @param accessToken the access token
-   * @return the training instance for particular access token
+   * @param accessToken the training instance access token
+   * @return the matching {@link TrainingInstance}
+   * @throws EntityNotFoundException when no training instance is currently active for that token
+   * @throws EntityConflictException when the instance is not local and has no sandbox pool
+   *     allocated
    */
   public TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
     TrainingInstance trainingInstance =
@@ -444,12 +470,14 @@ public class TrainingRunService {
   }
 
   /**
-   * Tr acquisition lock to prevent many requests from the same user. This method is called in a new
-   * transaction that means that the existing one is suspended.
+   * Inserts an acquisition lock row for the given participant and training instance, in a new,
+   * independent transaction. The row's unique constraint rejects a second concurrent lock for the
+   * same participant and instance.
    *
-   * @param participantRefId the participant ref id
-   * @param trainingInstanceId the training instance id
-   * @param accessToken the access token
+   * @param participantRefId the cross-service user reference id of the participant
+   * @param trainingInstanceId the training instance's primary key
+   * @param accessToken the training instance access token, carried only in the failure message
+   * @throws TooManyRequestsException when a lock already exists for that participant and instance
    */
   @TransactionalWO(propagation = Propagation.REQUIRES_NEW)
   public void trAcquisitionLockToPreventManyRequestsFromSameUser(
@@ -469,6 +497,13 @@ public class TrainingRunService {
     }
   }
 
+  /**
+   * Deletes the acquisition lock row of the given participant and training instance, in a new,
+   * independent transaction.
+   *
+   * @param participantRefId the cross-service user reference id of the participant
+   * @param trainingInstanceId the training instance's primary key
+   */
   @TransactionalWO(propagation = Propagation.REQUIRES_NEW)
   public void deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(
       Long participantRefId, Long trainingInstanceId) {
@@ -476,6 +511,11 @@ public class TrainingRunService {
         participantRefId, trainingInstanceId);
   }
 
+  /**
+   * Finds the first, lowest-order level of the given training definition.
+   *
+   * @throws EntityNotFoundException when the training definition has no levels
+   */
   private AbstractLevel findFirstLevelForTrainingRun(Long trainingDefinitionId) {
     List<AbstractLevel> levels =
         abstractLevelRepository.findFirstLevelByTrainingDefinitionId(
@@ -492,6 +532,11 @@ public class TrainingRunService {
     return levels.get(0);
   }
 
+  /**
+   * Builds a new, running training run on the given level and instance, spanning the given start
+   * and end time, for the participant carrying the given cross-service user reference id. Resolves
+   * that id to the participant's local {@link UserRef} row, creating it first if absent.
+   */
   private TrainingRun getNewTrainingRun(
       AbstractLevel currentLevel,
       TrainingInstance trainingInstance,
@@ -513,13 +558,14 @@ public class TrainingRunService {
   }
 
   /**
-   * Connects available sandbox with given Training run.
+   * Requests and locks an available sandbox from the given pool for the training run's training
+   * instance access token, and records the sandbox and its allocation unit on the run.
    *
-   * @param trainingRun that will be connected with sandbox
-   * @param poolId the pool id
-   * @return Training run with assigned sandbox
-   * @throws ForbiddenException no available sandbox.
-   * @throws MicroserviceApiException error calling Sandbox Service API
+   * @param trainingRun the training run to assign a sandbox to
+   * @param poolId the sandbox pool to request from
+   * @return the {@link TrainingRun} with its sandbox reference set
+   * @throws ForbiddenException when the pool has no available sandbox
+   * @throws MicroserviceApiException when the call to the sandbox service fails for another reason
    */
   public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
     SandboxInfo info =
@@ -531,11 +577,16 @@ public class TrainingRunService {
   }
 
   /**
-   * Resume previously closed training run.
+   * Resumes a training run that is neither finished nor archived, its training instance not yet
+   * ended, and, unless the instance is local, with a sandbox pool allocated and a sandbox already
+   * assigned to the run.
    *
-   * @param trainingRunId id of training run to be resumed.
-   * @return {@link TrainingRun}
-   * @throws EntityNotFoundException training run is not found.
+   * @param trainingRunId the training run's primary key
+   * @return the resumed {@link TrainingRun}
+   * @throws EntityNotFoundException when no training run carries that id
+   * @throws EntityConflictException when the run is finished or archived, its training instance has
+   *     already ended, its training instance has no sandbox pool allocated, or the run itself has
+   *     no sandbox assigned
    */
   public TrainingRun resumeTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -583,13 +634,15 @@ public class TrainingRunService {
   }
 
   /**
-   * Check given answer of given Training Run.
+   * Checks the given answer against the training run's current level, which must be a {@link
+   * TrainingLevel} not yet answered.
    *
-   * @param runId id of Training Run to check answer.
-   * @param answer string which player submit.
-   * @return true if answer is correct, false if answer is wrong.
-   * @throws EntityNotFoundException training run is not found.
-   * @throws BadRequestException the current level of training run is not training level.
+   * @param runId the training run's primary key
+   * @param answer the submitted answer
+   * @return true when the answer is correct
+   * @throws EntityNotFoundException when no training run carries that id
+   * @throws BadRequestException when the current level is not a {@link TrainingLevel}
+   * @throws EntityConflictException when the current level has already been answered
    */
   public boolean isCorrectAnswer(Long runId, String answer) {
     TrainingRun trainingRun = findByIdWithLevel(runId);
@@ -609,6 +662,13 @@ public class TrainingRunService {
     return evaluateTrainingLevelAnswer(trainingRun, answer);
   }
 
+  /**
+   * Compares the submitted answer against the level's correct answer. On a match, marks the level
+   * answered, adds the level's maximum score minus its current penalty to the run's total score,
+   * audits a correct answer and a completed level, and records a correct submission. Otherwise
+   * increases the run's incorrect answer count, unless it already equals the level's incorrect
+   * answer limit, audits a wrong answer and records an incorrect submission.
+   */
   private boolean evaluateTrainingLevelAnswer(TrainingRun trainingRun, String answer) {
     TrainingLevel trainingLevel = (TrainingLevel) trainingRun.getCurrentLevel();
     String correctAnswer = getTrainingLevelCorrectAnswer(trainingLevel, trainingRun);
@@ -629,13 +689,15 @@ public class TrainingRunService {
   }
 
   /**
-   * Check given passkey of given Training Run.
+   * Checks the given passkey against the training run's current level, which must be an {@link
+   * AccessLevel} not yet answered.
    *
-   * @param runId id of Training Run to check passkey.
-   * @param passkey string which player submit.
-   * @return true if passkey is correct, false if passkey is wrong.
-   * @throws EntityNotFoundException training run is not found.
-   * @throws BadRequestException the current level of training run is not access level.
+   * @param runId the training run's primary key
+   * @param passkey the submitted passkey
+   * @return true when the passkey is correct
+   * @throws EntityNotFoundException when no training run carries that id
+   * @throws BadRequestException when the current level is not an {@link AccessLevel}
+   * @throws EntityConflictException when the current level has already been answered
    */
   public boolean isCorrectPassKey(Long runId, String passkey) {
     TrainingRun trainingRun = findByIdWithLevel(runId);
@@ -654,6 +716,11 @@ public class TrainingRunService {
     return evaluateAccessLevelPasskey(trainingRun, passkey);
   }
 
+  /**
+   * Compares the submitted passkey against the level's passkey. Audits a wrong answer submission
+   * on both a match and a mismatch; on a match it also marks the level answered and audits the
+   * level as completed.
+   */
   private boolean evaluateAccessLevelPasskey(TrainingRun trainingRun, String passkey) {
     AccessLevel accessLevel = (AccessLevel) trainingRun.getCurrentLevel();
     if (accessLevel.getPasskey().equals(passkey)) {
@@ -666,6 +733,10 @@ public class TrainingRunService {
     return false;
   }
 
+  /**
+   * Records a submission for the training run's current level, carrying the submitted answer, its
+   * type, the current time and the caller's IP address.
+   */
   private void auditSubmission(
       TrainingRun trainingRun, SubmissionType submissionType, String answer) {
     Submission submission = new Submission();
@@ -678,6 +749,12 @@ public class TrainingRunService {
     submissionRepository.save(submission);
   }
 
+  /**
+   * Reads the current request's {@code x-real-ip} header.
+   *
+   * @return the header value, or an empty string when there is no current request or the header is
+   *     absent
+   */
   private String getUserIpAddress() {
     ServletRequestAttributes requestAttributes =
         ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
@@ -689,10 +766,13 @@ public class TrainingRunService {
   }
 
   /**
-   * Gets remaining attempts to solve current level of training run.
+   * Gets the remaining incorrect-answer attempts on the training run's current level, which must be
+   * a {@link TrainingLevel}: 0 once the solution has been taken, otherwise the level's incorrect
+   * answer limit minus the run's incorrect answer count so far.
    *
-   * @param trainingRunId the training run id
+   * @param trainingRunId the training run's primary key
    * @return the remaining attempts
+   * @throws BadRequestException when the current level is not a {@link TrainingLevel}
    */
   public int getRemainingAttempts(Long trainingRunId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -708,12 +788,16 @@ public class TrainingRunService {
   }
 
   /**
-   * Gets solution of current level of given Training Run.
+   * Gets the solution of the training run's current level, which must be a {@link TrainingLevel}.
+   * The first call records the solution as taken and, when the level penalizes taking its solution,
+   * sets the run's current penalty to the level's maximum score, zeroing the score obtainable from
+   * it. Any {@code ${ANSWER}} placeholder in the solution text is replaced with the level's correct
+   * answer for this run.
    *
-   * @param trainingRunId id of Training Run which current level gets solution for.
-   * @return solution of current level.
-   * @throws EntityNotFoundException training run is not found.
-   * @throws BadRequestException the current level of training run is not training level.
+   * @param trainingRunId the training run's primary key
+   * @return the current level's solution, with its answer placeholder resolved
+   * @throws EntityNotFoundException when no training run carries that id
+   * @throws BadRequestException when the current level is not a {@link TrainingLevel}
    */
   public String getSolution(Long trainingRunId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -737,6 +821,10 @@ public class TrainingRunService {
     }
   }
 
+  /**
+   * Returns the level's solution text, with any {@code ${ANSWER}} placeholder replaced by the
+   * level's correct answer for the given training run.
+   */
   private String getSolutionWithReplacedVariable(
       TrainingLevel trainingLevel, TrainingRun trainingRun) {
     if (!trainingLevel.getSolution().contains("${ANSWER}")) {
@@ -748,11 +836,15 @@ public class TrainingRunService {
   }
 
   /**
-   * Gets correct answer of the training level based on the Training Run parameters.
+   * Gets the correct answer of the given training level for the given training run. When the level
+   * has no per-participant variant answers, returns its static answer. Otherwise asks the
+   * answer-storage service: by the run's access token and the participant's cross-service user
+   * reference id when the training instance is local, or by the run's sandbox reference id
+   * otherwise.
    *
-   * @param trainingLevel Training Level whose correct answer to get.
-   * @param trainingRun Training Run of the particular trainee used to obtain variant answer
-   * @return static or variant answer based on the Training Run parameters
+   * @param trainingLevel the training level whose correct answer to get
+   * @param trainingRun the training run to resolve a variant answer for
+   * @return the level's static or variant correct answer
    */
   public String getTrainingLevelCorrectAnswer(
       TrainingLevel trainingLevel, TrainingRun trainingRun) {
@@ -769,13 +861,16 @@ public class TrainingRunService {
   }
 
   /**
-   * Gets hint of given current level of given Training Run.
+   * Gets a hint of the training run's current level, which must be a {@link TrainingLevel} and must
+   * own the hint. Increases the run's current penalty by the hint's penalty and records the hint as
+   * taken.
    *
-   * @param trainingRunId id of Training Run which current level gets hint for.
-   * @param hintId id of hint to be returned.
-   * @return {@link Hint}
-   * @throws EntityNotFoundException training run or hint is not found.
-   * @throws BadRequestException the current level of training run is not training level.
+   * @param trainingRunId the training run's primary key
+   * @param hintId the hint's primary key
+   * @return the requested {@link Hint}
+   * @throws EntityNotFoundException when the training run or the hint does not exist
+   * @throws BadRequestException when the current level is not a {@link TrainingLevel}
+   * @throws EntityConflictException when the hint does not belong to the current level
    */
   public Hint getHint(Long trainingRunId, Long hintId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -810,20 +905,26 @@ public class TrainingRunService {
   }
 
   /**
-   * Gets max level order of levels from definition.
+   * Gets the highest level order used within the given training definition.
    *
-   * @param definitionId id of training definition.
-   * @return max order of levels.
+   * @param definitionId the training definition's primary key
+   * @return the highest level order, or -1 when the definition has no levels
    */
   public int getMaxLevelOrder(Long definitionId) {
     return abstractLevelRepository.getCurrentMaxOrder(definitionId);
   }
 
   /**
-   * Finish training run.
+   * Finishes a training run whose current level is the last of its training definition and has
+   * been answered. Sets its state to {@link TRState#FINISHED} and its end time to now, deletes its
+   * acquisition lock, audits its current level as completed when it is an {@link InfoLevel}, then
+   * audits the run as ended.
    *
-   * @param trainingRunId id of training run to be finished.
-   * @throws EntityNotFoundException training run is not found.
+   * @param trainingRunId the training run's primary key
+   * @return the finished {@link TrainingRun}
+   * @throws EntityNotFoundException when no training run carries that id
+   * @throws EntityConflictException when the current level is not the last one, or has not been
+   *     answered
    */
   public TrainingRun finishTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
@@ -860,10 +961,12 @@ public class TrainingRunService {
   }
 
   /**
-   * Archive training run.
+   * Archives a training run: sets its state to {@link TRState#ARCHIVED}, moves its current sandbox
+   * reference to its previous sandbox reference and clears its sandbox and allocation unit
+   * references, and deletes its acquisition lock.
    *
-   * @param trainingRunId id of training run to be archived.
-   * @throws EntityNotFoundException training run is not found.
+   * @param trainingRunId the training run's primary key
+   * @throws EntityNotFoundException when no training run carries that id
    */
   public void archiveTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun = findById(trainingRunId);
@@ -877,20 +980,21 @@ public class TrainingRunService {
   }
 
   /**
-   * Check if run event logging works
+   * Checks whether OpenSearch holds any training event recorded for the given run.
    *
-   * @param run run to check
-   * @return resulting boolean
+   * @param run the training run to check
+   * @return true when at least one training event exists for the run
    */
   public boolean checkRunEventLogging(TrainingRun run) {
     return trainingEventsService.hasRunEvents(run.getId());
   }
 
   /**
-   * Check if run command logging works
+   * Checks whether OpenSearch holds any console command recorded for the run's sandbox, falling
+   * back to its previous sandbox reference when no current one is set.
    *
-   * @param run run to check
-   * @return resulting boolean
+   * @param run the training run to check
+   * @return true when at least one console command exists for the sandbox
    */
   public boolean checkRunCommandLogging(TrainingRun run) {
     String sandboxId =
@@ -901,11 +1005,21 @@ public class TrainingRunService {
   }
 
   /**
-   * Evaluate and store responses to assessment.
+   * Evaluates and stores the given answers against the training run's current level, which must be
+   * an {@link AssessmentLevel} not yet answered. For a {@link AssessmentType#TEST} level, every
+   * question must have a submitted answer; each is scored, the run's current penalty is set to the
+   * level's maximum score minus the total points gained, and that total is added to the run's
+   * assessment score. For a {@link AssessmentType#QUESTIONNAIRE} level, answers are recorded
+   * unscored and only a question marked as required must have a submitted answer. Marks the level
+   * answered, saves the resulting {@link QuestionAnswer} rows, and audits the assessment answers
+   * followed by the level as completed.
    *
-   * @param trainingRunId id of training run to be finished.
-   * @param answersToQuestions response to assessment to be evaluated
-   * @throws EntityNotFoundException training run is not found.
+   * @param trainingRunId the training run's primary key
+   * @param answersToQuestions the submitted answers, keyed by question id
+   * @throws EntityNotFoundException when no training run carries that id
+   * @throws BadRequestException when the current level is not an {@link AssessmentLevel}, or a
+   *     question that must be answered is missing from {@code answersToQuestions}
+   * @throws EntityConflictException when the current level has already been answered
    */
   public void evaluateResponsesToAssessment(
       Long trainingRunId, Map<Long, QuestionAnswerDTO> answersToQuestions) {
@@ -943,6 +1057,10 @@ public class TrainingRunService {
     auditEventsService.auditLevelCompletedAction(trainingRun);
   }
 
+  /**
+   * Builds one {@link EventAnswer} per question of the level that has a submitted answer, carrying
+   * that question's evaluation when one is present.
+   */
   private List<EventAnswer> buildEventAnswers(
       AssessmentLevel assessmentLevel,
       Map<Long, QuestionAnswerDTO> answersToQuestions,
@@ -958,6 +1076,11 @@ public class TrainingRunService {
     return eventAnswers;
   }
 
+  /**
+   * Builds the free-form, multiple-choice or extended-matching {@link EventAnswer} matching the
+   * question's type, carrying the points gained and, when an evaluation is given, the correctness
+   * of the submitted selections.
+   */
   private EventAnswer toEventAnswer(
       Question question, QuestionAnswerDTO submittedAnswer, AnswerEvaluation evaluation) {
     boolean scored = evaluation != null;
@@ -989,6 +1112,11 @@ public class TrainingRunService {
     return eventAnswer;
   }
 
+  /**
+   * Builds the free-form answer selection from the first of the given answers, or null when none
+   * were submitted. When scored, marks it correct if it equals the text of any choice of the
+   * question, regardless of that choice's own correct flag.
+   */
   private AnswerSelection<String> freeFormSelection(
       Question question, Set<String> answers, boolean scored) {
     String answer = this.singleAnswer(answers);
@@ -999,14 +1127,23 @@ public class TrainingRunService {
     return AnswerSelection.<String>builder().value(answer).correct(correct).build();
   }
 
+  /** Returns one answer from the given set, or null when it is null or empty. */
   private String singleAnswer(Set<String> answers) {
     return answers == null || answers.isEmpty() ? null : answers.iterator().next();
   }
 
+  /**
+   * Checks whether the answer equals the text of any choice of the question, regardless of that
+   * choice's own correct flag.
+   */
   private boolean isFreeFormAnswerCorrect(Question question, String answer) {
     return question.getChoices().stream().map(QuestionChoice::getText).anyMatch(answer::equals);
   }
 
+  /**
+   * Builds one selection per choice of the question whose text is among the selected texts, ordered
+   * by choice order, carrying that choice's correct flag when scored.
+   */
   private List<AnswerSelection<Integer>> selectedOptions(
       Question question, Set<String> selectedTexts, boolean scored) {
     if (selectedTexts == null) {
@@ -1024,6 +1161,11 @@ public class TrainingRunService {
         .toList();
   }
 
+  /**
+   * Builds one selection per submitted statement-to-option pair, keyed by statement order, carrying
+   * whether the submitted option matches the question's expected option for that statement when
+   * scored.
+   */
   private Map<Integer, AnswerSelection<Integer>> pairSelections(
       Question question, Map<Integer, Integer> submittedPairs, boolean scored) {
     Map<Integer, AnswerSelection<Integer>> selections = new TreeMap<>();
@@ -1043,6 +1185,7 @@ public class TrainingRunService {
     return selections;
   }
 
+  /** Maps each extended-matching statement's order to its expected option's order. */
   private Map<Integer, Integer> expectedOptionByStatement(Question question) {
     Map<Integer, Integer> expected = new HashMap<>();
     for (ExtendedMatchingStatement statement : question.getExtendedMatchingStatements()) {
@@ -1051,6 +1194,14 @@ public class TrainingRunService {
     return expected;
   }
 
+  /**
+   * Builds and scores a {@link QuestionAnswer} for every question of the training run's current
+   * assessment level, requiring a submitted answer for each. Sets the run's current penalty to the
+   * level's maximum score minus the total points gained and adds that total to the run's assessment
+   * score.
+   *
+   * @throws BadRequestException when a question has no submitted answer
+   */
   private AssessmentEvaluation gatherAndEvaluateAnswers(
       TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
     int score = 0;
@@ -1073,6 +1224,12 @@ public class TrainingRunService {
     return new AssessmentEvaluation(userAnswersToQuestions, evaluations);
   }
 
+  /**
+   * Builds a {@link QuestionAnswer} for every question of the training run's current assessment
+   * level that has a submitted answer.
+   *
+   * @throws BadRequestException when a question marked as required has no submitted answer
+   */
   private List<QuestionAnswer> gatherAnswers(
       TrainingRun trainingRun, Map<Long, QuestionAnswerDTO> answersToQuestions) {
     List<QuestionAnswer> userAnswersToQuestions = new ArrayList<>();
@@ -1089,6 +1246,11 @@ public class TrainingRunService {
     return userAnswersToQuestions;
   }
 
+  /**
+   * Builds a {@link QuestionAnswer} for the given question and training run. For an extended
+   * matching question, encodes each submitted statement-to-option pair as one JSON-like string per
+   * answer; for any other type, stores the submitted answers as given.
+   */
   private QuestionAnswer createQuestionAnswer(
       Question question, TrainingRun trainingRun, QuestionAnswerDTO answersToQuestion) {
     QuestionAnswer questionAnswer = new QuestionAnswer(question, trainingRun);
@@ -1115,6 +1277,11 @@ public class TrainingRunService {
     return questionAnswer;
   }
 
+  /**
+   * Evaluates the given answer against the question, by its type, and returns whether it is correct
+   * together with the points to award: the question's points when correct, or its penalty taken as
+   * a negative amount otherwise.
+   */
   private AnswerEvaluation evaluateAnswer(Question question, QuestionAnswerDTO userAnswer) {
     boolean correct =
         switch (question.getQuestionType()) {
@@ -1126,12 +1293,20 @@ public class TrainingRunService {
     return new AnswerEvaluation(correct, pointsGained);
   }
 
+  /**
+   * Checks whether every submitted answer text matches the text of some choice of the question,
+   * treating every choice as an accepted answer regardless of that choice's own correct flag.
+   */
   private boolean isFreeFormCorrect(Question question, QuestionAnswerDTO userAnswer) {
     List<String> correctAnswers =
         question.getChoices().stream().map(QuestionChoice::getText).toList();
     return correctAnswers.containsAll(userAnswer.getAnswers());
   }
 
+  /**
+   * Checks whether the submitted answer texts are exactly the texts of the question's choices
+   * marked correct, regardless of order.
+   */
   private boolean isMultipleChoiceCorrect(Question question, QuestionAnswerDTO userAnswer) {
     List<String> correctAnswers =
         question.getChoices().stream()
@@ -1142,6 +1317,10 @@ public class TrainingRunService {
         && userAnswer.getAnswers().containsAll(correctAnswers);
   }
 
+  /**
+   * Checks whether every extended matching statement of the question is paired, in the submitted
+   * answer, with its expected option.
+   */
   private boolean isExtendedMatchingCorrect(Question question, QuestionAnswerDTO userAnswer) {
     for (ExtendedMatchingStatement extendedMatchingStatement :
         question.getExtendedMatchingStatements()) {
@@ -1155,16 +1334,29 @@ public class TrainingRunService {
     return true;
   }
 
+  /** The outcome of scoring one question's submitted answer. */
   private record AnswerEvaluation(boolean correct, int pointsGained) {}
 
+  /** The stored answers and their evaluations produced while scoring a test assessment level. */
   private record AssessmentEvaluation(
       List<QuestionAnswer> answers, Map<Long, AnswerEvaluation> evaluations) {}
 
+  /**
+   * Marks the given training run as having a detection event.
+   *
+   * @param run the training run to mark
+   */
   public void auditRunHasDetectionEvent(TrainingRun run) {
     run.setHasDetectionEvent(true);
     trainingRunRepository.save(run);
   }
 
+  /**
+   * Gets every question answer recorded for the given training run, in no guaranteed order.
+   *
+   * @param runId the training run's primary key
+   * @return the run's {@link QuestionAnswer}s, or an empty list if none exist
+   */
   public List<QuestionAnswer> getQuestionAnswersByTrainingRunId(Long runId) {
     return questionAnswerRepository.getAllByTrainingRunId(runId);
   }
