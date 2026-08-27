@@ -455,8 +455,8 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Moves one level of a training definition that is unreleased and has no training instance yet
-   * to the given position, shifting the levels in between, and returns the definition's levels in
+   * Moves one level of a training definition that is unreleased and has no training instance yet to
+   * the given position, shifting the levels in between, and returns the definition's levels in
    * their resulting order. A position outside the definition's range is pulled to the nearest end
    * rather than refused.
    *

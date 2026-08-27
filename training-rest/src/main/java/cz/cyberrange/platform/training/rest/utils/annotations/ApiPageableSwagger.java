@@ -8,7 +8,12 @@ import io.swagger.annotations.ApiImplicitParams;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-/** The interface Api pageable swagger. */
+/**
+ * Attaches the {@code page}, {@code size} and {@code sort} query parameters to a controller
+ * method's Swagger documentation. Applied to a method whose actual pagination parameter is a
+ * separate {@code Pageable} argument resolved by Spring Data web support rather than by these
+ * declarations.
+ */
 @Target({METHOD, ANNOTATION_TYPE, TYPE})
 @Retention(RUNTIME)
 @ApiImplicitParams({

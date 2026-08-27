@@ -31,7 +31,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The controller for export/import. */
+/**
+ * Serves the endpoints that carry training content out of the service as a downloadable file and
+ * back in from a submitted one.
+ */
 @Api(
     value = "/",
     tags = "Export Imports",
@@ -68,10 +71,12 @@ public class ExportImportRestController {
   }
 
   /**
-   * Exports training definition and levels.
+   * Returns the given training definition and its levels as a JSON file offered for inline display,
+   * named after the definition. A training administrator may export any definition, anyone else
+   * only one they author.
    *
    * @param trainingDefinitionId the training definition id
-   * @return Exported training definition and levels.
+   * @return the definition and its levels as file bytes
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -111,11 +116,14 @@ public class ExportImportRestController {
   }
 
   /**
-   * Import training definition response entity.
+   * Creates a new training definition from the submitted one, levels included, and returns it
+   * serialized to JSON narrowed to the requested attributes. The new definition starts out
+   * unreleased whatever state was submitted, and its estimated duration is the sum of its levels'.
+   * Only a training administrator or a designer may import.
    *
    * @param importTrainingDefinitionDTO the training definition to be imported
    * @param fields attributes of the object to be returned as the result.
-   * @return the new imported definition
+   * @return the created definition with its levels
    */
   @ApiOperation(
       httpMethod = "POST",
@@ -157,10 +165,15 @@ public class ExportImportRestController {
   }
 
   /**
-   * Archive training instance
+   * Returns the given training instance as a zip file offered for inline display, named after the
+   * instance. The archive holds the instance, the training definition it runs, and one entry per
+   * training run with that run's assessment answers; a run that recorded audit events also
+   * contributes those events and its console commands, each broken out per level. The sandbox
+   * definition is included only for an instance with a pool assigned. A training administrator may
+   * archive any instance, anyone else only one they organize.
    *
    * @param trainingInstanceId the training instance id
-   * @return file containing wanted training instance
+   * @return the archive as file bytes
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -204,10 +217,13 @@ public class ExportImportRestController {
   }
 
   /**
-   * Export user scores from a specific training instance
+   * Returns the standing of every training run of the given instance as one ranked row apiece,
+   * carrying that trainee's per-level scores and the counts of hints taken, solutions displayed and
+   * wrong answers submitted, alongside the levels the ranking scores over. A training administrator
+   * may report on any instance, anyone else only on one they organize.
    *
    * @param trainingInstanceId id of the training instance
-   * @return the standing of every participant of the instance
+   * @return the ranked standing of the instance's runs
    */
   @ApiOperation(
       httpMethod = "GET",

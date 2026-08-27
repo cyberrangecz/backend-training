@@ -7,11 +7,20 @@ import java.util.List;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
 
+/**
+ * Error body built by {@link CustomRestExceptionHandlerTraining} for {@code
+ * EntityNotFoundException}, {@code EntityConflictException}, {@code TooManyRequestsException} and
+ * {@code UnprocessableEntityException}, carrying the exception's {@link EntityErrorDetail}
+ * alongside the fields inherited from {@link ApiError}.
+ */
 @ApiModel(
     value = "ApiEntityError",
     description = "A detailed error information related to the entity.",
     parent = ApiError.class)
 public class ApiEntityError extends ApiError {
+  /**
+   * Entity detail carried by the exception that produced this error, when the exception set one.
+   */
   @ApiModelProperty(value = "Detail of the entity which is related to the error.")
   private EntityErrorDetail entityErrorDetail;
 
@@ -19,6 +28,10 @@ public class ApiEntityError extends ApiError {
     super();
   }
 
+  /**
+   * Builds the error, preferring {@code entityErrorDetail}'s own reason over {@code message} once
+   * one is present.
+   */
   private ApiEntityError(
       HttpStatus httpStatus, String message, String path, EntityErrorDetail entityErrorDetail) {
     super();
@@ -41,6 +54,20 @@ public class ApiEntityError extends ApiError {
     return apiEntityError;
   }
 
+  /**
+   * Builds the error body used by {@link CustomRestExceptionHandlerTraining} for {@code
+   * EntityNotFoundException}, {@code EntityConflictException}, {@code TooManyRequestsException} and
+   * {@code UnprocessableEntityException}, wrapping {@code error} as the single element of {@link
+   * #getErrors()}.
+   *
+   * @param httpStatus the status reported in the body and used for the HTTP response
+   * @param message fallback description used when {@code entityErrorDetail} carries no reason
+   * @param error the caught exception's own message, wrapped as the sole entry of {@link
+   *     #getErrors()}
+   * @param path the request URI associated with the error
+   * @param entityErrorDetail detail of the entity involved in the error, or {@code null}
+   * @return the built error body
+   */
   public static ApiEntityError of(
       HttpStatus httpStatus,
       String message,
@@ -94,20 +121,10 @@ public class ApiEntityError extends ApiError {
     return entityErrorDetail.getReason() == null ? defaultMessage : entityErrorDetail.getReason();
   }
 
-  /**
-   * Gets entity error detail.
-   *
-   * @return the entity error detail
-   */
   public EntityErrorDetail getEntityErrorDetail() {
     return entityErrorDetail;
   }
 
-  /**
-   * Sets entity error detail.
-   *
-   * @param entityErrorDetail the entity error detail
-   */
   public void setEntityErrorDetail(EntityErrorDetail entityErrorDetail) {
     this.entityErrorDetail = entityErrorDetail;
   }

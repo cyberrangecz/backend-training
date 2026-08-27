@@ -38,7 +38,14 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.UrlPathHelper;
 
-/** The type Custom rest exception handler training. */
+/**
+ * Global exception handler for training-rest controllers. Each handler method below converts one
+ * caught exception type into an {@link ApiError} (or its {@link ApiEntityError} / {@link
+ * ApiMicroserviceError} subtype) and returns it as the response body, with fresh {@link
+ * HttpHeaders} and the {@link ApiError#getStatus()} value regardless of the {@code headers} and
+ * {@code status} parameters supplied by the overridden {@link ResponseEntityExceptionHandler}
+ * methods.
+ */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionHandler {
@@ -46,6 +53,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   private static final UrlPathHelper URL_PATH_HELPER = new UrlPathHelper();
   private static Logger LOG = LoggerFactory.getLogger(CustomRestExceptionHandlerTraining.class);
 
+  /** Always answers with {@link HttpStatus#BAD_REQUEST}, ignoring the framework-derived status. */
   @Override
   protected ResponseEntity<Object> handleTypeMismatch(
       final TypeMismatchException ex,
@@ -61,6 +69,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
+  /** Always answers with {@link HttpStatus#BAD_REQUEST}, ignoring the framework-derived status. */
   @Override
   protected ResponseEntity<Object> handleMissingServletRequestPart(
       final MissingServletRequestPartException ex,
@@ -76,6 +85,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
+  /** Always answers with {@link HttpStatus#BAD_REQUEST}, ignoring the framework-derived status. */
   @Override
   protected ResponseEntity<Object> handleMissingServletRequestParameter(
       final MissingServletRequestParameterException ex,
@@ -91,6 +101,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
+  /** Always answers with {@link HttpStatus#NOT_FOUND}, ignoring the framework-derived status. */
   @Override
   protected ResponseEntity<Object> handleNoHandlerFoundException(
       final NoHandlerFoundException ex,
@@ -106,6 +117,11 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
+  /**
+   * Answers with {@link HttpStatus#NOT_FOUND} rather than the {@code 405 Method Not Allowed} that
+   * {@link HttpRequestMethodNotSupportedException} otherwise implies, listing the supported HTTP
+   * methods in the error message.
+   */
   @Override
   protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
       final HttpRequestMethodNotSupportedException ex,
@@ -127,6 +143,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
+  /**
+   * Always answers with {@link HttpStatus#UNSUPPORTED_MEDIA_TYPE}, listing the supported media
+   * types in the error message.
+   */
   @Override
   protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
       final HttpMediaTypeNotSupportedException ex,
@@ -147,6 +167,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
+  /**
+   * Always answers with {@link HttpStatus#BAD_REQUEST}, joining every validation failure's default
+   * message into the reported error description.
+   */
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
       final MethodArgumentNotValidException ex,
@@ -164,6 +188,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
+  /**
+   * Always answers with {@link HttpStatus#BAD_REQUEST}, reporting the deepest cause of the
+   * unreadable request body as the error description.
+   */
   @Override
   protected ResponseEntity<Object> handleHttpMessageNotReadable(
       final HttpMessageNotReadableException ex,
@@ -181,6 +209,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
   // Handling of own exceptions
 
+  /**
+   * Always answers with {@link HttpStatus#UNAUTHORIZED}, using {@code ex}'s own message as the
+   * error description and the request's context path as {@link ApiError#getPath()}.
+   */
   @ExceptionHandler({InsufficientAuthenticationException.class})
   protected ResponseEntity<Object> handleAuthenticationException(
       final InsufficientAuthenticationException ex,
@@ -196,11 +228,8 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle constraint violation response entity.
-   *
-   * @param ex the ex
-   * @param req the req
-   * @return the response entity
+   * Always answers with {@link HttpStatus#BAD_REQUEST}, reporting the deepest cause of {@code ex}
+   * as the error description.
    */
   @ExceptionHandler({ConstraintViolationException.class})
   public ResponseEntity<Object> handleConstraintViolation(
@@ -215,12 +244,8 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle bad request exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Answers with the status carried on {@code BadRequestException}'s own {@code @ResponseStatus},
+   * reporting the deepest cause of {@code ex} as the error description.
    */
   @ExceptionHandler(BadRequestException.class)
   public ResponseEntity<Object> handleBadRequestException(
@@ -235,12 +260,8 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle forbidden exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Answers with the status carried on {@code ForbiddenException}'s own {@code @ResponseStatus},
+   * reporting the deepest cause of {@code ex} as the error description.
    */
   @ExceptionHandler(ForbiddenException.class)
   public ResponseEntity<Object> handleForbiddenException(
@@ -255,12 +276,8 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle internal server error exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Answers with the status carried on {@code InternalServerErrorException}'s own
+   * {@code @ResponseStatus}, reporting the deepest cause of {@code ex} as the error description.
    */
   @ExceptionHandler(InternalServerErrorException.class)
   public ResponseEntity<Object> handleInternalServerErrorException(
@@ -275,12 +292,11 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle entity not found exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Answers with the status carried on {@code EntityNotFoundException}'s own
+   * {@code @ResponseStatus}, using its reason text as the fallback error description behind {@code
+   * ex}'s own {@link cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail} reason (see
+   * {@link ApiEntityError#of(HttpStatus, String, String, String,
+   * cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail)}).
    */
   @ExceptionHandler({EntityNotFoundException.class})
   public ResponseEntity<Object> handleEntityNotFoundException(
@@ -296,12 +312,8 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle spring access denied exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Always answers with {@link HttpStatus#FORBIDDEN}, reporting the deepest cause of {@code ex} as
+   * the error description.
    */
   @ExceptionHandler({AccessDeniedException.class})
   public ResponseEntity<Object> handleSpringAccessDeniedException(
@@ -318,14 +330,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle illegal argument exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Always answers with {@link HttpStatus#NOT_ACCEPTABLE}, reporting the deepest cause of {@code
+   * ex} as the error description.
    */
-  // thrown from SERVICE layer (nullpointers, illegal argument etc.)
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<Object> handleIllegalArgumentException(
       final IllegalArgumentException ex, final WebRequest request, HttpServletRequest req) {
@@ -339,12 +346,8 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle null pointer exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Always answers with {@link HttpStatus#BAD_REQUEST}, reporting the deepest cause of {@code ex}
+   * as the error description.
    */
   @ExceptionHandler(NullPointerException.class)
   public ResponseEntity<Object> handleNullPointerException(
@@ -358,15 +361,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
-  // thrown from REST controllers
-
   /**
-   * Handle entity conflict exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Answers with the status carried on {@code EntityConflictException}'s own
+   * {@code @ResponseStatus}, using its reason text as the fallback error description behind {@code
+   * ex}'s own {@link cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail} reason.
    */
   @ExceptionHandler({EntityConflictException.class})
   public ResponseEntity<Object> handleEntityConflictException(
@@ -382,12 +380,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle too many requests exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Answers with the status carried on {@code TooManyRequestsException}'s own
+   * {@code @ResponseStatus}, using its reason text as the fallback error description behind {@code
+   * ex}'s own {@link cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail} reason.
    */
   @ExceptionHandler({TooManyRequestsException.class})
   public ResponseEntity<Object> handleTooManyRequestsException(
@@ -403,12 +398,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle unprocessable entity exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Answers with the status carried on {@code UnprocessableEntityException}'s own
+   * {@code @ResponseStatus}, using its reason text as the fallback error description behind {@code
+   * ex}'s own {@link cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail} reason.
    */
   @ExceptionHandler({UnprocessableEntityException.class})
   public ResponseEntity<Object> handleUnprocessableEntityException(
@@ -424,12 +416,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle user and group api exception response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Answers with the status carried on {@code ex} itself ({@link
+   * MicroserviceApiException#getStatusCode()}), not the class's own {@code @ResponseStatus}, using
+   * {@code ex}'s own message as the error description alongside its {@link
+   * cz.cyberrange.platform.training.api.exceptions.errors.ApiSubError}.
    */
   @ExceptionHandler({MicroserviceApiException.class})
   public ResponseEntity<Object> handleMicroserviceApiException(
@@ -445,12 +435,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
-   * Handle all response entity.
-   *
-   * @param ex the ex
-   * @param request the request
-   * @param req the req
-   * @return the response entity
+   * Catches every exception not matched by a more specific handler in this class and always answers
+   * with {@link HttpStatus#INTERNAL_SERVER_ERROR}, reporting the deepest cause of {@code ex} as the
+   * error description.
    */
   @ExceptionHandler({Exception.class})
   public ResponseEntity<Object> handleAll(
@@ -464,6 +451,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
   }
 
+  /** Walks {@code exception}'s cause chain and returns its deepest cause. */
   private Exception getInitialException(Exception exception) {
     while (exception.getCause() != null) {
       exception = (Exception) exception.getCause();
@@ -484,6 +472,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return "It was not possible to get the stack trace for that exception.";
   }
 
+  /**
+   * Logs {@code exception}'s full stack trace at error level and returns {@link
+   * Exception#getMessage()} despite its name.
+   */
   private String getErrorMessage(Exception exception) {
     try (StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw)) {

@@ -81,14 +81,6 @@ public class CheatingDetectionsRestController {
   private final CheatingDetectionExportFacade cheatingDetectionExportFacade;
   private final ObjectMapper objectMapper;
 
-  /**
-   * Instantiates a new Cheating detections rest controller.
-   *
-   * @param cheatingDetectionFacade the cheating detection facade
-   * @param detectionEventFacade the detection event facade
-   * @param cheatingDetectionExportFacade the cheating detection export facade
-   * @param objectMapper the object mapper
-   */
   @Autowired
   public CheatingDetectionsRestController(
       CheatingDetectionFacade cheatingDetectionFacade,
@@ -102,10 +94,10 @@ public class CheatingDetectionsRestController {
   }
 
   /**
-   * Create and executed a cheating detection.
+   * Creates a cheating detection from the given configuration and immediately executes it.
    *
-   * @param cheatingDetectionDTO the Cheating Detection object to be created
-   * @return the new Training Definition
+   * @param cheatingDetectionDTO the cheating detection to create and execute
+   * @return an empty response
    */
   @ApiOperation(
       httpMethod = "POST",
@@ -138,11 +130,13 @@ public class CheatingDetectionsRestController {
   }
 
   /**
-   * Reruns All Cheating Detections on cheating detection.
+   * Deletes the detection events of a cheating detection and re-executes it. {@code
+   * trainingInstanceId} plays no part in the operation or its authorization check, which is scoped
+   * by {@code cheatingDetectionId} alone.
    *
    * @param cheatingDetectionId id of cheating detection.
    * @param trainingInstanceId id of training instance.
-   * @return the response entity
+   * @return an empty response
    */
   @ApiOperation(
       httpMethod = "PATCH",
@@ -176,10 +170,13 @@ public class CheatingDetectionsRestController {
   }
 
   /**
-   * Delete a cheating detection and all its associated events.
+   * Deletes a cheating detection together with its detection events, their participants and their
+   * forbidden commands, and clears the detection-event flag on every training run of {@code
+   * trainingInstanceId} rather than only the runs the deleted detection covered.
    *
    * @param cheatingDetectionId id of cheating detection.
-   * @param trainingInstanceId id of training instance.
+   * @param trainingInstanceId id of the training instance whose runs have their detection-event
+   *     flag cleared.
    * @return the response entity
    */
   @ApiOperation(
@@ -212,7 +209,8 @@ public class CheatingDetectionsRestController {
   }
 
   /**
-   * Get all detection events of a CheatingDetection.
+   * Finds all detection events of a cheating detection, filtered by {@code predicate}. {@code
+   * trainingInstanceId} plays no part in the query or the authorization check.
    *
    * @param predicate specifies query to database.
    * @param cheatingDetectionId id of cheating detection.
@@ -360,10 +358,10 @@ public class CheatingDetectionsRestController {
   }
 
   /**
-   * Get all forbidden commands of Detection Event for visualization.
+   * Get all forbidden commands of Detection Event, unpaged.
    *
    * @param eventId id of detection event.
-   * @return all detected forbidden commands occurred in a detection event for visualization.
+   * @return every detected forbidden command of the event.
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -395,10 +393,11 @@ public class CheatingDetectionsRestController {
   }
 
   /**
-   * Archive cheating detection
+   * Builds and returns a zip archive holding the cheating detection's own configuration, two
+   * entries per finding it produced, plus the trainee participant groups it evaluated.
    *
    * @param cheatingDetectionId the cheating detection id
-   * @return file containing wanted cheating detection results
+   * @return the zip archive as a byte array response
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -704,7 +703,7 @@ public class CheatingDetectionsRestController {
   }
 
   /**
-   * Get all cheating detections of a training instance.
+   * Get all cheating detections of a training instance, ordered by their execution time.
    *
    * @param trainingInstanceId id of training instance.
    * @param pageable pageable parameter with information about pagination.
