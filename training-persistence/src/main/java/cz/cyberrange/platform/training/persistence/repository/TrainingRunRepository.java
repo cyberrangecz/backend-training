@@ -62,11 +62,14 @@ public interface TrainingRunRepository
   Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
   /**
-   * Find all training runs associated with training instance.
+   * Finds all training runs of a training instance, ordered by start time. The backing query
+   * matches on {@code trainingInstance.id} and orders the result by {@code startTime} ascending;
+   * the {@code @EntityGraph} fetches each run's participant reference eagerly.
    *
-   * @param trainingInstanceId the training instance id
+   * @param trainingInstanceId the primary key of the training instance
    * @param pageable the pageable
-   * @return the page of all {@link TrainingRun}s associated with {@link TrainingInstance}
+   * @return the page of {@link TrainingRun}s of the {@link TrainingInstance}, ordered by start time
+   *     ascending, or an empty page if none exist
    */
   @Query(
       "SELECT tr FROM TrainingRun tr WHERE tr.trainingInstance.id = :trainingInstanceId ORDER BY tr.startTime ASC")
@@ -77,10 +80,14 @@ public interface TrainingRunRepository
       @Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
   /**
-   * Find all training runs associated with training instance.
+   * Finds all training runs of a training instance, derived from the method name with no
+   * {@code @NamedQuery} override, so it matches on {@code trainingInstance.id}. The
+   * {@code @EntityGraph} fetches each run's participant reference eagerly; the result carries no
+   * guaranteed order.
    *
-   * @param trainingInstanceId the training instance id
-   * @return the set of all {@link TrainingRun}s associated with {@link TrainingInstance}
+   * @param trainingInstanceId the primary key of the training instance
+   * @return the set of {@link TrainingRun}s of the {@link TrainingInstance}, or an empty set if
+   *     none exist
    */
   @EntityGraph(
       value = "TrainingRun.findAllParticipantRef",

@@ -18,6 +18,10 @@ public class TrainingInstanceUpdateDTO {
   @NotNull(message = "{traininginstanceupdate.id.NotNull.message}")
   private Long id;
 
+  /**
+   * Changing it once the instance is running or finished is refused; it must also not be after
+   * {@code endTime}.
+   */
   @ApiModelProperty(
       value = "Date when training instance starts.",
       required = true,
@@ -26,6 +30,11 @@ public class TrainingInstanceUpdateDTO {
   @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
   private LocalDateTime startTime;
 
+  /**
+   * Must not be after {@code startTime}. Moving it into the future on an instance that has already
+   * ended is refused, since that would bring an expired instance back to life; moving it further
+   * into the past leaves the instance ended and is allowed.
+   */
   @ApiModelProperty(
       value = "Date when training instance ends.",
       required = true,
@@ -41,6 +50,12 @@ public class TrainingInstanceUpdateDTO {
   @NotEmpty(message = "{traininginstanceupdate.title.NotEmpty.message}")
   private String title;
 
+  /**
+   * Compared, with its generated pin stripped, against the instance's current access token. If the
+   * instance has not started yet, a value that differs from that stripped token causes a new pin to
+   * be generated and appended; if the instance is running or finished, any such change is refused.
+   * Otherwise the stored token is kept unchanged.
+   */
   @ApiModelProperty(
       value = "AccessToken which will be modified and then used for accessing training run.",
       required = true,
@@ -48,6 +63,10 @@ public class TrainingInstanceUpdateDTO {
   @NotEmpty(message = "{traininginstanceupdate.accessToken.NotEmpty.message}")
   private String accessToken;
 
+  /**
+   * Primary key of the training definition to associate with the instance; read directly by the
+   * facade, not through the mapper. Changing it once the instance has started is refused.
+   */
   @ApiModelProperty(
       value = "Reference to training definition from which is training instance created.",
       required = true,
@@ -55,6 +74,7 @@ public class TrainingInstanceUpdateDTO {
   @NotNull(message = "{traininginstanceupdate.trainingDefinition.NotNull.message}")
   private Long trainingDefinitionId;
 
+  /** Changing it once the instance is running or finished is refused. */
   @ApiModelProperty(value = "Id of sandbox pool assigned to training instance", example = "1")
   private Long poolId;
 

@@ -2,6 +2,7 @@ package cz.cyberrange.platform.training.api.responses;
 
 import io.swagger.annotations.ApiModel;
 
+/** Holds a sandbox definition's id, name, url, and revision as reported by the sandbox service. */
 @ApiModel(
     value = "SandboxDefinitionInfo",
     description = "Basic information about the sandbox definition.")

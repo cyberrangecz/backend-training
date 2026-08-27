@@ -36,10 +36,13 @@ public class SandboxApiService {
   }
 
   /**
-   * Gets sandbox definition id.
+   * Retrieves the sandbox definition backing a pool by calling the sandbox service.
    *
    * @param poolId the pool id
-   * @return the sandbox definition id
+   * @return the sandbox definition of the given pool
+   * @throws ForbiddenException if the sandbox service reports no available sandbox definition for
+   *     the pool
+   * @throws MicroserviceApiException if the sandbox service call fails for any other reason
    */
   public SandboxDefinitionInfo getSandboxDefinitionId(Long poolId) {
     try {

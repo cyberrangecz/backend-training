@@ -41,6 +41,7 @@ public class ExportTrainingDefinitionAndLevelsDTO {
   @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
   private TDState state;
 
+  /** Ordered by each level's position in the training definition. */
   @ApiModelProperty(value = "Information about all levels in training definition.")
   private List<AbstractLevelExportDTO> levels = new ArrayList<>();
 

@@ -8,7 +8,10 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-/** Encapsulates information about Training run. Used for archiving */
+/**
+ * Snapshot of one participant's training run, written as a single JSON file into the training runs
+ * folder of the training instance archive.
+ */
 @Data
 @ApiModel(
     value = "TrainingRunArchiveDTO",
@@ -18,6 +21,10 @@ public class TrainingRunArchiveDTO {
   @ApiModelProperty(value = "Main identifier of training run.", example = "1")
   private Long id;
 
+  /**
+   * Primary key of the training instance this run belongs to. The training run entity carries no
+   * matching property, so the archiving facade sets this field itself after mapping the run.
+   */
   @ApiModelProperty(
       value = "Main identifier of training instance associated with this run.",
       example = "1")
@@ -36,6 +43,10 @@ public class TrainingRunArchiveDTO {
   @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
   private TRState state;
 
+  /**
+   * User reference id ({@code UserRef.userRefId}) of the run's participant, not the participant's
+   * local primary key.
+   */
   @ApiModelProperty(value = "Reference to participant of training run.", example = "5")
   private Long participantRefId;
 }

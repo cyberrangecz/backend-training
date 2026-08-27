@@ -76,8 +76,8 @@ public interface TrainingDefinitionMapper extends ParentMapper {
   TrainingDefinitionInfoDTO mapToInfoDTO(TrainingDefinition entity);
 
   /**
-   * Maps a training definition creation request into a new entity, leaving its beta testing
-   * group's organizers unpopulated for the caller to assign.
+   * Maps a training definition creation request into a new entity, leaving its beta testing group's
+   * organizers unpopulated for the caller to assign.
    *
    * @param dto the creation request to map
    * @return the mapped training definition

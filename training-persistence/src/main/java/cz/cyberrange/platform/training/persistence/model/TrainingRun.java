@@ -26,6 +26,7 @@ import org.hibernate.annotations.Type;
       })
 })
 @NamedQueries({
+  // Matches on userRefId: takes the external, cross-service identifier of the participant.
   @NamedQuery(
       name = "TrainingRun.findRunningTrainingRunOfUser",
       query =
@@ -50,6 +51,9 @@ import org.hibernate.annotations.Type;
       name = "TrainingRun.existsAnyForTrainingInstance",
       query =
           "SELECT (COUNT(tr) > 0) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId"),
+  // Named "ParticipantRefId" but, unlike a Spring Data derived method of that name, matches on
+  // pr.userRefId: takes the external, cross-service identifier of the participant, not the local
+  // UserRef primary key.
   @NamedQuery(
       name = "TrainingRun.findAllByParticipantRefId",
       query =
@@ -58,6 +62,7 @@ import org.hibernate.annotations.Type;
               + "INNER JOIN tr.trainingInstance ti "
               + "INNER JOIN ti.trainingDefinition "
               + "WHERE pr.userRefId = :userRefId"),
+  // Matches on userRefId: takes the external, cross-service identifier of the participant.
   @NamedQuery(
       name = "TrainingRun.findAllByTrainingDefinitionIdAndParticipantUserRefId",
       query =
@@ -125,12 +130,15 @@ public class TrainingRun extends AbstractEntity<Long> {
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   private TrainingInstance trainingInstance;
 
+  // Identifier of the sandbox currently allocated to this run; cleared once the run is archived.
   @Column(name = "sandbox_instance_ref_id", length = 36)
   private String sandboxInstanceRefId;
 
   @Column(name = "sandbox_instance_allocation_id")
   private Integer sandboxInstanceAllocationId;
 
+  // Joined on UserRef's primary key, despite the "user_ref_id" column name; not the userRefId
+  // that crosses service boundaries.
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_ref_id", nullable = false)
   private UserRef participantRef;
@@ -160,12 +168,15 @@ public class TrainingRun extends AbstractEntity<Long> {
   @CollectionTable(name = "hint_info", joinColumns = @JoinColumn(name = "training_run_id"))
   private Set<HintInfo> hintInfoList = new HashSet<>();
 
+  // Identifier of the sandbox that was allocated to this run before it was archived and its
+  // sandbox given up.
   @Column(name = "previous_sandbox_instance_ref_id", length = 36)
   private String previousSandboxInstanceRefId;
 
   @Column(name = "current_penalty")
   private int currentPenalty;
 
+  // Whether any cheating detection has flagged this run.
   @Column(name = "has_detection_event")
   private boolean hasDetectionEvent;
 
@@ -269,10 +280,10 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets level that is currently being displayed to the trainee Sets default data about level to
-   * training run
-   *
-   * @param currentLevel the current level
+   * Sets the level currently displayed to the trainee, and resets the run's per-level state for it:
+   * the current penalty to zero, the maximum score to the new level's own maximum, whether the
+   * level counts as answered to whether it is an info level, and whether its solution was taken to
+   * false.
    */
   public void setCurrentLevel(AbstractLevel currentLevel) {
     this.currentPenalty = 0;
@@ -628,6 +639,7 @@ public class TrainingRun extends AbstractEntity<Long> {
     this.currentPenalty = currentPenalty;
   }
 
+  /** Returns whether any cheating detection has flagged this run. */
   public boolean isHasDetectionEvent() {
     return hasDetectionEvent;
   }

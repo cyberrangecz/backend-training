@@ -37,6 +37,14 @@ public class TrainingEventsService {
     this.openSearchClient = openSearchClient;
   }
 
+  /**
+   * Retrieves every audit event recorded for a training run, matched by run id alone across every
+   * pool, sandbox, definition, and instance segment of the index name.
+   *
+   * @param trainingRunId id of the training run whose events are fetched
+   * @return events ordered by ascending timestamp, oldest first; an empty list if none match
+   * @throws OpenSearchQueryException if the OpenSearch query fails
+   */
   public List<AbstractAuditPOJO> findAllEventsFromTrainingRun(Long trainingRunId) {
     String index = OpensearchTrainingEventIndexBuilder.builder().run(trainingRunId).build();
     return searchAllEvents(index);
@@ -138,6 +146,14 @@ public class TrainingEventsService {
     return executeSearch(searchRequest);
   }
 
+  /**
+   * Searches every document in the given index or index pattern with no query filter, in ascending
+   * timestamp order.
+   *
+   * @param indexPattern index name or wildcard pattern to search
+   * @return matching events ordered oldest first; an empty list if none match
+   * @throws OpenSearchQueryException if the OpenSearch query fails
+   */
   private List<AbstractAuditPOJO> searchAllEvents(String indexPattern) {
     SearchRequest searchRequest =
         SearchRequest.of(
@@ -149,6 +165,15 @@ public class TrainingEventsService {
     return executeSearch(searchRequest);
   }
 
+  /**
+   * Runs a search request against OpenSearch and converts each returned hit into an audit event,
+   * setting the OpenSearch document id on it.
+   *
+   * @param searchRequest request to execute
+   * @return matching events in the order OpenSearch returned them; an empty list when the response
+   *     carries no hits; a hit whose source is null is skipped
+   * @throws OpenSearchQueryException if the OpenSearch query fails
+   */
   private List<AbstractAuditPOJO> executeSearch(SearchRequest searchRequest) {
     try {
       SearchResponse<AbstractAuditPOJO> response =

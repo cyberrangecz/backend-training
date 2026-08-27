@@ -200,13 +200,13 @@ public class TrainingDefinitionService {
 
   /**
    * Persists the given training definition, stamping it with the current time and the current
-   * user's full name as its last editor, setting its creation time, adding the currently
-   * logged-in user as an author, and, when requested, seeding it with a default intro info level
-   * and access level.
+   * user's full name as its last editor, setting its creation time, adding the currently logged-in
+   * user as an author, and, when requested, seeding it with a default intro info level and access
+   * level.
    *
    * @param trainingDefinition the definition to persist
-   * @param createDefaultContent whether to create the default intro info level and access level
-   *     for the new definition
+   * @param createDefaultContent whether to create the default intro info level and access level for
+   *     the new definition
    * @return the persisted {@link TrainingDefinition}
    */
   public TrainingDefinition create(
@@ -222,15 +222,15 @@ public class TrainingDefinitionService {
 
   /**
    * Persists the given training definition in place of the stored one with matching id, carrying
-   * over the stored estimated duration regardless of the value given, adds the currently
-   * logged-in user as one of its authors, and stamps it with the current time and the current
-   * user's full name as its last editor.
+   * over the stored estimated duration regardless of the value given, adds the currently logged-in
+   * user as one of its authors, and stamps it with the current time and the current user's full
+   * name as its last editor.
    *
-   * @param trainingDefinitionToUpdate the replacement definition, carrying the id of the
-   *     definition to replace
+   * @param trainingDefinitionToUpdate the replacement definition, carrying the id of the definition
+   *     to replace
    * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the stored definition is released or archived, or
-   *     already has a training instance created
+   * @throws EntityConflictException when the stored definition is released or archived, or already
+   *     has a training instance created
    */
   public void update(TrainingDefinition trainingDefinitionToUpdate) {
     TrainingDefinition trainingDefinition = findById(trainingDefinitionToUpdate.getId());
@@ -264,15 +264,15 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Swaps the order of two levels within a training definition, so each takes the other's
-   * position, and updates the definition's last-edited time.
+   * Swaps the order of two levels within a training definition, so each takes the other's position,
+   * and updates the definition's last-edited time.
    *
    * @param definitionId id of the definition containing the levels
    * @param swapLevelFrom id of the first level to swap
    * @param swapLevelTo id of the second level to swap
    * @throws EntityNotFoundException when the training definition or either level does not exist
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public void swapLevels(Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
     TrainingDefinition trainingDefinition = findById(definitionId);
@@ -287,17 +287,17 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Moves a level to a new position among the levels of its training definition, shifting the
-   * order of every level between the old and new position by one to keep the ordering
-   * contiguous, and updates the definition's last-edited time. A requested position outside the
-   * current range is silently clamped to the nearest valid position.
+   * Moves a level to a new position among the levels of its training definition, shifting the order
+   * of every level between the old and new position by one to keep the ordering contiguous, and
+   * updates the definition's last-edited time. A requested position outside the current range is
+   * silently clamped to the nearest valid position.
    *
    * @param definitionId id of the definition containing the levels
    * @param levelIdToBeMoved id of the level to move
    * @param newPosition the position to move the level to
    * @throws EntityNotFoundException when the training definition or the level does not exist
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public void moveLevel(Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
     Integer maxOrderOfLevel = abstractLevelRepository.getCurrentMaxOrder(definitionId);
@@ -357,9 +357,9 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Deletes a level from a training definition, reduces the definition's estimated duration by
-   * the deleted level's own duration, shifts down by one the order of every level that came
-   * after it to close the gap it leaves, and updates the definition's last-edited time.
+   * Deletes a level from a training definition, reduces the definition's estimated duration by the
+   * deleted level's own duration, shifts down by one the order of every level that came after it to
+   * close the gap it leaves, and updates the definition's last-edited time.
    *
    * @param definitionId id of the definition containing the level to delete
    * @param levelId id of the level to delete
@@ -394,10 +394,10 @@ public class TrainingDefinitionService {
    * @param definitionId id of the definition the level must belong to
    * @param updatedTrainingLevel the level's new data, carrying the id of the level to update
    * @return the persisted {@link TrainingLevel}
-   * @throws EntityNotFoundException when the training definition does not exist, the level does
-   *     not exist, or the level does not belong to the given definition
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityNotFoundException when the training definition does not exist, the level does not
+   *     exist, or the level does not belong to the given definition
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public TrainingLevel updateTrainingLevel(Long definitionId, TrainingLevel updatedTrainingLevel) {
     TrainingDefinition trainingDefinition = findById(definitionId);
@@ -408,21 +408,21 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Replaces the stored data of a training level with the given one, keeping its attachments,
-   * order and owning training definition, re-attaching its MITRE techniques by matching
-   * technique keys against the database rather than reusing the given associations, and links
-   * each of its hints back to it. Adjusts the owning training definition's estimated duration by
-   * the difference between the old and new level duration and stamps its last-edited time,
-   * without invoking a save for that definition.
+   * Replaces the stored data of a training level with the given one, keeping its attachments, order
+   * and owning training definition, re-attaching its MITRE techniques by matching technique keys
+   * against the database rather than reusing the given associations, and links each of its hints
+   * back to it. Adjusts the owning training definition's estimated duration by the difference
+   * between the old and new level duration and stamps its last-edited time, without invoking a save
+   * for that definition.
    *
    * @param updatedTrainingLevel the level's new data
-   * @param persistedTrainingLevel the level as currently stored, supplying the attachments,
-   *     order and training definition the new data is completed with
+   * @param persistedTrainingLevel the level as currently stored, supplying the attachments, order
+   *     and training definition the new data is completed with
    * @return the persisted {@link TrainingLevel}
-   * @throws UnprocessableEntityException when the sum of hint penalties exceeds the level's
-   *     maximal score
-   * @throws BadRequestException when the free-text answer and its variable-name counterpart are
-   *     not set consistently with whether the level uses variant answers
+   * @throws UnprocessableEntityException when the sum of hint penalties exceeds the level's maximal
+   *     score
+   * @throws BadRequestException when the free-text answer and its variable-name counterpart are not
+   *     set consistently with whether the level uses variant answers
    */
   public TrainingLevel updateTrainingLevel(
       TrainingLevel updatedTrainingLevel, TrainingLevel persistedTrainingLevel) {
@@ -438,13 +438,13 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Replaces the stored data of an access level with the given one, keeping its estimated
-   * duration, minimal solve time, order and owning training definition, and adjusts that
-   * definition's estimated duration and last-edited time to reflect the change.
+   * Replaces the stored data of an access level with the given one, keeping its estimated duration,
+   * minimal solve time, order and owning training definition, and adjusts that definition's
+   * estimated duration and last-edited time to reflect the change.
    *
    * @param updatedAccessLevel the level's new data
-   * @param persistedAccessLevel the level as currently stored, supplying the values the new data
-   *     is completed with
+   * @param persistedAccessLevel the level as currently stored, supplying the values the new data is
+   *     completed with
    * @return the persisted {@link AccessLevel}
    */
   public AccessLevel updateAccessLevel(
@@ -461,10 +461,10 @@ public class TrainingDefinitionService {
    * @param definitionId id of the definition the level must belong to
    * @param updatedInfoLevel the level's new data, carrying the id of the level to update
    * @return the persisted {@link InfoLevel}
-   * @throws EntityNotFoundException when the training definition does not exist, the level does
-   *     not exist, or the level does not belong to the given definition
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityNotFoundException when the training definition does not exist, the level does not
+   *     exist, or the level does not belong to the given definition
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public InfoLevel updateInfoLevel(Long definitionId, InfoLevel updatedInfoLevel) {
     TrainingDefinition trainingDefinition = findById(definitionId);
@@ -475,13 +475,13 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Replaces the stored data of an info level with the given one, keeping its estimated
-   * duration, minimal solve time, order and owning training definition, and adjusts that
-   * definition's estimated duration and last-edited time to reflect the change.
+   * Replaces the stored data of an info level with the given one, keeping its estimated duration,
+   * minimal solve time, order and owning training definition, and adjusts that definition's
+   * estimated duration and last-edited time to reflect the change.
    *
    * @param updatedInfoLevel the level's new data
-   * @param persistedInfoLevel the level as currently stored, supplying the values the new data
-   *     is completed with
+   * @param persistedInfoLevel the level as currently stored, supplying the values the new data is
+   *     completed with
    * @return the persisted {@link InfoLevel}
    */
   public InfoLevel updateInfoLevel(InfoLevel updatedInfoLevel, InfoLevel persistedInfoLevel) {
@@ -497,10 +497,10 @@ public class TrainingDefinitionService {
    * @param definitionId id of the definition the level must belong to
    * @param updatedAssessmentLevel the level's new data, carrying the id of the level to update
    * @return the persisted {@link AssessmentLevel}
-   * @throws EntityNotFoundException when the training definition does not exist, the level does
-   *     not exist, or the level does not belong to the given definition
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityNotFoundException when the training definition does not exist, the level does not
+   *     exist, or the level does not belong to the given definition
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public AssessmentLevel updateAssessmentLevel(
       Long definitionId, AssessmentLevel updatedAssessmentLevel) {
@@ -514,9 +514,9 @@ public class TrainingDefinitionService {
 
   /**
    * Replaces the stored data of an assessment level with the given one, keeping its order and
-   * owning training definition, recomputing its maximal score as the sum of its questions'
-   * point values regardless of the value given, and adjusts the owning definition's estimated
-   * duration and last-edited time to reflect the change.
+   * owning training definition, recomputing its maximal score as the sum of its questions' point
+   * values regardless of the value given, and adjusts the owning definition's estimated duration
+   * and last-edited time to reflect the change.
    *
    * @param updatedAssessmentLevel the level's new data
    * @param persistedAssessmentLevel the level as currently stored, supplying the values the new
@@ -564,12 +564,12 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Detaches a training level from its currently associated MITRE techniques and re-associates
-   * the level built from the update request with the existing technique row for each requested
+   * Detaches a training level from its currently associated MITRE techniques and re-associates the
+   * level built from the update request with the existing technique row for each requested
    * technique key, keeping the given association unchanged for a key with no matching row.
    *
-   * @param updatedLevel the level built from the update request, whose MITRE technique
-   *     associations are replaced
+   * @param updatedLevel the level built from the update request, whose MITRE technique associations
+   *     are replaced
    * @param persistedLevel the level as currently stored, detached from its MITRE techniques
    */
   private void updateMitreTechniques(TrainingLevel updatedLevel, TrainingLevel persistedLevel) {
@@ -592,15 +592,15 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Creates a new training level with placeholder content, appending it after every existing
-   * level of the given training definition, increases that definition's estimated duration by
-   * the new level's own duration, and updates its last-edited time.
+   * Creates a new training level with placeholder content, appending it after every existing level
+   * of the given training definition, increases that definition's estimated duration by the new
+   * level's own duration, and updates its last-edited time.
    *
    * @param definitionId id of the definition to add the level to
    * @return the persisted {@link TrainingLevel}
    * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public TrainingLevel createTrainingLevel(Long definitionId) {
     TrainingDefinition trainingDefinition = findById(definitionId);
@@ -624,8 +624,8 @@ public class TrainingDefinitionService {
    * @param definitionId id of the definition to add the level to
    * @return the persisted {@link AccessLevel}
    * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public AccessLevel createAccessLevel(Long definitionId) {
     TrainingDefinition trainingDefinition = findById(definitionId);
@@ -661,15 +661,14 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Creates a new info level from the configured default content, appending it after every
-   * existing level of the given training definition, and updates that definition's last-edited
-   * time.
+   * Creates a new info level from the configured default content, appending it after every existing
+   * level of the given training definition, and updates that definition's last-edited time.
    *
    * @param definitionId id of the definition to add the level to
    * @return the persisted {@link InfoLevel}
    * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public InfoLevel createInfoLevel(Long definitionId) {
     TrainingDefinition trainingDefinition = findById(definitionId);
@@ -688,14 +687,14 @@ public class TrainingDefinitionService {
 
   /**
    * Creates a new assessment level with placeholder content, appending it after every existing
-   * level of the given training definition, increases that definition's estimated duration by
-   * the new level's own duration, and updates its last-edited time.
+   * level of the given training definition, increases that definition's estimated duration by the
+   * new level's own duration, and updates its last-edited time.
    *
    * @param definitionId id of the definition to add the level to
    * @return the persisted {@link AssessmentLevel}
    * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is released or archived, or already has
-   *     a training instance created
+   * @throws EntityConflictException when the definition is released or archived, or already has a
+   *     training instance created
    */
   public AssessmentLevel createAssessmentLevel(Long definitionId) {
     TrainingDefinition trainingDefinition = findById(definitionId);
@@ -810,18 +809,18 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Switches a training definition from unreleased to released, from released to archived, or
-   * from released back to unreleased when it has no training instance created, doing nothing
-   * when the requested state already matches the current one, and otherwise stamping the
-   * definition with the current time and the current user's full name as its last editor. Every
-   * other transition, including any transition away from an archived definition, is rejected.
+   * Switches a training definition from unreleased to released, from released to archived, or from
+   * released back to unreleased when it has no training instance created, doing nothing when the
+   * requested state already matches the current one, and otherwise stamping the definition with the
+   * current time and the current user's full name as its last editor. Every other transition,
+   * including any transition away from an archived definition, is rejected.
    *
    * @param definitionId id of the definition to switch
    * @param state the requested new state
    * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the requested transition is not one of the allowed
-   *     ones, or when switching a released definition back to unreleased while it still has a
-   *     training instance created
+   * @throws EntityConflictException when the requested transition is not one of the allowed ones,
+   *     or when switching a released definition back to unreleased while it still has a training
+   *     instance created
    */
   public void switchState(
       Long definitionId, cz.cyberrange.platform.training.api.enums.TDState state) {
@@ -886,13 +885,13 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Stamps the given training definition with the current time and the full name of the
-   * currently logged-in user as its last editor, then persists it.
+   * Stamps the given training definition with the current time and the full name of the currently
+   * logged-in user as its last editor, then persists it.
    *
    * @param trainingDefinition the training definition to persist
    * @return the persisted {@link TrainingDefinition}
-   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the
-   *     call to the user-and-group service to resolve the current user's full name fails
+   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
+   *     to the user-and-group service to resolve the current user's full name fails
    */
   public TrainingDefinition auditAndSave(TrainingDefinition trainingDefinition) {
     trainingDefinition.setLastEdited(getCurrentTimeInUTC());
@@ -902,8 +901,8 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Creates and persists a default intro info level at order 0 and a default access level at
-   * order 1 for the given training definition, both seeded from the configured default content.
+   * Creates and persists a default intro info level at order 0 and a default access level at order
+   * 1 for the given training definition, both seeded from the configured default content.
    *
    * @param trainingDefinition the definition to seed with its default levels
    */
@@ -931,8 +930,8 @@ public class TrainingDefinitionService {
    *
    * @param trainingDefinitionId id of the definition the level is expected to belong to
    * @param level the level to check
-   * @throws EntityNotFoundException when the level's own training definition id does not match
-   *     the given one
+   * @throws EntityNotFoundException when the level's own training definition id does not match the
+   *     given one
    */
   private void checkIfLevelPresentInDefinition(Long trainingDefinitionId, AbstractLevel level) {
     if (!level.getTrainingDefinition().getId().equals(trainingDefinitionId)) {
@@ -1034,9 +1033,9 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Clones an assessment level together with its questions into the given training definition,
-   * and re-links each cloned extended-matching question's marked correct option to its
-   * counterpart among the cloned options.
+   * Clones an assessment level together with its questions into the given training definition, and
+   * re-links each cloned extended-matching question's marked correct option to its counterpart
+   * among the cloned options.
    *
    * @param level the assessment level to clone
    * @param trainingDefinition the definition the clone is attached to
@@ -1123,9 +1122,9 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Deletes a level, dispatching to the repository matching its concrete type. For a training
-   * level whose deletion is rejected by a database constraint, deletes its hints first and
-   * retries the level deletion.
+   * Deletes a level, dispatching to the repository matching its concrete type. For a training level
+   * whose deletion is rejected by a database constraint, deletes its hints first and retries the
+   * level deletion.
    *
    * @param level the level to delete
    */
@@ -1151,13 +1150,13 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Adds the currently logged-in user as an author of the given training definition, inserting
-   * a new {@link UserRef} row keyed on that user's cross-service {@code userRefId} when none
-   * exists yet.
+   * Adds the currently logged-in user as an author of the given training definition, inserting a
+   * new {@link UserRef} row keyed on that user's cross-service {@code userRefId} when none exists
+   * yet.
    *
    * @param trainingDefinition the definition to add the author to
-   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the
-   *     call to the user-and-group service to resolve the current user fails
+   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
+   *     to the user-and-group service to resolve the current user fails
    */
   private void addLoggedInUserToTrainingDefinitionAsAuthor(TrainingDefinition trainingDefinition) {
     UserRef user = userRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup());
@@ -1165,12 +1164,11 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Confirms that the sum of a training level's hint penalties does not exceed its maximal
-   * score.
+   * Confirms that the sum of a training level's hint penalties does not exceed its maximal score.
    *
    * @param trainingLevel the level whose hints are checked
-   * @throws UnprocessableEntityException when the sum of hint penalties exceeds the level's
-   *     maximal score
+   * @throws UnprocessableEntityException when the sum of hint penalties exceeds the level's maximal
+   *     score
    */
   private void checkSumOfHintPenalties(TrainingLevel trainingLevel) {
     int sumHintPenalty = 0;
@@ -1189,8 +1187,8 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Validates a training level's correct-answer fields, checking the static answer when the
-   * level does not use variant answers or the answer variable name when it does.
+   * Validates a training level's correct-answer fields, checking the static answer when the level
+   * does not use variant answers or the answer variable name when it does.
    *
    * @param trainingLevel the level whose answer fields are checked
    * @throws BadRequestException propagated from the specific check performed, when the fields
@@ -1209,8 +1207,7 @@ public class TrainingDefinitionService {
    * non-blank static answer.
    *
    * @param trainingLevel the level to check
-   * @throws BadRequestException when the answer variable name is set, or the static answer is
-   *     blank
+   * @throws BadRequestException when the answer variable name is set, or the static answer is blank
    */
   private void checkAnswer(TrainingLevel trainingLevel) {
     if (trainingLevel.getAnswerVariableName() != null) {
@@ -1222,12 +1219,11 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Confirms that a training level with variant answers has no static answer set and a
-   * non-blank answer variable name.
+   * Confirms that a training level with variant answers has no static answer set and a non-blank
+   * answer variable name.
    *
    * @param trainingLevel the level to check
-   * @throws BadRequestException when the static answer is set, or the answer variable name is
-   *     blank
+   * @throws BadRequestException when the static answer is set, or the answer variable name is blank
    */
   private void checkAnswerVariableName(TrainingLevel trainingLevel) {
     if (trainingLevel.getAnswer() != null) {
@@ -1264,8 +1260,8 @@ public class TrainingDefinitionService {
    * Finds the hints matching the given ids.
    *
    * @param ids ids of the hints to look up
-   * @return the matching {@link Hint} entities; an id with no matching row is silently omitted,
-   *     and the order of the returned entities is unspecified
+   * @return the matching {@link Hint} entities; an id with no matching row is silently omitted, and
+   *     the order of the returned entities is unspecified
    */
   public List<Hint> findAllHintsByIds(List<Long> ids) {
     return hintRepository.findAllByIdIn(ids);

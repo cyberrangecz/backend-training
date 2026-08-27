@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/** Assessment answered event, carrying the {@code type} value {@code assessment_answered}. */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

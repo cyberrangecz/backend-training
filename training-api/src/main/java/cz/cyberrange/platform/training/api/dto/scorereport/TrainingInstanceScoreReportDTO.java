@@ -25,16 +25,22 @@ public class TrainingInstanceScoreReportDTO {
   @JsonProperty("training_instance_id")
   private Long trainingInstanceId;
 
+  /** The instant every row's end is capped to when it falls beyond it. */
   @ApiModelProperty(
       value = "Instance end used to cap every run, in epoch milliseconds.",
       example = "1665140389000")
   @JsonProperty("instance_end_at")
   private long instanceEndAt;
 
+  /**
+   * Every level able to award score, in definition order; info levels, access levels and assessment
+   * levels of any kind other than a test are absent.
+   */
   @ApiModelProperty(value = "Score-bearing levels, in definition order.")
   @JsonProperty("scored_levels")
   private List<AbstractLevelBasicDTO> scoredLevels;
 
+  /** One row per run of the instance, ordered by descending total score. */
   @ApiModelProperty(value = "Participants, ordered by rank.")
   private List<ParticipantScoreRowDTO> rows;
 }

@@ -28,23 +28,37 @@ public class TrainingRunByIdDTO {
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime endTime;
 
+  /** Copied from the persisted run's own field, which no code in this service ever sets. */
   private String eventLogReference;
 
   @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
   private TRState state;
 
+  /** Plain sandbox UUID, never hashed; the caller is always this run's trainee or an admin. */
   @ApiModelProperty(value = "Reference to the received sandbox.")
   private String sandboxInstanceRefId;
 
   @ApiModelProperty(value = "Reference to participant of training run.")
   private UserRefDTO participantRef;
 
+  /**
+   * Set by {@code TrainingRunFacade}; left unmapped by the mapper, whose source has no matching
+   * flat property.
+   */
   @ApiModelProperty(value = "Id of associated training definition")
   private Long definitionId;
 
+  /**
+   * Set by {@code TrainingRunFacade}; left unmapped by the mapper, whose source has no matching
+   * flat property.
+   */
   @ApiModelProperty(value = "Id of associated training instance")
   private Long instanceId;
 
+  /**
+   * UUID of the sandbox the run held before it was archived and its sandbox reference cleared;
+   * {@code null} while the run has never been archived.
+   */
   @ApiModelProperty(
       value = "Id of a previous sandbox instance assigned to the training run.",
       example = "12")

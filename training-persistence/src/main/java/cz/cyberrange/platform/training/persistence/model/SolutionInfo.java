@@ -8,7 +8,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Class represents information of hint associated with current level of training run */
+/**
+ * Snapshot of a training level's solution taken at the moment it was displayed to a trainee, held
+ * in the owning training run's set of displayed solutions.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

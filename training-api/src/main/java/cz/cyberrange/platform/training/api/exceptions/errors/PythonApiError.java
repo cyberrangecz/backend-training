@@ -6,6 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * The error body returned by a failing call to the sandbox microservice, deserialized by {@code
+ * ObjectMapper.readValue} from that response's JSON, or built through {@link #of} when the response
+ * carried no readable body.
+ */
 @ApiModel(
     value = "PythonApiError",
     description = "A detailed error from another Python mircorservice.",
@@ -52,6 +57,7 @@ public class PythonApiError extends ApiSubError {
     this.parameters = parameters;
   }
 
+  /** Returns the error detail, or a placeholder when none was set. */
   @Override
   public String getMessage() {
     return detail == null ? "No specific message provided." : detail;

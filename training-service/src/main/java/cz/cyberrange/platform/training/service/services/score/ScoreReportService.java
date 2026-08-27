@@ -139,6 +139,10 @@ public class ScoreReportService {
     return report;
   }
 
+  /**
+   * Builds one run's row, resolved against the {@code userRefId} of its participant reference
+   * rather than its local primary key, and left unscored when the run produced no audit events.
+   */
   private UnrankedRow toUnrankedRow(
       TrainingRun run,
       TrainingInstance instance,

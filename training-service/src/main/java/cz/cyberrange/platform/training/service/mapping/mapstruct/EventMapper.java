@@ -16,8 +16,10 @@ import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
 
 /**
- * Mapper for converting {@link TrainingCommand} entities to {@link CommandEventDTO} data transfer
- * objects. Code is generated during compile time.
+ * Translates the documents held in the audit index into their event data transfer objects, covering
+ * both console commands and each kind of training event, and dispatching on the concrete event type
+ * where the caller holds only the common supertype. Its implementation is generated at compile
+ * time.
  */
 @Mapper(
     componentModel = "spring",
@@ -25,9 +27,23 @@ import org.mapstruct.ReportingPolicy;
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EventMapper {
 
+  /**
+   * Maps every field of {@link CommandEventDTO} that shares a name with a {@link TrainingCommand}
+   * field, and sets {@code type} to the fixed discriminator registered for command events on {@code
+   * AbstractEventDTO}.
+   *
+   * @param command command to map
+   * @return the mapped DTO
+   */
   @Mapping(target = "type", constant = "COMMAND")
   CommandEventDTO mapToDTO(TrainingCommand command);
 
+  /**
+   * Maps each command the same way {@link #mapToDTO(TrainingCommand)} does, preserving input order.
+   *
+   * @param commands commands to map
+   * @return one DTO per input command, in the same order
+   */
   List<CommandEventDTO> mapToListDTO(List<TrainingCommand> commands);
 
   default TrainingEventDTO mapToDTO(AbstractAuditPOJO event) {

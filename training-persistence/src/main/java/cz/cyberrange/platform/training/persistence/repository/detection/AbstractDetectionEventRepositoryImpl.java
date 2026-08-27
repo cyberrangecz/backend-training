@@ -14,12 +14,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+/**
+ * Runs the Querydsl query behind {@link AbstractDetectionEventRepositoryCustom} against
+ * {@link AbstractDetectionEvent}.
+ */
 public class AbstractDetectionEventRepositoryImpl extends QuerydslRepositorySupport
     implements AbstractDetectionEventRepositoryCustom {
 
   @PersistenceContext private EntityManager entityManager;
 
-  /** Instantiates a new Abstract Detection Event repository. */
   public AbstractDetectionEventRepositoryImpl() {
     super(AbstractDetectionEvent.class);
   }
@@ -43,6 +46,10 @@ public class AbstractDetectionEventRepositoryImpl extends QuerydslRepositorySupp
     return getPage(query, pageable);
   }
 
+  /**
+   * Applies pagination to the query and fetches the resulting page, defaulting to the first page
+   * of 20 rows when no pageable is given.
+   */
   private <T> Page getPage(JPQLQuery<T> query, Pageable pageable) {
     if (pageable == null) {
       pageable = PageRequest.of(0, 20);

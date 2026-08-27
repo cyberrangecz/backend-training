@@ -10,6 +10,12 @@ import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * A row of the {@code question} table, belonging to one {@link AssessmentLevel}. Which of {@link
+ * #choices}, {@link #extendedMatchingStatements}, and {@link #extendedMatchingOptions} carries the
+ * question's content, and how a submitted answer to it is scored, is decided by {@link
+ * #questionType}.
+ */
 @Getter
 @Setter
 @Entity
@@ -22,29 +28,64 @@ public class Question implements Serializable {
   @Column(name = "question_id", nullable = false, unique = true)
   private Long id;
 
+  /**
+   * Which shape of answer this question takes, which in turn decides which content collection is
+   * populated and which of {@link #choices}' or {@link #extendedMatchingStatements}' correctness
+   * data is consulted when scoring a submitted answer.
+   */
   @Enumerated(EnumType.STRING)
   @Column(name = "question_type")
   private QuestionType questionType;
 
+  /** The question's prompt, shown to the participant. */
   @Column(name = "text")
   private String text;
 
+  /**
+   * Position of the question within its assessment level. Drives the ascending order of the level's
+   * {@code questions} list and, together with {@link #questionType} and {@link #text}, this
+   * question's equality.
+   */
   @Column(name = "order_in_assessment")
   private int order;
 
+  /**
+   * Points added to the participant's score for this question when answered correctly in a
+   * TEST-type assessment; also summed across a level's questions to compute that level's maximum
+   * score. Not applied for any other assessment type, whose answers are recorded without being
+   * scored.
+   */
   @Column(name = "points")
   private int points;
 
+  /**
+   * Points subtracted from the participant's score for this question when answered incorrectly in a
+   * TEST-type assessment. Not applied for any other assessment type, whose answers are recorded
+   * without being scored.
+   */
   @Column(name = "penalty")
   private int penalty;
 
+  /**
+   * Whether a response to this question is mandatory. Enforced only for a non-TEST assessment,
+   * where submitting a response without one for a required question is rejected; a TEST-type
+   * assessment already requires every one of its questions to be answered regardless of this flag.
+   */
   @Column(name = "answer_required")
   private boolean answerRequired;
 
+  /**
+   * The assessment level this question belongs to, assigned when that level's question list is set.
+   */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assessment_level_id")
   private AssessmentLevel assessmentLevel;
 
+  /**
+   * For an FFQ question, every text in this list is an accepted answer regardless of its {@code
+   * correct} flag. For an MCQ question, this list is the offered choices, and only those with
+   * {@code correct} set count toward a correct answer. Unused for an EMI question.
+   */
   @OrderBy("order asc")
   @OneToMany(
       mappedBy = "question",
@@ -53,6 +94,10 @@ public class Question implements Serializable {
       fetch = FetchType.LAZY)
   private List<QuestionChoice> choices = new ArrayList<>();
 
+  /**
+   * For an EMI question, the statements to be paired with an option; each carries the option that
+   * answers it correctly. Unused for an FFQ or MCQ question.
+   */
   @OrderBy("order asc")
   @OneToMany(
       mappedBy = "question",
@@ -61,6 +106,10 @@ public class Question implements Serializable {
       fetch = FetchType.LAZY)
   private List<ExtendedMatchingStatement> extendedMatchingStatements = new ArrayList<>();
 
+  /**
+   * For an EMI question, the options offered to be paired against {@link
+   * #extendedMatchingStatements}. Unused for an FFQ or MCQ question.
+   */
   @OrderBy("order asc")
   @OneToMany(
       mappedBy = "question",
@@ -69,6 +118,11 @@ public class Question implements Serializable {
       fetch = FetchType.LAZY)
   private List<ExtendedMatchingOption> extendedMatchingOptions = new ArrayList<>();
 
+  /**
+   * Assigns the question's choices, linking each one back to this question.
+   *
+   * @param questionChoices the choices to assign
+   */
   public void setChoices(List<QuestionChoice> questionChoices) {
     this.choices = questionChoices;
     this.choices.forEach(choice -> choice.setQuestion(this));
@@ -78,6 +132,11 @@ public class Question implements Serializable {
     return extendedMatchingStatements;
   }
 
+  /**
+   * Assigns the question's extended matching statements, linking each one back to this question.
+   *
+   * @param extendedMatchingStatements the statements to assign
+   */
   public void setExtendedMatchingStatements(
       List<ExtendedMatchingStatement> extendedMatchingStatements) {
     this.extendedMatchingStatements = extendedMatchingStatements;
@@ -88,6 +147,11 @@ public class Question implements Serializable {
     return extendedMatchingOptions;
   }
 
+  /**
+   * Assigns the question's extended matching options, linking each one back to this question.
+   *
+   * @param extendedMatchingOptions the options to assign
+   */
   public void setExtendedMatchingOptions(List<ExtendedMatchingOption> extendedMatchingOptions) {
     this.extendedMatchingOptions = extendedMatchingOptions;
     this.extendedMatchingOptions.forEach(option -> option.setQuestion(this));

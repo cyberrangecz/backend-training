@@ -24,8 +24,8 @@ import org.mapstruct.ReportingPolicy;
 public interface CloneMapper {
 
   /**
-   * Copies a training definition, resetting its state to {@code UNRELEASED}, clearing its
-   * authors, and leaving its identifier and beta testing group unset.
+   * Copies a training definition, resetting its state to {@code UNRELEASED}, clearing its authors,
+   * and leaving its identifier and beta testing group unset.
    *
    * @param entity the training definition to copy
    * @return the copy
@@ -48,8 +48,8 @@ public interface CloneMapper {
   InfoLevel clone(InfoLevel entity);
 
   /**
-   * Copies an access level, leaving its identifier and training definition unset for the caller
-   * to assign.
+   * Copies an access level, leaving its identifier and training definition unset for the caller to
+   * assign.
    *
    * @param entity the access level to copy
    * @return the copy
@@ -134,8 +134,8 @@ public interface CloneMapper {
   List<QuestionChoice> cloneChoices(List<QuestionChoice> entities);
 
   /**
-   * Copies an extended matching statement, leaving its identifier, question, and extended
-   * matching option unset for the caller to assign.
+   * Copies an extended matching statement, leaving its identifier, question, and extended matching
+   * option unset for the caller to assign.
    *
    * @param entity the extended matching statement to copy
    * @return the copy
@@ -149,8 +149,8 @@ public interface CloneMapper {
       List<ExtendedMatchingStatement> entities);
 
   /**
-   * Copies an extended matching option, leaving its identifier and question unset for the caller
-   * to assign.
+   * Copies an extended matching option, leaving its identifier and question unset for the caller to
+   * assign.
    *
    * @param entity the extended matching option to copy
    * @return the copy

@@ -2,6 +2,11 @@ package cz.cyberrange.platform.training.api.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Deserialization target for one sandbox pool as the sandbox service describes it. This service
+ * reads only the lock reference from it, to release a lock it holds; the remaining properties are
+ * accepted so that the response parses.
+ */
 public class PoolInfoDTO {
   private Long id;
 
@@ -13,6 +18,7 @@ public class PoolInfoDTO {
   @JsonProperty(value = "max_size")
   private Long maxSize;
 
+  /** Identifies the lock currently held over the pool; null when the pool is not locked. */
   @JsonProperty(value = "lock_id")
   private Long lockId;
 

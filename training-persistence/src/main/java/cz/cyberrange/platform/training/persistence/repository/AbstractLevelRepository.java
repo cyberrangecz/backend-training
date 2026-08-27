@@ -71,8 +71,8 @@ public interface AbstractLevelRepository
       @Param("trainingDefinitionId") Long trainingDefinitionId, @Param("levelId") Long levelId);
 
   /**
-   * Find a level by id, with its training definition, that definition's authors and, when
-   * present, its beta testing group's organizers loaded eagerly along with it.
+   * Find a level by id, with its training definition, that definition's authors and, when present,
+   * its beta testing group's organizers loaded eagerly along with it.
    *
    * @param levelId the level id
    * @return {@link AbstractLevel} with its associated {@link

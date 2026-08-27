@@ -86,8 +86,8 @@ public interface TrainingDefinitionRepository
    * Find unreleased training definitions whose beta testing group lists the given user as an
    * organizer.
    *
-   * @param userRefId the cross-service user reference id to match against the beta testing
-   *     group's organizers
+   * @param userRefId the cross-service user reference id to match against the beta testing group's
+   *     organizers
    * @param pageable the pageable
    * @return the page
    */
@@ -95,11 +95,11 @@ public interface TrainingDefinitionRepository
       @Param("userRefId") Long userRefId, Pageable pageable);
 
   /**
-   * Find unreleased training definitions where the given user is either an author or an
-   * organizer of the beta testing group.
+   * Find unreleased training definitions where the given user is either an author or an organizer
+   * of the beta testing group.
    *
-   * @param userRefId the cross-service user reference id to match against the definition's
-   *     authors and its beta testing group's organizers
+   * @param userRefId the cross-service user reference id to match against the definition's authors
+   *     and its beta testing group's organizers
    * @param pageable the pageable
    * @return the page
    */

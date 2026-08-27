@@ -20,6 +20,13 @@ public class QuestionChoiceDTO implements Serializable, Ordered {
   @NotEmpty(message = "{questionChoice.text.NotEmpty.message}")
   private String text;
 
+  /**
+   * Whether this choice is a correct answer. Consulted only when scoring a multiple-choice
+   * question, where every submitted answer must equal the text of exactly the choices marked
+   * correct; ignored for a free-form question, whose choices are all treated as accepted answer
+   * texts regardless of this flag. Cleared to null before an assessment level reaches a trainee's
+   * current level in a training run, but left set when a designer retrieves the level for editing.
+   */
   @ApiModelProperty(value = "Sign if the choice is correct.", example = "true")
   @NotNull(message = "{questionChoice.correct.NotNull.message}")
   private Boolean correct;

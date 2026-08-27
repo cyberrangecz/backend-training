@@ -10,7 +10,10 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** The type Level started. */
+/**
+ * Records a level starting, whether as the first level of a training run or after advancing from
+ * the previous one, carried under the {@code level_started} type.
+ */
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -21,12 +24,15 @@ public class LevelStarted extends AbstractAuditPOJO {
 
   public static final String TYPE = "level_started";
 
+  /** Category of the level that was started. */
   @JsonProperty(value = "level_type", required = true)
   private EventLevelType levelType;
 
+  /** Highest score obtainable in the level. */
   @JsonProperty(value = "max_score", required = true)
   private int maxScore;
 
+  /** Title of the level that was started. */
   @JsonProperty(value = "level_title", required = true)
   private String levelTitle;
 }

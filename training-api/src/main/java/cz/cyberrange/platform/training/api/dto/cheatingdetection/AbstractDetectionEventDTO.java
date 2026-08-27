@@ -9,7 +9,11 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-/** Encapsulates information about abstract detection event. */
+/**
+ * One finding of a cheating detection run, holding what every kind of finding has in common: the
+ * detection it came from, the training run and level whose submission triggered it, and the people
+ * implicated. Each kind of finding adds its own evidence in a subtype.
+ */
 @Data
 @ApiModel(
     value = "AbstractDetectionEventDTO",
@@ -71,6 +75,10 @@ public class AbstractDetectionEventDTO {
   @ApiModelProperty(value = "Title of the training level.", example = "SQL injection")
   private String levelTitle;
 
+  /**
+   * The moment the detection run was executed, shared by every finding of that run, rather than the
+   * moment the trainee did the thing being flagged.
+   */
   @ApiModelProperty(value = "Time at which the event was detected.", example = "1.1.2022 5:55:23")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime detectedAt;
@@ -81,6 +89,7 @@ public class AbstractDetectionEventDTO {
   @ApiModelProperty(value = "type of the event.", example = "answer similarity")
   private DetectionEventType detectionEventType;
 
+  /** The implicated people's display names, run together into one comma-separated string. */
   @ApiModelProperty(value = "participants of the event.", example = "John Doe,Jane Doe")
   private String participants;
 }

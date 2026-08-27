@@ -1,13 +1,20 @@
 package cz.cyberrange.platform.training.persistence.model.enums;
 
+/**
+ * How far a cheating detection has got, tracked both for the run as a whole and separately for each
+ * kind of detection within it. Stored by name.
+ */
 public enum CheatingDetectionState {
 
-  /** represents a running state. */
+  /** Accepted and waiting to be executed. */
   QUEUED,
-  /** represents a running state. */
+  /** Executing now. */
   RUNNING,
-  /** represents a running state. */
+  /**
+   * Excluded from the run. A detection asked for in this state is left in it rather than queued, so
+   * it never executes.
+   */
   DISABLED,
-  /** represents a finished state. */
+  /** Executed to completion; any findings it made are recorded. */
   FINISHED;
 }

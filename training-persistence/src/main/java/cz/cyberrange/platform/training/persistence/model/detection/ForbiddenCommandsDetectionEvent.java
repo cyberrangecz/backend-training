@@ -27,8 +27,13 @@ import lombok.ToString;
       query =
           "SELECT fcde FROM ForbiddenCommandsDetectionEvent fcde WHERE fcde.cheatingDetectionId = :cheatingDetectionId")
 })
+/**
+ * A finding that a trainee ran commands the sweep was told to forbid. It always implicates exactly
+ * one trainee, so the inherited participant text holds a single name.
+ */
 public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 
+  /** How many matching commands the finding gathered, counting every occurrence. */
   @Column(name = "command_count", nullable = false)
   private int commandCount;
 }

@@ -29,6 +29,7 @@ import javax.persistence.*;
   @NamedQuery(
       name = "TrainingDefinition.findAllByState",
       query = "SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state"),
+  // Matches on userRefId: takes the external, cross-service identifier of the user.
   @NamedQuery(
       name = "TrainingDefinition.findAllForOrganizersUnreleased",
       query =
@@ -36,6 +37,7 @@ import javax.persistence.*;
               + "LEFT JOIN td.betaTestingGroup bt "
               + "LEFT JOIN bt.organizers org "
               + "WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'"),
+  // Matches on userRefId: takes the external, cross-service identifier of the user.
   @NamedQuery(
       name = "TrainingDefinition.findAllForDesignersAndOrganizersUnreleased",
       query =
@@ -44,6 +46,7 @@ import javax.persistence.*;
               + "LEFT JOIN bt.organizers org "
               + "LEFT JOIN td.authors aut "
               + "WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'"),
+  // Matches on userRefId: takes the external, cross-service identifier of the user.
   @NamedQuery(
       name = "TrainingDefinition.findPlayedDefinitionIdsByUser",
       query =
@@ -191,21 +194,13 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets development state in which is Training definition States are PRIVATED, RELEASED, ARCHIVED
-   * and UNRELEASED
-   *
-   * @return the state
+   * Returns how far along its life this training definition is; see {@link TDState} for the
+   * possible values.
    */
   public TDState getState() {
     return state;
   }
 
-  /**
-   * Sets development state in which is Training definition States are PRIVATED, RELEASED, ARCHIVED
-   * and UNRELEASED
-   *
-   * @param state the state
-   */
   public void setState(TDState state) {
     this.state = state;
   }

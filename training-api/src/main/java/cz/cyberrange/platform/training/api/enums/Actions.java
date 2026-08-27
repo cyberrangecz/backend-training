@@ -1,13 +1,14 @@
 package cz.cyberrange.platform.training.api.enums;
 
-/** The enumeration of Actions. */
+/**
+ * Classifies which action is offered next for a training run that has already been accessed.
+ * Resolved for each run and carried on its accessed-run API representation.
+ */
 public enum Actions {
-
-  /** None actions. */
   NONE,
-  /** Shows results of finished training runs. */
+  /** Chosen when the run has finished or its training instance's end time has passed. */
   RESULTS,
 
-  /** Resume actions. */
+  /** Chosen when the run has not finished and its training instance is still running. */
   RESUME;
 }

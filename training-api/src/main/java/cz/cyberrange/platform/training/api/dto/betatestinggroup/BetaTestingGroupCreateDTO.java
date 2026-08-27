@@ -6,7 +6,10 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Encapsulates information needed for creation of new Beta testing group. */
+/**
+ * The membership submitted for the group that may see a training definition while it is still
+ * unreleased, carried as part of a definition being created.
+ */
 @Data
 @ApiModel(
     value = "BetaTestingGroupCreateDTO",

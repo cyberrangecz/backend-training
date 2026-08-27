@@ -19,8 +19,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Class representing Detection event. Detection event occurs based on a submission Detection events
- * can be created based on suspicious submissions in a training instance.
+ * One finding a cheating detection made about a submission, holding what every kind of finding has
+ * in common. Each kind of finding is a subclass with its own table joined to this one, so a finding
+ * is read whole through this class and narrowed to its kind only where the extra evidence matters.
  */
 @EqualsAndHashCode(callSuper = false)
 @Getter
@@ -72,9 +73,14 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
   @Column(name = "level_title", nullable = false)
   private String levelTitle;
 
+  /**
+   * The moment the detection was executed, which every finding of that detection shares, rather
+   * than the moment of the submission being flagged.
+   */
   @Column(name = "detected_at", nullable = false)
   private LocalDateTime detectedAt;
 
+  /** How many trainees the finding implicates. */
   @Column(name = "participant_count", nullable = false)
   private int participantCount;
 
@@ -82,9 +88,20 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
   @Column(name = "detection_event_type", nullable = false)
   private DetectionEventType detectionEventType;
 
+  /** The implicated trainees' display names, held as one string rather than as related rows. */
   @Column(name = "participants", nullable = false)
   private String participants;
 
+  /**
+   * Fills in everything a finding carries regardless of its kind, taking the instance, the moment
+   * and the identity of the detection from the detection itself, and the run and the level from the
+   * submission that triggered the finding. The implicated trainees' names are not set here.
+   *
+   * @param submission the submission the finding was made about
+   * @param cd the detection that made the finding
+   * @param type which kind of finding this is
+   * @param size how many trainees the finding implicates
+   */
   public void setCommonDetectionEventParameters(
       Submission submission, CheatingDetection cd, DetectionEventType type, int size) {
     this.setCheatingDetectionId(cd.getId());

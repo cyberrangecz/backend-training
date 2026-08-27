@@ -333,17 +333,17 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Updates a training definition, carrying its creation timestamp and estimated duration over
-   * from the stored definition, and its existing authors joined by the requesting user.
-   * Reachable only by an administrator or by a designer of the definition being updated. The beta
-   * testing group cannot be removed by this call: if the request carries none while the stored
-   * definition has one, the update is refused.
+   * Updates a training definition, carrying its creation timestamp and estimated duration over from
+   * the stored definition, and its existing authors joined by the requesting user. Reachable only
+   * by an administrator or by a designer of the definition being updated. The beta testing group
+   * cannot be removed by this call: if the request carries none while the stored definition has
+   * one, the update is refused.
    *
    * @param trainingDefinitionUpdateDTO the update, carrying the id of the definition to update
    * @throws EntityNotFoundException when no training definition with the given id exists
    * @throws EntityConflictException when the stored definition's beta testing group would be
-   *     removed, or when the definition is not {@link TDState#UNRELEASED} or already has a
-   *     training instance
+   *     removed, or when the definition is not {@link TDState#UNRELEASED} or already has a training
+   *     instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -404,8 +404,7 @@ public class TrainingDefinitionFacade {
    *
    * @param id id of the definition to clone
    * @param title the title to give the clone
-   * @return the cloned definition together with its levels, {@link
-   *     TrainingDefinitionWithLevelsDTO}
+   * @return the cloned definition together with its levels, {@link TrainingDefinitionWithLevelsDTO}
    * @throws EntityNotFoundException when no training definition with the given id exists
    */
   @PreAuthorize(
@@ -420,8 +419,8 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Swaps the order of two levels within a training definition, so each takes the other's
-   * position, and records the definition as edited.
+   * Swaps the order of two levels within a training definition, so each takes the other's position,
+   * and records the definition as edited.
    *
    * @param definitionId id of the definition containing the levels
    * @param swapLevelFrom id of the first level to swap
@@ -442,10 +441,9 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Moves a level to a new position within its definition, shifting the levels between the old
-   * and new position to close the gap, and records the definition as edited. A requested
-   * position outside the definition's range is clamped to the nearest valid position rather than
-   * rejected.
+   * Moves a level to a new position within its definition, shifting the levels between the old and
+   * new position to close the gap, and records the definition as edited. A requested position
+   * outside the definition's range is clamped to the nearest valid position rather than rejected.
    *
    * @param definitionId id of the definition containing the level
    * @param levelIdToBeMoved id of the level to move
@@ -470,8 +468,8 @@ public class TrainingDefinitionFacade {
    *
    * @param id id of the definition to delete
    * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is {@link TDState#RELEASED} or already
-   *     has a training instance
+   * @throws EntityConflictException when the definition is {@link TDState#RELEASED} or already has
+   *     a training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -753,8 +751,8 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Finds a level by id. Reachable by any designer or administrator, regardless of whether they
-   * are a designer of the level's own training definition.
+   * Finds a level by id. Reachable by any designer or administrator, regardless of whether they are
+   * a designer of the level's own training definition.
    *
    * @param levelId - id of wanted level
    * @return wanted {@link AbstractLevelDTO}
@@ -773,8 +771,8 @@ public class TrainingDefinitionFacade {
    * @param pageable pageable parameter with information about pagination.
    * @param givenName restricts the result to users whose given name matches, no restriction when
    *     null
-   * @param familyName restricts the result to users whose family name matches, no restriction
-   *     when null
+   * @param familyName restricts the result to users whose family name matches, no restriction when
+   *     null
    * @return the requested page of users holding that role
    * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
    *     to the user-and-group service fails
@@ -807,8 +805,8 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Finds Training Definitions by their ids, together with the basic detail of their levels. An
-   * id matching no training definition is silently omitted from the result.
+   * Finds Training Definitions by their ids, together with the basic detail of their levels. An id
+   * matching no training definition is silently omitted from the result.
    *
    * @param ids the ids of Training Definitions to return.
    * @return the matching {@link TrainingDefinitionBasicDTO}s, each carrying its levels
@@ -860,13 +858,13 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Retrieves one page of the given training definition's authors from the user-and-group
-   * service, identified by their cross-service user reference ids.
+   * Retrieves one page of the given training definition's authors from the user-and-group service,
+   * identified by their cross-service user reference ids.
    *
    * @param trainingDefinitionId id of the training definition whose authors are retrieved
    * @param pageable pageable parameter with information about pagination.
-   * @param givenName restricts the result to authors whose given name matches, no restriction
-   *     when null
+   * @param givenName restricts the result to authors whose given name matches, no restriction when
+   *     null
    * @param familyName restricts the result to authors whose family name matches, no restriction
    *     when null
    * @return the requested page of authors
@@ -888,9 +886,9 @@ public class TrainingDefinitionFacade {
 
   /**
    * Retrieves one page of a training definition's beta testing group organizers from the
-   * user-and-group service, identified by their cross-service user reference ids. Returns an
-   * empty page, without contacting that service, when the definition has no beta testing group
-   * or that group has no organizer.
+   * user-and-group service, identified by their cross-service user reference ids. Returns an empty
+   * page, without contacting that service, when the definition has no beta testing group or that
+   * group has no organizer.
    *
    * @param trainingDefinitionId id of the training definition whose beta testers are retrieved
    * @param pageable pageable parameter with information about pagination.
@@ -927,8 +925,8 @@ public class TrainingDefinitionFacade {
    * @param pageable pageable parameter with information about pagination.
    * @param givenName restricts the result to designers whose given name matches, no restriction
    *     when null
-   * @param familyName restricts the result to designers whose family name matches, no
-   *     restriction when null
+   * @param familyName restricts the result to designers whose family name matches, no restriction
+   *     when null
    * @return the requested page of designers, excluding the definition's authors
    * @throws EntityNotFoundException when no training definition with the given id exists
    * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
@@ -949,13 +947,12 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Adds and removes authors of a training definition in one operation, and records the
-   * definition as edited. The logged in user is never removed, even when present in the removal
-   * set.
+   * Adds and removes authors of a training definition in one operation, and records the definition
+   * as edited. The logged in user is never removed, even when present in the removal set.
    *
    * @param trainingDefinitionId id of the training definition to be updated
-   * @param authorsAddition cross-service user reference ids of the authors to add, no addition
-   *     when null or empty
+   * @param authorsAddition cross-service user reference ids of the authors to add, no addition when
+   *     null or empty
    * @param authorsRemoval cross-service user reference ids of the authors to remove, no removal
    *     when null or empty
    * @throws EntityNotFoundException when no training definition with the given id exists
@@ -981,8 +978,8 @@ public class TrainingDefinitionFacade {
 
   /**
    * Adds the users carrying the given cross-service user reference ids as authors of a training
-   * definition, creating a local user reference for any of them not already stored and skipping
-   * any already listed as an author.
+   * definition, creating a local user reference for any of them not already stored and skipping any
+   * already listed as an author.
    *
    * @param trainingDefinition the definition to add authors to
    * @param userRefIds cross-service user reference ids of the users to add
@@ -1004,13 +1001,13 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Retrieves the users carrying the given cross-service user reference ids in full, walking
-   * every page the user-and-group service reports.
+   * Retrieves the users carrying the given cross-service user reference ids in full, walking every
+   * page the user-and-group service reports.
    *
    * @param participantsRefIds cross-service user reference ids of the users to retrieve
    * @return all matching users, unfiltered by name
-   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when any of
-   *     the calls to the user-and-group service fails
+   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when any of the
+   *     calls to the user-and-group service fails
    */
   private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
     List<UserRefDTO> users = new ArrayList<>();

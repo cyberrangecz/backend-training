@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/** Solution displayed event, carrying the {@code type} value {@code solution_displayed}. */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

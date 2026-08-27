@@ -7,7 +7,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** A level that presents read-only informational content to the participant. */
+/**
+ * Full representation of an info level, carrying its content. Reaches both a designer, organizer or
+ * administrator viewing the level and a participant currently on it, since the content holds
+ * nothing that must be kept from either.
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

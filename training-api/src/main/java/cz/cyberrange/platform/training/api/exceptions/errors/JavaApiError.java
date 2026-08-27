@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
 
+/**
+ * The error body returned by a failing call to the user-and-group or answers-storage microservice,
+ * deserialized by {@code ObjectMapper.readValue} from that response's JSON. The {@link
+ * #entityErrorDetail} field can likewise be populated by that deserialization, but nothing in this
+ * codebase reads it back out through {@link #getEntityErrorDetail()}.
+ */
 @ApiModel(
     value = "JavaApiError",
     description = "A detailed error from another Java mircorservice.",
@@ -103,6 +109,7 @@ public class JavaApiError extends ApiSubError {
     this.timestamp = timestamp;
   }
 
+  /** Returns the error message, or a placeholder when none was set. */
   @Override
   public String getMessage() {
     return message == null ? "No specific message provided." : message;

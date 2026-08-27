@@ -6,21 +6,26 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
+/**
+ * Manages {@link TimeProximityDetectionEvent} findings, the joined-inheritance subtype of
+ * {@code AbstractDetectionEvent} recording that several trainees solved the same level closer
+ * together in time than the sweep's tolerance allows.
+ */
 public interface TimeProximityDetectionEventRepository
     extends JpaRepository<TimeProximityDetectionEvent, Long>,
         QuerydslPredicateExecutor<TimeProximityDetectionEvent> {
 
   /**
-   * Returns the detection event based on its id
+   * Returns the time proximity finding with the given primary key.
    *
-   * @param eventId the detection event id
+   * @param eventId the primary key of the finding
    */
   TimeProximityDetectionEvent findTimeProximityEventById(@Param("eventId") Long eventId);
 
   /**
-   * Returns all time proximity detection events of cheating detection
+   * Returns the time proximity findings of one cheating detection sweep, in no defined order.
    *
-   * @param cheatingDetectionId the detection event id
+   * @param cheatingDetectionId the cheating detection the returned findings belong to
    */
   List<TimeProximityDetectionEvent> findAllByCheatingDetectionId(
       @Param("cheatingDetectionId") Long cheatingDetectionId);

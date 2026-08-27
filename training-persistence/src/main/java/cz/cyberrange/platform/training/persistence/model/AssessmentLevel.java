@@ -37,6 +37,10 @@ public class AssessmentLevel extends AbstractLevel {
   @Column(name = "instructions", nullable = false)
   private String instructions;
 
+  /**
+   * Selects whether submitted answers are graded against a correct option ({@code TEST}) or only
+   * gathered without evaluation (any other type).
+   */
   @Column(name = "assessment_type", length = 128, nullable = false)
   @Enumerated(EnumType.STRING)
   private AssessmentType assessmentType;

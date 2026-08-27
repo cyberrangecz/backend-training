@@ -3,6 +3,11 @@ package cz.cyberrange.platform.training.api.responses;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
+/**
+ * One generated answer belonging to a single sandbox, as a variable name paired with the value
+ * expected for it. Consumers key on the variable name and compare the content against what a
+ * trainee submitted.
+ */
 public class VariantAnswer {
 
   @ApiModelProperty(

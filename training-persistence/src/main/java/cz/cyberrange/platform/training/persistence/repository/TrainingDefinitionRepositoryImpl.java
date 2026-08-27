@@ -18,18 +18,30 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The type Training definition repository. */
+/**
+ * Implements the {@link TrainingDefinition} lookup declared by {@link
+ * TrainingDefinitionRepositoryCustom}.
+ */
 @Repository
 public class TrainingDefinitionRepositoryImpl extends QuerydslRepositorySupport
     implements TrainingDefinitionRepositoryCustom {
 
   @PersistenceContext private EntityManager entityManager;
 
-  /** Instantiates a new Training definition repository. */
+  /**
+   * Configures the QueryDSL support base class to build queries against {@link
+   * TrainingDefinition}.
+   */
   public TrainingDefinitionRepositoryImpl() {
     super(TrainingDefinition.class);
   }
 
+  /**
+   * Left-joins each candidate definition to its authors, its beta testing group, and that group's
+   * organizers, then keeps only the definitions where an author or a beta testing group organizer
+   * has the given cross-service {@code userRefId}. Deduplicates the joined rows before applying the
+   * given predicate and paging.
+   */
   @Override
   @Transactional
   public Page<TrainingDefinition> findAll(

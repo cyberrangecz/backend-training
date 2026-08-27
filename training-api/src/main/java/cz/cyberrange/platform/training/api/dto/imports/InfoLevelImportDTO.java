@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/**
- * The type Info level import dto. * Encapsulates information about info level. Inherits from {@link
- * AbstractLevelImportDTO}
- */
+/** Encapsulates information about an info level. Inherits from {@link AbstractLevelImportDTO} */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

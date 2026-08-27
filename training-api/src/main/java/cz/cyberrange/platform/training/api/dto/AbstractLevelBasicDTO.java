@@ -10,7 +10,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-/** Contains generally safe, descriptive-only data accessible by both organizers and trainees. */
+/**
+ * Contains generally safe, descriptive-only data accessible by both organizers and trainees.
+ *
+ * <p>Lists its four concrete level subtypes through {@code @JsonSubTypes} but carries no
+ * {@code @JsonTypeInfo}, so that listing gives Jackson no discriminator property to read or write;
+ * a value of this type is serialized using whichever concrete subtype it actually holds at runtime,
+ * and this type supports no polymorphic deserialization of its own.
+ */
 @Data
 @ApiModel(
     value = "AbstractLevelBasicDTO",

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** The type Training run ended. */
+/** Records a training run ending, carried under the {@code training_run_finished} type. */
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -20,11 +20,11 @@ public class TrainingRunFinished extends AbstractAuditPOJO {
 
   public static final String TYPE = "training_run_finished";
 
-  // Training run start time
+  /** Epoch-millisecond instant the training run started. */
   @JsonProperty(value = "start_time", required = true)
   private long startTime;
 
-  // Training run end time
+  /** Epoch-millisecond instant the training run finished. */
   @JsonProperty(value = "end_time", required = true)
   private long endTime;
 }

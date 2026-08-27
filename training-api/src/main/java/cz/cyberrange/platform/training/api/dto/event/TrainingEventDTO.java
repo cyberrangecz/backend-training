@@ -9,6 +9,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * Parent class for every training audit event. It registers one subtype per concrete event kind
+ * under that kind's fully qualified audit model class name, while the {@code type} value actually
+ * written into an audit document is the short constant the model class declares, so no registered
+ * name matches the value a document carries.
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -55,6 +61,7 @@ import lombok.ToString;
 })
 public abstract class TrainingEventDTO extends AbstractEventDTO {
 
+  /** Sandbox pool of the training instance, copied from {@code TrainingInstance.poolId}. */
   @ApiModelProperty(value = "Pool ID")
   @JsonProperty("pool_id")
   private Long poolId;
@@ -82,6 +89,10 @@ public abstract class TrainingEventDTO extends AbstractEventDTO {
   @JsonProperty("level_order")
   private Long levelOrder;
 
+  /**
+   * Cross-service user reference id of the training run's participant, copied from {@code
+   * UserRef.userRefId}; never the participant's local primary key.
+   */
   @ApiModelProperty(value = "User reference ID")
   @JsonProperty("user_ref_id")
   private Long userRefId;

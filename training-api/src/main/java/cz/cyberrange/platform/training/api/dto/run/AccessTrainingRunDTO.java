@@ -23,11 +23,13 @@ public class AccessTrainingRunDTO {
   @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
   private boolean showStepperBar;
 
+  /** Plain sandbox UUID, never hashed; the caller is always this run's owner or an admin. */
   @ApiModelProperty(
       value = "Main identifier of sandbox which is assigned to training run.",
       example = "2")
   private String sandboxInstanceRefId;
 
+  /** The training run's current level, not necessarily the first level of the definition. */
   @ApiModelProperty(value = "First level in the current training run.")
   private AbstractLevelDTO abstractLevelDTO;
 
@@ -41,11 +43,20 @@ public class AccessTrainingRunDTO {
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime startTime;
 
+  /**
+   * The current training level's solution text, set only when that level is a training level and
+   * its solution has been taken; {@code null} otherwise. Despite its name, this does not hold a
+   * boolean sign.
+   */
   @ApiModelProperty(
       value = "Sign if solution of current training level was taken",
       example = "true")
   private String takenSolution;
 
+  /**
+   * Hints already taken in the current level. Populated only when resuming an existing run; empty
+   * when a run is newly created.
+   */
   @ApiModelProperty(value = "All already taken hints.")
   private List<TakenHintDTO> takenHints = new ArrayList<>();
 
@@ -72,9 +83,7 @@ public class AccessTrainingRunDTO {
   private boolean isLevelAnswered;
 
   /**
-   * Add taken hint to list of taken hints.
-   *
-   * @param takenHintDTO the {@link TakenHintDTO}
+   * @param takenHintDTO the {@link TakenHintDTO} to append
    */
   public void addTakenHint(TakenHintDTO takenHintDTO) {
     this.takenHints.add(takenHintDTO);

@@ -8,7 +8,10 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Contains generally safe, descriptive-only data accessible by both organizers and trainees. */
+/**
+ * A hint stripped of its advice: what it is called and what taking it costs, without the text a
+ * trainee would read.
+ */
 @Data
 @ApiModel(
     value = "HintBasicDTO",
@@ -22,6 +25,7 @@ public class HintBasicDTO {
   @NotEmpty(message = "{hint.title.NotEmpty.message}")
   protected String title;
 
+  /** Points deducted from the level's score once the hint is taken; accepted between 0 and 100. */
   @NotNull(message = "{hint.hintPenalty.NotNull.message}")
   @Min(value = 0, message = "{hint.hintPenalty.Min.message}")
   @Max(value = 100, message = "{hint.hintPenalty.Max.message}")

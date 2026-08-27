@@ -21,7 +21,12 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-/** The type Web client config. */
+/**
+ * Supplies one HTTP client per external service this service talks to. Each client is pointed at
+ * its service's configured address, sends and accepts JSON, forwards the caller's own bearer token,
+ * and turns any failure status into an exception carrying that service's error detail. Which shape
+ * of error detail is parsed is the only thing that differs between the clients.
+ */
 @Import(ObjectMappersConfiguration.class)
 @Configuration
 public class WebClientConfig {
@@ -43,9 +48,10 @@ public class WebClientConfig {
   }
 
   /**
-   * Sandbox service web client web client.
+   * Supplies the client for the sandbox service, which reports its failures in the Python services'
+   * error shape.
    *
-   * @return the web client
+   * @return the client calls to the sandbox service go through
    */
   @Bean
   @Qualifier("sandboxServiceWebClient")
@@ -66,9 +72,10 @@ public class WebClientConfig {
   }
 
   /**
-   * User management service web client web client.
+   * Supplies the client for the user-and-group service, which reports its failures in the Java
+   * services' error shape.
    *
-   * @return the web client
+   * @return the client calls to the user-and-group service go through
    */
   @Bean
   @Qualifier("userManagementServiceWebClient")
@@ -89,9 +96,10 @@ public class WebClientConfig {
   }
 
   /**
-   * Answers storage web client.
+   * Supplies the client for the answer storage service, which reports its failures in the Java
+   * services' error shape.
    *
-   * @return the web client
+   * @return the client calls to the answer storage service go through
    */
   @Bean
   @Qualifier("answersStorageWebClient")
@@ -111,6 +119,13 @@ public class WebClientConfig {
         .build();
   }
 
+  /**
+   * Attaches the calling user's own bearer token to every outgoing request, so the called service
+   * sees the request as made by that user rather than by this service. The current request must be
+   * authenticated by a token; there is no anonymous path.
+   *
+   * @return the filter that adds the authorization header
+   */
   private ExchangeFilterFunction addSecurityHeader() {
     return (request, next) -> {
       JwtAuthenticationToken jwtAuthentication =
@@ -124,6 +139,13 @@ public class WebClientConfig {
     };
   }
 
+  /**
+   * Turns any client or server failure status into an exception carrying the failing status and the
+   * error detail parsed out of the body in the Python services' shape. A successful response passes
+   * through untouched.
+   *
+   * @return the filter that raises the exception
+   */
   private ExchangeFilterFunction openStackSandboxServiceExceptionHandlingFunction() {
     return ExchangeFilterFunction.ofResponseProcessor(
         clientResponse -> {
@@ -143,6 +165,14 @@ public class WebClientConfig {
         });
   }
 
+  /**
+   * Parses the error body, falling back to a detail that says so when the body is absent or blank,
+   * and to one quoting the unparsed body when it cannot be read. It never fails, so a failure
+   * always carries some detail.
+   *
+   * @param errorBody the response body of the failed call
+   * @return the parsed error detail, or a stand-in describing why there is none
+   */
   private PythonApiError obtainSuitablePythonApiError(String errorBody) {
     if (errorBody == null || errorBody.isBlank()) {
       return PythonApiError.of("No specific detail provided.");
@@ -154,6 +184,13 @@ public class WebClientConfig {
     }
   }
 
+  /**
+   * Turns any client or server failure status into an exception carrying the failing status and the
+   * error detail parsed out of the body in the Java services' shape. A successful response passes
+   * through untouched.
+   *
+   * @return the filter that raises the exception
+   */
   private ExchangeFilterFunction javaMicroserviceExceptionHandlingFunction() {
     return ExchangeFilterFunction.ofResponseProcessor(
         clientResponse -> {
@@ -172,6 +209,14 @@ public class WebClientConfig {
         });
   }
 
+  /**
+   * Parses the error body, falling back to a message that says so when the body is absent or blank,
+   * and to one quoting the unparsed body when it cannot be read. It never fails, so a failure
+   * always carries some message.
+   *
+   * @param errorBody the response body of the failed call
+   * @return the parsed error detail, or a stand-in describing why there is none
+   */
   private JavaApiError obtainSuitableJavaApiError(String errorBody) {
     if (errorBody == null || errorBody.isBlank()) {
       return JavaApiError.of("No specific message provided.");

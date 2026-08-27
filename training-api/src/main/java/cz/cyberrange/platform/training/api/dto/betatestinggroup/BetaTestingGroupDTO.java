@@ -5,7 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Set;
 import lombok.Data;
 
-/** Encapsulates information about Beta testing group. */
+/**
+ * The group of users who may see and run a training definition while it is still unreleased, as it
+ * leaves the service.
+ */
 @Data
 @ApiModel(
     value = "BetaTestingGroupDTO",
@@ -19,6 +22,10 @@ public class BetaTestingGroupDTO {
       example = "1")
   private Long id;
 
+  /**
+   * Carries each member's {@code userRefId}, the id spoken outside this service, rather than the
+   * local primary key of the user row. Empty rather than null when the group has no members.
+   */
   @ApiModelProperty(
       value = "Logins of users who is allowed to see training definition.",
       required = true)

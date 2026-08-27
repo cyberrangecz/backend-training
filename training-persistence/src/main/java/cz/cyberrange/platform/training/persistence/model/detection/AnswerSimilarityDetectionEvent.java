@@ -29,9 +29,11 @@ import lombok.ToString;
 })
 public class AnswerSimilarityDetectionEvent extends AbstractDetectionEvent {
 
+  /** The answer value that was submitted, as the trainee entered it. */
   @Column(name = "answer")
   private String answer;
 
+  /** Display name of the trainee the submitted answer was generated for. */
   @Column(name = "answer_owner", nullable = false)
   private String answerOwner;
 }

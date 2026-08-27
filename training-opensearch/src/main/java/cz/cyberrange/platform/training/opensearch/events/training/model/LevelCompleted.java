@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** The type Level completed. */
+/** Records a level being finished, carried under the {@code level_completed} type. */
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -21,6 +21,7 @@ public class LevelCompleted extends AbstractAuditPOJO {
 
   public static final String TYPE = "level_completed";
 
+  /** Category of the level that was completed. */
   @JsonProperty(value = "level_type", required = true)
   private EventLevelType levelType;
 }

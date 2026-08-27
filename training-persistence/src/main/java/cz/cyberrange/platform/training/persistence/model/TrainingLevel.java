@@ -145,8 +145,9 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets if solution is penalized. If true, points for solving level will be decreased to 1 after
-   * trainee displays solution
+   * Gets if solution is penalized. If true, the run's penalty for the level is set to the level's
+   * full maximum score when the trainee displays the solution, so a subsequent correct answer earns
+   * zero points for it.
    *
    * @return the boolean
    */
@@ -155,8 +156,9 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets if solution is penalized. If true, points for solving level will be decreased to 1 after
-   * trainee displays solution
+   * Sets if solution is penalized. If true, the run's penalty for the level is set to the level's
+   * full maximum score when the trainee displays the solution, so a subsequent correct answer earns
+   * zero points for it.
    *
    * @param solutionPenalized the solution penalized
    */
@@ -165,7 +167,8 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets attachments.
+   * Gets the attachments belonging to this level, carried along whenever the level is exported,
+   * imported, or cloned.
    *
    * @return the attachments
    */
@@ -174,7 +177,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets attachments.
+   * Sets the attachments belonging to this level.
    *
    * @param attachments the attachments
    */
@@ -183,7 +186,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Add attachment.
+   * Adds an attachment to this level.
    *
    * @param attachment the attachment
    */
@@ -297,7 +300,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets set of expected commands executed in the training level
+   * Gets the set of console command strings recorded for this level.
    *
    * @return set of expected commands
    */
@@ -306,7 +309,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets set of expected commands executed in the training level
+   * Sets the set of console command strings recorded for this level.
    *
    * @param expectedCommands set of expected commands
    */
@@ -315,7 +318,8 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets boolean if at least one command has to be executed to complete the training level
+   * Gets if this level is subject to the NO_COMMANDS cheating detection, which flags a correct
+   * submission for which no console command was run beforehand. Defaults to true when left unset.
    *
    * @return true if commands are required, false otherwise
    */
@@ -324,7 +328,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets a boolean if at least one command has to be executed to complete the training level
+   * Sets whether this level is subject to the NO_COMMANDS cheating detection.
    *
    * @param commandsRequired boolean value
    */

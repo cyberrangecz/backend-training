@@ -17,6 +17,11 @@ import lombok.Data;
  * Encapsulates the fields common to every level update payload. Extended by {@link
  * TrainingLevelUpdateDTO}, {@link AccessLevelUpdateDTO}, {@link AssessmentLevelUpdateDTO} and
  * {@link InfoLevelUpdateDTO}.
+ *
+ * <p>Deserializing a value declared as this type picks the concrete subtype by reading the {@code
+ * level_type} property that must already be present in the payload, matching it against one of the
+ * names below. That property is the JSON key the request body carries for the {@code levelType}
+ * field, once translated through the service's snake-case property naming strategy.
  */
 @Data
 @ApiModel(

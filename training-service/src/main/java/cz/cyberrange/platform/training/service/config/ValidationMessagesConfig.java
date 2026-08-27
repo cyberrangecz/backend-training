@@ -9,14 +9,19 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-/** The type Validation messages config. */
+/**
+ * Wires validation failure messages to the bundled message files, so that a constraint's message
+ * key resolves to readable text rather than being shown as the key.
+ */
 @Configuration
 public class ValidationMessagesConfig {
 
   /**
-   * Message source validation message source.
+   * Supplies the validation messages, read from the bundled locale files. A key with no entry
+   * resolves to the key itself rather than failing, and the files are re-read on each lookup rather
+   * than cached.
    *
-   * @return the message source
+   * @return the source validation messages are resolved through
    */
   @Bean
   public MessageSource messageSourceValidation() {
@@ -30,7 +35,9 @@ public class ValidationMessagesConfig {
   }
 
   /**
-   * Gets validator.
+   * Supplies the validator the application validates with, resolving its failure messages through
+   * the bundled message files. Being the primary validator, it is the one injected wherever no
+   * qualifier names another.
    *
    * @return the validator
    */

@@ -33,6 +33,11 @@ public class TrainingInstanceBasicDTO {
       example = "Concluded Instance")
   protected String title;
 
+  /**
+   * Primary key of the associated training definition, mapped from the instance's
+   * trainingDefinition relation. This DTO carries no accessToken field; it is returned to instance
+   * organizers and to its trainee participants alike.
+   */
   @ApiModelProperty(value = "ID of set training instance", example = "1")
   protected Long definitionId;
 }

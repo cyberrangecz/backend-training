@@ -26,6 +26,7 @@ public class HintExportDTO {
       example = "10")
   private Integer hintPenalty;
 
+  /** Position among the hints of the level that carries it, not among the training's levels. */
   @ApiModelProperty(value = "The order of hint in training level", example = "1")
   private int order;
 }

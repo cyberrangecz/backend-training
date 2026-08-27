@@ -27,11 +27,13 @@ import lombok.ToString;
     value = "TrainingLevelImportDTO",
     description = "Imported training level.",
     parent = AbstractLevelExportDTO.class)
-// Properties accepted and discarded so that training definitions exported by earlier versions
-// remain importable
 @JsonIgnoreProperties({"reference_solution"})
 public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
 
+  /**
+   * Blank is normalized to {@code null} on import. Required, and {@link #answerVariableName} must
+   * then be {@code null}, when {@link #variantAnswers} is {@code false}; forbidden otherwise.
+   */
   @ApiModelProperty(
       value = "Keyword found in training, used for access next level.",
       example = "secretAnswer")
@@ -39,6 +41,10 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @JsonAlias({"flag"})
   private String answer;
 
+  /**
+   * Blank is normalized to {@code null} on import. Required, and {@link #answer} must then be
+   * {@code null}, when {@link #variantAnswers} is {@code true}; forbidden otherwise.
+   */
   @ApiModelProperty(
       value = "Identifier that is used to obtain answer from remote storage.",
       example = "username")
@@ -60,6 +66,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @NotNull(message = "{trainingLevel.solutionPenalized.NotNull.message}")
   private boolean solutionPenalized;
 
+  /** Rejected on import if the sum of every hint's penalty exceeds {@link #maxScore}. */
   @Valid
   @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<HintImportDTO> hints = new HashSet<>();
@@ -77,6 +84,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @ApiModelProperty(value = "List of attachments.", example = "[]")
   private List<AttachmentImportDTO> attachments;
 
+  /** Caps the total penalty the level's {@link #hints} may carry; see {@link #hints}. */
   @ApiModelProperty(
       value = "The maximum score a participant can achieve during a level.",
       example = "20")
@@ -85,6 +93,10 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @Max(value = 100, message = "{abstractLevel.maxScore.Max.message}")
   protected int maxScore;
 
+  /**
+   * Selects which of {@link #answer} or {@link #answerVariableName} the import requires: {@code
+   * true} requires {@link #answerVariableName}, {@code false} requires {@link #answer}.
+   */
   @ApiModelProperty(
       value =
           "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.",

@@ -12,8 +12,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Class representing cheating detection. Cheating detections are executed by organizers. Cheating
- * detections are bound to a training instance.
+ * One sweep for cheating over a single training instance. It holds who asked for the sweep and
+ * when, the settings the individual detections need, and a state per detection so that each can be
+ * followed, skipped or seen to have finished on its own.
  */
 @EqualsAndHashCode(callSuper = false)
 @Getter
@@ -43,6 +44,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
   @Column(name = "training_instance_id", nullable = false)
   private Long trainingInstanceId;
 
+  /** Display name of the user who asked for the sweep, kept as text rather than as a reference. */
   @Column(name = "executed_by")
   private String executedBy;
 
@@ -56,6 +58,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
   @Column(name = "current_state", nullable = false)
   private CheatingDetectionState currentState;
 
+  /** How many findings the sweep has made, recounted as the detections report. */
   @Column(name = "results")
   private Long results;
 
@@ -90,12 +93,22 @@ public class CheatingDetection extends AbstractEntity<Long> {
       fetch = FetchType.LAZY)
   private List<ForbiddenCommand> commands = new ArrayList<>();
 
+  /**
+   * Queues a detection unless it was asked to be left out, in which case it stays left out.
+   *
+   * @param state the state the detection currently carries
+   * @return the state it should carry once the sweep starts
+   */
   private CheatingDetectionState setExecuteState(CheatingDetectionState state) {
     return state != CheatingDetectionState.DISABLED
         ? CheatingDetectionState.QUEUED
         : CheatingDetectionState.DISABLED;
   }
 
+  /**
+   * Marks the sweep as running and queues each of the six detections that was not left out, so that
+   * every detection is either waiting to run or explicitly excluded.
+   */
   public void setExecuteStates() {
     this.setCurrentState(CheatingDetectionState.RUNNING);
     this.setAnswerSimilarityState(setExecuteState(this.getAnswerSimilarityState()));

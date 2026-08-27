@@ -1,6 +1,9 @@
 package cz.cyberrange.platform.training.persistence.model.enums;
 
-/** The enumeration of Cheat types. */
+/**
+ * What a cheating detection finding accuses a trainee of, recorded on the finding and stored by
+ * name. Each kind is produced by its own detection.
+ */
 public enum DetectionEventType {
 
   /** cheat type representing two players having the same IP address. */
@@ -14,8 +17,9 @@ public enum DetectionEventType {
   /** cheat type representing two players submitting their levels at similar times. */
   TIME_PROXIMITY,
   /**
-   * cheat type representing a player not using any commands to solve a task - this counts as a
-   * cheat only if the corresponding level has value of XXX set to True.
+   * A trainee solving a level without any console command being recorded for it. Only a level
+   * marked as requiring commands is examined, and a level whose solution was revealed is passed
+   * over.
    */
   NO_COMMANDS,
   /** cheat type representing a player using commands that are forbidden. */

@@ -1,14 +1,12 @@
 package cz.cyberrange.platform.training.api.enums;
 
-/** The enumeration of user roles. */
+/**
+ * Classifies a user role, sent by name as the {@code roleType} query parameter when this service
+ * asks the user-and-group service for the users holding a role.
+ */
 public enum RoleType {
-
-  /** Role training administrator role. */
   ROLE_TRAINING_ADMINISTRATOR,
-  /** Role training designer role. */
   ROLE_TRAINING_DESIGNER,
-  /** Role training organizer role. */
   ROLE_TRAINING_ORGANIZER,
-  /** Role training trainee role. */
   ROLE_TRAINING_TRAINEE;
 }

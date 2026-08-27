@@ -5,13 +5,15 @@ import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
+/** Custom lookup and insert for {@link UserRef} that a derived or named query cannot express. */
 public interface UserRefRepositoryCustom {
 
   /**
-   * Insert user reference if it does not exist in the database.
+   * Inserts a {@link UserRef} row for the given cross-service user identifier if none exists yet,
+   * then returns the row for that identifier, whether newly inserted or already present.
    *
-   * @param userRefId the user reference id
-   * @return the number of rows affected
+   * @param userRefId the cross-service user identifier
+   * @return the {@link UserRef} row matching the given identifier
    */
   @Modifying
   @Transactional

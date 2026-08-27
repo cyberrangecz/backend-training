@@ -10,6 +10,10 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
+/**
+ * A single console command captured as an audit event, together with the host, user, and working
+ * directory it ran under.
+ */
 @ApiModel(value = "CommandEventDTO", description = "Command event from training run")
 public class CommandEventDTO extends AbstractEventDTO {
 
@@ -17,6 +21,7 @@ public class CommandEventDTO extends AbstractEventDTO {
   @JsonProperty("cmd_type")
   private String cmdType;
 
+  // Holds only the executed program name; any arguments are held separately in commandArguments.
   @ApiModelProperty(value = "Executed command", example = "ls")
   private String command;
 

@@ -12,6 +12,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A question as shown to a participant looking at a level they have already reached, which may be
+ * the level they are working on right now, carrying whatever they have submitted but never the
+ * correct answers.
+ */
 @Getter
 @Setter
 @ToString
@@ -37,28 +42,56 @@ public class QuestionPreviewDTO {
       example = "true")
   private boolean answerRequired;
 
+  /**
+   * Choices displayed to the participant in case of FFQ or MCQ. Cleared to empty for a free-form
+   * question in this preview, since the same choices double as the accepted answer texts; kept for
+   * a multiple-choice question.
+   */
   @ApiModelProperty(value = "Choices displayed to the participant in case of FFQ or MCQ.")
   private List<QuestionChoicePreviewDTO> choices = new ArrayList<>();
 
   @ApiModelProperty(value = "Options displayed to the participant in case of EMI.")
   private List<ExtendedMatchingOptionDTO> extendedMatchingOptions = new ArrayList<>();
 
+  /**
+   * Statements displayed to the participant in case of EMI, each carrying the participant's chosen
+   * option order but never the correct one.
+   */
   @ApiModelProperty(value = "Statements displayed to the participant in case of EMI.")
   private List<ExtendedMatchingStatementPreviewDTO> extendedMatchingStatements = new ArrayList<>();
 
+  /**
+   * The participant's submitted answers for a free-form or multiple-choice question; left unset for
+   * an extended matching question, whose answers are carried on the statements instead.
+   */
   @ApiModelProperty(value = "User answers to the question", example = "[\"An answer\"]")
   private Set<String> userAnswers;
 
+  /**
+   * Assigns the question's choices, sorted by each choice's order.
+   *
+   * @param choices the choices to assign
+   */
   public void setChoices(List<QuestionChoicePreviewDTO> choices) {
     this.choices = choices;
     this.choices.sort(Comparator.comparingInt(QuestionChoicePreviewDTO::getOrder));
   }
 
+  /**
+   * Assigns the question's extended matching options, sorted by each option's order.
+   *
+   * @param extendedMatchingOptions the options to assign
+   */
   public void setExtendedMatchingOptions(List<ExtendedMatchingOptionDTO> extendedMatchingOptions) {
     this.extendedMatchingOptions = extendedMatchingOptions;
     this.extendedMatchingOptions.sort(Comparator.comparingInt(ExtendedMatchingOptionDTO::getOrder));
   }
 
+  /**
+   * Assigns the question's extended matching statements, sorted by each statement's order.
+   *
+   * @param extendedMatchingStatements the statements to assign
+   */
   public void setExtendedMatchingStatements(
       List<ExtendedMatchingStatementPreviewDTO> extendedMatchingStatements) {
     this.extendedMatchingStatements = extendedMatchingStatements;

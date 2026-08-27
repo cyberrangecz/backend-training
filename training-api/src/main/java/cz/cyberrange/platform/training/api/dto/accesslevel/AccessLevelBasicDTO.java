@@ -6,6 +6,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * Represents an access level in a listing or summary context. Adds no field of its own beyond
+ * {@link AbstractLevelBasicDTO}, so it never carries the level's passkey or connection content.
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

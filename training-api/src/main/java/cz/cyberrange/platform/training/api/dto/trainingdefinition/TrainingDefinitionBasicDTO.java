@@ -19,6 +19,10 @@ import lombok.ToString;
 @ApiModel(value = "TrainingDefinitionBasicDTO", description = "A blueprint of abstract levels.")
 public class TrainingDefinitionBasicDTO extends AbstractTrainingDefinitionDTO {
 
+  /**
+   * Populated by the facade from the definition's levels, in presentation order; never derived from
+   * the definition entity itself.
+   */
   @ApiModelProperty(value = "All levels in the training definition, ordered by their order.")
   protected List<AbstractLevelBasicDTO> levels = new ArrayList<>();
 }

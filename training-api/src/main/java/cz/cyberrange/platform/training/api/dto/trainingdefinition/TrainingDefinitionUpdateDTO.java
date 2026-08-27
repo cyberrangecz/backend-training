@@ -51,12 +51,21 @@ public class TrainingDefinitionUpdateDTO {
   @NotNull(message = "{trainingDefinition.state.NotNull.message}")
   private TDState state;
 
+  /**
+   * When present, its organizer ids replace the beta testing group's membership on the updated
+   * definition. Omitting it while the stored definition already has a group is refused as a
+   * conflict rather than removing the group.
+   */
   @ApiModelProperty(
       value = "Group of organizers who is allowed to see the training definition.",
       required = true)
   @Valid
   private BetaTestingGroupUpdateDTO betaTestingGroup;
 
+  /**
+   * Required by validation but not read by the mapper or the facade; the training definition entity
+   * carries no such field.
+   */
   @ApiModelProperty(
       value = "Sign if stepper bar should be displayed.",
       required = true,

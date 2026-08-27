@@ -47,6 +47,8 @@ import javax.persistence.*;
       })
 })
 @NamedQueries({
+  // Matches an instance whose access token equals the given one and whose window (start time to
+  // end time) currently contains the given moment.
   @NamedQuery(
       name = "TrainingInstance.findByStartTimeAfterAndEndTimeBeforeAndAccessToken",
       query =
@@ -80,6 +82,7 @@ import javax.persistence.*;
       query =
           "SELECT (COUNT(ti) > 0) FROM TrainingInstance ti "
               + "INNER JOIN ti.trainingDefinition td WHERE td.id = :trainingDefinitionId"),
+  // True once the instance's end time is before the given moment.
   @NamedQuery(
       name = "TrainingInstance.isFinished",
       query =
@@ -99,6 +102,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
   @Column(name = "pool_id")
   private Long poolId;
 
+  // Trainee-supplied secret required to access this instance's training runs; a base token
+  // followed by a "-" and a 4-character pin, both chosen when the token is generated or changed.
   @Column(name = "access_token", nullable = false, unique = true)
   private String accessToken;
 
@@ -401,15 +406,18 @@ public class TrainingInstance extends AbstractEntity<Long> {
     this.backwardMode = backwardMode;
   }
 
+  /** Returns whether the current moment falls between the instance's start and end time. */
   public boolean running() {
     return LocalDateTime.now(Clock.systemUTC()).isAfter(this.startTime)
         && LocalDateTime.now().isBefore(this.endTime);
   }
 
+  /** Returns whether the instance's end time has passed. */
   public boolean finished() {
     return LocalDateTime.now(Clock.systemUTC()).isAfter(this.endTime);
   }
 
+  /** Returns whether the instance's start time is still in the future. */
   public boolean notStarted() {
     return LocalDateTime.now(Clock.systemUTC()).isBefore(this.startTime);
   }

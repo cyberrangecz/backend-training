@@ -8,7 +8,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates information about Hint. */
+/**
+ * A hint including the advice it gives, as a designer submits it with a training level and as it is
+ * handed to a trainee who has taken it.
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

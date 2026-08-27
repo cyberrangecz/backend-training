@@ -14,10 +14,15 @@ public interface TRAcquisitionLockRepository
         QuerydslPredicateExecutor<TRAcquisitionLockRepository> {
 
   /**
-   * Deletes Acquisition Lock by participant and training instance
+   * Deletes the lock row matching the given participant and training instance. Established by the
+   * {@code TRAcquisitionLock.deleteByParticipantRefIdAndTrainingInstanceId} named query declared on
+   * {@link TRAcquisitionLock}; matches the entity's own {@code participant_ref_id} column, which
+   * already holds the participant's cross-service identifier rather than a local primary key. Runs
+   * as a bulk delete against the database, bypassing the persistence context; {@link
+   * TRAcquisitionLock} owns no further associations, so nothing is left uncascaded.
    *
-   * @param participantRefId - id of participant associated with lock
-   * @param trainingInstanceId - id of training instance associated with lock
+   * @param participantRefId the participant's cross-service identifier
+   * @param trainingInstanceId the training instance id
    */
   @Modifying
   void deleteByParticipantRefIdAndTrainingInstanceId(

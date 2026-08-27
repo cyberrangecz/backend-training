@@ -9,6 +9,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * Summary of an assessment level returned when looking up training definitions by id in bulk; its
+ * questions carry only scoring and type information, never answer choices or correctness data.
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

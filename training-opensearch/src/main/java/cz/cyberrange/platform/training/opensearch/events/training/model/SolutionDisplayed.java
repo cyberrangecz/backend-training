@@ -9,7 +9,10 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** The type Solution displayed. */
+/**
+ * Records a trainee revealing a training level's solution, carried under the {@code
+ * solution_displayed} type.
+ */
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -20,7 +23,7 @@ public class SolutionDisplayed extends AbstractAuditPOJO {
 
   public static final String TYPE = "solution_displayed";
 
-  /** Solution displayed penalty points */
+  /** The level's remaining score after the solution penalty, if any, is applied. */
   @JsonProperty(value = "penalty_points", required = true)
   private int penaltyPoints;
 }

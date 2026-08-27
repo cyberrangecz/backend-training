@@ -6,7 +6,13 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Encapsulates information needed for update of Beta testing group */
+/**
+ * The membership submitted for the group that may see a training definition while it is still
+ * unreleased, carried as part of a definition being updated. Submitting it replaces the existing
+ * membership outright, and an empty membership is the only way to empty the group: leaving it out
+ * of an update whose definition already has a group is rejected as a conflict rather than deleting
+ * that group.
+ */
 @Data
 @ApiModel(
     value = "BetaTestingGroupUpdateDTO",

@@ -12,6 +12,11 @@ import lombok.Data;
     description = "Training Instance assign pool ID.")
 public class TrainingInstanceAssignPoolIdDTO {
 
+  /**
+   * Read directly by the facade, not through the mapper: locked with the instance's existing access
+   * token via the sandbox service, then stored as the instance's pool id. Rejected when the
+   * instance already carries a pool id or has local sandboxes enabled.
+   */
   @ApiModelProperty(
       value = "Pool associated with training instance.",
       example = "2",

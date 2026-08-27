@@ -4,6 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 
+/**
+ * Deserialization target for the answer set the answer-storage service holds for one sandbox. The
+ * sandbox is addressed either by its own reference or, where the environment is local and no
+ * sandbox reference exists, by the pair of a training instance access token and a trainee.
+ */
 public class SandboxAnswersInfo {
 
   @ApiModelProperty(

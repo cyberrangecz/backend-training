@@ -3,6 +3,11 @@ package cz.cyberrange.platform.training.service.startup;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
+/**
+ * The title, both content variants and the passkey a newly created access level starts out with.
+ * Every one of them must be present and non-empty for the content to load, and the passkey is
+ * additionally capped in length.
+ */
 public class DefaultAccessLevel {
   @NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
   private String title;

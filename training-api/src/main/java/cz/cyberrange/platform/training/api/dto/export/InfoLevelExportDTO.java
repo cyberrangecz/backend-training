@@ -21,7 +21,7 @@ public class InfoLevelExportDTO extends AbstractLevelExportDTO {
       example = "Informational stuff")
   private String content;
 
-  /** Instantiates a new Info level export dto. */
+  /** Sets {@link #content} to an empty string, the value kept when a mapped source has none. */
   public InfoLevelExportDTO() {
     this.content = "";
   }

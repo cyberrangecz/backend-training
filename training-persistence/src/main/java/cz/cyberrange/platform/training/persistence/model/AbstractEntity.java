@@ -12,9 +12,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * The type Abstract entity.
+ * Base shared by every persisted entity. Supplies the generated identity column and defines entity
+ * equality by that column rather than by any other field.
  *
- * @param <PK> Primary key for a given entity.
+ * @param <PK> the type of the identity column.
  */
 @Getter
 @Setter
@@ -23,6 +24,7 @@ import lombok.ToString;
 @MappedSuperclass
 public class AbstractEntity<PK extends Serializable> implements Serializable {
 
+  // Assigned by the database on insert; never supplied by the application.
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", unique = true, nullable = false, insertable = false)

@@ -81,7 +81,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The type Export import facade. */
+/**
+ * Moves training content across the service boundary: a definition out as a JSON file and back in
+ * as a new definition, an instance out as a zip archive of its runs, events, commands and answers,
+ * and an instance's participant standings out as a score report.
+ */
 @Service
 @Transactional
 public class ExportImportFacade {
@@ -105,18 +109,6 @@ public class ExportImportFacade {
   private final EventMapper eventMapper;
   private final ScoreReportService scoreReportService;
 
-  /**
-   * Instantiates a new Export import facade.
-   *
-   * @param exportImportService the export import service
-   * @param trainingDefinitionService the training definition service
-   * @param userService the user service
-   * @param exportImportMapper the export import mapper
-   * @param levelMapper the level mapper
-   * @param trainingDefinitionMapper the training definition mapper
-   * @param objectMapper the object mapper
-   * @param scoreReportService the score report service
-   */
   @Autowired
   public ExportImportFacade(
       ExportImportService exportImportService,
@@ -146,10 +138,15 @@ public class ExportImportFacade {
   }
 
   /**
-   * Exports Training Definition to file
+   * Serializes the given training definition together with its levels, in level order, into a
+   * single JSON file. The file is titled after the definition, or left untitled when the definition
+   * carries no title.
    *
-   * @param trainingDefinitionId the id of the definition to be exported
-   * @return the file containing definition, {@link FileToReturnDTO}
+   * @param trainingDefinitionId id of the definition to export
+   * @return the JSON file's bytes and title, {@link FileToReturnDTO}
+   * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException when no
+   *     definition carries that id
+   * @throws InternalServerErrorException when the definition cannot be serialized
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -175,6 +172,12 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Collects the exported shape of every level of the given training definition, in level order.
+   *
+   * @param trainingDefinitionId id of the definition whose levels are exported
+   * @return its levels' exported shapes, empty when it holds none
+   */
   private List<AbstractLevelExportDTO> mapAbstractLevelToAbstractLevelDTO(
       Long trainingDefinitionId) {
     List<AbstractLevelExportDTO> abstractLevelExportDTOs = new ArrayList<>();
@@ -185,10 +188,19 @@ public class ExportImportFacade {
   }
 
   /**
-   * Imports training definition.
+   * Creates a new training definition from a submitted one and appends each of its levels in the
+   * order given. The new definition always starts out unreleased, whatever state was submitted, and
+   * its estimated duration is the sum of its levels' rather than the submitted figure. A submitted
+   * training level has its answer configuration validated, and a submitted assessment level of the
+   * test kind has its statements bound to their correct options and its maximum score set from its
+   * questions' points.
    *
-   * @param importTrainingDefinitionDTO the training definition to be imported
-   * @return the {@link TrainingDefinitionWithLevelsDTO}
+   * @param importTrainingDefinitionDTO the definition to create, levels included
+   * @return the created definition with its levels, {@link TrainingDefinitionWithLevelsDTO}
+   * @throws UnprocessableEntityException when a training level's hint penalties exceed its maximum
+   *     score
+   * @throws BadRequestException when a training level's answer configuration is inconsistent, or a
+   *     statement of a test assessment names no correct option
    */
   @IsDesignerOrAdmin
   @TransactionalWO
@@ -236,6 +248,12 @@ public class ExportImportFacade {
     return importedDefinition;
   }
 
+  /**
+   * Reduces a blank static answer and a blank answer variable name on the level to null, so that
+   * the checks that follow treat an empty submission as an absent one.
+   *
+   * @param trainingLevel the level whose answer configuration is normalized in place
+   */
   private void setAnswerAndAnswerVariableNameToNullIfBlank(TrainingLevel trainingLevel) {
     if (StringUtils.isBlank(trainingLevel.getAnswer())) {
       trainingLevel.setAnswer(
@@ -246,6 +264,14 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Requires the level to carry exactly the one form of correct answer its answer mode calls for: a
+   * variable name when its answers vary per trainee, a static answer otherwise.
+   *
+   * @param trainingLevel the level whose answer configuration is checked
+   * @throws BadRequestException when the form the mode calls for is missing, or the other one is
+   *     present as well
+   */
   private void checkAnswerAndAnswerVariableName(TrainingLevel trainingLevel) {
     if (trainingLevel.isVariantAnswers()) {
       this.checkAnswerVariableName(trainingLevel);
@@ -254,6 +280,12 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Requires the level to carry a static correct answer and no answer variable name.
+   *
+   * @param trainingLevel the level whose answer configuration is checked
+   * @throws BadRequestException when the static answer is absent or a variable name is present
+   */
   private void checkAnswer(TrainingLevel trainingLevel) {
     if (trainingLevel.getAnswerVariableName() != null) {
       throw new BadRequestException("Field Correct Answer - Variable Name must be null.");
@@ -263,6 +295,12 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Requires the level to carry an answer variable name and no static correct answer.
+   *
+   * @param trainingLevel the level whose answer configuration is checked
+   * @throws BadRequestException when the variable name is absent or a static answer is present
+   */
   private void checkAnswerVariableName(TrainingLevel trainingLevel) {
     if (trainingLevel.getAnswer() != null) {
       throw new BadRequestException("Field Correct Answer - Static must be null.");
@@ -272,10 +310,25 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Adds up the points carried by the assessment level's questions.
+   *
+   * @param assessmentLevel the level whose questions are added up
+   * @return the total points its questions award
+   */
   private int computeAssessmentLevelMaxScore(AssessmentLevel assessmentLevel) {
     return assessmentLevel.getQuestions().stream().mapToInt(Question::getPoints).sum();
   }
 
+  /**
+   * Binds each extended matching statement of the level's extended matching questions to the option
+   * the submitted level names as correct for it, matching statements, options and questions by
+   * their order.
+   *
+   * @param assessmentLevel the level being built, whose statements are bound in place
+   * @param assessmentLevelImportDTO the submitted level naming the correct option per statement
+   * @throws BadRequestException when a statement names no correct option
+   */
   private void checkAndSetCorrectOptionsOfStatements(
       AssessmentLevel assessmentLevel, AssessmentLevelImportDTO assessmentLevelImportDTO) {
     assessmentLevelImportDTO.getQuestions().stream()
@@ -341,10 +394,16 @@ public class ExportImportFacade {
   }
 
   /**
-   * Exports Training Instance to file
+   * Assembles a zip archive of the given training instance, holding the instance itself, the
+   * training definition it runs, one entry per training run with that run's audit events, console
+   * commands and assessment answers broken out per level, and the sandbox definition behind its
+   * pool. The archive is titled after the instance.
    *
-   * @param trainingInstanceId the id of the instance to be exported
-   * @return the file containing instance, {@link FileToReturnDTO}
+   * @param trainingInstanceId id of the instance to archive
+   * @return the zip archive's bytes and title, {@link FileToReturnDTO}
+   * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException when no instance
+   *     carries that id
+   * @throws InternalServerErrorException when an entry cannot be written to the archive
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -380,6 +439,14 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Writes the archived instance as a single JSON entry named after the instance's id.
+   *
+   * @param zos the archive being assembled
+   * @param trainingInstanceId id of the instance, used to name the entry
+   * @param archivedInstance the instance's archived shape
+   * @throws IOException when the entry cannot be written
+   */
   private void writeTrainingInstanceGeneralInfo(
       ZipOutputStream zos, Long trainingInstanceId, TrainingInstanceArchiveDTO archivedInstance)
       throws IOException {
@@ -392,6 +459,17 @@ public class ExportImportFacade {
     zos.write(objectMapper.writeValueAsBytes(archivedInstance));
   }
 
+  /**
+   * Writes an entry per training run of the instance, each holding the run itself, followed by that
+   * run's assessment answers. A run that recorded audit events also gets those events, the same
+   * events split per level, the console commands of its sandbox and those commands split per level;
+   * a run that recorded none contributes only its own entry and its answers. The answer tallies
+   * accumulated across every run are written last, as one entry per assessment.
+   *
+   * @param zos the archive being assembled
+   * @param trainingInstance the instance whose runs are archived
+   * @throws IOException when an entry cannot be written
+   */
   private void writeTrainingRunsInfo(ZipOutputStream zos, TrainingInstance trainingInstance)
       throws IOException {
     Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstance.getId());
@@ -431,6 +509,13 @@ public class ExportImportFacade {
     writeAssessmentsDetails(zos, assessmentsDetails);
   }
 
+  /**
+   * Collects every console command recorded for the run's sandbox, falling back to the sandbox the
+   * run held previously once it holds none.
+   *
+   * @param run the run whose sandbox is queried
+   * @return that sandbox's console commands, oldest first
+   */
   private List<CommandEventDTO> getConsoleCommands(TrainingRun run) {
     String sandboxId =
         run.getSandboxInstanceRefId() == null
@@ -441,6 +526,13 @@ public class ExportImportFacade {
     return eventMapper.mapToListDTO(commands);
   }
 
+  /**
+   * Writes one entry per assessment holding the answer tallies gathered for its questions.
+   *
+   * @param zos the archive being assembled
+   * @param assessmentsDetails the tallies keyed by assessment level id, then by question id
+   * @throws IOException when an entry cannot be written
+   */
   private void writeAssessmentsDetails(
       ZipOutputStream zos, Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails)
       throws IOException {
@@ -458,6 +550,16 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Writes the run's audit events into a single entry, one event per line, and picks out the moment
+   * each level was started as it goes.
+   *
+   * @param zos the archive being assembled
+   * @param run the run whose events are written, used to name the entry
+   * @param events the run's events, written in the order given
+   * @return the start timestamp of each level that was started, in the order encountered
+   * @throws IOException when the entry cannot be written
+   */
   private Map<Long, Long> writeEventsAndGetLevelStartTimestampMapping(
       ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
     ZipEntry eventsEntry =
@@ -481,6 +583,16 @@ public class ExportImportFacade {
     return levelStartTimestampMapping;
   }
 
+  /**
+   * Writes the run's audit events into one entry per level, one event per line, opening a fresh
+   * entry wherever the level order changes from one event to the next. Entries are numbered one
+   * past the level order they hold.
+   *
+   * @param zos the archive being assembled
+   * @param run the run whose events are written, used to name the entries
+   * @param events the run's events, split in the order given
+   * @throws IOException when an entry cannot be written
+   */
   private void writeEventsByLevels(
       ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
     long currentLevelOrder = events.get(0).getLevelOrder();
@@ -515,6 +627,19 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Writes one entry per assessment holding the run's answers to it, one answer per line. An answer
+   * to an extended matching question is rewritten into the readable text of the statement and the
+   * option it pairs before being written. Every answer is also folded into the tally kept for its
+   * question, which carries over between runs of the same assessment.
+   *
+   * @param zos the archive being assembled
+   * @param run the run whose answers are written, used to name the entries
+   * @param assessmentsDetails the tallies to fold into, keyed by assessment level id, then by
+   *     question id, extended in place
+   * @throws IOException when an entry cannot be written, or a stored extended matching answer
+   *     cannot be read
+   */
   private void writeQuestionsAnswers(
       ZipOutputStream zos,
       TrainingRun run,
@@ -566,6 +691,14 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Renders an extended matching answer as the text of the statement it pairs with the text of the
+   * option, both looked up in the question by the orders the answer carries.
+   *
+   * @param question the question the answer belongs to, supplying the texts
+   * @param emiAnswer the answer naming the paired statement and option by order
+   * @return the pairing in readable form
+   */
   private String mapEmiAnswerToString(Question question, QuestionEMIAnswer emiAnswer) {
     return "{ statement: '"
         + question.getExtendedMatchingStatements().get(emiAnswer.getStatementOrder()).getText()
@@ -574,6 +707,15 @@ public class ExportImportFacade {
         + "' }";
   }
 
+  /**
+   * Writes the given console commands into a single entry named after the sandbox, one command per
+   * line.
+   *
+   * @param zos the archive being assembled
+   * @param sandboxId the sandbox the commands belong to, used to name the entry
+   * @param consoleCommands the commands to write, in the order given
+   * @throws IOException when the entry cannot be written
+   */
   private void writeConsoleCommands(
       ZipOutputStream zos, String sandboxId, List<CommandEventDTO> consoleCommands)
       throws IOException {
@@ -591,6 +733,19 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Writes the sandbox's console commands into one entry per level, each holding the commands
+   * issued between that level's start and the next level's start, the last level reaching to the
+   * end of time. Entries are numbered by the level's position in the mapping rather than by its id.
+   *
+   * @param zos the archive being assembled
+   * @param instance the instance the run belongs to
+   * @param run the run whose sandbox is queried
+   * @param sandboxId the sandbox whose commands are written, used to name the entries
+   * @param levelStartTimestampMapping the start timestamp of each level, in the order that decides
+   *     both the boundaries and the entry numbering
+   * @throws IOException when an entry cannot be written
+   */
   private void writeConsoleCommandsDetails(
       ZipOutputStream zos,
       TrainingInstance instance,
@@ -628,6 +783,17 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Collects the console commands recorded for the given sandbox between the given moments, both
+   * ends included. The instance and the run play no part in the lookup.
+   *
+   * @param instance the instance the run belongs to
+   * @param run the run the sandbox served
+   * @param sandboxId the sandbox whose commands are wanted
+   * @param from earliest moment a command may carry
+   * @param to latest moment a command may carry
+   * @return the matching console commands, oldest first
+   */
   private List<CommandEventDTO> getConsoleCommandsWithinTimeRange(
       TrainingInstance instance, TrainingRun run, String sandboxId, Long from, Long to) {
     List<TrainingCommand> commands =
@@ -635,6 +801,16 @@ public class ExportImportFacade {
     return eventMapper.mapToListDTO(commands);
   }
 
+  /**
+   * Writes the training definition the instance runs, its levels included, as a single JSON entry
+   * named after the definition's id.
+   *
+   * @param zos the archive being assembled
+   * @param trainingInstance the instance whose definition is written
+   * @throws IOException when the entry cannot be written
+   * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException when the
+   *     definition the instance names no longer exists
+   */
   private void writeTrainingDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance)
       throws IOException {
     Long trainingDefinitionId = trainingInstance.getTrainingDefinition().getId();
@@ -652,6 +828,14 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Writes the sandbox definition behind the instance's pool as a single JSON entry named after
+   * that definition's id. Nothing is written when the instance has no pool assigned.
+   *
+   * @param zos the archive being assembled
+   * @param trainingInstance the instance whose pool is resolved
+   * @throws IOException when the entry cannot be written
+   */
   private void writeSandboxDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance)
       throws IOException {
     if (trainingInstance.getPoolId() != null) {
@@ -667,6 +851,13 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Requires the penalties of the level's hints to stay within the score the level awards.
+   *
+   * @param trainingLevel the level whose hints are added up
+   * @throws UnprocessableEntityException when the penalties together exceed the level's maximum
+   *     score
+   */
   private void checkSumOfHintPenalties(TrainingLevel trainingLevel) {
     int sumHintPenalties = 0;
     for (Hint hint : trainingLevel.getHints()) {
@@ -683,6 +874,12 @@ public class ExportImportFacade {
     }
   }
 
+  /**
+   * Adds up the estimated durations of the submitted definition's levels.
+   *
+   * @param importedTrainingDefinition the definition whose levels are added up
+   * @return the total time its levels are estimated to take
+   */
   private int computeEstimatedDuration(ImportTrainingDefinitionDTO importedTrainingDefinition) {
     return importedTrainingDefinition.getLevels().stream()
         .mapToInt(AbstractLevelImportDTO::getEstimatedDuration)

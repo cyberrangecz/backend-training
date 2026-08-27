@@ -14,17 +14,22 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 /**
- * Class representing DB reference for user and training instances and definition they can access
+ * Local row standing in for a user of the user-and-group microservice, so that training
+ * definitions, instances and beta testing groups can reference that user without duplicating its
+ * profile data.
  */
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
 @NamedQueries({
+  // Matches on userRefId: takes and returns the external, cross-service user identifiers.
   @NamedQuery(
       name = "UserRef.findUsers",
       query = "SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId"),
+  // Matches on userRefId: takes an external user identifier, not the local primary key.
   @NamedQuery(
       name = "UserRef.findUserByUserRefId",
       query = "SELECT ur FROM UserRef ur WHERE ur.userRefId = :userRefId"),
+  // Returns userRefId values: the external identifiers of a training instance's participants.
   @NamedQuery(
       name = "UserRef.findParticipantsRefIdsByTrainingInstanceId",
       query =
@@ -52,44 +57,29 @@ public class UserRef extends AbstractEntity<Long> {
   @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
   private Set<BetaTestingGroup> betaTesters = new HashSet<>();
 
-  /** Instantiates a new user reference */
   public UserRef() {}
 
   /**
-   * Gets the primary key of this row in the training service database. Never accepted from nor
+   * Returns the primary key of this row in the training service database. Never accepted from nor
    * exposed to a caller outside this service; a user arriving over the API is identified by {@link
-   * #getUserRefId()}.
-   *
-   * @return the id
+   * #getUserRefId()} instead.
    */
   public Long getId() {
     return super.getId();
   }
 
-  /**
-   * Sets unique identification number of user reference
-   *
-   * @param id the id
-   */
   public void setId(Long id) {
     super.setId(id);
   }
 
   /**
-   * Gets the user-and-group identifier of the referenced user, which is the identifier used across
+   * Returns the user-and-group identifier of the referenced user, the identifier used across
    * service boundaries.
-   *
-   * @return the user ref id
    */
   public Long getUserRefId() {
     return userRefId;
   }
 
-  /**
-   * Sets user ref id.
-   *
-   * @param userRefId the user ref id
-   */
   public void setUserRefId(Long userRefId) {
     this.userRefId = userRefId;
   }

@@ -14,12 +14,24 @@ import org.springframework.stereotype.Repository;
 public interface HintRepository extends JpaRepository<Hint, Long>, QuerydslPredicateExecutor<Hint> {
 
   /**
-   * Delete hints by level id.
+   * Deletes every hint whose {@code training_level_id} column equals the given training level
+   * primary key. Established by the {@code Hint.deleteHintsByLevelId} named query declared on
+   * {@link Hint}. Runs as a bulk delete against the database, bypassing the persistence context; it
+   * does not remove the deleted hints from an already loaded training level's hint collection, and
+   * triggers no cascade since {@link Hint} owns no further associations.
    *
-   * @param levelId the level id
+   * @param levelId the training level id
    */
   @Modifying
   void deleteHintsByLevelId(@Param("levelId") Long levelId);
 
+  /**
+   * Finds the hints whose primary key is one of the given ids. Derived from the method name, with
+   * no named query of this name on {@link Hint}; imposes no ordering. Returns an empty list when
+   * none of the ids match.
+   *
+   * @param ids the hint ids
+   * @return the matching {@link Hint}s, associations left lazy
+   */
   List<Hint> findAllByIdIn(Collection<Long> ids);
 }

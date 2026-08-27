@@ -19,7 +19,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates information needed to update training level. */
+/**
+ * A training level submitted by a training designer to create or replace one. Every field present
+ * here is written onto the entity unconditionally, so a field left out of the request clears
+ * whatever the entity previously held for it.
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -35,6 +39,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @Max(value = 100, message = "{trainingLevel.maxScore.Max.message}")
   private int maxScore;
 
+  /** A blank submission is converted to a null answer when the entity is built. */
   @ApiModelProperty(
       value = "Keyword found in training, used for access next level.",
       required = true,
@@ -42,6 +47,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @Size(max = 50, message = "{trainingLevel.answer.Size.message}")
   private String answer;
 
+  /** A blank submission is converted to a null answer variable name when the entity is built. */
   @ApiModelProperty(
       value = "Identifier that is used to obtain answer from remote storage.",
       example = "username")
@@ -60,6 +66,7 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @NotEmpty(message = "{trainingLevel.solution.NotEmpty.message}")
   private String solution;
 
+  /** Whether requesting the solution reduces the score awardable for the level to zero. */
   @ApiModelProperty(
       value = "Sign if displaying of solution is penalized.",
       required = true,
@@ -72,6 +79,10 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
       example = "20")
   private int estimatedDuration;
 
+  /**
+   * Number of incorrect answer submissions allowed for the level, against which the number of
+   * remaining attempts is calculated.
+   */
   @ApiModelProperty(
       value = "How many times participant can submit incorrect answer before displaying solution.",
       required = true,
@@ -85,6 +96,10 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
   @ApiModelProperty(value = "Information which helps participant resolve the level.")
   private Set<HintDTO> hints = new HashSet<>();
 
+  /**
+   * Whether each trainee's answer is resolved from the external answer storage service, keyed by
+   * the answer variable name, instead of taken from the literal answer field.
+   */
   @ApiModelProperty(
       value =
           "Indicates if flags/answers are randomly generated and are different for each trainee. Default is false.",
@@ -99,12 +114,21 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
       value = "Set of the expected commands to be executed during the training level.")
   private Set<String> expectedCommands;
 
+  /**
+   * Minimum time, in minutes, a trainee is expected to take on the level; the run's cheat-detection
+   * check compares it, converted to seconds, against the elapsed submission time.
+   */
   @ApiModelProperty(
       value =
           "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
       example = "5")
   protected Integer minimalPossibleSolveTime;
 
+  /**
+   * Whether the run's cheat-detection check requires at least one submitted command for the level.
+   * A request that omits this field deserializes it as false, clearing the entity's default of true
+   * rather than leaving it at true.
+   */
   @ApiModelProperty(
       value =
           "Indicates if at least one command has to be executed to complete the level. Default is true.",

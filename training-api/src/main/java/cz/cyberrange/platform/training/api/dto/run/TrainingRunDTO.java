@@ -16,14 +16,17 @@ import lombok.ToString;
         "The act, or a recording, of performing actions during training from a perspective of one concrete participant.")
 public class TrainingRunDTO extends TrainingRunBasicDTO {
 
+  /** Copied from the persisted run's own field, which no code in this service ever sets. */
   private String eventLogReference;
 
   @ApiModelProperty(value = "Allocation id to the received sandbox.")
   private Integer sandboxInstanceAllocationId;
 
+  /** False unless the caller explicitly resolves and sets this run's logging state. */
   @ApiModelProperty(value = "Boolean to check whether event logging works.", example = "true")
   private boolean eventLoggingState;
 
+  /** False unless the caller explicitly resolves and sets this run's logging state. */
   @ApiModelProperty(value = "Boolean to check whether command logging works.", example = "true")
   private boolean commandLoggingState;
 

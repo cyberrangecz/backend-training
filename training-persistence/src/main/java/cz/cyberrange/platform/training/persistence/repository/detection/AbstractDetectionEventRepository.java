@@ -18,7 +18,10 @@ import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link AbstractDetectionEvent} instances. */
+/**
+ * Manages the {@link AbstractDetectionEvent} rows shared by every kind of cheating-detection
+ * finding, the root of a JOINED-inheritance hierarchy each concrete finding extends.
+ */
 @Repository
 public interface AbstractDetectionEventRepository
     extends JpaRepository<AbstractDetectionEvent, Long>,
@@ -27,11 +30,8 @@ public interface AbstractDetectionEventRepository
         QuerydslBinderCustomizer<QAbstractDetectionEvent> {
 
   /**
-   * That method is used to make the query dsl string values case insensitive and also it supports
-   * partial matches in the database.
-   *
-   * @param querydslBindings
-   * @param qAbstractDetectionEvent
+   * Binds every {@code String} property so that, when queried through a Querydsl web binding, it
+   * matches case-insensitively and by substring, ANDing together every value supplied for it.
    */
   @Override
   default void customize(
@@ -47,19 +47,26 @@ public interface AbstractDetectionEventRepository
   }
 
   /**
-   * Delete all detection events by cheating detection id.
+   * Deletes every {@link AbstractDetectionEvent} row of one cheating detection sweep in a single
+   * bulk statement, which bypasses the persistence context: it does not detach or evict any
+   * already-loaded instance. Because the base table is the root of a JOINED-inheritance
+   * hierarchy, this deletes only from {@code abstract_detection_event}, leaving behind the
+   * counterpart row in whichever concrete finding table the deleted event belonged to.
    *
-   * @param cheatingDetectionId the cheating detection id
+   * @param cheatingDetectionId the cheating detection whose events are deleted
    */
   @Modifying
   void deleteDetectionEventsOfCheatingDetection(
       @Param("cheatingDetectionId") Long cheatingDetectionId);
 
   /**
-   * Finds all detection events by cheating detection id.
+   * Returns, as one page of distinct rows, the detection events of one cheating detection sweep
+   * that also satisfy the given predicate. Delegates to the Querydsl query in
+   * {@code AbstractDetectionEventRepositoryImpl}.
    *
-   * @param cheatingDetectionId the cheating detection id
-   * @param pageable the pageable
+   * @param cheatingDetectionId the cheating detection the returned events belong to
+   * @param pageable the page to return; a null value defaults to the first page of 20 rows
+   * @param predicate an extra condition ANDed onto the cheating detection filter, or null
    */
   Page<AbstractDetectionEvent> findAllByCheatingDetectionId(
       @Param("cheatingDetectionId") Long cheatingDetectionId,
@@ -67,9 +74,10 @@ public interface AbstractDetectionEventRepository
       Predicate predicate);
 
   /**
-   * Finds all detection events by cheating detection id.
+   * Returns every detection event of one cheating detection sweep, across every finding kind, in
+   * no defined order. Each returned instance is the concrete finding subtype the row belongs to.
    *
-   * @param cheatingDetectionId the cheating detection id
+   * @param cheatingDetectionId the cheating detection the returned events belong to
    */
   List<AbstractDetectionEvent> findAllByCheatingDetectionId(
       @Param("cheatingDetectionId") Long cheatingDetectionId);
@@ -84,16 +92,16 @@ public interface AbstractDetectionEventRepository
       @Param("trainingInstanceId") Long trainingInstanceId);
 
   /**
-   * Returns the number of detection events occurred in cheating detection
+   * Counts the detection events of one cheating detection sweep, across every finding kind.
    *
-   * @param cheatingDetectionId the cheating detection id
+   * @param cheatingDetectionId the cheating detection whose events are counted
    */
   Long getNumberOfDetections(@Param("cheatingDetectionId") Long cheatingDetectionId);
 
   /**
-   * Returns the detection event based on its id
+   * Returns the detection event with the given primary key, as its concrete finding subtype.
    *
-   * @param eventId the detection event id
+   * @param eventId the primary key of the detection event
    */
   AbstractDetectionEvent findDetectionEventById(@Param("eventId") Long eventId);
 }

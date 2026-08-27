@@ -15,9 +15,10 @@ import org.springframework.context.annotation.Configuration;
 public class ObjectMapperConfigOpenSearch {
 
   /**
-   * Object mapper object mapper.
+   * Supplies the mapper used for audit event JSON: field names are written in snake case, and a
+   * date or time is written in its textual form rather than as a number.
    *
-   * @return the object mapper
+   * @return the mapper audit event writing and reading go through
    */
   @Bean("openSearchObjectMapper")
   public ObjectMapper objectMapper() {

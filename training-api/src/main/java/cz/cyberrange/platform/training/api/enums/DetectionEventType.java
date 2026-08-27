@@ -1,23 +1,18 @@
 package cz.cyberrange.platform.training.api.enums;
 
-/** The enumeration of Cheat types. */
+/** Classifies which detection method produced a recorded cheating detection event. */
 public enum DetectionEventType {
 
-  /** cheat type representing two players having the same IP address. */
+  /** Tags an event raised when two participants' submissions resolve to the same IP address. */
   LOCATION_SIMILARITY,
-  /**
-   * cheat type representing a player submitting an answer that was generated for another player.
-   */
+  /** Tags an event raised when a submitted answer matches one generated for another participant. */
   ANSWER_SIMILARITY,
-  /** cheat type representing a player solving a task in less than minimal possible solve time. */
+  /** Tags an event raised when a level is solved faster than its configured minimal time. */
   MINIMAL_SOLVE_TIME,
-  /** cheat type representing two players submitting their levels at similar times. */
+  /** Tags an event raised when participants submit a level within a configured time threshold. */
   TIME_PROXIMITY,
-  /**
-   * cheat type representing a player not using any commands to solve a task - this counts as a
-   * cheat only if the corresponding level has value of XXX set to True.
-   */
+  /** Tags an event raised when no console command was recorded before a level's submission. */
   NO_COMMANDS,
-  /** cheat type representing a player using commands that are forbidden. */
+  /** Tags an event raised when a recorded console command matches a forbidden command. */
   FORBIDDEN_COMMANDS;
 }

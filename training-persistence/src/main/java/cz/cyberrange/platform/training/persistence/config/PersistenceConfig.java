@@ -6,6 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+/**
+ * Brings this module's persistence layer into an application context: it turns on declarative
+ * transactions, registers the entities and the Spring Data repositories, and makes both packages
+ * available for component scanning.
+ */
 @Configuration
 @EnableTransactionManagement
 @ComponentScan(

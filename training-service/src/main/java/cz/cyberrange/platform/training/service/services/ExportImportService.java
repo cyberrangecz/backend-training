@@ -21,7 +21,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/** The type Export import service. */
+/**
+ * Reads the training definitions, levels, instances, runs and assessment answers that make up an
+ * export or an archive, and writes the levels of an imported definition back.
+ */
 @Service
 public class ExportImportService {
 
@@ -36,17 +39,6 @@ public class ExportImportService {
   private final TrainingInstanceRepository trainingInstanceRepository;
   private final TrainingRunRepository trainingRunRepository;
 
-  /**
-   * Instantiates a new Export import service.
-   *
-   * @param trainingDefinitionRepository the training definition repository
-   * @param abstractLevelRepository the abstract level repository
-   * @param assessmentLevelRepository the assessment level repository
-   * @param infoLevelRepository the info level repository
-   * @param trainingLevelRepository the training level repository
-   * @param trainingInstanceRepository the training instance repository
-   * @param trainingRunRepository the training run repository
-   */
   @Autowired
   public ExportImportService(
       TrainingDefinitionRepository trainingDefinitionRepository,
@@ -72,11 +64,13 @@ public class ExportImportService {
   }
 
   /**
-   * Finds training definition with given id.
+   * Finds the training definition carrying the given id, its authors and its beta testing group's
+   * organizers loaded along with it. Levels are not reachable from the definition and are read
+   * through their own repository.
    *
-   * @param trainingDefinitionId the id of definition to be found.
-   * @return the {@link TrainingDefinition} with the given id.
-   * @throws EntityNotFoundException if training definition was not found.
+   * @param trainingDefinitionId id of the definition to look up
+   * @return the {@link TrainingDefinition} carrying that id
+   * @throws EntityNotFoundException when no definition carries that id
    */
   public TrainingDefinition findById(Long trainingDefinitionId) {
     return trainingDefinitionRepository
@@ -92,10 +86,13 @@ public class ExportImportService {
   }
 
   /**
-   * Creates a level and connects it with training definition.
+   * Persists the given level as the last one of the given definition, ordering it one past the
+   * definition's current highest level order and saving it through the repository of its concrete
+   * level type. A training level additionally has its MITRE techniques reconciled against those
+   * already stored.
    *
-   * @param level the {@link AbstractLevel} to be created.
-   * @param definition the {@link TrainingDefinition} to associate level with.
+   * @param level the {@link AbstractLevel} to persist
+   * @param definition the {@link TrainingDefinition} the level becomes part of
    */
   public void createLevel(AbstractLevel level, TrainingDefinition definition) {
     level.setOrder(abstractLevelRepository.getCurrentMaxOrder(definition.getId()) + 1);
@@ -112,6 +109,13 @@ public class ExportImportService {
     }
   }
 
+  /**
+   * Replaces the level's MITRE techniques with the union of those already stored under the same
+   * technique keys and the level's own instances, so that a key the database already knows is
+   * reused instead of stored a second time, and registers the level on each technique it keeps.
+   *
+   * @param importedLevel the level whose techniques are reconciled in place
+   */
   private void setMitreTechniques(TrainingLevel importedLevel) {
     Set<String> techniqueKeys =
         importedLevel.getMitreTechniques().stream()
@@ -126,11 +130,12 @@ public class ExportImportService {
   }
 
   /**
-   * Finds training instance with given id.
+   * Finds the training instance carrying the given id, its organizers and its training definition
+   * together with that definition's authors loaded along with it.
    *
-   * @param trainingInstanceId the id of instance to be found.
-   * @return the {@link TrainingInstance} with the given id.
-   * @throws EntityNotFoundException if training instance was not found.
+   * @param trainingInstanceId id of the instance to look up
+   * @return the {@link TrainingInstance} carrying that id
+   * @throws EntityNotFoundException when no instance carries that id
    */
   public TrainingInstance findInstanceById(Long trainingInstanceId) {
     return trainingInstanceRepository
@@ -146,20 +151,23 @@ public class ExportImportService {
   }
 
   /**
-   * Finds training runs associated with training instance with given id.
+   * Finds every training run of the given training instance, each one's participant reference
+   * loaded along with it. The runs come back in no guaranteed order.
    *
-   * @param trainingInstanceId the id of instance which runs are to be found.
-   * @return the set off all {@link TrainingRun}
+   * @param trainingInstanceId id of the instance whose runs are wanted
+   * @return that instance's {@link TrainingRun}s, empty when it has none
    */
   public Set<TrainingRun> findRunsByInstanceId(Long trainingInstanceId) {
     return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
   }
 
   /**
-   * Gets all answers given by participant to assessment questions.
+   * Collects every answer recorded in the given training run, grouped by the assessment level the
+   * answered question belongs to.
    *
-   * @param trainingRunId the pool id
-   * @return the sandbox definition id
+   * @param trainingRunId id of the training run whose answers are wanted
+   * @return the run's {@link QuestionAnswer}s keyed by assessment level id, empty when the run
+   *     recorded none
    */
   public Map<Long, List<QuestionAnswer>> findQuestionsAnswersOfAssessment(Long trainingRunId) {
     return questionAnswerRepository.getAllByTrainingRunId(trainingRunId).stream()

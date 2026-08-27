@@ -73,6 +73,14 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "INFO_LEVEL")
   BasicLevelInfoDTO mapTo(InfoLevel infoLevel);
 
+  /**
+   * Maps an imported info level into a new entity, copying title, order, estimated duration,
+   * minimal possible solve time, and content. Score, primary key, and training definition
+   * association carry no matching source field and are left unset.
+   *
+   * @param dto the imported info level to map
+   * @return the mapped info level entity
+   */
   InfoLevel mapImportToEntity(InfoLevelImportDTO dto);
 
   InfoLevel mapUpdateToEntity(InfoLevelUpdateDTO dto);
@@ -83,6 +91,13 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "INFO_LEVEL")
   InfoLevelBasicDTO mapToInfoLevelBasicDTO(InfoLevel entity);
 
+  /**
+   * Maps an info level to its export DTO, labelled with the info level type, copying title, order,
+   * estimated duration, minimal possible solve time, and content.
+   *
+   * @param entity the info level to map
+   * @return the exported info level
+   */
   @Mapping(target = "levelType", constant = "INFO_LEVEL")
   InfoLevelExportDTO mapToExportInfoLevelDTO(InfoLevel entity);
 
@@ -98,6 +113,14 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(source = "type", target = "assessmentType")
   AssessmentLevel mapUpdateToEntity(AssessmentLevelUpdateDTO dto);
 
+  /**
+   * Maps an imported assessment level into a new entity, copying title, order, estimated duration,
+   * minimal possible solve time, instructions, assessment type, and questions. Score, primary key,
+   * and training definition association carry no matching source field and are left unset.
+   *
+   * @param dto the imported assessment level to map
+   * @return the mapped assessment level entity
+   */
   AssessmentLevel mapImportToEntity(AssessmentLevelImportDTO dto);
 
   /**
@@ -119,6 +142,15 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
   AssessmentLevelPreviewDTO mapToAssessmentLevelPreviewDTO(AssessmentLevel entity);
 
+  /**
+   * Maps an assessment level to its export DTO, labelled with the assessment level type, copying
+   * title, order, estimated duration, minimal possible solve time, instructions, and assessment
+   * type. Each question is mapped with its own id, and its nested choices', statements', and
+   * options' ids, left unset.
+   *
+   * @param entity the assessment level to map
+   * @return the exported assessment level
+   */
   @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
   @Mapping(source = "questions", target = "questions", qualifiedByName = "questionWithoutId")
   AssessmentLevelExportDTO mapToExportAssessmentLevelDTO(AssessmentLevel entity);
@@ -145,6 +177,16 @@ public interface LevelMapper extends ParentMapper {
           "java(org.apache.commons.lang3.StringUtils.isBlank(dto.getAnswerVariableName()) ? null : dto.getAnswerVariableName())")
   TrainingLevel mapUpdateToEntity(TrainingLevelUpdateDTO dto);
 
+  /**
+   * Maps an imported training level into a new entity, copying title, order, estimated duration,
+   * minimal possible solve time, score, answer, answer variable name, content, solution, solution
+   * penalty flag, incorrect answer limit, variant answers flag, commands-required flag, hints,
+   * attachments, MITRE techniques, and expected commands. Primary key and training definition
+   * association carry no matching source field and are left unset.
+   *
+   * @param dto the imported training level to map
+   * @return the mapped training level entity
+   */
   TrainingLevel mapImportToEntity(TrainingLevelImportDTO dto);
 
   /**
@@ -163,6 +205,16 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(source = "hints", target = "hints", qualifiedByName = "hintsToBasicDtoSet")
   TrainingLevelBasicDTO mapToTrainingLevelBasicDTO(TrainingLevel entity);
 
+  /**
+   * Maps a training level to its export DTO, labelled with the training level type, copying title,
+   * order, estimated duration, minimal possible solve time, score, answer, answer variable name,
+   * content, solution, solution penalty flag, incorrect answer limit, variant answers flag,
+   * commands-required flag, hints, attachments, and expected commands. Each MITRE technique is
+   * mapped with its id left unset.
+   *
+   * @param entity the training level to map
+   * @return the exported training level
+   */
   @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
   @Mapping(source = "mitreTechniques", target = "mitreTechniques", qualifiedByName = "ignoreIds")
   TrainingLevelExportDTO mapToExportTrainingLevelDTO(TrainingLevel entity);
@@ -188,6 +240,14 @@ public interface LevelMapper extends ParentMapper {
 
   AccessLevel mapUpdateToEntity(AccessLevelUpdateDTO dto);
 
+  /**
+   * Maps an imported access level into a new entity, copying title, order, estimated duration,
+   * minimal possible solve time, passkey, cloud content, and local content. Score, primary key, and
+   * training definition association carry no matching source field and are left unset.
+   *
+   * @param dto the imported access level to map
+   * @return the mapped access level entity
+   */
   AccessLevel mapImportToEntity(AccessLevelImportDTO dto);
 
   /**
@@ -205,6 +265,14 @@ public interface LevelMapper extends ParentMapper {
   @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
   AccessLevelBasicDTO mapToAccessLevelBasicDTO(AccessLevel entity);
 
+  /**
+   * Maps an access level to its export DTO, labelled with the access level type, copying title,
+   * order, estimated duration, minimal possible solve time, passkey, cloud content, and local
+   * content.
+   *
+   * @param entity the access level to map
+   * @return the exported access level
+   */
   @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
   AccessLevelExportDTO mapToExportAccessLevelDTO(AccessLevel entity);
 

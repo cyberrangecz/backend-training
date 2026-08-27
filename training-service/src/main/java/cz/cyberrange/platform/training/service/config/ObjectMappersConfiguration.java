@@ -8,14 +8,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-/** The type Object mapper configuration. */
+/** Supplies the JSON mapper the service uses by default wherever one is injected unqualified. */
 @Configuration
 public class ObjectMappersConfiguration {
 
   /**
-   * General object mapper bean.
+   * Builds the service's default JSON mapper: property names on the wire are snake case, a date or
+   * time is written in its textual form rather than as a number, and output is indented. Being the
+   * primary mapper, it is the one injected wherever no qualifier names another.
    *
-   * @return the object mapper
+   * @return the mapper JSON reading and writing goes through by default
    */
   @Bean
   @Primary

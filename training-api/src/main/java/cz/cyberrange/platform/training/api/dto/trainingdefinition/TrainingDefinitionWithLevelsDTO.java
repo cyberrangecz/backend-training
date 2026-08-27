@@ -21,6 +21,10 @@ import lombok.ToString;
     description = "A blueprint of abstract levels.")
 public class TrainingDefinitionWithLevelsDTO extends TrainingDefinitionDTO {
 
+  /**
+   * Populated by the facade with the full detail of the definition's levels, in presentation order;
+   * never derived from the definition entity itself.
+   */
   @ApiModelProperty(value = "Information about all levels in training definition.")
   private List<AbstractLevelDTO> levels = new ArrayList<>();
 }

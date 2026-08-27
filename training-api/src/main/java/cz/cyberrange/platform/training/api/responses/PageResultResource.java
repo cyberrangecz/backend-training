@@ -29,6 +29,11 @@ public class PageResultResource<E> {
 
   public PageResultResource() {}
 
+  /**
+   * Creates a page over the given content, leaving the pagination metadata unset.
+   *
+   * @param content the elements the page carries.
+   */
   public PageResultResource(List<E> content) {
     super();
     this.content = content;
@@ -62,6 +67,10 @@ public class PageResultResource<E> {
     this.pagination = pagination;
   }
 
+  /**
+   * Describes where the enclosing page sits within the whole result set, and how large both the
+   * page and that set are.
+   */
   public static class Pagination {
 
     @ApiModelProperty(value = "Page number.", example = "1")

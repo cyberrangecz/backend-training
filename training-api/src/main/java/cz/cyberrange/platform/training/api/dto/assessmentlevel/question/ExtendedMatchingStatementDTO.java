@@ -18,10 +18,24 @@ public class ExtendedMatchingStatementDTO implements Ordered {
   @NotEmpty(message = "{emiStatement.text.NotEmpty.message}")
   private String text;
 
+  /**
+   * Position of the statement within its question's list of statements, zero-based and expected
+   * contiguous; when a level update resolves its correct option, the statement being completed is
+   * looked up by indexing that list at this value.
+   */
   @ApiModelProperty(value = "The order of the statement in question of type EMI.", example = "0")
   @Min(value = 0, message = "{emiStatement.order.Min.message}")
   private int order;
 
+  /**
+   * Order, within the question's extended matching options, of the option that correctly answers
+   * this statement. It is resolved into the entity's extended matching option relation on every
+   * level update, whatever the assessment type, so a statement left without one fails the update
+   * rather than being treated as optional; only the check that demands one is confined to a level
+   * of the test kind. Cleared to null before an
+   * assessment level reaches a trainee's current level in a training run, but left set when a
+   * designer retrieves the level for editing.
+   */
   @ApiModelProperty(
       value = "The order of the correct option in the list of extended matching options.",
       example = "0")
