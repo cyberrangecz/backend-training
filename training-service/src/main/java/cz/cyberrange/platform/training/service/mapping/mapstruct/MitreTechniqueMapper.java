@@ -14,9 +14,9 @@ import org.mapstruct.ReportingPolicy;
 /**
  * Converts a MITRE ATT&amp;CK technique between its entity form and its DTO, both of which carry
  * the primary key and technique key as their only directly mapped data; the entity also holds an
- * inverse relation to its training levels that no method here touches. Used by {@code
- * LevelMapper} for a training level's {@code mitreTechniques}: the import direction copies the
- * id, the export direction strips it.
+ * inverse relation to its training levels that no method here touches. Used by {@code LevelMapper}
+ * for a training level's {@code mitreTechniques}: the import direction copies the id, the export
+ * direction strips it.
  */
 @Mapper(
     componentModel = "spring",

@@ -131,6 +131,12 @@ public interface HintMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
   }
 
+  /**
+   * Maps a page of hints to a page result resource holding their DTOs.
+   *
+   * @param objects the page of hints to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<HintDTO> mapToPageResultResource(Page<Hint> objects) {
     List<HintDTO> mapped = new ArrayList<>();
     objects.forEach(object -> mapped.add(mapToDTO(object)));

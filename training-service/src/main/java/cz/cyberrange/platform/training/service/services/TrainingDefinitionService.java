@@ -101,7 +101,7 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Finds specific Training Definition by id
+   * Finds specific Training Definition by id.
    *
    * @param id of a Training Definition that would be returned
    * @return specific {@link TrainingDefinition} by id
@@ -721,7 +721,7 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Finds all levels from single definition
+   * Finds all levels from single definition.
    *
    * @param definitionId of definition
    * @return list of {@link AbstractLevel} associated with training definition, ordered by level
@@ -775,7 +775,7 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Finds specific level by id with associated training definition
+   * Finds specific level by id with associated training definition.
    *
    * @param levelId - id of wanted level
    * @return wanted {@link AbstractLevel}
@@ -792,7 +792,7 @@ public class TrainingDefinitionService {
   }
 
   /**
-   * Finds specific level by id
+   * Finds specific level by id.
    *
    * @param levelId - id of wanted level
    * @return wanted {@link AbstractLevel}
@@ -1099,6 +1099,13 @@ public class TrainingDefinitionService {
     trainingLevelRepository.save(newTrainingLevel);
   }
 
+  /**
+   * Rejects a training definition that cannot be updated: one whose state is not {@code
+   * UNRELEASED}, or one already carrying a created training instance.
+   *
+   * @param trainingDefinition the definition to check
+   * @throws EntityConflictException when either condition holds
+   */
   public void checkIfCanBeUpdated(TrainingDefinition trainingDefinition) {
     if (!trainingDefinition.getState().equals(TDState.UNRELEASED)) {
       throw new EntityConflictException(

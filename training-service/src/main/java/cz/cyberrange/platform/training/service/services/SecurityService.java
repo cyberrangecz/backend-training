@@ -56,6 +56,10 @@ public class SecurityService {
   private final AbstractDetectionEventRepository abstractDetectionEventRepository;
   private final CheatingDetectionRepository cheatingDetectionRepository;
 
+  /**
+   * Creates the service with the repositories and the user management client it uses to resolve
+   * identity and evaluate authorization checks
+   */
   @Autowired
   public SecurityService(
       TrainingInstanceRepository trainingInstanceRepository,
@@ -128,8 +132,8 @@ public class SecurityService {
   }
 
   /**
-   * Decides whether the logged in user is one of the organizers of the training instance the
-   * given training run belongs to.
+   * Decides whether the logged in user is one of the organizers of the training instance the given
+   * training run belongs to.
    *
    * @param trainingRunId the run id
    * @return true when the logged in user is among the instance's organizers
@@ -177,8 +181,8 @@ public class SecurityService {
   }
 
   /**
-   * Decides whether the logged in user organizes the training instance the given cheating
-   * detection was raised in.
+   * Decides whether the logged in user organizes the training instance the given cheating detection
+   * was raised in.
    *
    * @param cheatingDetectionId the cheating detection id
    * @return true when the logged in user is among that instance's organizers
@@ -290,12 +294,11 @@ public class SecurityService {
   }
 
   /**
-   * Decides whether the logged in user is the participant of every one of the given training
-   * runs.
+   * Decides whether the logged in user is the participant of every one of the given training runs.
    *
    * @param trainingRunIds the training run ids
-   * @return true when every id resolves to a run the logged in user participates in; true also
-   *     for an empty list
+   * @return true when every id resolves to a run the logged in user participates in; true also for
+   *     an empty list
    */
   public boolean isTraineeOfGivenTrainingRuns(List<Long> trainingRunIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
@@ -309,8 +312,8 @@ public class SecurityService {
    * training runs.
    *
    * @param trainingRunIds the training run ids
-   * @return true when every id resolves to a run whose instance the logged in user organizes;
-   *     true also for an empty list
+   * @return true when every id resolves to a run whose instance the logged in user organizes; true
+   *     also for an empty list
    */
   public boolean isOrganizerOfGivenTrainingRuns(List<Long> trainingRunIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
@@ -373,9 +376,9 @@ public class SecurityService {
 
   /**
    * Decides whether every one of the given users has a training run in an instance the logged in
-   * user either has a training run in or organizes. A given user's own instances are collected
-   * from their training runs alone; organizing is checked only for the logged in user, not for
-   * the given users.
+   * user either has a training run in or organizes. A given user's own instances are collected from
+   * their training runs alone; organizing is checked only for the logged in user, not for the given
+   * users.
    *
    * @param userIds cross-service user reference ids of the users to check against the logged in
    *     user

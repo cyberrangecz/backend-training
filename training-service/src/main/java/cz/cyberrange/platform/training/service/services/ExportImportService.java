@@ -39,6 +39,10 @@ public class ExportImportService {
   private final TrainingInstanceRepository trainingInstanceRepository;
   private final TrainingRunRepository trainingRunRepository;
 
+  /**
+   * Creates the service with the repositories for definitions, levels, instances, runs and
+   * assessment answers it reads and writes
+   */
   @Autowired
   public ExportImportService(
       TrainingDefinitionRepository trainingDefinitionRepository,

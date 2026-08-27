@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A finding that a level was solved faster than it is held to be solvable, gathering everyone who
+ * beat that time on it
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -27,10 +31,6 @@ import lombok.ToString;
       query =
           "SELECT mstde FROM MinimalSolveTimeDetectionEvent mstde WHERE mstde.cheatingDetectionId = :cheatingDetectionId")
 })
-/**
- * A finding that a level was solved faster than it is held to be solvable, gathering everyone who
- * beat that time on it.
- */
 public class MinimalSolveTimeDetectionEvent extends AbstractDetectionEvent {
 
   /**

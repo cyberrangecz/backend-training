@@ -184,11 +184,11 @@ public interface TrainingInstanceRepository
 
   /**
    * Finds the training instances whose organizers include the given user. Derived from the method
-   * name, with no named query of this name on {@link TrainingInstance}; the {@code organizers}
-   * join table's {@code user_ref_id} column carries no explicit {@code referencedColumnName}, so
-   * JPA defaults it to the referenced entity's primary key. Membership is therefore decided by
-   * {@link UserRef#getId()}, not {@link UserRef#getUserRefId()}, despite the column name; the given
-   * {@code organizer} must already carry the correct primary key.
+   * name, with no named query of this name on {@link TrainingInstance}; the {@code organizers} join
+   * table's {@code user_ref_id} column carries no explicit {@code referencedColumnName}, so JPA
+   * defaults it to the referenced entity's primary key. Membership is therefore decided by {@link
+   * UserRef#getId()}, not {@link UserRef#getUserRefId()}, despite the column name; the given {@code
+   * organizer} must already carry the correct primary key.
    *
    * @param organizer the user whose organized training instances are to be found
    * @return the list of {@link TrainingInstance}s whose organizers contain the given user

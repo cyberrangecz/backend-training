@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A finding that a trainee ran commands the sweep was told to forbid. It always implicates exactly
+ * one trainee, so the inherited participant text holds a single name.
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -27,10 +31,6 @@ import lombok.ToString;
       query =
           "SELECT fcde FROM ForbiddenCommandsDetectionEvent fcde WHERE fcde.cheatingDetectionId = :cheatingDetectionId")
 })
-/**
- * A finding that a trainee ran commands the sweep was told to forbid. It always implicates exactly
- * one trainee, so the inherited participant text holds a single name.
- */
 public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 
   /** How many matching commands the finding gathered, counting every occurrence. */

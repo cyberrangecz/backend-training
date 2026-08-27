@@ -112,7 +112,7 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Finds specific Training Run by id
+   * Finds specific Training Run by id.
    *
    * @param id of a Training Run that would be returned
    * @return specific {@link TrainingRunByIdDTO}
@@ -246,8 +246,8 @@ public class TrainingRunFacade {
    * acquires a per-user lock preventing concurrent accesses from the same user, creates a new
    * training run, assigns it a sandbox unless the instance runs in a local environment, and audits
    * the run as started. If any step inside the try block fails — creating the run, assigning a
-   * sandbox, or auditing the run as started — the acquisition lock is released before the
-   * exception is rethrown.
+   * sandbox, or auditing the run as started — the acquisition lock is released before the exception
+   * is rethrown.
    *
    * @param accessToken of one training instance
    * @return {@link AccessTrainingRunDTO} describing the resumed or newly created run
@@ -629,8 +629,8 @@ public class TrainingRunFacade {
   /**
    * Gets the correct answer of every training level in the definition backing the given training
    * run. For a level using variant answers, the correct answer is looked up per participant from
-   * the answer storage service, either by the instance's access token (local environment) or by
-   * the run's sandbox instance reference id.
+   * the answer storage service, either by the instance's access token (local environment) or by the
+   * run's sandbox instance reference id.
    *
    * @param trainingRunId id of the Training Run whose definition's correct answers are returned.
    * @return the correct answer of every training level, ordered by level order.

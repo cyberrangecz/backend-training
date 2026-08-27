@@ -9,6 +9,10 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * A choice offered for a multiple-choice or free-form question, with its position and whether it is
+ * a correct answer
+ */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QuestionChoiceDTO implements Serializable, Ordered {

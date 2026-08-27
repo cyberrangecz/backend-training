@@ -14,6 +14,7 @@ public class SandboxDefinitionInfo {
 
   public SandboxDefinitionInfo() {}
 
+  /** Creates the sandbox definition info from the given id, name, url, and revision */
   public SandboxDefinitionInfo(Long id, String name, String url, String rev) {
     this.id = id;
     this.name = name;

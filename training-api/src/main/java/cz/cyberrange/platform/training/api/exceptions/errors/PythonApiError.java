@@ -28,12 +28,14 @@ public class PythonApiError extends ApiSubError {
 
   private PythonApiError() {}
 
+  /** Builds an error carrying only the given detail message */
   public static PythonApiError of(String detail) {
     PythonApiError apiError = new PythonApiError();
     apiError.setDetail(detail);
     return apiError;
   }
 
+  /** Builds an error carrying the given detail message and its associated parameters */
   public static PythonApiError of(String detail, Map<String, String> parameters) {
     PythonApiError apiError = new PythonApiError();
     apiError.setDetail(detail);

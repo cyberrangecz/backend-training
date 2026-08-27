@@ -45,6 +45,10 @@ public class LocationSimilarityService {
   private final DetectionEventService detectionEventService;
   @Autowired Environment environment;
 
+  /**
+   * Creates the service with the repositories and collaborators it uses to group a level's
+   * submissions by resolved IP address
+   */
   @Autowired
   public LocationSimilarityService(
       TrainingLevelRepository trainingLevelRepository,
@@ -86,9 +90,9 @@ public class LocationSimilarityService {
   }
 
   /**
-   * For every level of the cheating detection's training instance, groups that level's
-   * submissions by IP-address similarity and persists a {@link LocationSimilarityDetectionEvent}
-   * for each group naming more than one trainee.
+   * For every level of the cheating detection's training instance, groups that level's submissions
+   * by IP-address similarity and persists a {@link LocationSimilarityDetectionEvent} for each group
+   * naming more than one trainee.
    *
    * @param cd the cheating detection whose training instance is scanned
    */
@@ -147,10 +151,10 @@ public class LocationSimilarityService {
   }
 
   /**
-   * Assigns each submission to every existing group whose first submission's IP address it
-   * resolves as similar to. A submission matching no group starts a new one, unless the level
-   * being scanned carries exactly one submission in total. A submission can end up added to
-   * several groups at once.
+   * Assigns each submission to every existing group whose first submission's IP address it resolves
+   * as similar to. A submission matching no group starts a new one, unless the level being scanned
+   * carries exactly one submission in total. A submission can end up added to several groups at
+   * once.
    */
   private void generateLocationSimilarityGroups(
       List<Submission> submissions, List<List<Submission>> groups) {
@@ -194,9 +198,9 @@ public class LocationSimilarityService {
   }
 
   /**
-   * Marks the group's first submission's run as having a detection event, then persists a
-   * {@link LocationSimilarityDetectionEvent} built from that submission and saves each of the
-   * given participants against it.
+   * Marks the group's first submission's run as having a detection event, then persists a {@link
+   * LocationSimilarityDetectionEvent} built from that submission and saves each of the given
+   * participants against it
    */
   private void auditLocationSimilarityEvent(
       Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
@@ -213,11 +217,11 @@ public class LocationSimilarityService {
   }
 
   /**
-   * Resolves the submission's IP address and the {@code server.address} property to host names
-   * and sets {@code addressDeploy} to whether the two host names are equal. When either address
-   * fails to resolve, sets {@code addressDeploy} to {@code false} and {@code dns} to the literal
-   * {@code "unspecified"} instead of leaving it unset. Sets {@code ipAddress} to the submission's
-   * raw IP address unconditionally.
+   * Resolves the submission's IP address and the {@code server.address} property to host names and
+   * sets {@code addressDeploy} to whether the two host names are equal. When either address fails
+   * to resolve, sets {@code addressDeploy} to {@code false} and {@code dns} to the literal {@code
+   * "unspecified"} instead of leaving it unset. Sets {@code ipAddress} to the submission's raw IP
+   * address unconditionally.
    */
   private void extractLocationSimilaritySpecificInfo(
       Submission submission, LocationSimilarityDetectionEvent event) {

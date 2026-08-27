@@ -50,7 +50,7 @@ public interface TrainingRunRepository
   }
 
   /**
-   * Find all training runs
+   * Find all training runs.
    *
    * @param predicate the predicate
    * @param pageable the pageable
@@ -95,7 +95,7 @@ public interface TrainingRunRepository
   Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId);
 
   /**
-   * Find training run by id
+   * Find training run by id.
    *
    * @param id id of training run
    * @return {@link TrainingRun}
@@ -126,7 +126,7 @@ public interface TrainingRunRepository
   List<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId);
 
   /**
-   * Find training run by id including current level
+   * Find training run by id including current level.
    *
    * @param trainingRunId the training run id
    * @return {@link TrainingRun} including {@link

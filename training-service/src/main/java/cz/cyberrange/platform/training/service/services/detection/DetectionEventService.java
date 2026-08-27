@@ -30,6 +30,10 @@ public class DetectionEventService {
   private final DetectedForbiddenCommandRepository detectedForbiddenCommandRepository;
   private final UserService userService;
 
+  /**
+   * Creates the service with the repositories it reads and persists detection events, their
+   * participants and their forbidden-command findings through
+   */
   @Autowired
   public DetectionEventService(
       AbstractDetectionEventRepository abstractDetectionEventRepository,
@@ -53,8 +57,8 @@ public class DetectionEventService {
   }
 
   /**
-   * Returns, as one page of distinct rows, the detection events of one sweep that also satisfy
-   * the given predicate.
+   * Returns, as one page of distinct rows, the detection events of one sweep that also satisfy the
+   * given predicate.
    *
    * @param cheatingDetectionId the sweep whose events are returned
    * @param pageable the page to return

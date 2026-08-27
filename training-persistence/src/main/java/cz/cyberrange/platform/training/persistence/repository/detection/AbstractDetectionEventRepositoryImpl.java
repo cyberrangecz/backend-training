@@ -15,8 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 /**
- * Runs the Querydsl query behind {@link AbstractDetectionEventRepositoryCustom} against
- * {@link AbstractDetectionEvent}.
+ * Runs the Querydsl query behind {@link AbstractDetectionEventRepositoryCustom} against {@link
+ * AbstractDetectionEvent}
  */
 public class AbstractDetectionEventRepositoryImpl extends QuerydslRepositorySupport
     implements AbstractDetectionEventRepositoryCustom {
@@ -47,8 +47,8 @@ public class AbstractDetectionEventRepositoryImpl extends QuerydslRepositorySupp
   }
 
   /**
-   * Applies pagination to the query and fetches the resulting page, defaulting to the first page
-   * of 20 rows when no pageable is given.
+   * Applies pagination to the query and fetches the resulting page, defaulting to the first page of
+   * 20 rows when no pageable is given
    */
   private <T> Page getPage(JPQLQuery<T> query, Pageable pageable) {
     if (pageable == null) {

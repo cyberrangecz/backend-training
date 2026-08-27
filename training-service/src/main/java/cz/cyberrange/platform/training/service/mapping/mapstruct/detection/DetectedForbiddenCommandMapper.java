@@ -12,13 +12,17 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
+/**
+ * Converts a detected forbidden command between its entity form and {@link
+ * DetectedForbiddenCommandDTO}
+ */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DetectedForbiddenCommandMapper extends ParentMapper {
 
   /**
-   * Maps a detected forbidden command DTO to a new entity, matching {@code command}, {@code
-   * type}, {@code hostname} and {@code occurredAt} by name and leaving the finding it belongs to
-   * unset; {@code detectionEventId} carries no source counterpart on the DTO side.
+   * Maps a detected forbidden command DTO to a new entity, matching {@code command}, {@code type},
+   * {@code hostname} and {@code occurredAt} by name and leaving the finding it belongs to unset;
+   * {@code detectionEventId} carries no source counterpart on the DTO side.
    *
    * @param dto the detected forbidden command DTO to map
    * @return the mapped detected forbidden command
@@ -43,6 +47,12 @@ public interface DetectedForbiddenCommandMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
   }
 
+  /**
+   * Maps a page of detected forbidden commands to a page result resource holding their DTOs.
+   *
+   * @param objects the page of detected forbidden commands to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<DetectedForbiddenCommandDTO> mapToPageResultResource(
       Page<DetectedForbiddenCommand> objects) {
     List<DetectedForbiddenCommandDTO> mapped = new ArrayList<>();

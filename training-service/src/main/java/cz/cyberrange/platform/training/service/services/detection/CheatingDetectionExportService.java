@@ -33,9 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Writes the record and findings of one cheating detection sweep into a zip archive: one JSON
- * entry per detection event and its participants, plus a per-participant-group CSV summary that
- * lines up every event a group's trainees share, however many of them a given event implicates.
+ * Writes the record and findings of one cheating detection sweep into a zip archive: one JSON entry
+ * per detection event and its participants, plus a per-participant-group CSV summary that lines up
+ * every event a group's trainees share, however many of them a given event implicates
  */
 @Service
 public class CheatingDetectionExportService {
@@ -62,6 +62,10 @@ public class CheatingDetectionExportService {
   private final ObjectMapper objectMapper;
   private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+  /**
+   * Creates the service with the per-kind detection services and collaborators it draws on to write
+   * a sweep's findings out to file
+   */
   @Autowired
   public CheatingDetectionExportService(
       CheatingDetectionService cheatingDetectionService,
@@ -314,8 +318,8 @@ public class CheatingDetectionExportService {
   }
 
   /**
-   * Indexes the given participants by trainee, each mapped to the set of detection events they
-   * were implicated in among those given.
+   * Indexes the given participants by trainee, each mapped to the set of detection events they were
+   * implicated in among those given.
    *
    * @param participants the participants to index
    * @return each trainee's user id mapped to their detection event ids
@@ -366,9 +370,9 @@ public class CheatingDetectionExportService {
   }
 
   /**
-   * Splits the trainees into their connected components over the given trainee-to-events map,
-   * each component gathered by {@link #dfs}, so that every trainee falls into exactly one group
-   * together with every trainee they are transitively linked to through a shared event.
+   * Splits the trainees into their connected components over the given trainee-to-events map, each
+   * component gathered by {@link #dfs}, so that every trainee falls into exactly one group together
+   * with every trainee they are transitively linked to through a shared event.
    *
    * @param userEventMap every trainee's user id mapped to the detection event ids they share in
    * @return each group's trainee ids mapped to the union of the events shared within that group
@@ -628,8 +632,8 @@ public class CheatingDetectionExportService {
   }
 
   /**
-   * Writes a no-commands finding's detail line, then, only when there is more than one
-   * participant, a further line per participant with their submission time.
+   * Writes a no-commands finding's detail line, then, only when there is more than one participant,
+   * a further line per participant with their submission time.
    *
    * @param participants the finding's participants
    * @param event the finding to write

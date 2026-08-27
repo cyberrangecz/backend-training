@@ -13,6 +13,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * One recorded console command that matched a forbidden one, kept against the finding it counts
+ * towards, with the machine it ran on and the moment it was entered
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -29,10 +33,6 @@ import lombok.ToString;
       name = "DetectedForbiddenCommand.deleteAllByDetectionEventId",
       query = "DELETE FROM DetectedForbiddenCommand dfc WHERE dfc.detectionEventId = :eventId")
 })
-/**
- * One recorded console command that matched a forbidden one, kept against the finding it counts
- * towards, with the machine it ran on and the moment it was entered.
- */
 public class DetectedForbiddenCommand extends AbstractEntity<Long> {
 
   /** The command line as it was recorded, not the forbidden text that matched it. */

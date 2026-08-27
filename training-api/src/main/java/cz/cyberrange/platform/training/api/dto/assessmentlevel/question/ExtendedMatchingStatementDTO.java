@@ -7,6 +7,10 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
+/**
+ * A statement of an extended matching question, together with the option order that answers it
+ * correctly
+ */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedMatchingStatementDTO implements Ordered {
@@ -32,9 +36,8 @@ public class ExtendedMatchingStatementDTO implements Ordered {
    * this statement. It is resolved into the entity's extended matching option relation on every
    * level update, whatever the assessment type, so a statement left without one fails the update
    * rather than being treated as optional; only the check that demands one is confined to a level
-   * of the test kind. Cleared to null before an
-   * assessment level reaches a trainee's current level in a training run, but left set when a
-   * designer retrieves the level for editing.
+   * of the test kind. Cleared to null before an assessment level reaches a trainee's current level
+   * in a training run, but left set when a designer retrieves the level for editing.
    */
   @ApiModelProperty(
       value = "The order of the correct option in the list of extended matching options.",

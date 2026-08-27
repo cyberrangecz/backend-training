@@ -63,7 +63,7 @@ public interface TrainingDefinitionRepository
   Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
   /**
-   * Find all training definitions
+   * Find all training definitions.
    *
    * @param pageable the pageable
    * @return page of all {@link TrainingDefinition}
@@ -74,7 +74,7 @@ public interface TrainingDefinitionRepository
   Page<TrainingDefinition> findAll(Pageable pageable);
 
   /**
-   * Find all training definitions
+   * Find all training definitions.
    *
    * @param state the state of training definition
    * @param pageable the pageable

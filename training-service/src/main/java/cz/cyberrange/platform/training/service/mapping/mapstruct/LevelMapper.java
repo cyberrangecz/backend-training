@@ -230,6 +230,12 @@ public interface LevelMapper extends ParentMapper {
     return entity.getCommand();
   }
 
+  /**
+   * Wraps a command string into a new expected command, leaving its identifier unset.
+   *
+   * @param command the command text to wrap
+   * @return the resulting expected command
+   */
   default ExpectedCommand mapStringToExpectedCommand(String command) {
     ExpectedCommand expectedCommand = new ExpectedCommand();
     expectedCommand.setCommand(command);

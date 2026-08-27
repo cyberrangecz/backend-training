@@ -46,6 +46,12 @@ public interface EventMapper {
    */
   List<CommandEventDTO> mapToListDTO(List<TrainingCommand> commands);
 
+  /**
+   * Dispatches on the concrete subtype of the given training event and maps it to its own DTO.
+   *
+   * @param event the training event to map
+   * @return the mapped DTO, or {@code null} when the event's subtype is none of the handled ones
+   */
   default TrainingEventDTO mapToDTO(AbstractAuditPOJO event) {
     if (event instanceof AssessmentAnswered) {
       return mapToDTO((AssessmentAnswered) event);
@@ -71,6 +77,13 @@ public interface EventMapper {
     return null;
   }
 
+  /**
+   * Maps each event the same way {@link #mapToDTO(AbstractAuditPOJO)} does, preserving input order.
+   *
+   * @param events the training events to map, possibly null
+   * @return one DTO per input event, in the same order, or an empty list when {@code events} is
+   *     null
+   */
   default List<TrainingEventDTO> mapToEventListDTO(List<AbstractAuditPOJO> events) {
     if (events == null) {
       return new ArrayList<>();
@@ -80,6 +93,12 @@ public interface EventMapper {
 
   AssessmentAnsweredDTO mapToDTO(AssessmentAnswered event);
 
+  /**
+   * Dispatches on the concrete subtype of the given event answer and maps it to its own DTO.
+   *
+   * @param answer the event answer to map
+   * @return the mapped DTO, or {@code null} when the answer's subtype is none of the handled ones
+   */
   default EventAnswerDTO mapAnswer(EventAnswer answer) {
     if (answer instanceof FreeFormEventAnswer) {
       return mapAnswer((FreeFormEventAnswer) answer);

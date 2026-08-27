@@ -83,6 +83,8 @@ public class AccessTrainingRunDTO {
   private boolean isLevelAnswered;
 
   /**
+   * Appends the given hint to the list of hints taken so far.
+   *
    * @param takenHintDTO the {@link TakenHintDTO} to append
    */
   public void addTakenHint(TakenHintDTO takenHintDTO) {

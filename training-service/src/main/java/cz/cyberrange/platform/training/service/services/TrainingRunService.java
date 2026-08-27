@@ -86,6 +86,10 @@ public class TrainingRunService {
   private final CommandEventsService commandEventsService;
   private final TrainingEventsService trainingEventsService;
 
+  /**
+   * Creates the service with the repositories and collaborators it uses to drive a training run's
+   * progression, evaluation and lifecycle
+   */
   @Autowired
   public TrainingRunService(
       TrainingRunRepository trainingRunRepository,
@@ -226,8 +230,8 @@ public class TrainingRunService {
   }
 
   /**
-   * Finds the training runs, additionally narrowed by the given predicate, whose participant is
-   * the currently authenticated user, matched by the cross-service user reference id.
+   * Finds the training runs, additionally narrowed by the given predicate, whose participant is the
+   * currently authenticated user, matched by the cross-service user reference id.
    *
    * @param predicate the filter applied to the query
    * @param pageable the requested page
@@ -434,8 +438,8 @@ public class TrainingRunService {
   }
 
   /**
-   * Finds the training instance carrying the given access token whose start time is in the past
-   * and whose end time is in the future, with its training definition loaded eagerly.
+   * Finds the training instance carrying the given access token whose start time is in the past and
+   * whose end time is in the future, with its training definition loaded eagerly.
    *
    * @param accessToken the training instance access token
    * @return the matching {@link TrainingInstance}
@@ -717,9 +721,9 @@ public class TrainingRunService {
   }
 
   /**
-   * Compares the submitted passkey against the level's passkey. Audits a wrong answer submission
-   * on both a match and a mismatch; on a match it also marks the level answered and audits the
-   * level as completed.
+   * Compares the submitted passkey against the level's passkey. Audits a wrong answer submission on
+   * both a match and a mismatch; on a match it also marks the level answered and audits the level
+   * as completed.
    */
   private boolean evaluateAccessLevelPasskey(TrainingRun trainingRun, String passkey) {
     AccessLevel accessLevel = (AccessLevel) trainingRun.getCurrentLevel();
@@ -915,8 +919,8 @@ public class TrainingRunService {
   }
 
   /**
-   * Finishes a training run whose current level is the last of its training definition and has
-   * been answered. Sets its state to {@link TRState#FINISHED} and its end time to now, deletes its
+   * Finishes a training run whose current level is the last of its training definition and has been
+   * answered. Sets its state to {@link TRState#FINISHED} and its end time to now, deletes its
    * acquisition lock, audits its current level as completed when it is an {@link InfoLevel}, then
    * audits the run as ended.
    *

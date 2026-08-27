@@ -14,6 +14,10 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
+/**
+ * Converts a cheating detection between its entity form and {@link CheatingDetectionDTO}, mapping
+ * its forbidden commands through {@link ForbiddenCommandMapper}
+ */
 @Mapper(
     componentModel = "spring",
     uses = {ForbiddenCommandMapper.class},
@@ -57,6 +61,12 @@ public interface CheatingDetectionMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
   }
 
+  /**
+   * Maps a page of cheating detections to a page result resource holding their DTOs.
+   *
+   * @param objects the page of cheating detections to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<CheatingDetectionDTO> mapToPageResultResource(
       Page<CheatingDetection> objects) {
     List<CheatingDetectionDTO> mapped = new ArrayList<>();

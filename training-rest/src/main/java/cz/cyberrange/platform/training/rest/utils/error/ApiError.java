@@ -86,6 +86,15 @@ public class ApiError {
     this.timestamp = System.currentTimeMillis();
   }
 
+  /**
+   * Builds the error body, setting {@link #getErrors()} directly from {@code errors}.
+   *
+   * @param httpStatus the status reported in the body and used for the HTTP response
+   * @param message description of the error
+   * @param errors the list stored as {@link #getErrors()}
+   * @param path the request path or context path associated with the error
+   * @return the built error body
+   */
   public static ApiError of(
       HttpStatus httpStatus, String message, List<String> errors, String path) {
     ApiError apiError = new ApiError(httpStatus, message, path);

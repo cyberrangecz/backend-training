@@ -7,6 +7,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
+/** An option of an extended matching question, identified within the question by its position */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedMatchingOptionDTO implements Ordered {

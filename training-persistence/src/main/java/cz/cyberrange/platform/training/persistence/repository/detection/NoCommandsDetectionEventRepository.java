@@ -7,9 +7,9 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Manages {@link NoCommandsDetectionEvent} findings, the joined-inheritance subtype of
- * {@code AbstractDetectionEvent} recording that a level requiring console commands was solved
- * without any command being recorded for it.
+ * Manages {@link NoCommandsDetectionEvent} findings, the joined-inheritance subtype of {@code
+ * AbstractDetectionEvent} recording that a level requiring console commands was solved without any
+ * command being recorded for it
  */
 public interface NoCommandsDetectionEventRepository
     extends JpaRepository<NoCommandsDetectionEvent, Long>,

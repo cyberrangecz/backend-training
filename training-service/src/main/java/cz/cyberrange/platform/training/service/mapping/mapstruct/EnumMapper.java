@@ -10,18 +10,18 @@ import org.mapstruct.Mapper;
  * separate to prevent MapStruct ambiguity when multiple mappers share the same conversion
  * signatures via a common parent interface.
  *
- * <p>{@link #mapTDState} and {@link #mapTRState} are each reached automatically wherever a
- * {@code uses} caller maps a same-named {@code state} field between the persistence and API
- * enums of that name; neither is called by name anywhere. Both overloads of {@link
- * #mapCommandType} carry no such caller: no mapper that maps a {@code CommandType} field declares
- * this interface in its {@code uses}.
+ * <p>{@link #mapTDState} and {@link #mapTRState} are each reached automatically wherever a {@code
+ * uses} caller maps a same-named {@code state} field between the persistence and API enums of that
+ * name; neither is called by name anywhere. Both overloads of {@link #mapCommandType} carry no such
+ * caller: no mapper that maps a {@code CommandType} field declares this interface in its {@code
+ * uses}.
  */
 @Mapper(componentModel = "spring")
 public interface EnumMapper {
 
   /**
-   * Converts the API training definition state to its persistence counterpart by matching
-   * constant name.
+   * Converts the API training definition state to its persistence counterpart by matching constant
+   * name.
    *
    * @param apiState the state to convert, or null
    * @return the matching persistence state, or null when the argument is null
@@ -35,8 +35,8 @@ public interface EnumMapper {
   }
 
   /**
-   * Converts the persistence training definition state to its API counterpart by matching
-   * constant name.
+   * Converts the persistence training definition state to its API counterpart by matching constant
+   * name.
    *
    * @param persistenceState the state to convert, or null
    * @return the matching API state, or null when the argument is null

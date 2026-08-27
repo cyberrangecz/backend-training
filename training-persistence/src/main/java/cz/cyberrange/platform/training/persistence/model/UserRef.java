@@ -85,7 +85,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets set of training instances user can access
+   * Gets set of training instances user can access.
    *
    * @return the training instances
    */
@@ -94,7 +94,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of training instances user can access
+   * Sets set of training instances user can access.
    *
    * @param trainingInstances the training instances
    */
@@ -103,7 +103,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets set of training definitions user can access
+   * Gets set of training definitions user can access.
    *
    * @return the training definitions
    */
@@ -112,7 +112,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of training definitions user can access
+   * Sets set of training definitions user can access.
    *
    * @param trainingDefinitions the training definitions
    */
@@ -121,7 +121,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds definition to the set of training definitions user can access
+   * Adds definition to the set of training definitions user can access.
    *
    * @param trainingDefinition the training definition
    */
@@ -130,7 +130,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes definition from the set of training definitions user can access
+   * Removes definition from the set of training definitions user can access.
    *
    * @param trainingDefinition the training definition
    */
@@ -139,7 +139,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds beta testing group that can be accessed by user
+   * Adds beta testing group that can be accessed by user.
    *
    * @param viewGroup the view group
    */
@@ -148,7 +148,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes beta testing group that can be accessed by user
+   * Removes beta testing group that can be accessed by user.
    *
    * @param viewGroup the view group
    */
@@ -157,7 +157,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds instance to the set of training instances user can access
+   * Adds instance to the set of training instances user can access.
    *
    * @param trainingInstance the training instance
    */
@@ -166,7 +166,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes instance from the set of training instances user can access
+   * Removes instance from the set of training instances user can access.
    *
    * @param trainingInstance the training instance
    */
@@ -175,7 +175,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets set of Beta testing groups user can access
+   * Gets set of Beta testing groups user can access.
    *
    * @return the beta testers
    */
@@ -184,7 +184,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of Beta testing groups user can access
+   * Sets set of Beta testing groups user can access.
    *
    * @param betaTesters the beta testers
    */

@@ -30,8 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Detects a trainee running one of the sweep's forbidden console commands. Scans every training
- * run of the instance over the intervals between its correct submissions, comparing the console
+ * Detects a trainee running one of the sweep's forbidden console commands. Scans every training run
+ * of the instance over the intervals between its correct submissions, comparing the console
  * commands recorded for the run's sandbox in each interval against the sweep's forbidden command
  * list. Every finding implicates exactly one trainee.
  */
@@ -47,6 +47,10 @@ public class ForbiddenCommandsService {
   private final DetectionEventService detectionEventService;
   private final CommandEventsService commandEventsService;
 
+  /**
+   * Creates the service with the repositories and collaborators it uses to compare a run's recorded
+   * console commands against the sweep's forbidden command list
+   */
   @Autowired
   public ForbiddenCommandsService(
       SubmissionRepository submissionRepository,
@@ -147,9 +151,9 @@ public class ForbiddenCommandsService {
   }
 
   /**
-   * Matches the sandbox's console commands over the interval against the sweep's forbidden
-   * command list and, only if at least one match is found, records a finding implicating the
-   * trainee behind the submission.
+   * Matches the sandbox's console commands over the interval against the sweep's forbidden command
+   * list and, only if at least one match is found, records a finding implicating the trainee behind
+   * the submission
    */
   private void generateForbiddenCommandEvent(
       CheatingDetection cd,
@@ -180,9 +184,8 @@ public class ForbiddenCommandsService {
   }
 
   /**
-   * Checks every submitted command against every forbidden command and collects one detected
-   * entry per match; a submitted command matching several forbidden commands yields several
-   * entries.
+   * Checks every submitted command against every forbidden command and collects one detected entry
+   * per match; a submitted command matching several forbidden commands yields several entries
    */
   private List<DetectedForbiddenCommand> evaluateForbiddenCommands(
       List<ForbiddenCommand> forbiddenCommands, List<TrainingCommand> submittedCommands) {

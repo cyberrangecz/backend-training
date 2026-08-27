@@ -28,13 +28,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Detects a run of correct submissions on the same training level that arrived within a
- * configured time threshold of one another. Every level of a training instance is scanned
- * independently: its correct submissions, ordered by date, are chained into a group while each
- * consecutive pair is closer together than {@code cd.getProximityThreshold()}; a group naming more
- * than one trainee is recorded as a {@link TimeProximityDetectionEvent}. That check is bypassed on
- * one path: when a chain breaks because the next pair exceeds the threshold, the accumulated group
- * is audited unconditionally, so an event can end up naming only one trainee.
+ * Detects a run of correct submissions on the same training level that arrived within a configured
+ * time threshold of one another. Every level of a training instance is scanned independently: its
+ * correct submissions, ordered by date, are chained into a group while each consecutive pair is
+ * closer together than {@code cd.getProximityThreshold()}; a group naming more than one trainee is
+ * recorded as a {@link TimeProximityDetectionEvent}. That check is bypassed on one path: when a
+ * chain breaks because the next pair exceeds the threshold, the accumulated group is audited
+ * unconditionally, so an event can end up naming only one trainee.
  */
 @Service
 public class TimeProximityService {
@@ -47,6 +47,10 @@ public class TimeProximityService {
   private final TrainingInstanceService trainingInstanceService;
   private final DetectionEventService detectionEventService;
 
+  /**
+   * Creates the service with the repositories and collaborators it uses to chain a level's correct
+   * submissions into time-proximity groups
+   */
   @Autowired
   public TimeProximityService(
       TrainingLevelRepository trainingLevelRepository,
@@ -89,9 +93,9 @@ public class TimeProximityService {
   /**
    * For every level of the cheating detection's training instance, chains its correct submissions
    * by time proximity and, when the chain still open at the end of a level names more than one
-   * trainee, persists a {@link TimeProximityDetectionEvent} for it. A chain left open at the end
-   * of a level that names only one trainee is not discarded: it and its participant carry over
-   * into the next level's scan instead, together with whatever that level's own chaining adds.
+   * trainee, persists a {@link TimeProximityDetectionEvent} for it. A chain left open at the end of
+   * a level that names only one trainee is not discarded: it and its participant carry over into
+   * the next level's scan instead, together with whatever that level's own chaining adds.
    *
    * @param cd the cheating detection whose training instance is scanned
    */
@@ -132,14 +136,14 @@ public class TimeProximityService {
   }
 
   /**
-   * Compares each pair of the level's correct submissions, ordered by date, and grows
-   * {@code detectedGroup} while consecutive submissions stay closer together than
-   * {@code cd.getProximityThreshold()}. When a pair exceeds the threshold, every submission
-   * accumulated so far is turned into a participant and, if the group is non-empty, a
-   * {@link TimeProximityDetectionEvent} is persisted for it immediately regardless of how many
-   * distinct trainees ended up in {@code participants}; both collections are then cleared. A
-   * group still open once every pair has been compared is left in {@code detectedGroup} and
-   * {@code participants} for the caller to handle.
+   * Compares each pair of the level's correct submissions, ordered by date, and grows {@code
+   * detectedGroup} while consecutive submissions stay closer together than {@code
+   * cd.getProximityThreshold()}. When a pair exceeds the threshold, every submission accumulated so
+   * far is turned into a participant and, if the group is non-empty, a {@link
+   * TimeProximityDetectionEvent} is persisted for it immediately regardless of how many distinct
+   * trainees ended up in {@code participants}; both collections are then cleared. A group still
+   * open once every pair has been compared is left in {@code detectedGroup} and {@code
+   * participants} for the caller to handle.
    */
   private void generateSuspiciousGroup(
       CheatingDetection cd,
@@ -174,9 +178,9 @@ public class TimeProximityService {
   }
 
   /**
-   * Marks the submission's run as having a detection event, then persists a
-   * {@link TimeProximityDetectionEvent} for it carrying the cheating detection's proximity
-   * threshold and the given participants.
+   * Marks the submission's run as having a detection event, then persists a {@link
+   * TimeProximityDetectionEvent} for it carrying the cheating detection's proximity threshold and
+   * the given participants
    */
   private void auditTimeProximityEvent(
       Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {

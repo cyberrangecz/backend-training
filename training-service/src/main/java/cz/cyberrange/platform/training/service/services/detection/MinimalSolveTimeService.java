@@ -32,10 +32,10 @@ import org.springframework.stereotype.Service;
  * time. Every correct submission of a training instance is timed against when its trainee started
  * the level (the run's start time when the current submission's run differs from the previous
  * submission processed, or the date of the trainee's previous correct submission otherwise); a
- * submission faster than the level's
- * {@code minimalPossibleSolveTime} (in minutes) is recorded, grouped by level, into a
- * {@link MinimalSolveTimeDetectionEvent}. Nothing here requires more than one trainee to be
- * implicated before an event is recorded, so an event commonly names a single trainee.
+ * submission faster than the level's {@code minimalPossibleSolveTime} (in minutes) is recorded,
+ * grouped by level, into a {@link MinimalSolveTimeDetectionEvent}. Nothing here requires more than
+ * one trainee to be implicated before an event is recorded, so an event commonly names a single
+ * trainee.
  */
 @Service
 public class MinimalSolveTimeService {
@@ -46,6 +46,10 @@ public class MinimalSolveTimeService {
   private final TrainingRunService trainingRunService;
   private final DetectionEventService detectionEventService;
 
+  /**
+   * Creates the service with the repositories and collaborators it uses to time a level's correct
+   * submissions against its minimal solve time
+   */
   @Autowired
   public MinimalSolveTimeService(
       SubmissionRepository submissionRepository,
@@ -109,9 +113,9 @@ public class MinimalSolveTimeService {
   }
 
   /**
-   * Finds every correct submission of the cheating detection's training instance solved faster
-   * than its level's minimal solve time, and persists a {@link MinimalSolveTimeDetectionEvent} per
-   * level carrying every such submission found for that level.
+   * Finds every correct submission of the cheating detection's training instance solved faster than
+   * its level's minimal solve time, and persists a {@link MinimalSolveTimeDetectionEvent} per level
+   * carrying every such submission found for that level.
    *
    * @param cd the cheating detection whose training instance is scanned
    */
@@ -123,8 +127,8 @@ public class MinimalSolveTimeService {
   }
 
   /**
-   * Marks the submission's run as having a detection event, then persists a
-   * {@link MinimalSolveTimeDetectionEvent} carrying the given solve time and participants.
+   * Marks the submission's run as having a detection event, then persists a {@link
+   * MinimalSolveTimeDetectionEvent} carrying the given solve time and participants
    */
   private void auditMinimalSolveTimeEvent(
       Submission submission,
@@ -145,12 +149,12 @@ public class MinimalSolveTimeService {
 
   /**
    * Walks every correct submission of the training instance, ordered by training run then date,
-   * timing each submission whose level carries a minimal solve time against the moment its
-   * trainee started that level: the run's start time when the current submission's run differs
-   * from the previous correct submission's run (eligible or not), otherwise the date of that
-   * previous correct submission. A submission timed under its level's minimal solve time (in
-   * minutes, converted to seconds) is added to {@code detectedByLevel} under its level id and to
-   * {@code submissionTimes} under its own id.
+   * timing each submission whose level carries a minimal solve time against the moment its trainee
+   * started that level: the run's start time when the current submission's run differs from the
+   * previous correct submission's run (eligible or not), otherwise the date of that previous
+   * correct submission. A submission timed under its level's minimal solve time (in minutes,
+   * converted to seconds) is added to {@code detectedByLevel} under its level id and to {@code
+   * submissionTimes} under its own id.
    */
   private void aggregateMinimalSolveTimeSubmissionsByLevels(
       CheatingDetection cd,

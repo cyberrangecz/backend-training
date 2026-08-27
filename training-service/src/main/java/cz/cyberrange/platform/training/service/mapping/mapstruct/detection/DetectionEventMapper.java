@@ -30,8 +30,8 @@ import org.springframework.data.domain.PageImpl;
  * Maps cheating detection findings between their persistence subtype hierarchy, rooted at {@link
  * AbstractDetectionEvent}, and their DTO subtype hierarchy, rooted at {@link
  * AbstractDetectionEventDTO}. Each finding kind is mapped through its own pair of methods; the
- * mapper performs no dispatch by itself, so a caller holding a value as its base type must pick
- * the matching kind-specific method itself to carry the kind's own fields across.
+ * mapper performs no dispatch by itself, so a caller holding a value as its base type must pick the
+ * matching kind-specific method itself to carry the kind's own fields across.
  */
 @Mapper(
     componentModel = "spring",
@@ -145,6 +145,12 @@ public interface DetectionEventMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
   }
 
+  /**
+   * Maps a page of detection events to a page result resource holding their DTOs.
+   *
+   * @param objects the page of detection events to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<AbstractDetectionEventDTO> mapToPageResultResource(
       Page<AbstractDetectionEvent> objects) {
     List<AbstractDetectionEventDTO> mapped = new ArrayList<>();

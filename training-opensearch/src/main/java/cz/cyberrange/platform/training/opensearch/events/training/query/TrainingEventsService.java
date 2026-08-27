@@ -19,6 +19,10 @@ import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Queries and deletes training audit events stored in OpenSearch, scoped by training run or
+ * training instance
+ */
 @Service
 public class TrainingEventsService {
   private static final String TIMESTAMP_FIELD = "timestamp";
@@ -50,6 +54,12 @@ public class TrainingEventsService {
     return searchAllEvents(index);
   }
 
+  /**
+   * Deletes the OpenSearch index holding events for one training run within one training instance.
+   *
+   * @param trainingInstanceId id of the training instance the run belongs to
+   * @param trainingRunId id of the training run whose event index is deleted
+   */
   public void deleteEventsFromTrainingRun(Long trainingInstanceId, Long trainingRunId) {
     String index =
         OpensearchTrainingEventIndexBuilder.builder()
@@ -59,12 +69,24 @@ public class TrainingEventsService {
     deleteIndex(index);
   }
 
+  /**
+   * Deletes the OpenSearch index holding events for every run of one training instance.
+   *
+   * @param trainingInstanceId id of the training instance whose event index is deleted
+   */
   public void deleteEventsByTrainingInstanceId(Long trainingInstanceId) {
     String index =
         OpensearchTrainingEventIndexBuilder.builder().instance(trainingInstanceId).build();
     deleteIndex(index);
   }
 
+  /**
+   * Checks whether any event has been recorded for a training run.
+   *
+   * @param trainingRunId id of the training run to check
+   * @return true if at least one event exists, false otherwise
+   * @throws OpenSearchQueryException if the OpenSearch query fails
+   */
   public boolean hasRunEvents(Long trainingRunId) {
     String index = OpensearchTrainingEventIndexBuilder.builder().run(trainingRunId).build();
     try {

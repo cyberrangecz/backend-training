@@ -7,6 +7,10 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
+/**
+ * A statement of an extended matching question as previewed to a participant, together with the
+ * option order the participant has paired it with so far
+ */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedMatchingStatementPreviewDTO implements Ordered {

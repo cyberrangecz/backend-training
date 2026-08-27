@@ -49,9 +49,9 @@ public interface AbstractDetectionEventRepository
   /**
    * Deletes every {@link AbstractDetectionEvent} row of one cheating detection sweep in a single
    * bulk statement, which bypasses the persistence context: it does not detach or evict any
-   * already-loaded instance. Because the base table is the root of a JOINED-inheritance
-   * hierarchy, this deletes only from {@code abstract_detection_event}, leaving behind the
-   * counterpart row in whichever concrete finding table the deleted event belonged to.
+   * already-loaded instance. Because the base table is the root of a JOINED-inheritance hierarchy,
+   * this deletes only from {@code abstract_detection_event}, leaving behind the counterpart row in
+   * whichever concrete finding table the deleted event belonged to.
    *
    * @param cheatingDetectionId the cheating detection whose events are deleted
    */
@@ -61,8 +61,8 @@ public interface AbstractDetectionEventRepository
 
   /**
    * Returns, as one page of distinct rows, the detection events of one cheating detection sweep
-   * that also satisfy the given predicate. Delegates to the Querydsl query in
-   * {@code AbstractDetectionEventRepositoryImpl}.
+   * that also satisfy the given predicate. Delegates to the Querydsl query in {@code
+   * AbstractDetectionEventRepositoryImpl}.
    *
    * @param cheatingDetectionId the cheating detection the returned events belong to
    * @param pageable the page to return; a null value defaults to the first page of 20 rows
@@ -74,8 +74,8 @@ public interface AbstractDetectionEventRepository
       Predicate predicate);
 
   /**
-   * Returns every detection event of one cheating detection sweep, across every finding kind, in
-   * no defined order. Each returned instance is the concrete finding subtype the row belongs to.
+   * Returns every detection event of one cheating detection sweep, across every finding kind, in no
+   * defined order. Each returned instance is the concrete finding subtype the row belongs to.
    *
    * @param cheatingDetectionId the cheating detection the returned events belong to
    */

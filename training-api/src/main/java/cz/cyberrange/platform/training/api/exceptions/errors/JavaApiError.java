@@ -58,6 +58,10 @@ public class JavaApiError extends ApiSubError {
     this.message = message;
   }
 
+  /**
+   * Builds an error carrying the given status, message, list of reasons, and request path, with the
+   * timestamp set to the current time
+   */
   public static JavaApiError of(
       HttpStatus httpStatus, String message, List<String> errors, String path) {
     JavaApiError apiError = new JavaApiError(message);
@@ -68,6 +72,10 @@ public class JavaApiError extends ApiSubError {
     return apiError;
   }
 
+  /**
+   * Builds an error carrying the given status, message, single reason, and request path, with the
+   * timestamp set to the current time
+   */
   public static JavaApiError of(HttpStatus httpStatus, String message, String error, String path) {
     JavaApiError apiError = new JavaApiError(message);
     apiError.setStatus(httpStatus);

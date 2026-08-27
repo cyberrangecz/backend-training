@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A finding that a trainee's incorrect submission matched another trainee's stored variant answer
+ * for the same level, evidenced by the matched answer text and the trainee it was generated for
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter

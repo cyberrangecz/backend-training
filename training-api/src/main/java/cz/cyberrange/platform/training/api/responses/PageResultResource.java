@@ -39,6 +39,7 @@ public class PageResultResource<E> {
     this.content = content;
   }
 
+  /** Creates a page over the given content, carrying the given pagination metadata */
   public PageResultResource(List<E> content, Pagination pageMetadata) {
     super();
     this.content = content;
@@ -97,6 +98,7 @@ public class PageResultResource<E> {
 
     public Pagination() {}
 
+    /** Creates the pagination metadata from the given page position and size values */
     public Pagination(
         int number, int numberOfElements, int size, long totalElements, int totalPages) {
       super();

@@ -59,6 +59,10 @@ public class ScoreReportService {
   private final LevelMapper levelMapper;
   private final ScoreReportMapper scoreReportMapper;
 
+  /**
+   * Creates the service with the repositories, mappers and collaborators it uses to build a
+   * training instance's score report
+   */
   @Autowired
   public ScoreReportService(
       ExportImportService exportImportService,

@@ -8,6 +8,11 @@ import javax.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+/**
+ * A finding that a level marked as requiring console commands was solved without any command being
+ * recorded for it, its solution not having been revealed. It adds no evidence beyond what every
+ * finding carries.
+ */
 @EqualsAndHashCode(callSuper = true)
 @ToString
 @Entity
@@ -22,9 +27,4 @@ import lombok.ToString;
       query =
           "SELECT ncde FROM NoCommandsDetectionEvent ncde WHERE ncde.cheatingDetectionId = :cheatingDetectionId")
 })
-/**
- * A finding that a level marked as requiring console commands was solved without any command being
- * recorded for it, its solution not having been revealed. It adds no evidence beyond what every
- * finding carries.
- */
 public class NoCommandsDetectionEvent extends AbstractDetectionEvent {}

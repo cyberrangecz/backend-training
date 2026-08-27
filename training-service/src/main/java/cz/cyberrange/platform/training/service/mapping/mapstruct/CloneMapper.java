@@ -17,6 +17,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+/**
+ * Copies training definitions and their nested levels, hints, attachments and assessment questions
+ * into new detached entities, each leaving its identifier and owning association unset for the
+ * caller to assign
+ */
 @Mapper(
     componentModel = "spring",
     uses = {},

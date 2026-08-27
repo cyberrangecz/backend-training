@@ -13,6 +13,7 @@ public class CustomWebClientException extends RuntimeException {
   private HttpStatus statusCode;
   private ApiSubError apiSubError;
 
+  /** Creates the exception carrying the given HTTP status and microservice error body */
   public CustomWebClientException(HttpStatus httpStatus, ApiSubError apiSubError) {
     super();
     this.apiSubError = apiSubError;

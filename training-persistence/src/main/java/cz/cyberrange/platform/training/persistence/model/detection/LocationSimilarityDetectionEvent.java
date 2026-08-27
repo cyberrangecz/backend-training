@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A finding that several trainees submitted from the same network location, evidenced by the
+ * address one of those submissions came from
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -27,10 +31,6 @@ import lombok.ToString;
       query =
           "SELECT lsde FROM LocationSimilarityDetectionEvent lsde WHERE lsde.cheatingDetectionId = :cheatingDetectionId")
 })
-/**
- * A finding that several trainees submitted from the same network location, evidenced by the
- * address one of those submissions came from.
- */
 public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
 
   @Column(name = "ip_address")

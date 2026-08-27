@@ -36,8 +36,8 @@ import org.springframework.stereotype.Service;
 /**
  * Detects a level marked as requiring console commands being solved without any command recorded
  * for it. Scans every training run of the instance, skipping a level whose solution was revealed,
- * and groups every submission caught this way by level id into one finding per level, so a
- * finding can implicate several trainees.
+ * and groups every submission caught this way by level id into one finding per level, so a finding
+ * can implicate several trainees.
  */
 @Service
 public class NoCommandsService {
@@ -52,6 +52,10 @@ public class NoCommandsService {
   private final TrainingEventsService trainingEventsService;
   private final CommandEventsService commandEventsService;
 
+  /**
+   * Creates the service with the repositories and collaborators it uses to find a run's completed
+   * levels that recorded no console commands
+   */
   @Autowired
   public NoCommandsService(
       TrainingLevelRepository trainingLevelRepository,
@@ -96,8 +100,8 @@ public class NoCommandsService {
   }
 
   /**
-   * Runs the no-commands detector over every training run of the sweep's instance, then records
-   * one finding per level for which at least one submission was caught, implicating every trainee
+   * Runs the no-commands detector over every training run of the sweep's instance, then records one
+   * finding per level for which at least one submission was caught, implicating every trainee
    * caught on that level.
    *
    * @param cd the sweep being executed
@@ -155,9 +159,9 @@ public class NoCommandsService {
 
   /**
    * Evaluates one run's correct submissions except the last, each against the interval since the
-   * previous correct submission or, for the first one, the run's start. The last correct
-   * submission is never evaluated, so a level solved last in a run is never caught by this
-   * detector for that run.
+   * previous correct submission or, for the first one, the run's start. The last correct submission
+   * is never evaluated, so a level solved last in a run is never caught by this detector for that
+   * run.
    */
   private void executeNoCommandsDetectionForRun(
       Map<Long, TrainingLevel> trainingLevelsById,
@@ -213,8 +217,8 @@ public class NoCommandsService {
   }
 
   /**
-   * Reports whether no console command was recorded for the run's sandbox between {@code from}
-   * and the submission's own date.
+   * Reports whether no console command was recorded for the run's sandbox between {@code from} and
+   * the submission's own date
    */
   private boolean evalCheatOfNoCommands(
       String sandboxId, LocalDateTime from, Submission submission) {

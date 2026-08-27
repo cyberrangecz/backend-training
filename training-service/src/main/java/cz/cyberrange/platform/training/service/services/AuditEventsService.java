@@ -186,9 +186,9 @@ public class AuditEventsService {
   }
 
   /**
-   * Emits a training-run-finished event carrying the run's start time and the current moment as
-   * end time, both as UTC epoch milliseconds, with a timestamp ordered after a level-completed
-   * event emitted for the same instant.
+   * Emits a training-run-finished event carrying the run's start time and the current moment as end
+   * time, both as UTC epoch milliseconds, with a timestamp ordered after a level-completed event
+   * emitted for the same instant.
    *
    * @param trainingRun the run that finished
    */
@@ -220,11 +220,11 @@ public class AuditEventsService {
   }
 
   /**
-   * Fills the fields shared by every audit event: the run, instance, definition and current
-   * level's identifiers, the participant's cross-service user identifier, elapsed training time,
-   * both accumulated scores, the current level's remaining score (its maximum score minus the
-   * run's accumulated penalty in that level), the current level's order, the instance's pool id,
-   * and the run's sandbox reference id.
+   * Fills the fields shared by every audit event: the run, instance, definition and current level's
+   * identifiers, the participant's cross-service user identifier, elapsed training time, both
+   * accumulated scores, the current level's remaining score (its maximum score minus the run's
+   * accumulated penalty in that level), the current level's order, the instance's pool id, and the
+   * run's sandbox reference id.
    *
    * @param trainingRun the run the event is being built for
    * @param builder the builder to fill

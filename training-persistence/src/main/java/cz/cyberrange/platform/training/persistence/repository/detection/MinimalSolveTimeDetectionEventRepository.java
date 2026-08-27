@@ -7,9 +7,8 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Manages {@link MinimalSolveTimeDetectionEvent} findings, the joined-inheritance subtype of
- * {@code AbstractDetectionEvent} recording that a level was solved faster than it is held to be
- * solvable.
+ * Manages {@link MinimalSolveTimeDetectionEvent} findings, the joined-inheritance subtype of {@code
+ * AbstractDetectionEvent} recording that a level was solved faster than it is held to be solvable
  */
 public interface MinimalSolveTimeDetectionEventRepository
     extends JpaRepository<MinimalSolveTimeDetectionEvent, Long>,

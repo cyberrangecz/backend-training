@@ -7,9 +7,9 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Manages {@link TimeProximityDetectionEvent} findings, the joined-inheritance subtype of
- * {@code AbstractDetectionEvent} recording that several trainees solved the same level closer
- * together in time than the sweep's tolerance allows.
+ * Manages {@link TimeProximityDetectionEvent} findings, the joined-inheritance subtype of {@code
+ * AbstractDetectionEvent} recording that several trainees solved the same level closer together in
+ * time than the sweep's tolerance allows
  */
 public interface TimeProximityDetectionEventRepository
     extends JpaRepository<TimeProximityDetectionEvent, Long>,

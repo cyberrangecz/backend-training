@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Manages {@link QuestionAnswer} rows, keyed by the composite {@link QuestionAnswerId} of question
+ * and training run primary keys
+ */
 @Repository
 public interface QuestionAnswerRepository
     extends JpaRepository<QuestionAnswer, QuestionAnswerId>,

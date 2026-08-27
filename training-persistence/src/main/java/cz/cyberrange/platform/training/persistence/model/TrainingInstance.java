@@ -136,7 +136,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   private boolean backwardMode;
 
   /**
-   * Gets unique identification number of Training instance
+   * Gets unique identification number of Training instance.
    *
    * @return the id
    */
@@ -145,7 +145,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets unique identification number of Training instance
+   * Sets unique identification number of Training instance.
    *
    * @param id the id
    */
@@ -154,7 +154,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets initiation time of Training instance
+   * Gets initiation time of Training instance.
    *
    * @return the start time
    */
@@ -163,7 +163,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets initiation time of Training instance
+   * Sets initiation time of Training instance.
    *
    * @param startTime the start time
    */
@@ -172,7 +172,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets finish time of Training instance
+   * Gets finish time of Training instance.
    *
    * @return the end time
    */
@@ -181,7 +181,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets finish time of Training instance
+   * Sets finish time of Training instance.
    *
    * @param endTime the end time
    */
@@ -190,7 +190,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets access token needed to start Training runs associated with given Training Instance
+   * Gets access token needed to start Training runs associated with given Training Instance.
    *
    * @return the access token
    */
@@ -199,7 +199,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets access token needed to start Training runs associated with given Training Instance
+   * Sets access token needed to start Training runs associated with given Training Instance.
    *
    * @param accessToken the access token
    */
@@ -208,7 +208,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets title of Training Instance
+   * Gets title of Training Instance.
    *
    * @return the title
    */
@@ -217,7 +217,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets title of Training Instance
+   * Sets title of Training Instance.
    *
    * @param title the title
    */
@@ -226,7 +226,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets unique identification number of sandbox pool associated with given Training instance
+   * Gets unique identification number of sandbox pool associated with given Training instance.
    *
    * @return the pool id
    */
@@ -235,7 +235,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets unique identification number of sandbox pool associated with given Training instance
+   * Sets unique identification number of sandbox pool associated with given Training instance.
    *
    * @param poolId the pool id
    */
@@ -244,7 +244,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets time of last edit done to Training Instance
+   * Gets time of last edit done to Training Instance.
    *
    * @return the last edited
    */
@@ -253,7 +253,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets time of last edit done to Training Instance
+   * Sets time of last edit done to Training Instance.
    *
    * @param lastEdited the last edited
    */
@@ -262,7 +262,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets the name of the user who has done the last edit in Training Instance
+   * Gets the name of the user who has done the last edit in Training Instance.
    *
    * @return the name of the user
    */
@@ -271,7 +271,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets the name of the user who has done the last edit in Training Instance
+   * Sets the name of the user who has done the last edit in Training Instance.
    *
    * @param lastEditedBy the name of the user
    */
@@ -280,7 +280,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets Training definition associated with given Training instance
+   * Gets Training definition associated with given Training instance.
    *
    * @return the training definition
    */
@@ -289,7 +289,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets Training definition associated with given Training instance
+   * Sets Training definition associated with given Training instance.
    *
    * @param trainingDefinition the training definition
    */
@@ -298,7 +298,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets set of users that can make changes to the Training instance
+   * Gets set of users that can make changes to the Training instance.
    *
    * @return the organizers
    */
@@ -307,7 +307,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of users that can make changes to the Training instance
+   * Sets set of users that can make changes to the Training instance.
    *
    * @param organizers the organizers
    */
@@ -316,7 +316,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds user to the set of users that can make changes to the Training instance
+   * Adds user to the set of users that can make changes to the Training instance.
    *
    * @param userRef the user ref
    */
@@ -353,7 +353,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets unique identification number of sandbox definition associated with given Training instance
+   * Gets unique identification number of sandbox definition associated with given Training
+   * instance.
    *
    * @return the sandbox definition id
    */
@@ -362,7 +363,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets unique identification number of sandbox definition associated with given Training instance
+   * Sets unique identification number of sandbox definition associated with given Training
+   * instance.
    *
    * @param sandboxDefinitionId the sandbox definition id
    */

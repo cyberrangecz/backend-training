@@ -19,9 +19,12 @@ import javax.validation.Payload;
 @Constraint(validatedBy = EmailValidator.class)
 @Documented
 public @interface ValidEmail {
+  /** Message reported when the annotated value fails validation */
   String message() default "Invalid email";
 
+  /** Validation groups this constraint belongs to, per the Bean Validation specification */
   Class<?>[] groups() default {};
 
+  /** Payload types carried through to a client of the Bean Validation API */
   Class<? extends Payload>[] payload() default {};
 }

@@ -116,7 +116,7 @@ public class TrainingInstanceFacade {
   }
 
   /**
-   * Finds specific Training Instance by id
+   * Finds specific Training Instance by id.
    *
    * @param id of a Training Instance that would be returned
    * @return specific {@link TrainingInstanceDTO} by id
@@ -165,9 +165,9 @@ public class TrainingInstanceFacade {
    * Updates a training instance. Refuses the update if the instance has already started and the
    * assigned training definition would change. Validates that the instance's local environment and
    * pool configuration are consistent, and that the sandbox definition or pool exposes every
-   * variable name referenced by the training definition's levels. Locks the new pool when a pool
-   * is assigned for the first time; unlocks and deletes a previously assigned pool's recorded
-   * console commands whenever that pool is replaced or removed.
+   * variable name referenced by the training definition's levels. Locks the new pool when a pool is
+   * assigned for the first time; unlocks and deletes a previously assigned pool's recorded console
+   * commands whenever that pool is replaced or removed.
    *
    * @param trainingInstanceUpdateDTO to be updated
    * @return the access token in effect after the update, whether it changed or was kept
@@ -257,7 +257,7 @@ public class TrainingInstanceFacade {
   }
 
   /**
-   * Creates new training instance
+   * Creates new training instance.
    *
    * @param trainingInstanceCreateDTO to be created
    * @return created {@link TrainingInstanceDTO}
@@ -486,6 +486,13 @@ public class TrainingInstanceFacade {
                     trainingRunDTO.getParticipantRef().getUserRefId())));
   }
 
+  /**
+   * Reports whether the given training instance has finished, alongside a message describing
+   * whether it is safe to delete.
+   *
+   * @param trainingInstanceId id of the training instance to check
+   * @return a DTO carrying the finished flag and its accompanying message
+   */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")

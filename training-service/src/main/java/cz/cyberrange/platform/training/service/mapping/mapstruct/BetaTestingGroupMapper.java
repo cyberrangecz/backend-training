@@ -19,10 +19,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 /**
- * Converts a beta testing group between its entity form and the DTOs exposed for it. Declared as
- * a {@code uses} target of {@link TrainingDefinitionMapper}, though that mapper only extracts the
- * group's id and never maps a nested {@code BetaTestingGroup} or {@code BetaTestingGroupDTO}
- * field, so no method here is reached from that composition.
+ * Converts a beta testing group between its entity form and the DTOs exposed for it. Declared as a
+ * {@code uses} target of {@link TrainingDefinitionMapper}, though that mapper only extracts the
+ * group's id and never maps a nested {@code BetaTestingGroup} or {@code BetaTestingGroupDTO} field,
+ * so no method here is reached from that composition.
  */
 @Mapper(
     componentModel = "spring",
@@ -33,8 +33,8 @@ public interface BetaTestingGroupMapper extends ParentMapper {
   /**
    * Maps a beta testing group into a new entity. Its {@code organizersRefIds} carries member ids
    * while the entity's {@code organizers} holds member entities, so the field has no automatic
-   * match and is left unset, along with the owning training definition; the primary key is
-   * copied by the same-name match with the DTO's own {@code id}.
+   * match and is left unset, along with the owning training definition; the primary key is copied
+   * by the same-name match with the DTO's own {@code id}.
    *
    * @param dto the beta testing group to map
    * @return the mapped beta testing group
@@ -98,6 +98,12 @@ public interface BetaTestingGroupMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
   }
 
+  /**
+   * Maps a page of beta testing groups to a page result resource holding their DTOs.
+   *
+   * @param objects the page of beta testing groups to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<BetaTestingGroupDTO> mapToPageResultResource(
       Page<BetaTestingGroup> objects) {
     List<BetaTestingGroupDTO> mapped = new ArrayList<>();

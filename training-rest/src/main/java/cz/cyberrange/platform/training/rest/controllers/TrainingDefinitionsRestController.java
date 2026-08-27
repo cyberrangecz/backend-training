@@ -886,8 +886,6 @@ public class TrainingDefinitionsRestController {
    * @param familyName restricts the result to users whose family name matches, no restriction when
    *     absent
    * @param pageable pageable parameter with information about pagination
-   * @param fields squiggly filter selecting the attributes to keep in the response, the whole page
-   *     being returned when absent
    * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
@@ -932,8 +930,6 @@ public class TrainingDefinitionsRestController {
    * @param familyName restricts the result to users whose family name matches, no restriction when
    *     absent
    * @param pageable pageable parameter with information about pagination
-   * @param fields squiggly filter selecting the attributes to keep in the response, the whole page
-   *     being returned when absent
    * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
@@ -979,8 +975,6 @@ public class TrainingDefinitionsRestController {
    * @param familyName restricts the result to users whose family name matches, no restriction when
    *     absent
    * @param pageable pageable parameter with information about pagination
-   * @param fields squiggly filter selecting the attributes to keep in the response, the whole page
-   *     being returned when absent
    * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
@@ -1035,8 +1029,6 @@ public class TrainingDefinitionsRestController {
    *
    * @param trainingDefinitionId id of the training definition whose beta testing group is read
    * @param pageable pageable parameter with information about pagination
-   * @param fields squiggly filter selecting the attributes to keep in the response, the whole page
-   *     being returned when absent
    * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
@@ -1085,8 +1077,6 @@ public class TrainingDefinitionsRestController {
    * @param familyName restricts the result to authors whose family name matches, no restriction
    *     when absent
    * @param pageable pageable parameter with information about pagination
-   * @param fields squiggly filter selecting the attributes to keep in the response, the whole page
-   *     being returned when absent
    * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(

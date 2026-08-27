@@ -31,14 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Detects a trainee whose incorrect submission matches, verbatim, another trainee's stored
- * variant answer for the same training level and answer variable. Every incorrect submission
- * recorded in a training instance is compared against the per-sandbox variant answers of every
- * other trainee's run under that instance; a match is recorded as an
- * {@link AnswerSimilarityDetectionEvent}. A submission whose text matches one of the submitter's
- * own sandbox answers for any level is treated as a mistaken entry rather than a match. An event
- * can implicate a single trainee: nothing here requires more than one participant before an event
- * is recorded.
+ * Detects a trainee whose incorrect submission matches, verbatim, another trainee's stored variant
+ * answer for the same training level and answer variable. Every incorrect submission recorded in a
+ * training instance is compared against the per-sandbox variant answers of every other trainee's
+ * run under that instance; a match is recorded as an {@link AnswerSimilarityDetectionEvent}. A
+ * submission whose text matches one of the submitter's own sandbox answers for any level is treated
+ * as a mistaken entry rather than a match. An event can implicate a single trainee: nothing here
+ * requires more than one participant before an event is recorded.
  */
 @Service
 public class AnswerSimilarityService {
@@ -53,6 +52,10 @@ public class AnswerSimilarityService {
   private final UserService userService;
   private final DetectionEventService detectionEventService;
 
+  /**
+   * Creates the service with the repositories and collaborators it uses to compare submissions
+   * against stored variant answers across a training instance's runs
+   */
   @Autowired
   public AnswerSimilarityService(
       TrainingLevelRepository trainingLevelRepository,
@@ -98,9 +101,9 @@ public class AnswerSimilarityService {
   }
 
   /**
-   * Compares every incorrect submission of the cheating detection's training instance against
-   * every trainee run's stored variant answers, and persists an
-   * {@link AnswerSimilarityDetectionEvent} for each answer-similarity match found.
+   * Compares every incorrect submission of the cheating detection's training instance against every
+   * trainee run's stored variant answers, and persists an {@link AnswerSimilarityDetectionEvent}
+   * for each answer-similarity match found.
    *
    * @param cd the cheating detection whose training instance is scanned
    */
@@ -117,9 +120,9 @@ public class AnswerSimilarityService {
   }
 
   /**
-   * Fetches, for every run of the training instance, the run sandbox's full list of variant
-   * answers into {@code answers} keyed by sandbox id, and returns every training level of the
-   * instance's training definition keyed by level id.
+   * Fetches, for every run of the training instance, the run sandbox's full list of variant answers
+   * into {@code answers} keyed by sandbox id, and returns every training level of the instance's
+   * training definition keyed by level id
    */
   private Map<Long, TrainingLevel> aggregateTrainingLevelsById(
       Long trainingInstanceId, Set<TrainingRun> runs, Map<String, List<VariantAnswer>> answers) {
@@ -202,8 +205,8 @@ public class AnswerSimilarityService {
 
   /**
    * Adds the run's owner as a further participant for every correct submission the owner made on
-   * the same level as the flagged submission, then persists the event and marks the run as having
-   * a detection event.
+   * the same level as the flagged submission, then persists the event and marks the run as having a
+   * detection event
    */
   private void generateAnswerSimilarityEvent(
       TrainingRun run,
@@ -259,9 +262,9 @@ public class AnswerSimilarityService {
   }
 
   /**
-   * Marks the submitting run as having a detection event, persists an
-   * {@link AnswerSimilarityDetectionEvent} for the submission carrying the given participants and
-   * answer owner, and saves each participant against the new event.
+   * Marks the submitting run as having a detection event, persists an {@link
+   * AnswerSimilarityDetectionEvent} for the submission carrying the given participants and answer
+   * owner, and saves each participant against the new event
    */
   private void auditAnswerSimilarityEvent(
       Submission submission,

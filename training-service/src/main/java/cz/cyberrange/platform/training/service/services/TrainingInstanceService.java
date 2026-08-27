@@ -42,6 +42,10 @@ public class TrainingInstanceService {
   private SecurityService securityService;
   private UserService userService;
 
+  /**
+   * Creates the service with the repositories and collaborators it uses to manage training
+   * instances, their runs and their organizers
+   */
   @Autowired
   public TrainingInstanceService(
       TrainingInstanceRepository trainingInstanceRepository,
@@ -57,7 +61,7 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Finds basic info about Training Instance by id
+   * Finds basic info about Training Instance by id.
    *
    * @param instanceId of a Training Instance that would be returned
    * @return specific {@link TrainingInstance} by id
@@ -136,8 +140,8 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Creates a training instance. Generates a fresh access token from the given base token, adds
-   * the logged in user as an organizer, and persists the result.
+   * Creates a training instance. Generates a fresh access token from the given base token, adds the
+   * logged in user as an organizer, and persists the result.
    *
    * @param trainingInstance to be created
    * @return created {@link TrainingInstance}
@@ -161,8 +165,8 @@ public class TrainingInstanceService {
   /**
    * Updates a training instance. Before the instance has started, any field may change and the
    * access token is regenerated when its base value changed; once started or finished, {@link
-   * #checkChangedFieldsOfTrainingInstance} restricts which fields may change and the stored
-   * access token is kept.
+   * #checkChangedFieldsOfTrainingInstance} restricts which fields may change and the stored access
+   * token is kept.
    *
    * @param trainingInstanceToUpdate to be updated
    * @return the resulting access token, freshly generated or the one already stored
@@ -211,8 +215,8 @@ public class TrainingInstanceService {
    * Rejects moving the end time of an already finished instance into the future, while allowing
    * every other update to a finished instance.
    *
-   * @throws EntityConflictException when the current instance is finished and the update would
-   *     make it no longer finished
+   * @throws EntityConflictException when the current instance is finished and the update would make
+   *     it no longer finished
    */
   private void checkNotRevivingAnExpiredInstance(
       TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
@@ -230,10 +234,9 @@ public class TrainingInstanceService {
   /**
    * Rejects a change to the start time, the access token, or the pool id of a training instance
    * that is already running or finished. Every other field, including {@code localEnvironment},
-   * {@code sandboxDefinitionId}, {@code showStepperBar} and {@code backwardMode}, is left
-   * unchecked here and so remains free to change regardless of the instance's state, though the
-   * exception messages this method throws describe the update as restricted to title and end
-   * time.
+   * {@code sandboxDefinitionId}, {@code showStepperBar} and {@code backwardMode}, is left unchecked
+   * here and so remains free to change regardless of the instance's state, though the exception
+   * messages this method throws describe the update as restricted to title and end time.
    *
    * @throws EntityConflictException when any of the three checked fields differs from the current
    *     instance
@@ -270,8 +273,8 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Decides whether the candidate token differs from the original token with its trailing
-   * generated pin stripped off.
+   * Decides whether the candidate token differs from the original token with its trailing generated
+   * pin stripped off.
    *
    * @param originalToken the token currently stored, carrying a generated pin suffix
    * @param newToken the candidate token, without a pin suffix
@@ -283,8 +286,8 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Appends a random pin to the given base token, generating a new pin whenever the result
-   * collides with a token already stored on another training instance.
+   * Appends a random pin to the given base token, generating a new pin whenever the result collides
+   * with a token already stored on another training instance.
    *
    * @param accessToken the base token the pin is appended to
    * @return the base token followed by a separator and a pin unique among stored access tokens
@@ -367,7 +370,7 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Find UserRefs by userRefId
+   * Find UserRefs by userRefId.
    *
    * @param usersRefId of wanted UserRefs
    * @return {@link UserRef}s with corresponding userRefIds
@@ -389,7 +392,7 @@ public class TrainingInstanceService {
 
   /**
    * Find specific Training instance by its access token and with start time before current time and
-   * ending time after current time
+   * ending time after current time.
    *
    * @param accessToken of Training instance
    * @return Training instance
@@ -436,8 +439,8 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Stamps the training instance with the current UTC time and the full name of the logged in
-   * user, then persists it.
+   * Stamps the training instance with the current UTC time and the full name of the logged in user,
+   * then persists it.
    *
    * @param trainingInstance the training instance to be saved.
    * @return the persisted {@link TrainingInstance}

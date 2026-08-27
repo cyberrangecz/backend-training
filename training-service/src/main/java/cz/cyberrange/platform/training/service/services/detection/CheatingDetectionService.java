@@ -47,6 +47,10 @@ public class CheatingDetectionService {
   private final NoCommandsService noCommandsService;
   private final ForbiddenCommandsService forbiddenCommandsService;
 
+  /**
+   * Creates the service with the repositories and per-kind detection services it coordinates across
+   * a cheating detection sweep
+   */
   @Autowired
   public CheatingDetectionService(
       AbstractDetectionEventRepository abstractDetectionEventRepository,
@@ -190,8 +194,8 @@ public class CheatingDetectionService {
   }
 
   /**
-   * Returns every participant implicated by any detection event of one sweep, across every kind
-   * of finding, in no defined order.
+   * Returns every participant implicated by any detection event of one sweep, across every kind of
+   * finding, in no defined order.
    *
    * @param cheatingDetectionId the sweep whose participants are returned
    * @return the matching participants
@@ -261,8 +265,8 @@ public class CheatingDetectionService {
   }
 
   /**
-   * Runs the time proximity detector when it is queued, defaulting the sweep's proximity
-   * threshold to 120 seconds first if none was set.
+   * Runs the time proximity detector when it is queued, defaulting the sweep's proximity threshold
+   * to 120 seconds first if none was set
    */
   private void handleTimeProximityExecution(CheatingDetection cd) {
     if (cd.getTimeProximityState() == CheatingDetectionState.QUEUED) {

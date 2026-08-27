@@ -173,7 +173,7 @@
                 <version>3.6.0</version>
                 <configuration>
                     <skip>${skipChecks}</skip>
-                    <configLocation>google_checks.xml</configLocation>
+                    <configLocation>${maven.multiModuleProjectDirectory}/etc/checkstyle/google_checks.xml</configLocation>
                     <failsOnError>false</failsOnError>
                     <consoleOutput>true</consoleOutput>
                 </configuration>

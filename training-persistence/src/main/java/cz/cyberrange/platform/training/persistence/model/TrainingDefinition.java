@@ -102,7 +102,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   private LocalDateTime createdAt;
 
   /**
-   * Gets unique identification number of Training definition
+   * Gets unique identification number of Training definition.
    *
    * @return the id
    */
@@ -111,7 +111,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets unique identification number of Training definition
+   * Sets unique identification number of Training definition.
    *
    * @param id the id
    */
@@ -120,7 +120,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets title of Training definition
+   * Gets title of Training definition.
    *
    * @return the title
    */
@@ -129,7 +129,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets title of Training definition
+   * Sets title of Training definition.
    *
    * @param title the title
    */
@@ -138,7 +138,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets text description specifying info about Training definition
+   * Gets text description specifying info about Training definition.
    *
    * @return the description
    */
@@ -147,7 +147,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets text description specifying info about Training definition
+   * Sets text description specifying info about Training definition.
    *
    * @param description the description
    */
@@ -157,7 +157,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
   /**
    * Gets skill prerequisites that trainee should have to be able to complete training runs created
-   * from this Training definition
+   * from this Training definition.
    *
    * @return the prerequisite descriptions
    */
@@ -167,7 +167,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
   /**
    * Sets skill prerequisites that trainee should have to be able to complete training runs created
-   * from this Training definition
+   * from this Training definition.
    *
    * @param prerequisites the prerequisites
    */
@@ -176,7 +176,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets knowledge that trainee can learn from training runs created from this Training definition
+   * Gets knowledge that trainee can learn from training runs created from this Training definition.
    *
    * @return the outcome descriptions
    */
@@ -185,7 +185,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets knowledge that trainee can learn from training runs created from this Training definition
+   * Sets knowledge that trainee can learn from training runs created from this Training definition.
    *
    * @param outcomes the outcomes
    */
@@ -206,7 +206,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets set of users that can make changes to the Training definition
+   * Gets set of users that can make changes to the Training definition.
    *
    * @return the authors
    */
@@ -215,7 +215,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of users that can make changes to the Training definition
+   * Sets set of users that can make changes to the Training definition.
    *
    * @param authors the authors
    */
@@ -224,7 +224,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds user to the set of authors that can make changes to the Training definition
+   * Adds user to the set of authors that can make changes to the Training definition.
    *
    * @param authorRef the author ref
    */
@@ -243,7 +243,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets set of users allowed to test Training definition in unreleased state
+   * Gets the group of users allowed to test Training definition in unreleased state.
    *
    * @return the beta testing group
    */
@@ -252,7 +252,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of users allowed to test Training definition in unreleased state
+   * Sets the group of users allowed to test Training definition in unreleased state.
    *
    * @param betaTestingGroup the beta testing group
    */
@@ -262,7 +262,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
   /**
    * Gets estimated duration in minutes that it should take to complete run based on given Training
-   * definition
+   * definition.
    *
    * @return the estimated duration
    */
@@ -272,7 +272,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
   /**
    * Sets estimated duration in minutes that it should take to complete run based on given Training
-   * definition
+   * definition.
    *
    * @param estimatedDuration the estimated duration
    */
@@ -281,7 +281,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets time of last edit done to Training Definition
+   * Gets time of last edit done to Training Definition.
    *
    * @return the last edited
    */
@@ -290,7 +290,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets time of last edit done to Training Definition
+   * Sets time of last edit done to Training Definition.
    *
    * @param lastEdited the last edited
    */
@@ -299,7 +299,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets the name of the user who has done the last edit in Training Definition
+   * Gets the name of the user who has done the last edit in Training Definition.
    *
    * @return the name of the user
    */
@@ -308,7 +308,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets the name of the user who has done the last edit in Training Definition
+   * Sets the name of the user who has done the last edit in Training Definition.
    *
    * @param lastEditedBy the name of the user
    */
@@ -317,7 +317,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets the time the Training Definition was created at
+   * Gets the time the Training Definition was created at.
    *
    * @return the time of Training Definition creation
    */
@@ -326,7 +326,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets the creation time of the Training Definition
+   * Sets the creation time of the Training Definition.
    *
    * @param createdAt time of Training Definition creation
    */

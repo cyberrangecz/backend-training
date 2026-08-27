@@ -181,7 +181,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   private boolean hasDetectionEvent;
 
   /**
-   * Gets unique identification number of Training run
+   * Gets unique identification number of Training run.
    *
    * @return the id
    */
@@ -190,7 +190,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets unique identification number of Training run
+   * Sets unique identification number of Training run.
    *
    * @param id the id
    */
@@ -199,7 +199,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets initiation time of Training run
+   * Gets initiation time of Training run.
    *
    * @return the start time
    */
@@ -208,7 +208,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets initiation time of Training run
+   * Sets initiation time of Training run.
    *
    * @param startTime the start time
    */
@@ -217,7 +217,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets finish time of Training run
+   * Gets finish time of Training run.
    *
    * @return the end time
    */
@@ -226,7 +226,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets finish time of Training run
+   * Sets finish time of Training run.
    *
    * @param endTime the end time
    */
@@ -253,7 +253,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets completion state of Training run States are RUNNING, FINISHED, ARCHIVED
+   * Gets completion state of Training run. States are RUNNING, FINISHED, ARCHIVED.
    *
    * @return the state
    */
@@ -262,7 +262,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets completion state of Training run States are RUNNING, FINISHED, ARCHIVED
+   * Sets completion state of Training run. States are RUNNING, FINISHED, ARCHIVED.
    *
    * @param state the state
    */
@@ -271,7 +271,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets level that is currently being displayed to the trainee
+   * Gets level that is currently being displayed to the trainee.
    *
    * @return the current level
    */
@@ -294,7 +294,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets Training instance associated to Training run
+   * Gets Training instance associated to Training run.
    *
    * @return the training instance
    */
@@ -303,7 +303,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets Training instance associated to Training run
+   * Sets Training instance associated to Training run.
    *
    * @param trainingInstance the training instance
    */
@@ -312,7 +312,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets id of sandbox instance reference associated with Training run
+   * Gets id of sandbox instance reference associated with Training run.
    *
    * @return the sandbox instance ref id
    */
@@ -321,7 +321,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets id of sandbox instance reference associated with Training run
+   * Sets id of sandbox instance reference associated with Training run.
    *
    * @param sandboxInstanceRefId the sandbox instance ref id
    */
@@ -330,7 +330,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets sandbox instance allocation id associated with Training run
+   * Gets sandbox instance allocation id associated with Training run.
    *
    * @return the sandbox instance allocation id
    */
@@ -339,7 +339,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets sandbox instance allocation id associated with Training run
+   * Sets sandbox instance allocation id associated with Training run.
    *
    * @param sandboxInstanceAllocationId the sandbox instance allocation id
    */
@@ -348,7 +348,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets number of failed attempts by trainee to submit correct answer on current level
+   * Gets number of failed attempts by trainee to submit correct answer on current level.
    *
    * @return the incorrect answer count
    */
@@ -357,7 +357,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets number of failed attempts trainee can submit on current level
+   * Sets number of failed attempts by trainee to submit correct answer on current level.
    *
    * @param incorrectAnswerCount the incorrect answer count
    */
@@ -366,7 +366,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets solution was taken on current level
+   * Gets whether solution was taken on current level.
    *
    * @return the boolean
    */
@@ -375,7 +375,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets solution was taken on current level
+   * Sets whether solution was taken on current level.
    *
    * @param solutionTaken the solution taken
    */
@@ -384,7 +384,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets responses of current assessment level
+   * Gets responses of current assessment level.
    *
    * @return the assessment responses
    */
@@ -393,7 +393,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets responses of current assessment level
+   * Sets responses of current assessment level.
    *
    * @param assessmentResponses the assessment responses
    */
@@ -402,7 +402,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets DB reference of trainee
+   * Gets DB reference of trainee.
    *
    * @return the participant ref
    */
@@ -411,7 +411,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets DB reference of trainee
+   * Sets DB reference of trainee.
    *
    * @param participantRef the participant ref
    */
@@ -420,7 +420,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets score achieved in training levels
+   * Gets score achieved in training levels.
    *
    * @return the total training score
    */
@@ -460,7 +460,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Takes away points from total assessment level score
+   * Takes away points from total assessment level score.
    *
    * @param penalty the penalty
    */
@@ -514,7 +514,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets if level was answered
+   * Gets whether level was answered.
    *
    * @return the boolean
    */
@@ -523,7 +523,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets if level was answered
+   * Sets whether level was answered.
    *
    * @param levelAnswered the level answered
    */
@@ -532,7 +532,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets hints associated to current training level
+   * Gets hints associated to current training level.
    *
    * @return the hint info list
    */
@@ -550,7 +550,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds hint to current training level
+   * Adds hint to current training level.
    *
    * @param hintInfo the hint info
    */
@@ -559,7 +559,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes hint to current training level
+   * Removes hint from current training level.
    *
    * @param hintInfo the hint info
    */
@@ -568,7 +568,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets taken solutions associated to training run
+   * Gets taken solutions associated to training run.
    *
    * @return the solution info list
    */
@@ -586,7 +586,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds solution to current training run
+   * Adds solution to current training run.
    *
    * @param solutionInfo the solution info
    */
@@ -595,7 +595,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes solution to current training run
+   * Removes solution from current training run.
    *
    * @param solutionInfo the solution info
    */
@@ -613,7 +613,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets previous sandbox instance ref ID
+   * Sets previous sandbox instance ref ID.
    *
    * @param previousSandboxInstanceRefId the id of previous sandbox instance ref
    */

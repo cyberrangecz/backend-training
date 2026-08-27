@@ -73,7 +73,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets answer that needs to be found by trainee to complete level
+   * Gets answer that needs to be found by trainee to complete level.
    *
    * @return the answer
    */
@@ -82,7 +82,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets answer that needs to be found by trainee to complete level
+   * Sets answer that needs to be found by trainee to complete level.
    *
    * @param answer the answer
    */
@@ -109,7 +109,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets text assignment of task that needs to be performed by trainee
+   * Gets text assignment of task that needs to be performed by trainee.
    *
    * @return the content
    */
@@ -118,7 +118,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets text assignment of task that needs to be performed by trainee
+   * Sets text assignment of task that needs to be performed by trainee.
    *
    * @param content the content
    */
@@ -127,7 +127,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets solution to the level that is shown if trainee fails or if they request it
+   * Gets solution to the level that is shown if trainee fails or if they request it.
    *
    * @return the solution
    */
@@ -136,7 +136,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets solution to the level that is shown if trainee fails or if they request it
+   * Sets solution to the level that is shown if trainee fails or if they request it.
    *
    * @param solution the solution
    */
@@ -195,7 +195,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets hints associated with training level
+   * Gets hints associated with training level.
    *
    * @return the hints
    */
@@ -204,7 +204,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Adds hint to be associated with training level
+   * Adds hint to be associated with training level.
    *
    * @param hint the hint
    */
@@ -213,7 +213,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets hints associated with training level
+   * Sets hints associated with training level.
    *
    * @param hints the hints
    */
@@ -223,7 +223,7 @@ public class TrainingLevel extends AbstractLevel {
 
   /**
    * Gets number of attempts available to trainee to input incorrect answer before the solution is
-   * displayed
+   * displayed.
    *
    * @return the incorrect answer limit
    */
@@ -233,7 +233,7 @@ public class TrainingLevel extends AbstractLevel {
 
   /**
    * Sets number of attempts available to trainee to input incorrect answer before the solution is
-   * displayed
+   * displayed.
    *
    * @param incorrectAnswerLimit the incorrect answer limit
    */
@@ -260,7 +260,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets set of MITRE techniques used in the training level
+   * Gets set of MITRE techniques used in the training level.
    *
    * @return set of MITRE techniques
    */
@@ -269,7 +269,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets set of MITRE techniques used in the training level
+   * Sets set of MITRE techniques used in the training level.
    *
    * @param mitreTechniques set of MITRE techniques
    */

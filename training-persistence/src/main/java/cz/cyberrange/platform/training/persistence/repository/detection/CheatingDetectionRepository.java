@@ -14,8 +14,8 @@ public interface CheatingDetectionRepository
     extends JpaRepository<CheatingDetection, Long>, QuerydslPredicateExecutor<CheatingDetection> {
 
   /**
-   * Returns, as one page, the cheating detection sweeps of one training instance, ordered by
-   * their execute time.
+   * Returns, as one page, the cheating detection sweeps of one training instance, ordered by their
+   * execute time.
    *
    * @param trainingInstanceId the training instance the returned sweeps belong to
    * @param pageable the page to return
@@ -24,8 +24,7 @@ public interface CheatingDetectionRepository
       @Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
   /**
-   * Returns every cheating detection sweep of one training instance, ordered by their execute
-   * time.
+   * Returns every cheating detection sweep of one training instance, ordered by their execute time.
    *
    * @param trainingInstanceId the training instance the returned sweeps belong to
    */
@@ -42,9 +41,9 @@ public interface CheatingDetectionRepository
 
   /**
    * Deletes the cheating detection sweep with the given primary key in a single bulk statement,
-   * which bypasses the persistence context. The sweep's {@code commands} association is
-   * configured with cascading removal and orphan removal, but neither fires for a bulk delete, so
-   * any {@code ForbiddenCommand} row still referencing this sweep is left behind.
+   * which bypasses the persistence context. The sweep's {@code commands} association is configured
+   * with cascading removal and orphan removal, but neither fires for a bulk delete, so any {@code
+   * ForbiddenCommand} row still referencing this sweep is left behind.
    *
    * @param cheatingDetectionId the primary key of the sweep to delete
    */
@@ -53,8 +52,8 @@ public interface CheatingDetectionRepository
 
   /**
    * Deletes every cheating detection sweep of one training instance in a single bulk statement,
-   * which bypasses the persistence context. As with {@link #deleteCheatingDetectionById}, this
-   * does not cascade to the {@code commands} association, so any {@code ForbiddenCommand} row
+   * which bypasses the persistence context. As with {@link #deleteCheatingDetectionById}, this does
+   * not cascade to the {@code commands} association, so any {@code ForbiddenCommand} row
    * referencing one of the deleted sweeps is left behind.
    *
    * @param trainingInstanceId the training instance whose sweeps are deleted

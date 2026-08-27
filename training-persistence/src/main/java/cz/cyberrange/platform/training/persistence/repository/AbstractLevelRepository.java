@@ -50,7 +50,7 @@ public interface AbstractLevelRepository
       List<Long> levelIds, Long trainingDefinitionId);
 
   /**
-   * Find first level for particular training definition
+   * Find first level for particular training definition.
    *
    * @param trainingDefinitionId the training definition id
    * @return {@link AbstractLevel}s associated with {@link

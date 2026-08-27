@@ -35,8 +35,8 @@ public interface TrainingInstanceMapper extends ParentMapper {
   TrainingInstance mapToEntity(TrainingInstanceDTO dto);
 
   /**
-   * Maps a training instance update into a new entity, leaving its training definition
-   * association unset; the facade resolves {@code trainingDefinitionId} via {@code
+   * Maps a training instance update into a new entity, leaving its training definition association
+   * unset; the facade resolves {@code trainingDefinitionId} via {@code
    * TrainingDefinitionService.findById} and assigns the definition itself.
    *
    * @param dto the update to map
@@ -45,9 +45,9 @@ public interface TrainingInstanceMapper extends ParentMapper {
   TrainingInstance mapUpdateToEntity(TrainingInstanceUpdateDTO dto);
 
   /**
-   * Maps a training instance creation request into a new entity, leaving its training
-   * definition association unset; the facade resolves {@code trainingDefinitionId} and assigns
-   * the definition itself.
+   * Maps a training instance creation request into a new entity, leaving its training definition
+   * association unset; the facade resolves {@code trainingDefinitionId} and assigns the definition
+   * itself.
    *
    * @param dto the creation request to map
    * @return the mapped training instance
@@ -57,8 +57,8 @@ public interface TrainingInstanceMapper extends ParentMapper {
   TrainingInstance mapPartialUpdateToEntity(TrainingInstanceAssignPoolIdDTO dto);
 
   /**
-   * Maps a training instance entity to a {@link TrainingInstanceBasicInfoDTO}, copying every
-   * field the two share.
+   * Maps a training instance entity to a {@link TrainingInstanceBasicInfoDTO}, copying every field
+   * the two share.
    *
    * @param dto the training instance entity to map
    * @return the basic info DTO
@@ -78,8 +78,8 @@ public interface TrainingInstanceMapper extends ParentMapper {
   /**
    * Maps a training instance entity to a {@link TrainingInstanceDTO}, flattening the training
    * definition's identifier into {@code definitionId} and mapping the full definition through
-   * {@link TrainingDefinitionMapper}. Leaves {@code sandboxesWithTrainingRun} at its default
-   * empty list.
+   * {@link TrainingDefinitionMapper}. Leaves {@code sandboxesWithTrainingRun} at its default empty
+   * list.
    *
    * @param entity the training instance to map
    * @return the instance DTO
@@ -92,8 +92,8 @@ public interface TrainingInstanceMapper extends ParentMapper {
   TrainingInstanceDTO mapToDTO(TrainingInstance entity);
 
   /**
-   * Maps a training instance entity to a {@link TrainingInstanceBasicDTO}, flattening the
-   * training definition's identifier into {@code definitionId}.
+   * Maps a training instance entity to a {@link TrainingInstanceBasicDTO}, flattening the training
+   * definition's identifier into {@code definitionId}.
    *
    * @param entity the training instance to map
    * @return the basic instance DTO
@@ -141,6 +141,12 @@ public interface TrainingInstanceMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
   }
 
+  /**
+   * Maps a page of training instances to a page result resource holding their DTOs.
+   *
+   * @param objects the page of training instances to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingInstanceDTO> mapToPageResultResource(
       Page<TrainingInstance> objects) {
     List<TrainingInstanceDTO> mapped = new ArrayList<>();
@@ -148,6 +154,12 @@ public interface TrainingInstanceMapper extends ParentMapper {
     return new PageResultResource<>(mapped, createPagination(objects));
   }
 
+  /**
+   * Maps a page of training instances to a page result resource holding their find-all view DTOs.
+   *
+   * @param objects the page of training instances to map
+   * @return the mapped view DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingInstanceFindAllResponseDTO> mapToPageResultResourceBasicView(
       Page<TrainingInstance> objects) {
     List<TrainingInstanceFindAllResponseDTO> mapped = new ArrayList<>();

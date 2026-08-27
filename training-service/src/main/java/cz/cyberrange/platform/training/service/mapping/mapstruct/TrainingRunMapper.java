@@ -33,9 +33,9 @@ public interface TrainingRunMapper extends ParentMapper {
 
   /**
    * Maps a training run entity to a {@link TrainingRunDTO}, flattening the owning training
-   * instance's identifier, that instance's training definition identifier, and the current
-   * level's identifier and order. The participant reference carries only its {@code
-   * userRefId}, the local {@code UserRef} row's other fields are not copied.
+   * instance's identifier, that instance's training definition identifier, and the current level's
+   * identifier and order. The participant reference carries only its {@code userRefId}, the local
+   * {@code UserRef} row's other fields are not copied.
    *
    * @param entity the training run to map
    * @return the run DTO
@@ -48,8 +48,8 @@ public interface TrainingRunMapper extends ParentMapper {
 
   /**
    * Maps a training run entity to a {@link TrainingRunBasicDTO}, flattening the owning training
-   * instance's identifier, that instance's training definition identifier, and the current
-   * level's identifier and order.
+   * instance's identifier, that instance's training definition identifier, and the current level's
+   * identifier and order.
    *
    * @param entity the training run to map
    * @return the basic run DTO
@@ -62,8 +62,8 @@ public interface TrainingRunMapper extends ParentMapper {
   TrainingRunBasicDTO mapToBasicDTO(TrainingRun entity);
 
   /**
-   * Maps a list of training run entities, in order, to {@link TrainingRunBasicDTO} through
-   * {@link #mapToBasicDTO}.
+   * Maps a list of training run entities, in order, to {@link TrainingRunBasicDTO} through {@link
+   * #mapToBasicDTO}.
    *
    * @param entities the training runs to map
    * @return the mapped basic DTOs, in the same order
@@ -74,8 +74,8 @@ public interface TrainingRunMapper extends ParentMapper {
   /**
    * Maps a training run entity to a {@link TrainingRunByIdDTO}, leaving {@code definitionId} and
    * {@code instanceId} unset; the facade reads them off the run's training instance and its
-   * training definition and assigns them itself, and also replaces the mapped participant
-   * reference with one resolved through the user service.
+   * training definition and assigns them itself, and also replaces the mapped participant reference
+   * with one resolved through the user service.
    *
    * @param entity the training run to map
    * @return the find-by-id DTO
@@ -108,12 +108,27 @@ public interface TrainingRunMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
   }
 
+  /**
+   * Maps a page of training runs to a page result resource holding their DTOs.
+   *
+   * @param objects the page of training runs to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingRunDTO> mapToPageResultResource(Page<TrainingRun> objects) {
     List<TrainingRunDTO> mapped = new ArrayList<>();
     objects.forEach(object -> mapped.add(mapToDTO(object)));
     return new PageResultResource<>(mapped, createPagination(objects));
   }
 
+  /**
+   * Maps a page of training runs to a page result resource holding their DTOs, setting each DTO's
+   * event and command logging state flags from the given id sets.
+   *
+   * @param objects the page of training runs to map
+   * @param eventLoggingIds ids of the runs with a working event logging pipeline
+   * @param commandLoggingIds ids of the runs with a working command logging pipeline
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingRunDTO> mapToPageResultResourceLogging(
       Page<TrainingRun> objects, Set<Long> eventLoggingIds, Set<Long> commandLoggingIds) {
     List<TrainingRunDTO> mapped = new ArrayList<>();
@@ -127,6 +142,12 @@ public interface TrainingRunMapper extends ParentMapper {
     return new PageResultResource<>(mapped, createPagination(objects));
   }
 
+  /**
+   * Wraps a page of already mapped accessed training run DTOs into a page result resource.
+   *
+   * @param objects the page of accessed training run DTOs to wrap
+   * @return the DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<AccessedTrainingRunDTO> mapToPageResultResourceAccessed(
       Page<AccessedTrainingRunDTO> objects) {
     List<AccessedTrainingRunDTO> mapped = new ArrayList<>();

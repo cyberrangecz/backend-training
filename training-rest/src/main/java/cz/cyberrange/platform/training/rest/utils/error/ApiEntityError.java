@@ -42,6 +42,17 @@ public class ApiEntityError extends ApiError {
     this.setEntityErrorDetail(entityErrorDetail);
   }
 
+  /**
+   * Builds the error body, preferring {@code entityErrorDetail}'s own reason over {@code message}
+   * once one is present, and setting {@link #getErrors()} directly from {@code errors}.
+   *
+   * @param httpStatus the status reported in the body and used for the HTTP response
+   * @param message fallback description used when {@code entityErrorDetail} carries no reason
+   * @param errors the list stored as {@link #getErrors()}
+   * @param path the request URI associated with the error
+   * @param entityErrorDetail detail of the entity involved in the error, or {@code null}
+   * @return the built error body
+   */
   public static ApiEntityError of(
       HttpStatus httpStatus,
       String message,

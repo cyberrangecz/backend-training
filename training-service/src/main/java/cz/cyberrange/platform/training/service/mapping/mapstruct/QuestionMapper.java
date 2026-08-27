@@ -23,9 +23,9 @@ import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
 
 /**
- * Converts an assessment question and its extended matching statements, options and choices
- * between entity form and their various DTOs: the full editing DTO, the id-stripped export DTO
- * and the trainee-facing preview DTO.
+ * Converts an assessment question and its extended matching statements, options and choices between
+ * entity form and their various DTOs: the full editing DTO, the id-stripped export DTO and the
+ * trainee-facing preview DTO
  */
 @Mapper(
     componentModel = "spring",
@@ -35,8 +35,8 @@ public interface QuestionMapper extends ParentMapper {
 
   /**
    * Maps a question into a new entity, copying id, question type, text, order, points, penalty,
-   * answer-required flag, choices, extended matching statements and extended matching options.
-   * The owning assessment level carries no matching source field and is left unset.
+   * answer-required flag, choices, extended matching statements and extended matching options. The
+   * owning assessment level carries no matching source field and is left unset.
    *
    * @param dto the question to map
    * @return the mapped question entity
@@ -46,8 +46,8 @@ public interface QuestionMapper extends ParentMapper {
   /**
    * Resolves each mapped extended matching statement's correct option by indexing the target
    * question's mapped options at the statement's {@code correctOptionOrder}, and sets it on the
-   * target statement found at the same statement's {@code order}. Nothing checks that either
-   * order value stays within the mapped lists' bounds.
+   * target statement found at the same statement's {@code order}. Nothing checks that either order
+   * value stays within the mapped lists' bounds.
    *
    * @param target the question whose statements and options have already been mapped
    * @param questionDTO the source question carrying the correct option orders
@@ -68,8 +68,8 @@ public interface QuestionMapper extends ParentMapper {
   }
 
   /**
-   * Maps a question choice into a new entity, copying id, text, correct flag and order. The
-   * owning question carries no matching source field and is left unset.
+   * Maps a question choice into a new entity, copying id, text, correct flag and order. The owning
+   * question carries no matching source field and is left unset.
    *
    * @param dto the question choice to map
    * @return the mapped question choice entity
@@ -96,10 +96,10 @@ public interface QuestionMapper extends ParentMapper {
   ExtendedMatchingOption mapToEntity(ExtendedMatchingOptionDTO dto);
 
   /**
-   * Maps a question to its DTO for an exported training level, copying question type, text,
-   * order, points, penalty and answer-required flag, and mapping choices, extended matching
-   * statements and extended matching options with each of their own ids left unset. The
-   * question's own id is likewise left unset.
+   * Maps a question to its DTO for an exported training level, copying question type, text, order,
+   * points, penalty and answer-required flag, and mapping choices, extended matching statements and
+   * extended matching options with each of their own ids left unset. The question's own id is
+   * likewise left unset.
    *
    * @param entity the question to map
    * @return the exported question, with no ids anywhere in it
@@ -129,8 +129,8 @@ public interface QuestionMapper extends ParentMapper {
   /**
    * Maps a question to the DTO shown to a trainee attempting it, copying id, question type, text,
    * order, answer-required flag, choices, extended matching options and extended matching
-   * statements. The trainee's own answers carry no matching source field and are left unset for
-   * the caller to fill in from the recorded submissions.
+   * statements. The trainee's own answers carry no matching source field and are left unset for the
+   * caller to fill in from the recorded submissions.
    *
    * @param entity the question to map
    * @return the mapped preview DTO
@@ -191,9 +191,9 @@ public interface QuestionMapper extends ParentMapper {
   ExtendedMatchingStatementDTO mapToExtendedMatchingStatementDTO(ExtendedMatchingStatement entity);
 
   /**
-   * Maps an extended matching statement to the DTO shown to a trainee, copying id, text and
-   * order. The trainee's chosen option order carries no matching source field and is left unset
-   * for the caller to fill in from the recorded submission.
+   * Maps an extended matching statement to the DTO shown to a trainee, copying id, text and order.
+   * The trainee's chosen option order carries no matching source field and is left unset for the
+   * caller to fill in from the recorded submission.
    *
    * @param entity the extended matching statement to map
    * @return the mapped preview DTO
@@ -202,8 +202,7 @@ public interface QuestionMapper extends ParentMapper {
       ExtendedMatchingStatement entity);
 
   /**
-   * Maps an extended matching option to its DTO, copying text and order, and leaving the id
-   * unset.
+   * Maps an extended matching option to its DTO, copying text and order, and leaving the id unset.
    *
    * @param entity the extended matching option to map
    * @return the mapped DTO, with no id

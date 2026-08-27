@@ -45,6 +45,20 @@ public class ApiMicroserviceError extends ApiError {
     this.setTimestamp(System.currentTimeMillis());
   }
 
+  /**
+   * Builds the error body, falling back to {@link MicroserviceApiException}'s own
+   * {@code @ResponseStatus} reason when {@code message} is {@code null}, and setting {@link
+   * #getErrors()} directly from {@code errors}.
+   *
+   * @param httpStatus the failing microservice call's own status, reported and used for the HTTP
+   *     response
+   * @param message description of the error, or {@code null} to fall back to {@link
+   *     MicroserviceApiException}'s own {@code @ResponseStatus} reason
+   * @param errors the list stored as {@link #getErrors()}
+   * @param path the request URI associated with the error
+   * @param apiSubError the failing microservice's own error body
+   * @return the built error body
+   */
   public static ApiError of(
       HttpStatus httpStatus,
       String message,

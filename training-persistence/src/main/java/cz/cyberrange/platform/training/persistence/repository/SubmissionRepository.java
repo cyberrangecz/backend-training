@@ -68,9 +68,9 @@ public interface SubmissionRepository
    * Finds every submission made for the given level within the given training instance, regardless
    * of whether it was correct, ordered by training run id. Established by the {@code
    * Submission.getSubmissionsByLevelAndInstance} named query declared on {@link Submission}; loads
-   * each submission's training run, that run's training instance, and its level eagerly. The
-   * query applies no filter on IP address; grouping submissions by similar IP is left to the
-   * caller. Returns an empty list when none match.
+   * each submission's training run, that run's training instance, and its level eagerly. The query
+   * applies no filter on IP address; grouping submissions by similar IP is left to the caller.
+   * Returns an empty list when none match.
    *
    * @param trainingInstanceId the training instance id
    * @param levelId the training level

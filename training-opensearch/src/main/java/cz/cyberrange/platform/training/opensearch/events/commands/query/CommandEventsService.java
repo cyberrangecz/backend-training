@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+/**
+ * Queries and deletes console command events stored in OpenSearch, scoped by sandbox id or pool id
+ */
 @Service
 public class CommandEventsService {
   private static final String TIMESTAMP_STR_FIELD = "timestamp_str";

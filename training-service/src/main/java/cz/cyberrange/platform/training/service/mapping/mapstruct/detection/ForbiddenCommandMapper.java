@@ -13,13 +13,16 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
+/**
+ * Converts a forbidden command between its entity form and {@link ForbiddenCommandDTO}, flattening
+ * the owning cheating detection's identifier into {@code cheatingDetectionId}
+ */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ForbiddenCommandMapper extends ParentMapper {
 
   /**
-   * Maps a forbidden command DTO to a new entity, leaving its owning cheating detection
-   * association unset; {@code cheatingDetectionId} carries no source counterpart on the entity
-   * side.
+   * Maps a forbidden command DTO to a new entity, leaving its owning cheating detection association
+   * unset; {@code cheatingDetectionId} carries no source counterpart on the entity side.
    *
    * @param dto the forbidden command DTO to map
    * @return the mapped forbidden command
@@ -45,6 +48,12 @@ public interface ForbiddenCommandMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), mapped.size());
   }
 
+  /**
+   * Maps a page of forbidden commands to a page result resource holding their DTOs.
+   *
+   * @param objects the page of forbidden commands to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<ForbiddenCommandDTO> mapToPageResultResource(
       Page<ForbiddenCommand> objects) {
     List<ForbiddenCommandDTO> mapped = new ArrayList<>();

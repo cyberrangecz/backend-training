@@ -114,8 +114,8 @@ public class AnswersStorageApiService {
   }
 
   /**
-   * Returns every answer generated for a local sandbox, addressed by the training instance's
-   * access token and the owning user's cross-service user reference id.
+   * Returns every answer generated for a local sandbox, addressed by the training instance's access
+   * token and the owning user's cross-service user reference id.
    *
    * @param accessToken the training instance's access token
    * @param userId the sandbox owner's user reference id

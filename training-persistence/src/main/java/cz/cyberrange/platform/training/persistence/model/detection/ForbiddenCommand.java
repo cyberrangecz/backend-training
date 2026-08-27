@@ -13,17 +13,17 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A command one cheating detection sweep treats as forbidden. A recorded command matches only when
+ * it contains this text and was entered in this console, so the two columns narrow the match
+ * together.
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
 @ToString
 @Entity
 @Table(name = "forbidden_command")
-/**
- * A command one cheating detection sweep treats as forbidden. A recorded command matches only when
- * it contains this text and was entered in this console, so the two columns narrow the match
- * together.
- */
 public class ForbiddenCommand extends AbstractEntity<Long> {
 
   /** Matched as a substring of a recorded command line, not as the whole of it. */

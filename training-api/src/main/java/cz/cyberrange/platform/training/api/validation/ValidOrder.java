@@ -21,9 +21,12 @@ import javax.validation.Payload;
 @Constraint(validatedBy = OrderValidator.class)
 @Documented
 public @interface ValidOrder {
+  /** Message reported when the annotated list fails validation */
   String message() default "Invalid order of questions.";
 
+  /** Validation groups this constraint belongs to, per the Bean Validation specification */
   Class<?>[] groups() default {};
 
+  /** Payload types carried through to a client of the Bean Validation API */
   Class<? extends Payload>[] payload() default {};
 }

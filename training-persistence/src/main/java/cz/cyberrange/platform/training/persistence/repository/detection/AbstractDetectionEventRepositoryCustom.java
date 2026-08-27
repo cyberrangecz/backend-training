@@ -7,8 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Declares the Querydsl-backed lookup that {@code AbstractDetectionEventRepositoryImpl} carries
- * out against {@link AbstractDetectionEvent}.
+ * Declares the Querydsl-backed lookup that {@code AbstractDetectionEventRepositoryImpl} carries out
+ * against {@link AbstractDetectionEvent}
  */
 public interface AbstractDetectionEventRepositoryCustom {
 

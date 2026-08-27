@@ -19,9 +19,7 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Implements the {@link TrainingRun} lookups declared by {@link TrainingRunRepositoryCustom}.
- */
+/** Implements the {@link TrainingRun} lookups declared by {@link TrainingRunRepositoryCustom} */
 public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
     implements TrainingRunRepositoryCustom {
 

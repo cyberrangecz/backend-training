@@ -7,8 +7,8 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Manages {@link AnswerSimilarityDetectionEvent} findings, the joined-inheritance subtype of
- * {@code AbstractDetectionEvent} recording that a submitted answer matched another trainee's.
+ * Manages {@link AnswerSimilarityDetectionEvent} findings, the joined-inheritance subtype of {@code
+ * AbstractDetectionEvent} recording that a submitted answer matched another trainee's
  */
 public interface AnswerSimilarityDetectionEventRepository
     extends JpaRepository<AnswerSimilarityDetectionEvent, Long>,

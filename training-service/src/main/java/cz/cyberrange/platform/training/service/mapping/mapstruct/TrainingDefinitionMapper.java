@@ -93,6 +93,12 @@ public interface TrainingDefinitionMapper extends ParentMapper {
    */
   TrainingDefinition mapUpdateToEntity(TrainingDefinitionUpdateDTO dto);
 
+  /**
+   * Maps a page of training definitions to a page result resource holding their DTOs.
+   *
+   * @param objects the page of training definitions to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingDefinitionDTO> mapToPageResultResource(
       Page<TrainingDefinition> objects) {
     List<TrainingDefinitionDTO> mapped = new ArrayList<>();
@@ -100,6 +106,12 @@ public interface TrainingDefinitionMapper extends ParentMapper {
     return new PageResultResource<>(mapped, createPagination(objects));
   }
 
+  /**
+   * Maps a page of training definitions to a page result resource holding their info DTOs.
+   *
+   * @param objects the page of training definitions to map
+   * @return the mapped info DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingDefinitionInfoDTO> mapToPageResultResourceInfoDTO(
       Page<TrainingDefinition> objects) {
     List<TrainingDefinitionInfoDTO> mapped = new ArrayList<>();

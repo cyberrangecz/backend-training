@@ -38,6 +38,10 @@ public class TrainingEventAccessService {
   private final TrainingRunService trainingRunService;
   private final TrainingInstanceService trainingInstanceService;
 
+  /**
+   * Creates the service with the event query services and the run/instance services it consults to
+   * enforce access policy
+   */
   @Autowired
   public TrainingEventAccessService(
       TrainingEventsService trainingEventsService,

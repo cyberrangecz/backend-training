@@ -7,13 +7,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
 /**
  * A single console command captured as an audit event, together with the host, user, and working
  * directory it ran under.
  */
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @ApiModel(value = "CommandEventDTO", description = "Command event from training run")
 public class CommandEventDTO extends AbstractEventDTO {
 

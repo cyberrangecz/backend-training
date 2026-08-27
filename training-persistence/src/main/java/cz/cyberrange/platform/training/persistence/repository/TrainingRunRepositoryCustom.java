@@ -13,9 +13,9 @@ import org.springframework.data.repository.query.Param;
 public interface TrainingRunRepositoryCustom {
 
   /**
-   * Finds the training runs of the given participant, additionally narrowed by the given
-   * predicate. {@code userRefId} is matched against the run's participant reference's cross-service
-   * {@code userRefId}, not a local primary key.
+   * Finds the training runs of the given participant, additionally narrowed by the given predicate.
+   * {@code userRefId} is matched against the run's participant reference's cross-service {@code
+   * userRefId}, not a local primary key.
    *
    * @param userRefId the participant's cross-service user identifier
    * @param predicate represents a predicate (boolean-valued function) of one argument.
@@ -26,8 +26,8 @@ public interface TrainingRunRepositoryCustom {
       @Param("userRefId") Long userRefId, Predicate predicate, Pageable pageable);
 
   /**
-   * Finds the training runs with one of the given ids whose participant is the given user.
-   * {@code userRefId} is matched against the run's participant reference's cross-service {@code
+   * Finds the training runs with one of the given ids whose participant is the given user. {@code
+   * userRefId} is matched against the run's participant reference's cross-service {@code
    * userRefId}, not a local primary key.
    *
    * @param runIds the training run ids

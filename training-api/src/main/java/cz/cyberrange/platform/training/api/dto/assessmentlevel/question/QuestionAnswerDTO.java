@@ -7,6 +7,10 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * A participant's submitted answer to one question of an assessment level, in whichever of {@code
+ * answers} or {@code extendedMatchingPairs} applies to the question's type
+ */
 @Data
 @ApiModel(value = "QuestionAnswerDTO")
 public class QuestionAnswerDTO {

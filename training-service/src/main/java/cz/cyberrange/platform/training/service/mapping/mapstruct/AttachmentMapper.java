@@ -9,8 +9,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 /**
- * Converts a training level's attachments between their entity form and the import and export
- * DTOs used when a training definition is transferred as a file.
+ * Converts a training level's attachments between their entity form and the import and export DTOs
+ * used when a training definition is transferred as a file
  */
 @Mapper(
     componentModel = "spring",

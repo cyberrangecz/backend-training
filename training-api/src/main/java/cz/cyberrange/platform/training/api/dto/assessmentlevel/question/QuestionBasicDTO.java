@@ -8,6 +8,10 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * A question of an assessment level, carrying its type, scoring, position, and whether an answer is
+ * required
+ */
 @Data
 @JsonInclude
 @ApiModel(value = "QuestionBasicDTO", description = "Question in an assessment level.")
