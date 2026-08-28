@@ -10,9 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/**
- * Encapsulates information about Training Definition including its authoring and lifecycle data
- */
+/** Encapsulates information about Training Definition including its authoring and lifecycle data */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

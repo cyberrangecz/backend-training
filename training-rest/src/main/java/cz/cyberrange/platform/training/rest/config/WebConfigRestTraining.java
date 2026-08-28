@@ -12,8 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Configures content negotiation to recognize the {@code .yml} and {@code .yaml} path extensions
- * alongside JSON, and registers a message converter for the media types those extensions resolve
- * to
+ * alongside JSON, and registers a message converter for the media types those extensions resolve to
  */
 @Configuration
 public class WebConfigRestTraining implements WebMvcConfigurer {

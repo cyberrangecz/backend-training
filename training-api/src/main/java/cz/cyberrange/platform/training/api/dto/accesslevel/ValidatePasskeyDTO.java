@@ -4,9 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
-/**
- * A participant's submission attempting to complete the access level they are currently running
- */
+/** A participant's submission attempting to complete the access level they are currently running */
 @Data
 public class ValidatePasskeyDTO {
 

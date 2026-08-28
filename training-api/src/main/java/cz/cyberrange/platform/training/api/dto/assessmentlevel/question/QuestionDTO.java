@@ -13,8 +13,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * A question of an assessment level, together with the answer options relevant to its question
- * type
+ * A question of an assessment level, together with the answer options relevant to its question type
  */
 @Getter
 @Setter

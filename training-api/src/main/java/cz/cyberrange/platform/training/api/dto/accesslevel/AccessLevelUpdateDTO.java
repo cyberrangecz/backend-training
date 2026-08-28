@@ -21,9 +21,7 @@ import lombok.ToString;
 @ApiModel(value = "AccessLevelUpdateDTO", description = "Access level to update.")
 public class AccessLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
-  /**
-   * New value the participant must later submit to complete the level, replacing the stored one
-   */
+  /** New value the participant must later submit to complete the level, replacing the stored one */
   @ApiModelProperty(
       value = "Keyword found in training, used for access next level.",
       required = true,

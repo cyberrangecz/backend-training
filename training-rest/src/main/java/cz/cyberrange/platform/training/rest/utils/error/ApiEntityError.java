@@ -18,9 +18,7 @@ import org.springframework.http.HttpStatus;
     description = "A detailed error information related to the entity.",
     parent = ApiError.class)
 public class ApiEntityError extends ApiError {
-  /**
-   * Entity detail carried by the exception that produced this error, when the exception set one
-   */
+  /** Entity detail carried by the exception that produced this error, when the exception set one */
   @ApiModelProperty(value = "Detail of the entity which is related to the error.")
   private EntityErrorDetail entityErrorDetail;
 

@@ -14,9 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class QuestionEMIAnswer {
 
-  /**
-   * Index into the question's list of extended-matching statements naming the matched statement
-   */
+  /** Index into the question's list of extended-matching statements naming the matched statement */
   @JsonProperty("statementOrder")
   private Integer statementOrder;
 

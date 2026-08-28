@@ -11,8 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * A previously visited level replayed back to the trainee who visited it, as part of a training
- * run
+ * A previously visited level replayed back to the trainee who visited it, as part of a training run
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

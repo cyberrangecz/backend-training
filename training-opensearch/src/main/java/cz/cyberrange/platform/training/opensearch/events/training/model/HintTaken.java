@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Records a hint the trainee revealed during a level, carried under the {@code hint_taken} type
- */
+/** Records a hint the trainee revealed during a level, carried under the {@code hint_taken} type */
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
