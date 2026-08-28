@@ -13,6 +13,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * One recorded console command that matched a forbidden one, kept against the finding it counts
+ * towards, with the machine it ran on and the moment it was entered
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -31,9 +35,11 @@ import lombok.ToString;
 })
 public class DetectedForbiddenCommand extends AbstractEntity<Long> {
 
+  /** The command line as it was recorded, not the forbidden text that matched it */
   @Column(name = "command", nullable = false)
   private String command;
 
+  /** The console of the forbidden command that matched */
   @Column(name = "command_type", nullable = false)
   private CommandType type;
 

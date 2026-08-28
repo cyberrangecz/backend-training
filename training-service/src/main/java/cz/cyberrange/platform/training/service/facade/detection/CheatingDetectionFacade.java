@@ -14,7 +14,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The type Cheating Detection facade. */
+/**
+ * Orchestrates the lifecycle of cheating detections for a training instance: creating and running
+ * one, rerunning an existing one, deleting one together with its detection events, and listing the
+ * detections of a training instance
+ */
 @Service
 @Transactional
 public class CheatingDetectionFacade {
@@ -24,14 +28,6 @@ public class CheatingDetectionFacade {
   public final UserService userService;
   private final CheatingDetectionMapper cheatingDetectionMapper;
 
-  /**
-   * Instantiates a new Cheating detection facade.
-   *
-   * @param cheatingDetectionService the cheating detection service
-   * @param detectionEventService the detection event service
-   * @param userService the user service
-   * @param cheatingDetectionMapper the cheating detection mapper
-   */
   @Autowired
   public CheatingDetectionFacade(
       CheatingDetectionService cheatingDetectionService,
@@ -45,9 +41,9 @@ public class CheatingDetectionFacade {
   }
 
   /**
-   * Create a new cheating detection and execute it.
+   * Creates a cheating detection from the given configuration and immediately executes it.
    *
-   * @param cheatingDetectionDTO object with constructor information
+   * @param cheatingDetectionDTO the cheating detection to create and execute
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -60,7 +56,9 @@ public class CheatingDetectionFacade {
   }
 
   /**
-   * Rerun cheating detection
+   * Deletes the detection events of a cheating detection and re-executes it. The {@code
+   * trainingInstanceId} parameter takes no part in the deletion or re-execution; only the
+   * authorization check is scoped by {@code cheatingDetectionId}.
    *
    * @param cheatingDetectionId id of cheating detection for rerun.
    * @param trainingInstanceId id of training instance.
@@ -75,10 +73,13 @@ public class CheatingDetectionFacade {
   }
 
   /**
-   * Deletes cheating detection and all its associated events.
+   * Deletes a cheating detection together with its detection events, their participants and their
+   * forbidden commands, and clears the detection-event flag on every training run of {@code
+   * trainingInstanceId} — not only the runs the deleted detection covered.
    *
    * @param cheatingDetectionId id of cheating detection.
-   * @param trainingInstanceId id of training instance.
+   * @param trainingInstanceId id of the training instance whose runs have their detection-event
+   *     flag cleared.
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -90,10 +91,11 @@ public class CheatingDetectionFacade {
   }
 
   /**
-   * Find all cheating detections of a training instance
+   * Finds all cheating detections of a training instance, ordered by their execution time.
    *
    * @param trainingInstanceId id of Training instance for cheating detection.
    * @param pageable pageable parameter with information about pagination.
+   * @return page of {@link CheatingDetectionDTO} for the training instance
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"

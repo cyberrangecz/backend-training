@@ -21,6 +21,11 @@ import lombok.ToString;
     parent = AbstractLevelImportDTO.class)
 public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
 
+  /**
+   * Has no effect unless {@link #assessmentType} is {@code TEST}, where each question's points are
+   * summed into the created level's maximum score, and every extended-matching-item question must
+   * carry a correct option order for each of its statements or the import is rejected
+   */
   @ApiModelProperty(value = "Questions of assessment level to update.")
   @NotNull(message = "{assessmentLevel.questions.NotNull.message}")
   private List<QuestionDTO> questions = new ArrayList<>();
@@ -31,6 +36,11 @@ public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
   @NotNull(message = "{assessmentLevel.instructions.NotNull.message}")
   private String instructions;
 
+  /**
+   * When {@code TEST}, the created level's maximum score is computed from {@link #questions} rather
+   * than accepted directly, and every extended-matching-item statement is checked and resolved to
+   * its correct option. Other values leave the maximum score unset.
+   */
   @ApiModelProperty(
       value = "Type of assessment level to update.",
       required = true,

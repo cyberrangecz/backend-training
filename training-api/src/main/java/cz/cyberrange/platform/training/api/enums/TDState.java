@@ -1,14 +1,14 @@
 package cz.cyberrange.platform.training.api.enums;
 
-/** States represented in Training Definition entity. */
+/**
+ * Classifies the lifecycle state of a training definition. The allowed transitions are unreleased
+ * to released, released to archived, and released back to unreleased (refused while the definition
+ * has a training instance); requesting the current state is a no-op, and any other transition is
+ * refused.
+ */
 public enum TDState {
-
-  /** Privated Training Definition state. */
   PRIVATED,
-  /** Released Training Definition state. */
   RELEASED,
-  /** Archived Training Definition state. */
   ARCHIVED,
-  /** Unreleased Training Definition state. */
   UNRELEASED;
 }

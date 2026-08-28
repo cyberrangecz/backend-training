@@ -3,10 +3,16 @@ package cz.cyberrange.platform.training.api.responses;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
+/**
+ * Deserialization target for the lock the sandbox service creates over a pool. Both identifiers are
+ * numbered by that service, not by this one, and neither is stored here.
+ */
 public class LockedPoolInfo {
 
+  /** Identifies the lock itself, as the sandbox service numbers its locks */
   private long id;
 
+  /** Identifies the pool the lock was placed on, in the sandbox service's pool numbering */
   @JsonProperty(value = "pool_id")
   private long poolId;
 

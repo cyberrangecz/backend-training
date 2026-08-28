@@ -45,15 +45,24 @@ public class AbstractLevelImportDTO {
   @NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
   protected String title;
 
+  /**
+   * Selects, together with the JSON {@code level_type} discriminator, which concrete subtype is
+   * deserialized and which entity type the level is imported as
+   */
   @ApiModelProperty(value = "Type of the level.", example = "TRAINING_LEVEL")
   @NotNull(message = "{abstractLevel.type.NotNull.message}")
   protected LevelType levelType;
 
+  /**
+   * Discarded on import; the created level is appended after every level already present in the
+   * training definition, regardless of the value submitted here
+   */
   @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
   @NotNull(message = "{abstractLevel.order.NotNull.message}")
   @Min(value = 0, message = "{abstractLevel.order.Min.message}")
   protected Integer order;
 
+  /** Added with every other level's value into the imported training definition's own duration */
   @ApiModelProperty(
       value = "Estimated time (minutes) taken by the player to solve the level.",
       example = "5")

@@ -11,7 +11,7 @@ import lombok.ToString;
 
 /**
  * Encapsulates information about Training Definition together with the outline of its levels held
- * as {@link AbstractLevelBasicDTO}, which is safe for both organizers and trainees.
+ * as {@link AbstractLevelBasicDTO}, which is safe for both organizers and trainees
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -19,6 +19,10 @@ import lombok.ToString;
 @ApiModel(value = "TrainingDefinitionBasicDTO", description = "A blueprint of abstract levels.")
 public class TrainingDefinitionBasicDTO extends AbstractTrainingDefinitionDTO {
 
+  /**
+   * Populated by the facade from the definition's levels, in presentation order; never derived from
+   * the definition entity itself
+   */
   @ApiModelProperty(value = "All levels in the training definition, ordered by their order.")
   protected List<AbstractLevelBasicDTO> levels = new ArrayList<>();
 }

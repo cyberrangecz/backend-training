@@ -30,12 +30,18 @@ public class TrainingInstanceBasicInfoDTO {
       example = "Concluded Instance")
   private String title;
 
+  /**
+   * Carries the full token as stored on the instance, including the pin suffix the service appended
+   * when it was generated. Returned only to the instance's organizers or an administrator, from the
+   * pool assignment and unassignment endpoints.
+   */
   @ApiModelProperty(
       value = "Token used to access training run.",
       required = true,
       example = "hunter")
   private String accessToken;
 
+  /** Reflects the pool just assigned to, or removed from, the instance */
   @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
   private Long poolId;
 

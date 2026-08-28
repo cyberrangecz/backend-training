@@ -14,14 +14,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Encapsulates information about training definition and its levels. */
+/** Encapsulates information about training definition and its levels */
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 @ApiModel(value = "ImportTrainingDefinitionDTO", description = "A basic information about hint.")
-// Properties accepted and discarded so that training definitions exported by earlier versions
-// remain importable
 @JsonIgnoreProperties({"show_stepper_bar", "variant_sandboxes"})
 public class ImportTrainingDefinitionDTO {
 
@@ -47,6 +45,7 @@ public class ImportTrainingDefinitionDTO {
       example = "")
   private String[] outcomes;
 
+  /** Discarded on import; the created definition is always put into the unreleased state */
   @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
   @NotNull(message = "{trainingDefinition.state.NotNull.message}")
   private TDState state;
@@ -55,13 +54,18 @@ public class ImportTrainingDefinitionDTO {
   @ApiModelProperty(value = "Information about all levels in training definition.")
   private List<AbstractLevelImportDTO> levels = new ArrayList<>();
 
+  /**
+   * Discarded on import; the created definition's duration is recomputed as the sum of the {@code
+   * estimatedDuration} of every level in {@link #levels}
+   */
   @ApiModelProperty(
       value = "Estimated time it takes to finish runs created from this definition.",
       example = "5")
   private Integer estimatedDuration;
 
   /**
-   * Sets levels.
+   * Replaces the level list with a new list holding the same elements, so later mutation of the
+   * argument list does not affect this instance.
    *
    * @param levels the list of {@link AbstractLevelImportDTO}
    */

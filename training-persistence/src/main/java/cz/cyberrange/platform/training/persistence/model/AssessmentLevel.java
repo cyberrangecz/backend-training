@@ -25,6 +25,7 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "id")
 public class AssessmentLevel extends AbstractLevel {
 
+  /** Ordered by each question's position within the assessment */
   @OrderBy("order asc")
   @OneToMany(
       mappedBy = "assessmentLevel",
@@ -36,12 +37,17 @@ public class AssessmentLevel extends AbstractLevel {
   @Column(name = "instructions", nullable = false)
   private String instructions;
 
+  /**
+   * Selects whether submitted answers are graded against a correct option ({@code TEST}) or only
+   * gathered without evaluation (any other type)
+   */
   @Column(name = "assessment_type", length = 128, nullable = false)
   @Enumerated(EnumType.STRING)
   private AssessmentType assessmentType;
 
   /**
-   * Sets questions that trainee must answer
+   * Assigns the assessment's questions, linking each one back to this level and ordering them by
+   * their position.
    *
    * @param questions the questions
    */

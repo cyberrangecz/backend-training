@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-/** Encapsulates information about already accessed training run. */
+/** Encapsulates information about already accessed training run */
 @Data
 @ApiModel(
     value = "AccessedTrainingRunDTO",
@@ -35,12 +35,18 @@ public class AccessedTrainingRunDTO {
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime trainingInstanceEndDate;
 
+  /** One-based position of the current level, the stored zero-based level order plus one */
   @ApiModelProperty(value = "Current level order of training run.", example = "1")
   private int currentLevelOrder;
 
+  /** Count of levels in the training definition, the highest stored level order plus one */
   @ApiModelProperty(value = "The number of levels in the training instance.", example = "3")
   private int numberOfLevels;
 
+  /**
+   * {@code RESULTS} once the run is finished or its training instance has ended, {@code RESUME}
+   * otherwise
+   */
   @ApiModelProperty(
       value = "Possible action which can be executed with training Run.",
       example = "RESULTS")

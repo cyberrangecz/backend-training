@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-/** Encapsulates basic information about Training Definition. */
+/** Encapsulates basic information about Training Definition */
 @Data
 @ApiModel(
     value = "TrainingDefinitionInfoDTO",

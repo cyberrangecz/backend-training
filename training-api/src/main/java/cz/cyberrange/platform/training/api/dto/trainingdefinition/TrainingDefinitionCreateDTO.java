@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Encapsulates information about Training definition, intended for creation of new definition. */
+/** Encapsulates information about Training definition, intended for creation of new definition */
 @Data
 @ApiModel(value = "TrainingDefinitionCreateDTO", description = "Training definition to create.")
 public class TrainingDefinitionCreateDTO {
@@ -37,6 +37,7 @@ public class TrainingDefinitionCreateDTO {
       example = "[outcomes]")
   private String[] outcomes;
 
+  /** Stored as given; the service does not restrict which state a new definition may start in */
   @ApiModelProperty(
       value = "Current state of training definition.",
       required = true,
@@ -44,12 +45,17 @@ public class TrainingDefinitionCreateDTO {
   @NotNull(message = "{trainingDefinition.state.NotNull.message}")
   private TDState state;
 
+  /**
+   * When present, its organizer ids replace the group's membership on the created definition; when
+   * absent, the definition is created without a beta testing group
+   */
   @ApiModelProperty(
       value = "Group of organizers who is allowed to see the training definition.",
       required = true)
   @Valid
   private BetaTestingGroupCreateDTO betaTestingGroup;
 
+  /** Governs whether the newly created definition is populated with a default set of levels */
   @ApiModelProperty(value = "Sign if default levels should be created.", example = "false")
   private boolean defaultContent;
 }

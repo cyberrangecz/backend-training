@@ -7,6 +7,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
+/** An option of an extended matching question, identified within the question by its position */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedMatchingOptionDTO implements Ordered {
@@ -18,6 +19,11 @@ public class ExtendedMatchingOptionDTO implements Ordered {
   @NotEmpty(message = "{emiOption.text.NotEmpty.message}")
   private String text;
 
+  /**
+   * Position of the option within its question's list of extended matching options, zero-based and
+   * expected contiguous; a statement's correct option is looked up by indexing that list at its own
+   * {@code correctOptionOrder} value
+   */
   @ApiModelProperty(value = "The order of the option in question of type EMI.", example = "0")
   @Min(value = 0, message = "{emiOption.order.Min.message}")
   private int order;

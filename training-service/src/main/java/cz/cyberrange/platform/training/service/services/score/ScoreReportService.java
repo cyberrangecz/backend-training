@@ -45,10 +45,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ScoreReportService {
 
-  /** Event whose most recent occurrence on a level states the score reached on that level. */
+  /** Event whose most recent occurrence on a level states the score reached on that level */
   private static final String COMPLETION_EVENT_TYPE = LevelCompleted.TYPE;
 
-  /** Events counted per run and reported as activity columns. */
+  /** Events counted per run and reported as activity columns */
   private static final List<String> COUNTED_EVENT_TYPES =
       List.of(HintTaken.TYPE, SolutionDisplayed.TYPE, WrongAnswerSubmitted.TYPE);
 
@@ -59,6 +59,10 @@ public class ScoreReportService {
   private final LevelMapper levelMapper;
   private final ScoreReportMapper scoreReportMapper;
 
+  /**
+   * Creates the service with the repositories, mappers and collaborators it uses to build a
+   * training instance's score report
+   */
   @Autowired
   public ScoreReportService(
       ExportImportService exportImportService,
@@ -139,6 +143,10 @@ public class ScoreReportService {
     return report;
   }
 
+  /**
+   * Builds one run's row, resolved against the {@code userRefId} of its participant reference
+   * rather than its local primary key, and left unscored when the run produced no audit events
+   */
   private UnrankedRow toUnrankedRow(
       TrainingRun run,
       TrainingInstance instance,
@@ -211,7 +219,7 @@ public class ScoreReportService {
   /**
    * Orders the rows by total score descending, resolving ties in favour of the shorter run and then
    * by run id so that a report of the same data always reads the same way, and numbers them from
-   * one.
+   * one
    */
   private static List<ParticipantScoreRowDTO> rank(List<UnrankedRow> unranked) {
     List<ParticipantScoreRowDTO> ordered =
@@ -230,6 +238,6 @@ public class ScoreReportService {
     return ordered;
   }
 
-  /** A row awaiting its rank, holding the run length the ranking breaks ties on. */
+  /** A row awaiting its rank, holding the run length the ranking breaks ties on */
   private record UnrankedRow(ParticipantScoreRowDTO row, long elapsedMillis) {}
 }

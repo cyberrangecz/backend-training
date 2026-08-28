@@ -21,6 +21,10 @@ public record RunEventAggregate(
     Map<Long, Integer> scoreByLevelId,
     Map<String, Map<Long, Long>> countByEventTypeAndLevelId) {
 
+  /**
+   * Replaces {@code scoreByLevelId} and {@code countByEventTypeAndLevelId}, along with each nested
+   * map, with unmodifiable copies of the values given
+   */
   public RunEventAggregate {
     scoreByLevelId = Map.copyOf(scoreByLevelId);
     countByEventTypeAndLevelId =

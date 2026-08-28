@@ -23,7 +23,7 @@ public class PageResultResourcePython<E> {
 
   private List<E> results;
 
-  /** Instantiates a new Page result resource python. */
+  /** Instantiates a new Page result resource python */
   public PageResultResourcePython() {}
 
   /**

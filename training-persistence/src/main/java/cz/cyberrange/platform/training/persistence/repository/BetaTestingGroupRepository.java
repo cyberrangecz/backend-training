@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link BetaTestingGroup} instances. */
+/** The JPA repository interface to manage {@link BetaTestingGroup} instances */
 @Repository
 public interface BetaTestingGroupRepository
     extends JpaRepository<BetaTestingGroup, Long>, QuerydslPredicateExecutor<InfoLevel> {}

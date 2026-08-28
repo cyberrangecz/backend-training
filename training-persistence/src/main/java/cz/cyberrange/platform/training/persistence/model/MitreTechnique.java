@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Class representing mitre technique used in Training Level. */
+/** Class representing mitre technique used in Training Level */
 @Getter
 @Setter
 @NoArgsConstructor

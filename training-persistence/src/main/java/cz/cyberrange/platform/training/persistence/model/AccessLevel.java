@@ -28,7 +28,7 @@ public class AccessLevel extends AbstractLevel {
   private String localContent;
 
   /**
-   * Gets passkey that needs to be entered by trainee to complete level
+   * Gets passkey that needs to be entered by trainee to complete level.
    *
    * @return the passkey
    */
@@ -37,7 +37,7 @@ public class AccessLevel extends AbstractLevel {
   }
 
   /**
-   * Sets passkey that needs to be entered by trainee to complete level
+   * Sets passkey that needs to be entered by trainee to complete level.
    *
    * @param passkey the passkey
    */
@@ -46,7 +46,7 @@ public class AccessLevel extends AbstractLevel {
   }
 
   /**
-   * Gets instructions on how to access machine in cloud environment
+   * Gets instructions on how to access machine in cloud environment.
    *
    * @return the cloud content
    */
@@ -55,7 +55,7 @@ public class AccessLevel extends AbstractLevel {
   }
 
   /**
-   * Sets instructions on how to access machine in cloud environment
+   * Sets instructions on how to access machine in cloud environment.
    *
    * @param cloudContent the cloud content
    */
@@ -64,7 +64,7 @@ public class AccessLevel extends AbstractLevel {
   }
 
   /**
-   * Gets instructions on how to access machine in local (non-cloud) environment
+   * Gets instructions on how to access machine in local (non-cloud) environment.
    *
    * @return the local content
    */
@@ -73,7 +73,7 @@ public class AccessLevel extends AbstractLevel {
   }
 
   /**
-   * Sets instructions on how to access machine in local (non-cloud) environment
+   * Sets instructions on how to access machine in local (non-cloud) environment.
    *
    * @param localContent the local content
    */

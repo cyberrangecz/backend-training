@@ -7,7 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Encapsulates basic information about level. */
+/**
+ * Identifies one level by id, title, order, and level type. Every producer of this type, whether
+ * built by hand per level subtype or through {@code LevelMapper}, sets all four fields together.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

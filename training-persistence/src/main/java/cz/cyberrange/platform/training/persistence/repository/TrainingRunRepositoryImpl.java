@@ -19,16 +19,23 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+/** Implements the {@link TrainingRun} lookups declared by {@link TrainingRunRepositoryCustom} */
 public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
     implements TrainingRunRepositoryCustom {
 
   @PersistenceContext private EntityManager entityManager;
 
-  /** Instantiates a new Training run repository. */
+  /** Configures the QueryDSL support base class to build queries against {@link TrainingRun} */
   public TrainingRunRepositoryImpl() {
     super(TrainingRun.class);
   }
 
+  /**
+   * Left-joins each candidate run to its participant reference, its training instance, and that
+   * instance's training definition, then keeps only the runs whose participant reference has the
+   * given cross-service {@code userRefId}. Deduplicates the joined rows before applying the given
+   * predicate and paging.
+   */
   @Override
   @Transactional
   public Page<TrainingRun> findAllByParticipantRefId(
@@ -54,6 +61,11 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
     return getPage(query, pageable);
   }
 
+  /**
+   * Keeps the runs whose primary key is one of the given ids and whose participant reference has
+   * the given cross-service {@code userRefId}. Runs in a read-only transaction; returns an empty
+   * list when none match.
+   */
   @Override
   @Transactional(readOnly = true)
   public List<TrainingRun> findAllByIdInAndParticipantRefId(
@@ -65,6 +77,11 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
         .fetch();
   }
 
+  /**
+   * Keeps the runs whose primary key is one of the given ids and whose training instance has an
+   * organizer with the given cross-service {@code userRefId}. Runs in a read-only transaction;
+   * returns an empty list when none match.
+   */
   @Override
   @Transactional(readOnly = true)
   public List<TrainingRun> findAllByIdInAndOrganizedByUser(

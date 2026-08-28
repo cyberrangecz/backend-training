@@ -2,6 +2,7 @@ package cz.cyberrange.platform.training.api.responses;
 
 import io.swagger.annotations.ApiModel;
 
+/** Holds a sandbox definition's id, name, url, and revision as reported by the sandbox service */
 @ApiModel(
     value = "SandboxDefinitionInfo",
     description = "Basic information about the sandbox definition.")
@@ -13,6 +14,7 @@ public class SandboxDefinitionInfo {
 
   public SandboxDefinitionInfo() {}
 
+  /** Creates the sandbox definition info from the given id, name, url, and revision */
   public SandboxDefinitionInfo(Long id, String name, String url, String rev) {
     this.id = id;
     this.name = name;

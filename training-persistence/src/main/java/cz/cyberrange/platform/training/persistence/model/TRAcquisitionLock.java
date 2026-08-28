@@ -12,8 +12,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * The entity which prevents multiple training runs to be created in parallel threads. Basically it
- * determines active training runs.
+ * Marks that one participant's request to access a training instance is in flight, so that a second
+ * concurrent request for the same participant and instance fails instead of creating a second
+ * training run. The unique constraint on participant and instance is what makes a duplicate insert
+ * fail; the caller that hits that failure surfaces it as a request to resume the existing run
+ * rather than start another one. The row is deleted once the attempt resolves: by the run reaching
+ * a finished or archived state, by the run being deleted, or by the calling request failing
+ * outright.
  */
 @Getter
 @Setter
@@ -30,6 +35,8 @@ import lombok.Setter;
 })
 public class TRAcquisitionLock extends AbstractEntity<Long> {
 
+  // Holds the external, cross-service user identifier of the participant, not the local UserRef
+  // primary key.
   @Column(name = "participant_ref_id")
   private Long participantRefId;
 
@@ -39,15 +46,14 @@ public class TRAcquisitionLock extends AbstractEntity<Long> {
   @Column(name = "creation_time")
   private LocalDateTime creationTime;
 
-  /** Instantiates a new Tr acquisition lock. */
   public TRAcquisitionLock() {}
 
   /**
-   * Instantiates a new Tr acquisition lock.
+   * Creates a lock row scoped to one participant's access attempt on one training instance.
    *
-   * @param participantRefId the participant ref id
-   * @param trainingInstanceId the training instance id
-   * @param creationTime the creation time
+   * @param participantRefId the external user-and-group identifier of the participant.
+   * @param trainingInstanceId the identifier of the training instance being accessed.
+   * @param creationTime the time the attempt started.
    */
   public TRAcquisitionLock(
       Long participantRefId, Long trainingInstanceId, LocalDateTime creationTime) {

@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TrainingEventAccessService {
 
-  /** Event types that expose per-user answer content — restricted to the owner in trainee mode. */
+  /** Event types that expose per-user answer content — restricted to the owner in trainee mode */
   static final Set<String> ANSWER_EVENT_TYPES =
       Set.of(CorrectAnswerSubmitted.TYPE, WrongAnswerSubmitted.TYPE, AssessmentAnswered.TYPE);
 
@@ -39,10 +39,8 @@ public class TrainingEventAccessService {
   private final TrainingInstanceService trainingInstanceService;
 
   /**
-   * @param trainingEventsService infrastructure service for training audit event queries
-   * @param commandEventsService infrastructure service for console command queries
-   * @param trainingRunService used to resolve a trainee's sandbox from their training run
-   * @param trainingInstanceService used to resolve the pool holding an instance's console commands
+   * Creates the service with the event query services and the run/instance services it consults to
+   * enforce access policy
    */
   @Autowired
   public TrainingEventAccessService(

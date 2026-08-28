@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
 
+/**
+ * One run of the cheating detections over a training instance: who started it, when, how each of
+ * the six kinds of detection is progressing, and how much it has turned up
+ */
 @Data
 @ApiModel(
     value = "CheatingDetectionDTO",
@@ -20,6 +24,7 @@ public class CheatingDetectionDTO {
       example = "1")
   private Long trainingInstanceId;
 
+  /** Display name of the user who started the run, as the user service reported it at the time */
   @ApiModelProperty(value = "Name of user who executed the detection.", example = "John Doe")
   private String executedBy;
 
@@ -29,15 +34,21 @@ public class CheatingDetectionDTO {
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime executeTime;
 
+  /**
+   * How close together two solves must fall before the time proximity detection treats them as
+   * suspicious. It governs that one detection alone.
+   */
   @ApiModelProperty(value = "Proximity threshold for time proximity cheat.", example = "120")
   private Long proximityThreshold;
 
   @ApiModelProperty(value = "id of cheating detection.", example = "1")
   private Long id;
 
+  /** Where the run as a whole stands, moved on as the individual detections are worked through */
   @ApiModelProperty(value = "State of the detection.", example = "RUNNING")
   private CheatingDetectionState currentState;
 
+  /** How many findings the run has recorded so far; zero until the first detection reports */
   @ApiModelProperty(value = "Number of detected events in detection.", example = "20")
   private Long results;
 
@@ -59,6 +70,10 @@ public class CheatingDetectionDTO {
   @ApiModelProperty(value = "state of detection run of no commands.", example = "RUNNING")
   private CheatingDetectionState noCommandsState;
 
+  /**
+   * The commands this run treats as forbidden. Empty leaves the forbidden commands detection with
+   * nothing to match against.
+   */
   @ApiModelProperty(value = "list of forbidden commands.", example = "[]")
   private List<ForbiddenCommandDTO> forbiddenCommands;
 }

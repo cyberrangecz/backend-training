@@ -10,30 +10,37 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
+/**
+ * Manages {@link DetectionEventParticipant} rows, each one trainee implicated in one detection
+ * event finding
+ */
 public interface DetectionEventParticipantRepository
     extends JpaRepository<DetectionEventParticipant, Long>,
         QuerydslPredicateExecutor<DetectionEventParticipant> {
 
   /**
-   * Finds all detection event participants by detection event id.
+   * Returns, as one page, the participants of one detection event, ordered by the moment their
+   * submission occurred.
    *
-   * @param eventId the detection event id
-   * @param pageable the pageable
+   * @param eventId the detection event the returned participants are implicated in
+   * @param pageable the page to return
    */
   Page<DetectionEventParticipant> findAllByEventId(
       @Param("eventId") Long eventId, @Param("pageable") Pageable pageable);
 
   /**
-   * Finds all detection event participants by detection event id.
+   * Returns every participant of one detection event, ordered by the moment their submission
+   * occurred.
    *
-   * @param eventId the detection event id
+   * @param eventId the detection event the returned participants are implicated in
    */
   List<DetectionEventParticipant> findAllByEventId(@Param("eventId") Long eventId);
 
   /**
-   * Finds all participant userIds by cheating detection id.
+   * Returns every participant of one cheating detection sweep, across every one of its detection
+   * events, in no defined order.
    *
-   * @param cheatingDetectionId the cheating detection id
+   * @param cheatingDetectionId the cheating detection the returned participants belong to
    */
   @Query(
       "SELECT dep FROM DetectionEventParticipant dep WHERE dep.cheatingDetectionId = :cheatingDetectionId")
@@ -41,9 +48,10 @@ public interface DetectionEventParticipantRepository
       @Param("cheatingDetectionId") Long cheatingDetectionId);
 
   /**
-   * Delete all participants of cheating detection.
+   * Deletes every participant of one cheating detection sweep in a single bulk statement, which
+   * bypasses the persistence context.
    *
-   * @param cheatingDetectionId the cheating detection id
+   * @param cheatingDetectionId the cheating detection whose participants are deleted
    */
   @Modifying
   void deleteAllParticipantsByCheatingDetectionId(

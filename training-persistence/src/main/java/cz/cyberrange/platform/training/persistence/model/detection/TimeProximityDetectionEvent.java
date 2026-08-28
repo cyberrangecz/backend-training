@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A finding that several trainees solved the same level closer together in time than the sweep's
+ * tolerance allows
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -29,6 +33,7 @@ import lombok.ToString;
 })
 public class TimeProximityDetectionEvent extends AbstractDetectionEvent {
 
+  /** The tolerance the sweep ran with, copied onto the finding as it was made */
   @Column(name = "threshold")
   private Long threshold;
 }

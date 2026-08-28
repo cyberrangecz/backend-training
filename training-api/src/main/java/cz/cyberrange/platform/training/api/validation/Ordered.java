@@ -1,6 +1,9 @@
 package cz.cyberrange.platform.training.api.validation;
 
-/** The annotated element must not be {@code null}. Accepts any type. */
+/**
+ * Contract for an element whose position within its containing list matters: the value returned by
+ * {@link #getOrder()} is used elsewhere as a zero-based index back into that list
+ */
 public interface Ordered {
 
   int getOrder();

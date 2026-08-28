@@ -1,10 +1,13 @@
 package cz.cyberrange.platform.training.persistence.model.enums;
 
-/** The enumeration of Command Types. */
+/**
+ * Which console a command belongs to. A recorded command counts as forbidden only when its own
+ * console matches, so the kind narrows the match as much as the command text does.
+ */
 public enum CommandType {
 
-  /** represents a command used in bash console. */
+  /** The shell console */
   BASH,
-  /** represents a command used in msfconsole. */
+  /** The Metasploit console */
   MSF;
 }

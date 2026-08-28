@@ -5,6 +5,12 @@ import java.util.List;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+/**
+ * Checks that, once sorted ascending by {@link Ordered#getOrder()}, a list's elements carry
+ * sequential order values starting at 0 (0, 1, 2, ...). Sorts the list in place while checking it.
+ * A {@code null} list passes the check. A list containing a {@code null} element throws a {@link
+ * NullPointerException}.
+ */
 public class OrderValidator implements ConstraintValidator<ValidOrder, List<? extends Ordered>> {
 
   @Override

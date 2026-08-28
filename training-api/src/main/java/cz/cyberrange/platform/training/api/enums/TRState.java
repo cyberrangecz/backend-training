@@ -1,12 +1,12 @@
 package cz.cyberrange.platform.training.api.enums;
 
-/** States represented in Training Run entity. */
+/** Classifies the lifecycle state of a training run */
 public enum TRState {
 
-  /** Running Training Run state. */
+  /** Set from creation until the run is finished or archived */
   RUNNING,
-  /** Finished Training Run state. */
+  /** Set once the run's current level is the last one and has been answered */
   FINISHED,
-  /** Archived Training Run state. */
+  /** Set when the run is archived; its sandbox instance reference is cleared at the same time */
   ARCHIVED;
 }

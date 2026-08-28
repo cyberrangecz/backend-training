@@ -5,6 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Set;
 import lombok.Data;
 
+/**
+ * Deserialization target for the variables the sandbox service lists for one pool. Only the names
+ * are carried; no value accompanies them.
+ */
 @Data
 public class Variables {
   @ApiModelProperty(

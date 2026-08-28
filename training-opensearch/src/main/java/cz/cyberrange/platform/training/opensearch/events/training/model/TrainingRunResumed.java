@@ -6,7 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** The type Training run resumed. */
+/**
+ * Records a trainee resuming an in-progress training run, carried under the {@code
+ * training_run_resumed} type
+ */
 @SuperBuilder
 @NoArgsConstructor
 @Getter

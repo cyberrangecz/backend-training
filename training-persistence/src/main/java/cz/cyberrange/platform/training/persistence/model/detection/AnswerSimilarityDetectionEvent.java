@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A finding that a trainee's incorrect submission matched another trainee's stored variant answer
+ * for the same level, evidenced by the matched answer text and the trainee it was generated for
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -29,9 +33,11 @@ import lombok.ToString;
 })
 public class AnswerSimilarityDetectionEvent extends AbstractDetectionEvent {
 
+  /** The answer value that was submitted, as the trainee entered it */
   @Column(name = "answer")
   private String answer;
 
+  /** Display name of the trainee the submitted answer was generated for */
   @Column(name = "answer_owner", nullable = false)
   private String answerOwner;
 }

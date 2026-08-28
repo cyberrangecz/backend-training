@@ -22,7 +22,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 
-/** The type User service. */
+/** The type User service */
 @Service
 public class UserService {
 
@@ -43,11 +43,12 @@ public class UserService {
   }
 
   /**
-   * Finds specific User reference by login
+   * Finds the locally stored user reference row carrying the given cross-service user reference id.
    *
-   * @param userRefId of wanted User reference
-   * @return {@link UserRef} with corresponding login
-   * @throws EntityNotFoundException UserRef was not found
+   * @param userRefId the cross-service user reference id to look the row up by, which is not the
+   *     row's own primary key
+   * @return the {@link UserRef} row
+   * @throws EntityNotFoundException when no row carries that user reference id
    */
   public UserRef getUserByUserRefId(Long userRefId) {
     return userRefRepository
@@ -70,11 +71,12 @@ public class UserService {
   }
 
   /**
-   * Finds specific User reference by login
+   * Asks the user-and-group service for the profile of the user carrying the given cross-service
+   * user reference id.
    *
-   * @param id of wanted User reference
-   * @return {@link UserRef} with corresponding login
-   * @throws EntityNotFoundException UserRef was not found
+   * @param id the cross-service user reference id of the user in question
+   * @return that user's profile
+   * @throws MicroserviceApiException when the call to the user-and-group service fails
    */
   public UserRefDTO getUserRefDTOByUserRefId(Long id) {
     try {
@@ -94,13 +96,18 @@ public class UserService {
   }
 
   /**
-   * Gets users with given user ref ids.
+   * Asks the user-and-group service for one page of the users carrying the given cross-service user
+   * reference ids.
    *
-   * @param userRefIds the user ref ids
-   * @param pageable pageable parameter with information about pagination.
-   * @param givenName optional parameter used for filtration
-   * @param familyName optional parameter used for filtration
-   * @return the users with given user ref ids
+   * @param userRefIds the cross-service user reference ids to retrieve
+   * @param pageable pageable parameter with information about pagination
+   * @param givenName restricts the result to users whose given name matches, no restriction when
+   *     null
+   * @param familyName restricts the result to users whose family name matches, no restriction when
+   *     null
+   * @return the requested page of users, an empty page without contacting the service when no id is
+   *     given
+   * @throws MicroserviceApiException when the call to the user-and-group service fails
    */
   public PageResultResource<UserRefDTO> getUsersRefDTOByGivenUserIds(
       List<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
@@ -132,6 +139,14 @@ public class UserService {
     }
   }
 
+  /**
+   * Retrieves the users carrying the given cross-service user reference ids in full, walking every
+   * page the user-and-group service reports.
+   *
+   * @param participantsRefIds the cross-service user reference ids to retrieve
+   * @return all matching users, unfiltered by name
+   * @throws MicroserviceApiException when any of the calls to the user-and-group service fails
+   */
   public List<UserRefDTO> getUsersRefDTOByGivenUserIds(List<Long> participantsRefIds) {
     List<UserRefDTO> participants = new ArrayList<>();
     PageResultResource<UserRefDTO> participantsInfo;
@@ -147,13 +162,16 @@ public class UserService {
   }
 
   /**
-   * Finds all logins of users that have role of designer
+   * Asks the user-and-group service for one page of the users holding the given role.
    *
-   * @param roleType the role type
-   * @param pageable pageable parameter with information about pagination.
-   * @param givenName optional parameter used for filtration
-   * @param familyName optional parameter used for filtration
-   * @return list of users with given role
+   * @param roleType the role its holders are requested for
+   * @param pageable pageable parameter with information about pagination
+   * @param givenName restricts the result to users whose given name matches, no restriction when
+   *     null
+   * @param familyName restricts the result to users whose family name matches, no restriction when
+   *     null
+   * @return the requested page of users holding that role
+   * @throws MicroserviceApiException when the call to the user-and-group service fails
    */
   public PageResultResource<UserRefDTO> getUsersByGivenRole(
       RoleType roleType, Pageable pageable, String givenName, String familyName) {
@@ -179,14 +197,18 @@ public class UserService {
   }
 
   /**
-   * Finds all logins of users that have role of designer
+   * Asks the user-and-group service for one page of the users holding the given role, leaving out
+   * the named ones.
    *
-   * @param roleType the role type
-   * @param userRefIds ids of the users who should be excluded from the result set.
-   * @param pageable the pageable
-   * @param givenName optional parameter used for filtration
-   * @param familyName optional parameter used for filtration
-   * @return list of users with given role
+   * @param roleType the role its holders are requested for
+   * @param userRefIds cross-service user reference ids to exclude from the result
+   * @param pageable pageable parameter with information about pagination
+   * @param givenName restricts the result to users whose given name matches, no restriction when
+   *     null
+   * @param familyName restricts the result to users whose family name matches, no restriction when
+   *     null
+   * @return the requested page of the remaining users holding that role
+   * @throws MicroserviceApiException when the call to the user-and-group service fails
    */
   public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(
       RoleType roleType,
@@ -221,9 +243,11 @@ public class UserService {
   }
 
   /**
-   * Gets user ref id from user and group.
+   * Asks the user-and-group service for the profile of the user the current request authenticates
+   * as.
    *
-   * @return the user ref id from user and group
+   * @return that user's profile
+   * @throws MicroserviceApiException when the call to the user-and-group service fails
    */
   public UserRefDTO getUserRefFromUserAndGroup() {
     try {
@@ -239,6 +263,15 @@ public class UserService {
     }
   }
 
+  /**
+   * Appends the pagination query parameters to the request being built, along with whichever name
+   * filters were supplied.
+   *
+   * @param givenName given name filter to append, skipped when null
+   * @param familyName family name filter to append, skipped when null
+   * @param pageable the pagination to translate into query parameters
+   * @param builder the request URI being built
+   */
   private void setCommonParams(
       String givenName, String familyName, Pageable pageable, UriBuilder builder) {
     if (givenName != null) {

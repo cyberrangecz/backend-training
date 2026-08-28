@@ -7,7 +7,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** The JPA repository interface to manage {@link AssessmentLevel} instances. */
+/** The JPA repository interface to manage {@link AssessmentLevel} instances */
 @Repository
 public interface AssessmentLevelRepository
     extends JpaRepository<AssessmentLevel, Long>, QuerydslPredicateExecutor<AssessmentLevel> {

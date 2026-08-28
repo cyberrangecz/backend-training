@@ -13,31 +13,48 @@ import java.time.temporal.TemporalAccessor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * One console command captured on a trainee's sandbox and read back from its OpenSearch audit
+ * document, deserialized through the snake-case, textual-date object mapper configured for
+ * OpenSearch
+ */
 @Data
 @Slf4j
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TrainingCommand {
 
-  // Timestamp assigned to a command whose logged time is missing or unparsable
+  /** Timestamp assigned to a command whose logged time is missing or unparsable */
   private static final LocalDateTime EPOCH_START = LocalDateTime.of(1970, 1, 1, 0, 0);
 
-  // OpenSearch document id of the event
+  /** OpenSearch document identifier, assigned when a command is read back from the index */
   @JsonIgnore private String eventId;
 
+  /** Identifier of the sandbox instance the command was executed in */
   @JsonProperty("sandbox_id")
   private String sandboxId;
 
+  /** Moment the command was executed, in UTC, or {@link #EPOCH_START} when unparsable */
   private LocalDateTime timestamp;
+
+  /** Time spent in the training run so far when the command was executed */
   private Duration trainingTime;
 
+  /** Classifies the kind of console command logged */
   @JsonProperty("cmd_type")
   private String cmdType;
 
+  /** The command name: the leading whitespace-delimited token of the logged command line */
   private String command;
+
+  /** Everything after the command name in the logged command line, or empty if there was none */
   private String commandArguments;
+
   private String hostname;
   private String username;
-  private String wd; // working directory
+
+  /** Working directory the command was executed from */
+  private String wd;
+
   private String ip;
 
   @JsonProperty("cmd")

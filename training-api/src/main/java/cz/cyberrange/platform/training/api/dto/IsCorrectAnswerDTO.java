@@ -4,7 +4,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-/** Response to attempt of answer input */
+/**
+ * Response to attempt of answer input, built by hand in {@code TrainingRunFacade} for one submitted
+ * answer
+ */
 @Data
 @ApiModel(
     value = "IsCorrectAnswerDTO",
@@ -19,6 +22,7 @@ public class IsCorrectAnswerDTO {
   @ApiModelProperty(value = "Number of attempts to submit a bad answer.", example = "3")
   private int remainingAttempts;
 
+  /** Set only once {@code remainingAttempts} has reached zero; left unset otherwise */
   @ApiModelProperty(
       value = "Instruction how to get answer in training.",
       example = "This is how you do it")

@@ -58,7 +58,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The rest controller for Training definitions. */
+/** The rest controller for Training definitions */
 @Api(
     value = "/training-definitions",
     tags = "Training definitions",
@@ -97,11 +97,13 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get requested Training Definition by id.
+   * Returns one training definition with the full detail of its levels, serialized to JSON narrowed
+   * to the requested attributes.
    *
-   * @param id of Training Definition to return.
-   * @param fields attributes of the object to be returned as the result.
-   * @return Requested Training Definition by id.
+   * @param id id of the training definition to return
+   * @param fields squiggly filter selecting the attributes to keep in the response, the whole
+   *     definition being returned when absent
+   * @return the JSON body of the {@link TrainingDefinitionWithLevelsDTO} as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -139,12 +141,16 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get all Training Definitions.
+   * Returns a page of training definitions, serialized to JSON narrowed to the requested
+   * attributes. A training administrator receives every definition matching the predicate, while
+   * any other caller receives only those they author or organize the beta testing group of.
    *
-   * @param predicate specifies query to database.
-   * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
-   * @return all Training Definitions.
+   * @param predicate restricts which definitions are considered, string comparisons matching
+   *     partially and ignoring case
+   * @param pageable pageable parameter with information about pagination
+   * @param fields squiggly filter selecting the attributes to keep in the response, the whole page
+   *     being returned when absent
+   * @return the JSON body of the page of {@link TrainingDefinitionDTO} as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -180,12 +186,18 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get all Training Definitions for organizers.
+   * Returns a page of the training definitions in the given state that the caller may organize,
+   * serialized to JSON narrowed to the requested attributes. Released definitions are returned to
+   * every caller. Unreleased ones are returned in full to a training administrator, narrowed to
+   * those the caller either authors or beta tests when the caller holds both the designer and the
+   * organizer role, and narrowed to those the caller beta tests otherwise, authorship granting no
+   * visibility in that last case.
    *
-   * @param state training definition state (should be RELEASED or UNRELEASED)
-   * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
-   * @return all Training Definitions for organizers.
+   * @param state the state the definitions have to be in, which has to be released or unreleased
+   * @param pageable pageable parameter with information about pagination
+   * @param fields squiggly filter selecting the attributes to keep in the response, the whole page
+   *     being returned when absent
+   * @return the JSON body of the page of {@link TrainingDefinitionInfoDTO} as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -257,11 +269,14 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Create Training Definition.
+   * Stores a new training definition, listing the calling user among its authors, and returns it
+   * serialized to JSON narrowed to the requested attributes. When the payload asks for default
+   * content, the definition is created with a starting set of levels.
    *
-   * @param trainingDefinitionCreateDTO the Training Definition to be create
-   * @param fields attributes of the object to be returned as the result.
-   * @return the new Training Definition
+   * @param trainingDefinitionCreateDTO the training definition to store
+   * @param fields squiggly filter selecting the attributes to keep in the response, the whole
+   *     definition being returned when absent
+   * @return the JSON body of the stored {@link TrainingDefinitionWithLevelsDTO} as a string
    */
   @ApiOperation(
       httpMethod = "POST",
@@ -301,10 +316,14 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Update Training Definition.
+   * Overwrites a training definition that is unreleased and has no training instance yet, listing
+   * the calling user among its authors and keeping the estimated duration already stored rather
+   * than the submitted one. A payload that omits the beta testing group while the stored definition
+   * has one is refused, since the group can only have its organizers emptied and not be removed.
    *
-   * @param trainingDefinitionUpdateDTO the training definition to be updated
-   * @return the response entity
+   * @param trainingDefinitionUpdateDTO the training definition to overwrite, identified by the id
+   *     it carries
+   * @return an empty response carrying no content
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -343,11 +362,12 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Clone Training Definition response entity.
+   * Stores a copy of a training definition together with copies of all its levels, under the given
+   * title and with the calling user among its authors, and returns the copy.
    *
-   * @param id the id of cloned Training Definition
-   * @param title the title of new Training Definition
-   * @return the new Training Definition
+   * @param id id of the training definition to copy
+   * @param title title the copy is stored under
+   * @return the stored copy, its levels in presentation order
    */
   @ApiOperation(
       httpMethod = "POST",
@@ -385,12 +405,13 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Swap levels.
+   * Exchanges the positions of two levels of a training definition that is neither released nor
+   * archived, and returns the definition's levels in their resulting order.
    *
-   * @param definitionId the Training Definition id
-   * @param levelIdFrom the level id from
-   * @param levelIdTo the level id to
-   * @return the basic information about levels
+   * @param definitionId id of the training definition holding both levels
+   * @param levelIdFrom id of one level to exchange
+   * @param levelIdTo id of the other level to exchange
+   * @return the basic information of every level of the definition, in presentation order
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -434,12 +455,15 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Move the given level to the specified position.
+   * Moves one level of a training definition that is unreleased and has no training instance yet to
+   * the given position, shifting the levels in between, and returns the definition's levels in
+   * their resulting order. A position outside the definition's range is pulled to the nearest end
+   * rather than refused.
    *
-   * @param definitionId the Training Definition id
-   * @param levelIdToBeMoved the level id from
-   * @param newPosition position where move the given level
-   * @return the basic information about levels
+   * @param definitionId id of the training definition holding the level
+   * @param levelIdToBeMoved id of the level to move
+   * @param newPosition position to move the level to
+   * @return the basic information of every level of the definition, in presentation order
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -479,10 +503,11 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Delete Training Definition.
+   * Removes a training definition along with all of its levels. A released definition, or one that
+   * already has a training instance, is refused rather than removed.
    *
-   * @param id the id of definition to be deleted
-   * @return the response entity
+   * @param id id of the training definition to remove
+   * @return an empty successful response
    */
   @ApiOperation(
       httpMethod = "DELETE",
@@ -515,11 +540,13 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Delete one level from Training Definition.
+   * Removes one level from an unreleased training definition, closing the gap in the level order
+   * and reducing the definition's estimated duration by the removed level's own, then returns the
+   * levels that remain.
    *
-   * @param definitionId the Training Definition id
-   * @param levelId the level id
-   * @return the basic information about levels
+   * @param definitionId id of the training definition holding the level
+   * @param levelId id of the level to remove
+   * @return the basic information of every remaining level of the definition, in presentation order
    */
   @ApiOperation(
       httpMethod = "DELETE",
@@ -556,11 +583,12 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Update training level.
+   * Overwrites one training level of a training definition that is unreleased and has no training
+   * instance yet, and records the edit on the definition.
    *
-   * @param definitionId the Training Definition id
-   * @param trainingLevelUpdateDTO the training level to be updated
-   * @return the response entity
+   * @param definitionId id of the training definition the level has to belong to
+   * @param trainingLevelUpdateDTO the training level to overwrite, identified by the id it carries
+   * @return an empty response carrying no content
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -600,11 +628,12 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Update info level.
+   * Overwrites one info level of a training definition that is unreleased and has no training
+   * instance yet, and records the edit on the definition.
    *
-   * @param definitionId the definition id
-   * @param infoLevelUpdateDTO the info level to be updated
-   * @return the response entity
+   * @param definitionId id of the training definition the level has to belong to
+   * @param infoLevelUpdateDTO the info level to overwrite, identified by the id it carries
+   * @return an empty response carrying no content
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -644,11 +673,14 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Update assessment level.
+   * Overwrites one assessment level of a training definition that is unreleased and has no training
+   * instance yet, and records the edit on the definition. For a level scored as a test, the correct
+   * option of every extended matching statement is resolved and checked before the level is stored.
    *
-   * @param definitionId the definition id
-   * @param assessmentLevelUpdateDTO the assessment level to be updated
-   * @return the response entity
+   * @param definitionId id of the training definition the level has to belong to
+   * @param assessmentLevelUpdateDTO the assessment level to overwrite, identified by the id it
+   *     carries
+   * @return an empty response carrying no content
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -690,11 +722,14 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Update levels.
+   * Overwrites several levels of a training definition that is unreleased and has no training
+   * instance yet in one request, each level handled according to its own type, and records the edit
+   * on the definition. A submitted level that does not belong to the definition aborts the whole
+   * request.
    *
-   * @param definitionId the definition id
-   * @param levelUpdateDTOS the levels to be updated
-   * @return the response entity
+   * @param definitionId id of the training definition every submitted level has to belong to
+   * @param levelUpdateDTOS the levels to overwrite, each identified by the id it carries
+   * @return an empty response carrying no content
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -734,11 +769,13 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Find level by id.
+   * Returns one level in the full detail of whichever level type it turns out to be, serialized to
+   * JSON narrowed to the requested attributes.
    *
-   * @param levelId the id of wanted level
-   * @param fields attributes of the object to be returned as the result.
-   * @return wanted level
+   * @param levelId id of the level to return
+   * @param fields squiggly filter selecting the attributes to keep in the response, the whole level
+   *     being returned when absent
+   * @return the JSON body of the level as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -774,12 +811,16 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Create level.
+   * Appends a new level of the given type, filled with placeholder content, to the end of a
+   * training definition that is unreleased and has no training instance yet, raising the
+   * definition's estimated duration by the new level's own, and returns the level serialized to
+   * JSON narrowed to the requested attributes.
    *
-   * @param definitionId the definition id
-   * @param levelType the type of new level
-   * @param fields attributes of the object to be returned as the result.
-   * @return the basic information about new level
+   * @param definitionId id of the training definition to append the level to
+   * @param levelType which kind of level to append
+   * @param fields squiggly filter selecting the attributes to keep in the response, the whole level
+   *     information being returned when absent
+   * @return the JSON body of the new level's basic information as a string
    */
   @ApiOperation(
       httpMethod = "POST",
@@ -837,12 +878,15 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get requested designers.
+   * Returns a page of the users the user-and-group service reports as holding the training designer
+   * role, serialized to JSON narrowed to the requested attributes.
    *
-   * @param givenName the given name
-   * @param familyName the family name
-   * @param pageable pageable parameter with information about pagination.
-   * @return List of users login and full name with role designer.
+   * @param givenName restricts the result to users whose given name matches, no restriction when
+   *     absent
+   * @param familyName restricts the result to users whose family name matches, no restriction when
+   *     absent
+   * @param pageable pageable parameter with information about pagination
+   * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -878,12 +922,15 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get requested organizers.
+   * Returns a page of the users the user-and-group service reports as holding the training
+   * organizer role, serialized to JSON narrowed to the requested attributes.
    *
-   * @param givenName the given name
-   * @param familyName the family name
-   * @param pageable pageable parameter with information about pagination.
-   * @return List of users login and full name with role designer.
+   * @param givenName restricts the result to users whose given name matches, no restriction when
+   *     absent
+   * @param familyName restricts the result to users whose family name matches, no restriction when
+   *     absent
+   * @param pageable pageable parameter with information about pagination
+   * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -919,13 +966,16 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get requested designers not in given Training Definition.
+   * Returns a page of the users holding the training designer role who do not yet author the given
+   * training definition, serialized to JSON narrowed to the requested attributes.
    *
-   * @param trainingDefinitionId id of the training definition
-   * @param givenName the given name
-   * @param familyName the family name
-   * @param pageable pageable parameter with information about pagination.
-   * @return List of users login and full name with role designer.
+   * @param trainingDefinitionId id of the training definition whose current authors are left out
+   * @param givenName restricts the result to users whose given name matches, no restriction when
+   *     absent
+   * @param familyName restricts the result to users whose family name matches, no restriction when
+   *     absent
+   * @param pageable pageable parameter with information about pagination
+   * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -973,11 +1023,13 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get requested beta testers for Training Definition.
+   * Returns a page of the organizers making up the given training definition's beta testing group,
+   * serialized to JSON narrowed to the requested attributes. A definition without such a group, or
+   * with an empty one, yields an empty page.
    *
-   * @param trainingDefinitionId id of training definition for which to get beta testers
-   * @param pageable pageable parameter with information about pagination.
-   * @return List of beta testers and theirs info.
+   * @param trainingDefinitionId id of the training definition whose beta testing group is read
+   * @param pageable pageable parameter with information about pagination
+   * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -1016,13 +1068,16 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get requested authors for Training Definition.
+   * Returns a page of the users authoring the given training definition, serialized to JSON
+   * narrowed to the requested attributes.
    *
-   * @param trainingDefinitionId id of training definition for which to retrieve authors
-   * @param givenName the given name
-   * @param familyName the family name
-   * @param pageable pageable parameter with information about pagination.
-   * @return List of users login and full name with role designer.
+   * @param trainingDefinitionId id of the training definition whose authors are read
+   * @param givenName restricts the result to authors whose given name matches, no restriction when
+   *     absent
+   * @param familyName restricts the result to authors whose family name matches, no restriction
+   *     when absent
+   * @param pageable pageable parameter with information about pagination
+   * @return the JSON body of the page of {@link UserRefDTO} as a string
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -1066,12 +1121,14 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Concurrently add/remove authors with given ids to/from the Training Definition.
+   * Adds and removes authors of a training definition in one request, and records the edit on the
+   * definition. The calling user is dropped from the removal set, so a caller cannot remove their
+   * own authorship here.
    *
-   * @param trainingDefinitionId id of training definition for which to retrieve authors
-   * @param authorsAddition ids of the authors to be added to the training definition.
-   * @param authorsRemoval ids of the authors to be removed from the training definition.
-   * @return the response entity
+   * @param trainingDefinitionId id of the training definition whose authors change
+   * @param authorsAddition cross-service user reference ids to add as authors
+   * @param authorsRemoval cross-service user reference ids to remove from the authors
+   * @return an empty response carrying no content
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -1108,11 +1165,15 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Switch development state of given definition.
+   * Moves a training definition to the given lifecycle state and records the edit on it. Only three
+   * moves are allowed: unreleased to released, released to archived, and released back to
+   * unreleased provided no training instance exists for the definition. Asking for the state it
+   * already holds does nothing, and every other move is refused, an archived definition therefore
+   * being final.
    *
-   * @param definitionId the definition id
-   * @param state the new development state
-   * @return the response entity
+   * @param definitionId id of the training definition to move
+   * @param state the lifecycle state to move it to
+   * @return an empty response carrying no content
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -1149,10 +1210,12 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get Training Definitions by their ids.
+   * Returns the named training definitions, each carrying the basic information of its levels. An
+   * id matching no definition is passed over rather than reported, so the result may be shorter
+   * than the request.
    *
-   * @param ids the ids of Training Definitions to return.
-   * @return List of requested Training Definitions.
+   * @param ids ids of the training definitions to return
+   * @return the matching {@link TrainingDefinitionBasicDTO}s
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -1184,10 +1247,11 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get Levels by their ids.
+   * Returns the basic information of the named levels. An id matching no level is passed over
+   * rather than reported, so the result may be shorter than the request.
    *
-   * @param ids the ids of Levels to return.
-   * @return List of requested Levels.
+   * @param ids ids of the levels to return
+   * @return the matching {@link AbstractLevelBasicDTO}s
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -1218,10 +1282,11 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Get Hints by their ids.
+   * Returns the basic information of the named hints. An id matching no hint is passed over rather
+   * than reported, so the result may be shorter than the request.
    *
-   * @param ids the ids of Hints to return.
-   * @return List of requested Hints.
+   * @param ids ids of the hints to return
+   * @return the matching {@link HintBasicDTO}s
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -1268,7 +1333,7 @@ public class TrainingDefinitionsRestController {
     private Pagination pagination;
   }
 
-  /** The type User info rest resource. */
+  /** The type User info rest resource */
   @ApiModel(
       value = "UserInfoRestResource",
       description =

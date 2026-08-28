@@ -10,7 +10,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-/** The type Facade configuration. */
+/**
+ * Assembles the facade layer: it registers the facades and the mappers, turns on declarative
+ * transactions, and pulls in the service and validation configurations the facades depend on
+ */
 @Configuration
 @EnableTransactionManagement
 @Import({ServiceConfig.class, ValidationMessagesConfig.class})
@@ -24,7 +27,8 @@ public class FacadeConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(FacadeConfiguration.class);
 
   /**
-   * Model mapper model mapper.
+   * Supplies a mapper carrying its library's default conventions, with nothing configured on it
+   * here.
    *
    * @return the model mapper
    */
@@ -35,7 +39,8 @@ public class FacadeConfiguration {
   }
 
   /**
-   * Username validator email validator.
+   * Supplies a standalone email validator bean. Nothing injects it, and the constraint it backs is
+   * placed on no field.
    *
    * @return the email validator
    */

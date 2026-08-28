@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
 
+/**
+ * The error body returned by a failing call to the user-and-group or answers-storage microservice,
+ * deserialized by {@code ObjectMapper.readValue} from that response's JSON. The {@link
+ * #entityErrorDetail} field can likewise be populated by that deserialization, but nothing in this
+ * codebase reads it back out through {@link #getEntityErrorDetail()}.
+ */
 @ApiModel(
     value = "JavaApiError",
     description = "A detailed error from another Java mircorservice.",
@@ -52,6 +58,10 @@ public class JavaApiError extends ApiSubError {
     this.message = message;
   }
 
+  /**
+   * Builds an error carrying the given status, message, list of reasons, and request path, with the
+   * timestamp set to the current time
+   */
   public static JavaApiError of(
       HttpStatus httpStatus, String message, List<String> errors, String path) {
     JavaApiError apiError = new JavaApiError(message);
@@ -62,6 +72,10 @@ public class JavaApiError extends ApiSubError {
     return apiError;
   }
 
+  /**
+   * Builds an error carrying the given status, message, single reason, and request path, with the
+   * timestamp set to the current time
+   */
   public static JavaApiError of(HttpStatus httpStatus, String message, String error, String path) {
     JavaApiError apiError = new JavaApiError(message);
     apiError.setStatus(httpStatus);
@@ -103,6 +117,7 @@ public class JavaApiError extends ApiSubError {
     this.timestamp = timestamp;
   }
 
+  /** Returns the error message, or a placeholder when none was set */
   @Override
   public String getMessage() {
     return message == null ? "No specific message provided." : message;

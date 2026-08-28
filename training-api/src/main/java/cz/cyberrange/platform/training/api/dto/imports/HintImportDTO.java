@@ -8,7 +8,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
-/** Encapsulates information about Hint. */
+/** Encapsulates information about Hint */
 @Data
 @ApiModel(value = "HintImportDTO", description = "Imported hint.")
 public class HintImportDTO {
@@ -23,6 +23,10 @@ public class HintImportDTO {
   @NotEmpty(message = "{hint.content.NotEmpty.message}")
   private String content;
 
+  /**
+   * Counted, together with every other hint on the same level, against that level's maximum score;
+   * the import is rejected if the total exceeds it
+   */
   @ApiModelProperty(
       value = "The number of points the participant loses after receiving the hint.",
       example = "10")
@@ -31,6 +35,7 @@ public class HintImportDTO {
   @Max(value = 100, message = "{hint.hintPenalty.Max.message}")
   private Integer hintPenalty;
 
+  /** Carried through to the persisted hint as submitted; import does not renumber it */
   @NotNull(message = "{hint.order.NotNull.message}")
   @Min(value = 0, message = "{hint.order.Min.message}")
   @ApiModelProperty(value = "The order of hint in training level", example = "1")

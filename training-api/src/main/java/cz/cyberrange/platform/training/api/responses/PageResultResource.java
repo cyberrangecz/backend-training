@@ -7,8 +7,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This class is used to replace Page class and reduce number of returned elements (standard Page
- * class contains fields, which are not usefull (backward compatability)).
+ * Carries one page of results as a content list alongside its pagination metadata.
+ *
+ * @param <E> the type of element held in the page.
  */
 @ApiModel(
     value = "PageResultResouce",
@@ -28,17 +29,29 @@ public class PageResultResource<E> {
 
   public PageResultResource() {}
 
+  /**
+   * Creates a page over the given content, leaving the pagination metadata unset.
+   *
+   * @param content the elements the page carries.
+   */
   public PageResultResource(List<E> content) {
     super();
     this.content = content;
   }
 
+  /** Creates a page over the given content, carrying the given pagination metadata */
   public PageResultResource(List<E> content, Pagination pageMetadata) {
     super();
     this.content = content;
     this.pagination = pageMetadata;
   }
 
+  /**
+   * Returns the page content as an unmodifiable view.
+   *
+   * @return the page content; changes to the underlying list are reflected, but not permitted
+   *     through the returned view.
+   */
   public List<E> getContent() {
     return Collections.unmodifiableList(content);
   }
@@ -55,6 +68,10 @@ public class PageResultResource<E> {
     this.pagination = pagination;
   }
 
+  /**
+   * Describes where the enclosing page sits within the whole result set, and how large both the
+   * page and that set are
+   */
   public static class Pagination {
 
     @ApiModelProperty(value = "Page number.", example = "1")
@@ -81,6 +98,7 @@ public class PageResultResource<E> {
 
     public Pagination() {}
 
+    /** Creates the pagination metadata from the given page position and size values */
     public Pagination(
         int number, int numberOfElements, int size, long totalElements, int totalPages) {
       super();

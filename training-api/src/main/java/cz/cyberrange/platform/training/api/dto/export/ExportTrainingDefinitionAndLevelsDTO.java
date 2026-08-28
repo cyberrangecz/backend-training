@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Encapsulates information about training definition and its levels. */
+/** Encapsulates information about training definition and its levels */
 @Data
 @NoArgsConstructor
 @ApiModel(
@@ -41,6 +41,7 @@ public class ExportTrainingDefinitionAndLevelsDTO {
   @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
   private TDState state;
 
+  /** Ordered by each level's position in the training definition */
   @ApiModelProperty(value = "Information about all levels in training definition.")
   private List<AbstractLevelExportDTO> levels = new ArrayList<>();
 

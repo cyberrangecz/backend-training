@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 import java.time.LocalTime;
 
+/**
+ * Deserializes a JSON string into a {@link LocalTime} using {@link LocalTime#parse(CharSequence)}
+ */
 public class LocalTimeDeserializer extends StdDeserializer<LocalTime> {
 
   public LocalTimeDeserializer() {

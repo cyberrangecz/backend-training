@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-/** Contains generally safe, descriptive-only data accessible by both organizers and trainees. */
+/** Contains generally safe, descriptive-only data accessible by both organizers and trainees */
 @Data
 @ApiModel(
     value = "TrainingInstanceBasicDTO",
@@ -33,6 +33,11 @@ public class TrainingInstanceBasicDTO {
       example = "Concluded Instance")
   protected String title;
 
+  /**
+   * Primary key of the associated training definition, mapped from the instance's
+   * trainingDefinition relation. This DTO carries no accessToken field; it is returned to instance
+   * organizers and to its trainee participants alike.
+   */
   @ApiModelProperty(value = "ID of set training instance", example = "1")
   protected Long definitionId;
 }

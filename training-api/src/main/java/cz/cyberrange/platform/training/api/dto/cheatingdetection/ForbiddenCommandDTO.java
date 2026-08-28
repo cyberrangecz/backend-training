@@ -5,6 +5,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+/**
+ * A command a cheating detection run is configured to treat as forbidden. A recorded command counts
+ * as a match only when it contains this command's text and was run in the same kind of shell.
+ */
 @Data
 @ApiModel(value = "ForbiddenCommandDTO", description = "Basic information about forbidden command.")
 public class ForbiddenCommandDTO {

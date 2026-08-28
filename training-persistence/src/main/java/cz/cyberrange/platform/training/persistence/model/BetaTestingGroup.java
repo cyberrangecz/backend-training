@@ -35,7 +35,7 @@ public class BetaTestingGroup extends AbstractEntity<Long> {
   private TrainingDefinition trainingDefinition;
 
   /**
-   * Gets set of users allowed to test associated Training Definition
+   * Gets set of users allowed to test associated Training Definition.
    *
    * @return the organizers
    */
@@ -44,7 +44,7 @@ public class BetaTestingGroup extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds organizer to set of users allowed to test associated Training Definition
+   * Adds organizer to set of users allowed to test associated Training Definition.
    *
    * @param organizer to be added
    */
@@ -54,7 +54,7 @@ public class BetaTestingGroup extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes organizer from set of users allowed to test associated Training Definition
+   * Removes organizer from set of users allowed to test associated Training Definition.
    *
    * @param organizer to be removed
    */

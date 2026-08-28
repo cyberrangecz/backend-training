@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-/** Encapsulates the MITRE techniques used by a Training Definition. */
+/** Encapsulates the MITRE techniques used by a Training Definition */
 @Data
 @AllArgsConstructor
 @ApiModel(
@@ -22,11 +22,19 @@ public class TrainingDefinitionMitreTechniquesDTO {
       example = "TrainingDefinition2")
   private String title;
 
+  /**
+   * True when the requesting user's own user reference id appears as a participant on a training
+   * run created from this definition
+   */
   @ApiModelProperty(
       value = "Indicates whether the requesting user has played the training definition.",
       example = "true")
   private boolean played;
 
+  /**
+   * Built by the facade one technique at a time from the query results for the definition, never
+   * mapped as a whole
+   */
   @ApiModelProperty(
       value = "Distinct MITRE technique keys used by the training levels of the definition.",
       example = "[\"TA0042.T1588.006\", \"TA0043.T1595\"]")

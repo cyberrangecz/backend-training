@@ -14,17 +14,22 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 /**
- * Class representing DB reference for user and training instances and definition they can access
+ * Local row standing in for a user of the user-and-group microservice, so that training
+ * definitions, instances and beta testing groups can reference that user without duplicating its
+ * profile data
  */
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
 @NamedQueries({
+  // Matches on userRefId: takes and returns the external, cross-service user identifiers.
   @NamedQuery(
       name = "UserRef.findUsers",
       query = "SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId"),
+  // Matches on userRefId: takes an external user identifier, not the local primary key.
   @NamedQuery(
       name = "UserRef.findUserByUserRefId",
       query = "SELECT ur FROM UserRef ur WHERE ur.userRefId = :userRefId"),
+  // Returns userRefId values: the external identifiers of a training instance's participants.
   @NamedQuery(
       name = "UserRef.findParticipantsRefIdsByTrainingInstanceId",
       query =
@@ -52,50 +57,35 @@ public class UserRef extends AbstractEntity<Long> {
   @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
   private Set<BetaTestingGroup> betaTesters = new HashSet<>();
 
-  /** Instantiates a new user reference */
   public UserRef() {}
 
   /**
-   * Gets the primary key of this row in the training service database. Never accepted from nor
+   * Returns the primary key of this row in the training service database. Never accepted from nor
    * exposed to a caller outside this service; a user arriving over the API is identified by {@link
-   * #getUserRefId()}.
-   *
-   * @return the id
+   * #getUserRefId()} instead.
    */
   public Long getId() {
     return super.getId();
   }
 
-  /**
-   * Sets unique identification number of user reference
-   *
-   * @param id the id
-   */
   public void setId(Long id) {
     super.setId(id);
   }
 
   /**
-   * Gets the user-and-group identifier of the referenced user, which is the identifier used across
-   * service boundaries.
-   *
-   * @return the user ref id
+   * Returns the user-and-group identifier of the referenced user, the identifier used across
+   * service boundaries
    */
   public Long getUserRefId() {
     return userRefId;
   }
 
-  /**
-   * Sets user ref id.
-   *
-   * @param userRefId the user ref id
-   */
   public void setUserRefId(Long userRefId) {
     this.userRefId = userRefId;
   }
 
   /**
-   * Gets set of training instances user can access
+   * Gets set of training instances user can access.
    *
    * @return the training instances
    */
@@ -104,7 +94,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of training instances user can access
+   * Sets set of training instances user can access.
    *
    * @param trainingInstances the training instances
    */
@@ -113,7 +103,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets set of training definitions user can access
+   * Gets set of training definitions user can access.
    *
    * @return the training definitions
    */
@@ -122,7 +112,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of training definitions user can access
+   * Sets set of training definitions user can access.
    *
    * @param trainingDefinitions the training definitions
    */
@@ -131,7 +121,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds definition to the set of training definitions user can access
+   * Adds definition to the set of training definitions user can access.
    *
    * @param trainingDefinition the training definition
    */
@@ -140,7 +130,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes definition from the set of training definitions user can access
+   * Removes definition from the set of training definitions user can access.
    *
    * @param trainingDefinition the training definition
    */
@@ -149,7 +139,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds beta testing group that can be accessed by user
+   * Adds beta testing group that can be accessed by user.
    *
    * @param viewGroup the view group
    */
@@ -158,7 +148,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes beta testing group that can be accessed by user
+   * Removes beta testing group that can be accessed by user.
    *
    * @param viewGroup the view group
    */
@@ -167,7 +157,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds instance to the set of training instances user can access
+   * Adds instance to the set of training instances user can access.
    *
    * @param trainingInstance the training instance
    */
@@ -176,7 +166,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Removes instance from the set of training instances user can access
+   * Removes instance from the set of training instances user can access.
    *
    * @param trainingInstance the training instance
    */
@@ -185,7 +175,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets set of Beta testing groups user can access
+   * Gets set of Beta testing groups user can access.
    *
    * @return the beta testers
    */
@@ -194,7 +184,7 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Sets set of Beta testing groups user can access
+   * Sets set of Beta testing groups user can access.
    *
    * @param betaTesters the beta testers
    */
