@@ -70,7 +70,6 @@ public class AbstractLevelImportDTO {
       value =
           "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
       example = "5")
-  @NotNull(message = "{abstractLevel.minimalPossibleSolveTime.NotNull.message}")
   @Min(value = 0, message = "{abstractLevel.minimalPossibleSolveTime.Min.message}")
   protected Integer minimalPossibleSolveTime;
 }

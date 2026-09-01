@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeDeserializer;
@@ -152,6 +153,24 @@ public class ExportImportRestControllerTest {
             post("/imports/training-definitions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(convertObjectToJsonBytes(importTrainingDefinitionDTO)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  public void importTrainingDefinitionAcceptsLevelsWithoutMinimalPossibleSolveTime()
+      throws Exception {
+    ObjectMapper treeMapper = new ObjectMapper();
+    ObjectNode root =
+        (ObjectNode) treeMapper.readTree(convertObjectToJsonBytes(importTrainingDefinitionDTO));
+    ArrayNode levels = (ArrayNode) root.get("levels");
+    ((ObjectNode) levels.get(0)).remove("minimal_possible_solve_time");
+    ((ObjectNode) levels.get(1)).putNull("minimal_possible_solve_time");
+
+    mockMvc
+        .perform(
+            post("/imports/training-definitions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(treeMapper.writeValueAsString(root)))
         .andExpect(status().isOk());
   }
 
