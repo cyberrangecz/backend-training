@@ -46,7 +46,7 @@ import org.springframework.web.util.UrlPathHelper;
  * {@code status} parameters supplied by the overridden {@link ResponseEntityExceptionHandler}
  * methods.
  */
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @RestControllerAdvice
 public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionHandler {
 

@@ -139,6 +139,12 @@ public class ExportImportRestController {
             message = "Training definition imported.",
             response = TrainingDefinitionWithLevelsDTO.class),
         @ApiResponse(
+            code = 400,
+            message =
+                "The submitted file could not be read as a training definition, or holds refused"
+                    + " field values.",
+            response = ApiError.class),
+        @ApiResponse(
             code = 422,
             message =
                 "Sum of hints penalties in imported training level is greater than maximal score.",
