@@ -22,7 +22,6 @@ import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
@@ -43,6 +42,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
 import cz.cyberrange.platform.training.persistence.model.enums.QuestionType;
+import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingOption;
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
@@ -189,11 +189,10 @@ public class ExportImportFacade {
 
   /**
    * Creates a new training definition from a submitted one and appends each of its levels in the
-   * order given. The new definition always starts out unreleased, whatever state was submitted, and
-   * its estimated duration is the sum of its levels' rather than the submitted figure. A submitted
-   * training level has its answer configuration validated, and a submitted assessment level of the
-   * test kind has its statements bound to their correct options and its maximum score set from its
-   * questions' points.
+   * order given. The new definition starts out unreleased and takes its estimated duration from the
+   * sum of its levels'. A submitted training level has its answer configuration validated, and a
+   * submitted assessment level of the test kind has its statements bound to their correct options
+   * and its maximum score set from its questions' points.
    *
    * @param importTrainingDefinitionDTO the definition to create, levels included
    * @return the created definition with its levels, {@link TrainingDefinitionWithLevelsDTO}
@@ -206,12 +205,8 @@ public class ExportImportFacade {
   @TransactionalWO
   public TrainingDefinitionWithLevelsDTO dbImport(
       ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
-    importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
-    if (importTrainingDefinitionDTO.getTitle() != null) {
-      importTrainingDefinitionDTO.setTitle(importTrainingDefinitionDTO.getTitle());
-    }
-
     TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
+    newDefinition.setState(TDState.UNRELEASED);
     newDefinition.setEstimatedDuration(computeEstimatedDuration(importTrainingDefinitionDTO));
     TrainingDefinition newTrainingDefinition =
         trainingDefinitionService.create(newDefinition, false);

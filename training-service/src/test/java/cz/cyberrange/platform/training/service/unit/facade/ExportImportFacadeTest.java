@@ -109,13 +109,10 @@ public class ExportImportFacadeTest {
 
     AssessmentLevelImportDTO importAssessmentLevelDTO =
         testDataFactory.getAssessmentLevelImportDTO();
-    importAssessmentLevelDTO.setOrder(3);
 
     TrainingLevelImportDTO importGameLevelDTO = testDataFactory.getTrainingLevelImportDTO();
-    importGameLevelDTO.setOrder(2);
 
     InfoLevelImportDTO importInfoLevelDTO = testDataFactory.getInfoLevelImportDTO();
-    importInfoLevelDTO.setOrder(1);
 
     trainingDefinition = testDataFactory.getReleasedDefinition();
     trainingDefinition.setId(1L);
@@ -183,13 +180,6 @@ public class ExportImportFacadeTest {
             .collect(Collectors.toList()),
         trainingDefinitionWithLevelsDTO.getLevels().stream()
             .map(AbstractLevelBasicDTO::getLevelType)
-            .collect(Collectors.toList()));
-    assertEquals(
-        importTrainingDefinitionDTO.getLevels().stream()
-            .map(AbstractLevelImportDTO::getOrder)
-            .collect(Collectors.toList()),
-        trainingDefinitionWithLevelsDTO.getLevels().stream()
-            .map(AbstractLevelBasicDTO::getOrder)
             .collect(Collectors.toList()));
   }
 

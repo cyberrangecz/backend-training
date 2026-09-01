@@ -27,7 +27,6 @@ public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
    * carry a correct option order for each of its statements or the import is rejected
    */
   @ApiModelProperty(value = "Questions of assessment level to update.")
-  @NotNull(message = "{assessmentLevel.questions.NotNull.message}")
   private List<QuestionDTO> questions = new ArrayList<>();
 
   @ApiModelProperty(

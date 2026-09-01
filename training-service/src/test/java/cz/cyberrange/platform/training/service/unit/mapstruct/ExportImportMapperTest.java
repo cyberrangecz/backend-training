@@ -10,7 +10,6 @@ import cz.cyberrange.platform.training.api.dto.archive.TrainingRunArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.export.TrainingRunExportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
-import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.enums.TRState;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
@@ -45,7 +44,6 @@ class ExportImportMapperTest {
   private static final String DESCRIPTION = "Test Description";
   private static final String[] PREREQUISITES = {"Prereq1", "Prereq2"};
   private static final String[] OUTCOMES = {"Outcome1", "Outcome2"};
-  private static final TDState STATE = TDState.RELEASED;
   private static final long ESTIMATED_DURATION = 60L;
   private static final String LAST_EDITED_BY = "admin";
   private static final String ACCESS_TOKEN = "access-token-123";
@@ -126,16 +124,12 @@ class ExportImportMapperTest {
     importDto.setDescription(DESCRIPTION);
     importDto.setPrerequisites(PREREQUISITES);
     importDto.setOutcomes(OUTCOMES);
-    importDto.setState(STATE);
-    importDto.setEstimatedDuration((int) ESTIMATED_DURATION);
 
     exportDto = new ExportTrainingDefinitionAndLevelsDTO();
     exportDto.setTitle(TITLE);
     exportDto.setDescription(DESCRIPTION);
     exportDto.setPrerequisites(PREREQUISITES);
     exportDto.setOutcomes(OUTCOMES);
-    exportDto.setState(STATE);
-    exportDto.setEstimatedDuration((int) ESTIMATED_DURATION);
 
     instanceArchiveDto = new TrainingInstanceArchiveDTO();
     instanceArchiveDto.setId(ENTITY_ID);
@@ -177,8 +171,6 @@ class ExportImportMapperTest {
       assertEquals(
           trainingDefinitionEntity.getPrerequisites().length, result.getPrerequisites().length);
       assertEquals(trainingDefinitionEntity.getOutcomes().length, result.getOutcomes().length);
-      assertEquals(enumMapper.mapTDState(trainingDefinitionEntity.getState()), result.getState());
-      assertEquals(trainingDefinitionEntity.getEstimatedDuration(), result.getEstimatedDuration());
     }
 
     @Test
@@ -224,8 +216,6 @@ class ExportImportMapperTest {
       assertEquals(importDto.getDescription(), result.getDescription());
       assertEquals(importDto.getPrerequisites().length, result.getPrerequisites().length);
       assertEquals(importDto.getOutcomes().length, result.getOutcomes().length);
-      assertEquals(enumMapper.mapTDState(importDto.getState()), result.getState());
-      assertEquals((long) importDto.getEstimatedDuration(), result.getEstimatedDuration());
     }
 
     @Test

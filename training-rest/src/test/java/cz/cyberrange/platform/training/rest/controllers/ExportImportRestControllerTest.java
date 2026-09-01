@@ -87,13 +87,10 @@ public class ExportImportRestControllerTest {
     trainingInstanceArchiveDTO = testDataFactory.getTrainingInstanceArchiveDTO();
 
     InfoLevelImportDTO infoLevelImportDTO = testDataFactory.getInfoLevelImportDTO();
-    infoLevelImportDTO.setOrder(0);
 
     AssessmentLevelImportDTO assessmentLevelDTO = testDataFactory.getAssessmentLevelImportDTO();
-    assessmentLevelDTO.setOrder(1);
 
     TrainingLevelImportDTO trainingLevelImportDTO = testDataFactory.getTrainingLevelImportDTO();
-    trainingLevelImportDTO.setOrder(2);
 
     importTrainingDefinitionDTO = testDataFactory.getImportTrainingDefinitionDTO();
     importTrainingDefinitionDTO.setLevels(

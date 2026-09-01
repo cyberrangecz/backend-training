@@ -30,9 +30,6 @@ public class AbstractLevelExportDTO {
   @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
   protected LevelType levelType;
 
-  @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
-  protected int order;
-
   @ApiModelProperty(
       value = "Estimated time (minutes) taken by the player to solve the level.",
       example = "5")

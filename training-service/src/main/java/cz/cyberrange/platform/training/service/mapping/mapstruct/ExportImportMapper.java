@@ -38,10 +38,12 @@ public interface ExportImportMapper extends ParentMapper {
 
   /**
    * Turns an imported definition into an unpersisted entity. The submitted levels have no
-   * counterpart on the entity and are dropped, so the caller creates each level separately.
+   * counterpart on the entity and are dropped, so the caller creates each level separately. State
+   * and estimated duration carry no matching source field and are left unset for the caller to
+   * decide.
    *
    * @param dto the definition submitted for import
-   * @return the entity carrying its attributes, with no levels attached
+   * @return the entity carrying its attributes, with no levels, state or estimated duration
    */
   TrainingDefinition mapToEntity(ImportTrainingDefinitionDTO dto);
 

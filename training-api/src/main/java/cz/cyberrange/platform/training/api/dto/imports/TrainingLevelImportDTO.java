@@ -27,7 +27,7 @@ import lombok.ToString;
     value = "TrainingLevelImportDTO",
     description = "Imported training level.",
     parent = AbstractLevelExportDTO.class)
-@JsonIgnoreProperties({"reference_solution"})
+@JsonIgnoreProperties({"reference_solution", "order"})
 public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
 
   /**
@@ -64,7 +64,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
 
   @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
   @NotNull(message = "{trainingLevel.solutionPenalized.NotNull.message}")
-  private boolean solutionPenalized;
+  private Boolean solutionPenalized;
 
   /** Rejected on import if the sum of every hint's penalty exceeds {@link #maxScore} */
   @Valid
@@ -78,7 +78,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @Min(value = 0, message = "{trainingLevel.incorrectAnswerLimit.Min.message}")
   @Max(value = 100, message = "{trainingLevel.incorrectAnswerLimit.Max.message}")
   @JsonAlias({"incorrect_flag_limit"})
-  private int incorrectAnswerLimit;
+  private Integer incorrectAnswerLimit;
 
   @Valid
   @ApiModelProperty(value = "List of attachments.", example = "[]")
@@ -91,7 +91,7 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @NotNull(message = "{abstractLevel.maxScore.NotNull.message}")
   @Min(value = 0, message = "{abstractLevel.maxScore.Min.message}")
   @Max(value = 100, message = "{abstractLevel.maxScore.Max.message}")
-  protected int maxScore;
+  protected Integer maxScore;
 
   /**
    * Selects which of {@link #answer} or {@link #answerVariableName} the import requires: {@code
@@ -101,7 +101,8 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
       value =
           "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.",
       example = "false")
-  private boolean variantAnswers;
+  @NotNull(message = "{trainingLevel.variantAnswers.NotNull.message}")
+  private Boolean variantAnswers;
 
   @Valid
   @ApiModelProperty(value = "List of mitre techniques used in the training level.")
@@ -115,5 +116,6 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
       value =
           "Indicates if at least one command has to be executed to complete the level. Default is true.",
       example = "true")
-  private boolean commandsRequired;
+  @NotNull(message = "{trainingLevel.commandsRequired.NotNull.message}")
+  private Boolean commandsRequired;
 }
