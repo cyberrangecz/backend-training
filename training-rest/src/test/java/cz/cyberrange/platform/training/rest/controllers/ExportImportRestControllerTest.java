@@ -175,6 +175,36 @@ public class ExportImportRestControllerTest {
   }
 
   @Test
+  public void importTrainingDefinitionAcceptsNullDescription() throws Exception {
+    ObjectMapper treeMapper = new ObjectMapper();
+    ObjectNode root =
+        (ObjectNode) treeMapper.readTree(convertObjectToJsonBytes(importTrainingDefinitionDTO));
+    root.putNull("description");
+
+    mockMvc
+        .perform(
+            post("/imports/training-definitions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(treeMapper.writeValueAsString(root)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  public void importTrainingDefinitionRejectsNullQuestions() throws Exception {
+    ObjectMapper treeMapper = new ObjectMapper();
+    ObjectNode root =
+        (ObjectNode) treeMapper.readTree(convertObjectToJsonBytes(importTrainingDefinitionDTO));
+    ArrayNode levels = (ArrayNode) root.get("levels");
+    ((ObjectNode) levels.get(1)).putNull("questions");
+
+    ApiError error = performImport(treeMapper.writeValueAsString(root));
+
+    assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+    assertTrue(error.getMessage().contains("The training definition could not be imported"));
+    assertTrue(error.getMessage().contains("levels[1].questions —"));
+  }
+
+  @Test
   public void importTrainingDefinitionRejectsUnrecognizedField() throws Exception {
     ObjectMapper treeMapper = new ObjectMapper();
     ObjectNode root =

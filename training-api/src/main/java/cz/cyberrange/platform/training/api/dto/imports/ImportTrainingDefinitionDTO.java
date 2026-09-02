@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,7 +33,6 @@ public class ImportTrainingDefinitionDTO {
   @ApiModelProperty(
       value = "Description of training definition that is visible to the participant.",
       example = "Unreleased training definition")
-  @NotNull(message = "{trainingDefinition.description.NotNull.message}")
   private String description;
 
   @ApiModelProperty(
