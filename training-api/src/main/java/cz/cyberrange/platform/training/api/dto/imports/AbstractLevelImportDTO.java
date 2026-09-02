@@ -1,5 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.imports;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.cyberrange.platform.training.api.enums.LevelType;
@@ -13,10 +14,14 @@ import lombok.NoArgsConstructor;
 
 /**
  * Encapsulates information about abstract level. Extended by {@link AssessmentLevelImportDTO},
- * {@link TrainingLevelImportDTO}, {@link AccessLevelImportDTO} and {@link InfoLevelImportDTO}
+ * {@link TrainingLevelImportDTO}, {@link AccessLevelImportDTO} and {@link InfoLevelImportDTO}.
+ * Carries no order: a level takes its position from where it is created, so a submitted file naming
+ * an order is accepted and that name is dropped. A subtype declaring {@link JsonIgnoreProperties}
+ * of its own masks the one declared here and has to repeat {@code order}.
  */
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties({"order"})
 @ApiModel(
     value = "AbstractLevelImportDTO",
     subTypes = {
@@ -53,15 +58,6 @@ public class AbstractLevelImportDTO {
   @NotNull(message = "{abstractLevel.type.NotNull.message}")
   protected LevelType levelType;
 
-  /**
-   * Discarded on import; the created level is appended after every level already present in the
-   * training definition, regardless of the value submitted here
-   */
-  @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
-  @NotNull(message = "{abstractLevel.order.NotNull.message}")
-  @Min(value = 0, message = "{abstractLevel.order.Min.message}")
-  protected Integer order;
-
   /** Added with every other level's value into the imported training definition's own duration */
   @ApiModelProperty(
       value = "Estimated time (minutes) taken by the player to solve the level.",
@@ -74,5 +70,6 @@ public class AbstractLevelImportDTO {
       value =
           "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
       example = "5")
+  @Min(value = 0, message = "{abstractLevel.minimalPossibleSolveTime.Min.message}")
   protected Integer minimalPossibleSolveTime;
 }

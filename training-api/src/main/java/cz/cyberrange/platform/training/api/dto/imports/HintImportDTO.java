@@ -39,5 +39,5 @@ public class HintImportDTO {
   @NotNull(message = "{hint.order.NotNull.message}")
   @Min(value = 0, message = "{hint.order.Min.message}")
   @ApiModelProperty(value = "The order of hint in training level", example = "1")
-  private int order;
+  private Integer order;
 }
