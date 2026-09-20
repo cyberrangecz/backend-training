@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.exceptions.errors;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A microservice's own error detail, carried on a {@link
@@ -9,10 +9,9 @@ import io.swagger.annotations.ApiModel;
  * cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException}. It reaches the error
  * response body only along the latter route, the former having no handler of its own.
  */
-@ApiModel(
-    value = "ApiSubError",
-    subTypes = {JavaApiError.class, PythonApiError.class},
-    description = "Superclass for classes JavaApiError and PythonApiError")
+@Schema(
+    description = "The error another platform service reported, in that service's own shape",
+    subTypes = {JavaApiError.class, PythonApiError.class})
 @JsonSubTypes({
   @JsonSubTypes.Type(value = JavaApiError.class, name = "JavaApiError"),
   @JsonSubTypes.Type(value = PythonApiError.class, name = "PythonApiError")

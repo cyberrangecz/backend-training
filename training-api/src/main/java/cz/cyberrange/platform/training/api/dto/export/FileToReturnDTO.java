@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,14 +9,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel(
-    value = "FileToReturnDTO",
-    description = "Wrapping model which contains the content and title of the file.")
+@Schema(description = "A generated file, its bytes and the name it is offered under")
 public class FileToReturnDTO {
 
-  @ApiModelProperty(value = "Content of the file.", example = "[string]")
+  @Schema(description = "The file's bytes.")
   private byte[] content;
 
-  @ApiModelProperty(value = "Title of the file.", example = "TrainingInstance-NetworkDemolition")
+  @Schema(
+      description = "Name the file is offered under, without the extension",
+      example = "TrainingInstance-NetworkDemolition")
   private String title;
 }

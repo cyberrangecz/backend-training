@@ -1,6 +1,5 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
@@ -24,9 +23,8 @@ import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.enums.LevelType;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -109,7 +107,7 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(path = "/{definitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingDefinitionWithLevelsDTO> findTrainingDefinitionById(
@@ -255,11 +253,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -293,7 +291,7 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PostMapping(path = "/{definitionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingDefinitionWithLevelsDTO> cloneTrainingDefinition(
@@ -321,11 +319,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No such definition, or no such level.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(
       path = "/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}",
@@ -358,11 +356,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No such definition, or no such level.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(
       path = "/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}",
@@ -391,11 +389,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is released, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @DeleteMapping(path = "/{definitionId}")
   public ResponseEntity<Void> deleteTrainingDefinition(@PathVariable("definitionId") Long id) {
@@ -421,11 +419,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No such definition, or no such level.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @DeleteMapping(
       path = "/{definitionId}/levels/{levelId}",
@@ -453,11 +451,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No such definition, or the level does not belong to it.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(path = "/{definitionId}/training-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateTrainingLevel(
@@ -485,11 +483,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No such definition, or the level does not belong to it.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(path = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateInfoLevel(
@@ -524,11 +522,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No such definition, or the level does not belong to it.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(
       path = "/{definitionId}/assessment-levels",
@@ -565,11 +563,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No such definition, or a level does not belong to it.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(path = "/{definitionId}/levels", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateLevels(
@@ -596,7 +594,7 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No level with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(path = "/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AbstractLevelDTO> findLevelById(@PathVariable("levelId") Long levelId) {
@@ -628,11 +626,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PostMapping(path = "/{definitionId}/levels/{levelType}")
   public ResponseEntity<BasicLevelInfoDTO> createLevel(
@@ -719,7 +717,7 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(
       path = "{definitionId}/designers-not-in-training-definition",
@@ -752,7 +750,7 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(path = "/{definitionId}/beta-testers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<UserRefDTO>> getBetaTesters(
@@ -779,7 +777,7 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(path = "/{definitionId}/authors", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<UserRefDTO>> getAuthors(
@@ -811,7 +809,7 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(path = "/{definitionId}/authors", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> editAuthors(
@@ -853,11 +851,11 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
         description = "The move is not allowed, or a training instance blocks it.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(path = "/{definitionId}/states/{state}")
   public ResponseEntity<Void> switchState(
@@ -950,22 +948,5 @@ public class TrainingDefinitionsRestController {
       @RequestParam(value = "ids", required = true) List<Long> ids) {
     List<HintBasicDTO> hints = trainingDefinitionFacade.findHintsByIds(ids);
     return ResponseEntity.ok(hints);
-  }
-
-  /** The type User info rest resource */
-  @ApiModel(
-      value = "UserInfoRestResource",
-      description =
-          "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-  public static class UserInfoRestResource extends PageResultResource<UserRefDTO> {
-    @JsonProperty(required = true)
-    @ApiModelProperty(value = "Retrieved Training Instances from databases.")
-    private List<UserRefDTO> content;
-
-    @JsonProperty(required = true)
-    @ApiModelProperty(
-        value =
-            "Pagination including: page number, number of elements in page, size, total elements and total pages.")
-    private Pagination pagination;
   }
 }

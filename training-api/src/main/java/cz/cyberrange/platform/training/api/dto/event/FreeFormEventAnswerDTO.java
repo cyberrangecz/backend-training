@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -14,12 +13,11 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "FreeFormEventAnswerDTO", description = "Free-form assessment answer")
+@Schema(description = "The text a trainee typed for a free-form question.")
 public class FreeFormEventAnswerDTO extends EventAnswerDTO {
 
   public static final String TYPE = "FFQ";
 
-  @ApiModelProperty(value = "Submitted free-form answer text with its correctness")
   @JsonProperty("answer")
   private AnswerSelectionDTO<String> answer;
 }

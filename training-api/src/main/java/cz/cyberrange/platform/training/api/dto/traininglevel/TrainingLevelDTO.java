@@ -3,8 +3,7 @@ package cz.cyberrange.platform.training.api.dto.traininglevel;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,10 +19,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "TrainingLevelDTO",
-    description = "An assignment containing security tasks whose completion yields a answer.",
-    parent = AbstractLevelDTO.class)
+@Schema(description = "A training level as authored, including its answer and solution.")
 public class TrainingLevelDTO extends AbstractLevelDTO {
 
   /**
@@ -31,8 +27,8 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
    * ignored in favor of a value resolved per trainee from the external answer storage service
    * otherwise
    */
-  @ApiModelProperty(
-      value = "Keyword found in training, used for access next level.",
+  @Schema(
+      description = "The keyword a submission must match; ignored when answers vary.",
       example = "secretAnswer")
   private String answer;
 
@@ -40,39 +36,38 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
    * Key used to look up the answer's value in the external answer storage service when the level's
    * answer is variant
    */
-  @ApiModelProperty(
-      value = "Identifier that is used to obtain answer from remote storage.",
+  @Schema(
+      description = "Name the participant's own answer is looked up under, when answers vary.",
       example = "username")
   private String answerVariableName;
 
   /** The task description presented to the participant while attempting the level */
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
-      example = "Play me")
+  @Schema(description = "The task presented to the participant.", example = "Play me")
   private String content;
 
   /**
    * The solution text as authored for the level, carried here without regard to whether any trainee
    * has actually displayed it
    */
-  @ApiModelProperty(
-      value = "Instruction how to get answer in training.",
+  @Schema(
+      description = "The solution as authored, whether or not anyone has shown it.",
       example = "This is how you do it")
   private String solution;
 
   /** Whether requesting the solution reduces the score awardable for the level to zero */
-  @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
+  @Schema(
+      description = "Whether showing the solution drops the level's score to zero.",
+      example = "true")
   private boolean solutionPenalized;
 
-  @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<HintDTO> hints = new HashSet<>();
 
   /**
    * Number of incorrect answer submissions allowed for the level, against which the number of
    * remaining attempts is calculated
    */
-  @ApiModelProperty(
-      value = "How many times player can submit incorrect answer before displaying solution.",
+  @Schema(
+      description = "How many wrong answers may be submitted before attempts run out.",
       example = "5")
   private int incorrectAnswerLimit;
 
@@ -80,23 +75,18 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
    * Whether each trainee's answer is resolved from the external answer storage service, keyed by
    * the answer variable name, instead of taken from the literal answer field
    */
-  @ApiModelProperty(
-      value =
-          "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.",
+  @Schema(
+      description = "Whether each participant gets their own answer instead of the fixed one.",
       example = "false")
   private boolean variantAnswers;
 
-  @ApiModelProperty(value = "List of mitre techniques used in the training level.")
   private List<MitreTechniqueDTO> mitreTechniques;
 
-  @ApiModelProperty(
-      value = "Set of the expected commands to be executed during the training level.")
   private Set<String> expectedCommands;
 
   /** Whether the run's cheat-detection check requires at least one submitted command */
-  @ApiModelProperty(
-      value =
-          "Indicates if at least one command has to be executed to complete the level. Default is true.",
+  @Schema(
+      description = "Whether cheating detection expects at least one command from the run.",
       example = "true")
   private boolean commandsRequired;
 
@@ -104,9 +94,8 @@ public class TrainingLevelDTO extends AbstractLevelDTO {
    * Minimum time, in minutes, a trainee is expected to take on the level; the run's cheat-detection
    * check compares it, converted to seconds, against the elapsed submission time
    */
-  @ApiModelProperty(
-      value =
-          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+  @Schema(
+      description = "Time in minutes below which a solve is flagged as suspiciously fast.",
       example = "5")
   private Integer minimalPossibleSolveTime;
 }

@@ -3,8 +3,7 @@ package cz.cyberrange.platform.training.api.dto.traininginstance;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,67 +15,51 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "TrainingInstanceDTO",
-    description =
-        "A session of attending a concrete training, which involves a deployment of the training definition in one or more sandbox instances that are then assigned to participants. The instance comprises one or more training runs.")
+@Schema(description = "A training instance in full, with its training definition and access token")
 public class TrainingInstanceDTO extends TrainingInstanceBasicDTO {
 
   /**
    * Mapped through {@code TrainingDefinitionMapper.mapToDTO}; its {@code canBeArchived} is never
    * patched afterward here, so it always carries that flag's default value of false
    */
-  @ApiModelProperty(
-      value = "Reference to training definition from which is training instance created.")
   private TrainingDefinitionDTO trainingDefinition;
 
   /**
    * Carries the full token as stored on the instance, including the pin suffix the service appended
    * when it was generated
    */
-  @ApiModelProperty(
-      value = "Token used to access training run.",
-      required = true,
-      example = "hunter")
+  @Schema(
+      description = "Full access token, including the pin the server appended to it.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      example = "hunter-6578")
   private String accessToken;
 
-  @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
+  @Schema(example = "1")
   private Long poolId;
 
   /** Never populated by the mapper or the facade; stays the empty list it is declared with */
-  @ApiModelProperty(
-      value = "Ids of sandboxes which are assigned to training run.",
-      example = "[3,15]")
+  @Schema(description = "Always empty; the server never fills it.", example = "[]")
   private List<String> sandboxesWithTrainingRun = new ArrayList<>();
 
-  @ApiModelProperty(
-      value = "Time of last edit done to instance.",
-      example = "2017-10-19 10:23:54+02")
+  @Schema(example = "2017-10-19 10:23:54+02")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime lastEdited;
 
-  @ApiModelProperty(
-      value = "Name of the user who has done the last edit in instance.",
-      example = "John Doe")
+  @Schema(example = "John Doe")
   private String lastEditedBy;
 
-  @ApiModelProperty(
-      value = "Indicates if local sandboxes are used for training runs.",
+  @Schema(
+      description =
+          "True when sandboxes come from the sandbox definition locally instead of from a pool.",
       example = "true")
   private boolean localEnvironment;
 
-  @ApiModelProperty(value = "Id of sandbox definition assigned to training instance", example = "1")
+  @Schema(example = "1")
   private Long sandboxDefinitionId;
 
-  @ApiModelProperty(
-      value = "Sign if stepper bar should be displayed.",
-      required = true,
-      example = "true")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "true")
   private boolean showStepperBar;
 
-  @ApiModelProperty(
-      value =
-          "Indicates if trainee can during training run move to the previous already solved levels.",
-      example = "true")
+  @Schema(example = "true")
   private boolean backwardMode;
 }

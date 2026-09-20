@@ -5,8 +5,7 @@ import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
@@ -23,7 +22,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
+@Schema(description = "New questions, instructions and type to store on an assessment level.")
 @JsonIgnoreProperties(value = {"max_score"})
 public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
@@ -32,13 +31,9 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
    * every extended matching statement in every question must carry a correct option order, or the
    * update is rejected.
    */
-  @ApiModelProperty(value = "Questions of assessment level to update.")
-  @Valid
-  private List<QuestionDTO> questions = new ArrayList<>();
+  @Valid private List<QuestionDTO> questions = new ArrayList<>();
 
-  @ApiModelProperty(
-      value = "Instructions of assessment level to update.",
-      example = "Fill me up slowly")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Fill me up slowly")
   @NotNull(message = "{assessmentLevel.instructions.NotNull.message}")
   private String instructions;
 
@@ -48,9 +43,9 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
    * score each question by its points and penalty; any other type only records the participant's
    * responses without scoring them.
    */
-  @ApiModelProperty(
-      value = "Type of assessment level to update.",
-      required = true,
+  @Schema(
+      description = "Whether the answers are graded (TEST) or only collected (QUESTIONNAIRE).",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "TEST")
   @NotNull(message = "{assessmentLevel.type.NotNull.message}")
   private AssessmentType type;
@@ -59,9 +54,9 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
    * Estimated time, in minutes, to solve the level. Added into the owning training definition's
    * total estimated duration in place of the level's previous contribution.
    */
-  @ApiModelProperty(
-      value = "Estimated time (minutes) taken by the player to solve the level.",
-      required = true,
+  @Schema(
+      description = "Estimated time to solve the level, in minutes.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "5")
   private int estimatedDuration;
 
@@ -69,9 +64,8 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
    * Threshold, in minutes, below which a participant's time spent on the level is flagged as an
    * unusually fast solve by cheating detection
    */
-  @ApiModelProperty(
-      value =
-          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+  @Schema(
+      description = "Time in minutes below which a solve is flagged as suspiciously fast.",
       example = "5")
   protected Integer minimalPossibleSolveTime;
 

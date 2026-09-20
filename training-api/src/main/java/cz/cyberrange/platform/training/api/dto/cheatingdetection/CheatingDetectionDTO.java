@@ -3,8 +3,7 @@ package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.CheatingDetectionState;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
@@ -14,23 +13,21 @@ import lombok.Data;
  * the six kinds of detection is progressing, and how much it has turned up
  */
 @Data
-@ApiModel(
-    value = "CheatingDetectionDTO",
-    description = "Basic information about cheating detection.")
+@Schema(description = "One run of the cheating detections over a training instance.")
 public class CheatingDetectionDTO {
 
-  @ApiModelProperty(
-      value = "id of a training instance in which the event was detected.",
-      example = "1")
+  @Schema(example = "1")
   private Long trainingInstanceId;
 
   /** Display name of the user who started the run, as the user service reported it at the time */
-  @ApiModelProperty(value = "Name of user who executed the detection.", example = "John Doe")
+  @Schema(
+      example = "John Doe",
+      description = "Name of the user who started the run; the server fills it in.")
   private String executedBy;
 
-  @ApiModelProperty(
-      value = "Time when the cheating detection was executed.",
-      example = "1.1.2022 5:55:23")
+  @Schema(
+      example = "2022-01-01T05:55:23Z",
+      description = "When the run started; the server fills it in.")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime executeTime;
 
@@ -38,42 +35,46 @@ public class CheatingDetectionDTO {
    * How close together two solves must fall before the time proximity detection treats them as
    * suspicious. It governs that one detection alone.
    */
-  @ApiModelProperty(value = "Proximity threshold for time proximity cheat.", example = "120")
+  @Schema(
+      example = "120",
+      description = "Seconds within which two solves count as close; defaults to 120 if unset.")
   private Long proximityThreshold;
 
-  @ApiModelProperty(value = "id of cheating detection.", example = "1")
+  @Schema(example = "1")
   private Long id;
 
   /** Where the run as a whole stands, moved on as the individual detections are worked through */
-  @ApiModelProperty(value = "State of the detection.", example = "RUNNING")
+  @Schema(example = "RUNNING", description = "How far the run as a whole has got.")
   private CheatingDetectionState currentState;
 
   /** How many findings the run has recorded so far; zero until the first detection reports */
-  @ApiModelProperty(value = "Number of detected events in detection.", example = "20")
+  @Schema(
+      example = "20",
+      description = "How many findings the run has recorded; the server fills it in.")
   private Long results;
 
-  @ApiModelProperty(value = "state of detection run of answer similarity.", example = "RUNNING")
+  @Schema(example = "RUNNING")
   private CheatingDetectionState answerSimilarityState;
 
-  @ApiModelProperty(value = "state of detection run of location_similarity.", example = "RUNNING")
+  @Schema(example = "RUNNING")
   private CheatingDetectionState locationSimilarityState;
 
-  @ApiModelProperty(value = "state of detection run of time proximity.", example = "RUNNING")
+  @Schema(example = "RUNNING")
   private CheatingDetectionState timeProximityState;
 
-  @ApiModelProperty(value = "state of detection run of minimal solve time.", example = "RUNNING")
+  @Schema(example = "RUNNING")
   private CheatingDetectionState minimalSolveTimeState;
 
-  @ApiModelProperty(value = "state of detection run of forbidden commands.", example = "RUNNING")
+  @Schema(example = "RUNNING")
   private CheatingDetectionState forbiddenCommandsState;
 
-  @ApiModelProperty(value = "state of detection run of no commands.", example = "RUNNING")
+  @Schema(example = "RUNNING")
   private CheatingDetectionState noCommandsState;
 
   /**
    * The commands this run treats as forbidden. Empty leaves the forbidden commands detection with
    * nothing to match against.
    */
-  @ApiModelProperty(value = "list of forbidden commands.", example = "[]")
+  @Schema(example = "[]", description = "Commands this run treats as forbidden.")
   private List<ForbiddenCommandDTO> forbiddenCommands;
 }

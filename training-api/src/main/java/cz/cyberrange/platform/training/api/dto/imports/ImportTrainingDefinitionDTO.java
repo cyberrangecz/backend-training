@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.imports;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
@@ -20,35 +19,22 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
-@ApiModel(value = "ImportTrainingDefinitionDTO", description = "A basic information about hint.")
+@Schema(description = "A training definition to create, with its levels in the order they take")
 @JsonIgnoreProperties({"show_stepper_bar", "variant_sandboxes", "state", "estimated_duration"})
 public class ImportTrainingDefinitionDTO {
 
-  @ApiModelProperty(
-      value = "A name of the training/game (e.g., Photo Hunter) .",
-      example = "TrainingDefinition2")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "TrainingDefinition2")
   @NotEmpty(message = "{trainingDefinition.title.NotEmpty.message}")
   private String title;
 
-  @ApiModelProperty(
-      value = "Description of training definition that is visible to the participant.",
-      example = "Unreleased training definition")
+  @Schema(example = "Unreleased training definition")
   private String description;
 
-  @ApiModelProperty(
-      value = "List of knowledge and skills necessary to complete the training.",
-      example = "")
   private String[] prerequisites;
 
-  @ApiModelProperty(
-      value =
-          "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ",
-      example = "")
   private String[] outcomes;
 
-  @Valid
-  @ApiModelProperty(value = "Information about all levels in training definition.")
-  private List<AbstractLevelImportDTO> levels = new ArrayList<>();
+  @Valid private List<AbstractLevelImportDTO> levels = new ArrayList<>();
 
   /**
    * Replaces the level list with a new list holding the same elements, so later mutation of the

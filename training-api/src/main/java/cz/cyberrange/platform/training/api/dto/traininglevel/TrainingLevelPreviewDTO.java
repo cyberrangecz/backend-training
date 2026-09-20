@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.traininglevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.hint.TakenHintDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Data;
@@ -16,27 +15,21 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "TrainingLevelPreviewDTO",
-    description = "An assignment containing security tasks whose completion yields a answer.",
-    parent = AbstractLevelDTO.class)
+@Schema(description = "A training level replayed to the participant who already visited it.")
 public class TrainingLevelPreviewDTO extends AbstractLevelDTO {
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
-      example = "Play me")
+  @Schema(description = "The task as presented to the participant.", example = "Play me")
   private String content;
 
   /** Hints this trainee actually took while visiting the level, rebuilt from their run history */
-  @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<TakenHintDTO> hints = new HashSet<>();
 
   /**
    * The solution as recorded for this trainee's run, with any embedded answer placeholder resolved
    * to their own answer; null if this trainee has not displayed it
    */
-  @ApiModelProperty(
-      value = "Instruction how to get answer in training.",
+  @Schema(
+      description = "The solution as this participant saw it; unset if they never showed it.",
       example = "This is how you do it")
   private String solution;
 }

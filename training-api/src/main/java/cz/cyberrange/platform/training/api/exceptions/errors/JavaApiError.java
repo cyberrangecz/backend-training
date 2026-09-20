@@ -3,8 +3,7 @@ package cz.cyberrange.platform.training.api.exceptions.errors;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.beans.ConstructorProperties;
 import java.util.Arrays;
 import java.util.List;
@@ -17,39 +16,28 @@ import org.springframework.http.HttpStatus;
  * #entityErrorDetail} field can likewise be populated by that deserialization, but nothing in this
  * codebase reads it back out through {@link #getEntityErrorDetail()}.
  */
-@ApiModel(
-    value = "JavaApiError",
-    description = "A detailed error from another Java mircorservice.",
-    parent = ApiSubError.class)
+@Schema(description = "An error reported by the user and group or the answers storage service")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JavaApiError extends ApiSubError {
-  @ApiModelProperty(
-      value = "The time when the exception occurred",
-      example = "1574062900 (different for each type of exception)")
+  @Schema(
+      description = "When that service produced the error, in milliseconds since the epoch",
+      example = "1789862400000")
   private long timestamp;
 
-  @ApiModelProperty(
-      value = "The specific description of the ApiError.",
-      example =
-          "The IDMGroup could not be found in database (different for each type of exception).")
+  @Schema(example = "The IDMGroup could not be found in database.")
   private String message;
 
-  @ApiModelProperty(
-      value = "The HTTP response status code",
-      example = "404 Not found (different for each type of exception).")
+  @Schema(description = "The status that service answered with", example = "NOT_FOUND")
   private HttpStatus status;
 
-  @ApiModelProperty(
-      value = "The list of main reasons of the ApiError.",
-      example = "[The requested resource was not found (different for each type of exception).]")
+  @Schema(
+      description = "Reasons that service gave for the failure",
+      example = "[The requested resource was not found.]")
   private List<String> errors;
 
-  @ApiModelProperty(
-      value = "The requested URI path which caused error.",
-      example = "/user-and-group/api/v1/groups/1000 (different for each type of exception).")
+  @Schema(example = "/user-and-group/api/v1/groups/1000")
   private String path;
 
-  @ApiModelProperty(value = "Entity detail related to the error.")
   @JsonProperty("entity_error_detail")
   private EntityErrorDetail entityErrorDetail;
 

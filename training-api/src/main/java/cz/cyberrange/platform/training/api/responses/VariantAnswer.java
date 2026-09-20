@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * One generated answer belonging to a single sandbox, as a variable name paired with the value
@@ -10,13 +10,11 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class VariantAnswer {
 
-  @ApiModelProperty(
-      value = "The content of the variant answer in particular (phase/level)",
-      example = "nmap 192.168.0.1")
+  @Schema(example = "nmap 192.168.0.1")
   @JsonProperty("answer_content")
   private String answerContent;
 
-  @ApiModelProperty(value = "The identifier of the variant answer", example = "sandbox-1-2-answer")
+  @Schema(example = "sandbox-1-2-answer")
   @JsonProperty("answer_variable_name")
   private String answerVariableName;
 

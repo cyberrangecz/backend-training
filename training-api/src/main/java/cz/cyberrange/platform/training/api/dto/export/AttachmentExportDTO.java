@@ -1,14 +1,12 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /** An exported training level attachment, carrying the URL to its file or website content */
 @Data
-@ApiModel(value = "AttachmentExportDTO", description = "An exported attachment of training level.")
+@Schema(description = "An exported attachment of a training level, holding the URL of its content")
 public class AttachmentExportDTO {
 
-  @ApiModelProperty(value = "URL link to file or website.")
   private String content;
 }

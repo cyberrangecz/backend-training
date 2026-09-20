@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -22,16 +22,22 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties({"order"})
-@ApiModel(
-    value = "AbstractLevelImportDTO",
+@Schema(
+    description = "One level of a training definition being imported; a submitted order is ignored",
+    discriminatorProperty = "level_type",
+    discriminatorMapping = {
+      @DiscriminatorMapping(value = "TRAINING_LEVEL", schema = TrainingLevelImportDTO.class),
+      @DiscriminatorMapping(value = "GAME_LEVEL", schema = TrainingLevelImportDTO.class),
+      @DiscriminatorMapping(value = "ACCESS_LEVEL", schema = AccessLevelImportDTO.class),
+      @DiscriminatorMapping(value = "ASSESSMENT_LEVEL", schema = AssessmentLevelImportDTO.class),
+      @DiscriminatorMapping(value = "INFO_LEVEL", schema = InfoLevelImportDTO.class)
+    },
     subTypes = {
       TrainingLevelImportDTO.class,
       AccessLevelImportDTO.class,
       InfoLevelImportDTO.class,
       AssessmentLevelImportDTO.class
-    },
-    description =
-        "Superclass for classes TrainingLevelImportDTO, AccessLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")
+    })
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
@@ -46,7 +52,7 @@ import lombok.NoArgsConstructor;
 })
 public class AbstractLevelImportDTO {
 
-  @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Training Level1")
   @NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
   protected String title;
 
@@ -54,21 +60,26 @@ public class AbstractLevelImportDTO {
    * Selects, together with the JSON {@code level_type} discriminator, which concrete subtype is
    * deserialized and which entity type the level is imported as
    */
-  @ApiModelProperty(value = "Type of the level.", example = "TRAINING_LEVEL")
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description = "Chooses the kind of level created, alongside the level_type discriminator",
+      example = "TRAINING_LEVEL")
   @NotNull(message = "{abstractLevel.type.NotNull.message}")
   protected LevelType levelType;
 
   /** Added with every other level's value into the imported training definition's own duration */
-  @ApiModelProperty(
-      value = "Estimated time (minutes) taken by the player to solve the level.",
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description =
+          "Time the level is expected to take, in minutes, summed into the definition's estimated"
+              + " duration",
       example = "5")
   @NotNull(message = "{abstractLevel.estimatedDuration.NotNull.message}")
   @Min(value = 0, message = "{abstractLevel.estimatedDuration.Min.message}")
   protected Integer estimatedDuration;
 
-  @ApiModelProperty(
-      value =
-          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+  @Schema(
+      description = "Threshold in minutes below which a correct answer is flagged as cheating",
       example = "5")
   @Min(value = 0, message = "{abstractLevel.minimalPossibleSolveTime.Min.message}")
   protected Integer minimalPossibleSolveTime;

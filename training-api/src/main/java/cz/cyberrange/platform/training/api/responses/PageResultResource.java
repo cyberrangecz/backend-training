@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,20 +10,13 @@ import java.util.List;
  *
  * @param <E> the type of element held in the page.
  */
-@ApiModel(
-    value = "PageResultResouce",
-    description =
-        "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+@Schema(description = "One page of results together with its pagination metadata")
 public class PageResultResource<E> {
 
   @JsonProperty(required = true)
-  @ApiModelProperty(value = "Content - (Retrieved data) from databases.")
   private List<E> content;
 
   @JsonProperty(required = true)
-  @ApiModelProperty(
-      value =
-          "Pagination including: page number, number of elements in page, size, total elements and total pages.")
   private Pagination pagination;
 
   public PageResultResource() {}
@@ -74,25 +66,23 @@ public class PageResultResource<E> {
    */
   public static class Pagination {
 
-    @ApiModelProperty(value = "Page number.", example = "1")
+    @Schema(description = "Index of this page, counting from zero.", example = "1")
     @JsonProperty(required = true)
     private int number;
 
-    @ApiModelProperty(value = "Number of elements in page.", example = "20")
+    @Schema(example = "20")
     @JsonProperty(required = true, value = "number_of_elements")
     private int numberOfElements;
 
-    @ApiModelProperty(value = "Page size.", example = "20")
+    @Schema(example = "20")
     @JsonProperty(required = true)
     private int size;
 
-    @ApiModelProperty(
-        value = "Total number of elements in this resource (in all Pages).",
-        example = "100")
+    @Schema(example = "100")
     @JsonProperty(required = true, value = "total_elements")
     private long totalElements;
 
-    @ApiModelProperty(value = "Total number of pages.", example = "5")
+    @Schema(example = "5")
     @JsonProperty(required = true, value = "total_pages")
     private int totalPages;
 

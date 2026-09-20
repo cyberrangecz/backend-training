@@ -6,8 +6,7 @@ import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelBa
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelBasicDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -19,16 +18,14 @@ import lombok.Data;
  * and this type supports no polymorphic deserialization of its own.
  */
 @Data
-@ApiModel(
-    value = "AbstractLevelBasicDTO",
+@Schema(
+    description = "The fields every level carries, whatever its type.",
     subTypes = {
       TrainingLevelBasicDTO.class,
       AccessLevelBasicDTO.class,
       InfoLevelBasicDTO.class,
       AssessmentLevelBasicDTO.class
-    },
-    description =
-        "Superclass for classes TrainingLevelBasicDTO, AccessLevelBasicDTO, AssessmentLevelBasicDTO and InfoLevelBasicDTO")
+    })
 @JsonSubTypes({
   @JsonSubTypes.Type(value = TrainingLevelBasicDTO.class, name = "TrainingLevelBasicDTO"),
   @JsonSubTypes.Type(value = AccessLevelBasicDTO.class, name = "AccessLevelBasicDTO"),
@@ -37,26 +34,22 @@ import lombok.Data;
 })
 public abstract class AbstractLevelBasicDTO {
 
-  @ApiModelProperty(value = "Main identifier of level.", example = "1")
+  @Schema(example = "1")
   protected Long id;
 
-  @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
+  @Schema(example = "Training Level1")
   protected String title;
 
-  @ApiModelProperty(
-      value = "The maximum score a participant can achieve during a level.",
-      example = "20")
+  @Schema(example = "20")
   protected int maxScore;
 
   /** Zero-based position of the level within its training definition's sequence of levels */
-  @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
+  @Schema(description = "Zero-based position of the level within its definition.", example = "2")
   protected int order;
 
-  @ApiModelProperty(
-      value = "Estimated time taken by the player to resolve the level.",
-      example = "5")
+  @Schema(description = "Estimated time to finish the level, in minutes.", example = "5")
   protected int estimatedDuration;
 
-  @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
+  @Schema(example = "TRAINING_LEVEL")
   protected LevelType levelType;
 }

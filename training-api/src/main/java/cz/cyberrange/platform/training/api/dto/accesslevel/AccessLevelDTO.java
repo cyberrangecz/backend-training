@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.accesslevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -16,23 +15,20 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "AccessLevelDTO",
-    description = "A level containing instructions on how to connect to the virtual machines.",
-    parent = AbstractLevelDTO.class)
+@Schema(description = "An access level as authored, with its passkey and connection details.")
 public class AccessLevelDTO extends AbstractLevelDTO {
 
   /** The value a participant must submit to complete the level, compared to it verbatim */
-  @ApiModelProperty(
-      value = "Keyword found in training, used for access next level.",
+  @Schema(
+      description = "The value a participant must submit to finish the level.",
       example = "secretAnswer")
   private String passkey;
 
   /**
    * Instructions for reaching the level's virtual machines from a cloud environment, as authored
    */
-  @ApiModelProperty(
-      value = "The instructions on how to connect to the machine in cloud environment.",
+  @Schema(
+      description = "How to reach the level's virtual machines from a cloud environment.",
       example = "Connect using SSH config.")
   private String cloudContent;
 
@@ -40,8 +36,8 @@ public class AccessLevelDTO extends AbstractLevelDTO {
    * Instructions for reaching the level's virtual machines from a local, non-cloud environment, as
    * authored
    */
-  @ApiModelProperty(
-      value = "The instructions on how to connect to the machine in local (non-cloud) environment.",
+  @Schema(
+      description = "How to reach the level's virtual machines from a local environment.",
       example = "Use vagrant SSH connection.")
   private String localContent;
 }

@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.accesslevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -17,17 +16,15 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "AccessLevelViewDTO",
-    description = "A level containing instructions on how to connect to the virtual machines.",
-    parent = AbstractLevelDTO.class)
+@Schema(
+    description = "An access level as shown to the participant running it, without the passkey.")
 public class AccessLevelViewDTO extends AbstractLevelDTO {
 
   /**
    * Instructions for reaching the level's virtual machines from a cloud environment, as authored
    */
-  @ApiModelProperty(
-      value = "The instructions on how to connect to the machine in cloud environment.",
+  @Schema(
+      description = "Cloud connection instructions, exactly as authored.",
       example = "Connect using SSH config.")
   private String cloudContent;
 
@@ -35,8 +32,8 @@ public class AccessLevelViewDTO extends AbstractLevelDTO {
    * Instructions for reaching the level's virtual machines from a local, non-cloud environment,
    * with its runtime placeholders already substituted for the requesting participant
    */
-  @ApiModelProperty(
-      value = "The instructions on how to connect to the machine in local (non-cloud) environment.",
+  @Schema(
+      description = "Local connection instructions, with this run's placeholders filled in.",
       example = "Use vagrant SSH connection.")
   private String localContent;
 }

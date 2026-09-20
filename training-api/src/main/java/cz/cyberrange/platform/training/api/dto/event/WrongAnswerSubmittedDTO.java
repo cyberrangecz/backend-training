@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -15,11 +14,10 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "WrongAnswerSubmittedDTO", description = "Wrong answer submitted event")
+@Schema(description = "Records that a trainee submitted a wrong answer for a training level.")
 public class WrongAnswerSubmittedDTO extends TrainingEventDTO {
 
   /** The training level answer text the trainee submitted */
-  @ApiModelProperty(value = "Answer content")
   @JsonProperty("answer_content")
   private String answerContent;
 
@@ -28,7 +26,6 @@ public class WrongAnswerSubmittedDTO extends TrainingEventDTO {
    * TrainingRun.incorrectAnswerCount} at the time this event was recorded; not a count of attempts
    * remaining
    */
-  @ApiModelProperty(value = "Attempt count")
   @JsonProperty("count")
   private Long count;
 }

@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.exceptions.errors;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Map;
 import java.util.Objects;
 
@@ -11,19 +10,18 @@ import java.util.Objects;
  * ObjectMapper.readValue} from that response's JSON, or built through {@link #of} when the response
  * carried no readable body
  */
-@ApiModel(
-    value = "PythonApiError",
-    description = "A detailed error from another Python mircorservice.",
-    parent = ApiSubError.class)
+@Schema(description = "An error reported by the sandbox service")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PythonApiError extends ApiSubError {
 
-  @ApiModelProperty(value = "Detail message of the error.", example = "Sandbox could not be found.")
+  @Schema(
+      description = "What that service said went wrong",
+      example = "Sandbox could not be found.")
   private String detail;
 
-  @ApiModelProperty(
-      value = "Parameters to specify details of the error.",
-      example = "name: sandbox")
+  @Schema(
+      description = "Values that service attached to the error",
+      example = "{\"name\": \"sandbox\"}")
   private Map<String, String> parameters;
 
   private PythonApiError() {}

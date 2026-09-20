@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.rest.utils.error;
 
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.exceptions.errors.ApiSubError;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
@@ -14,14 +13,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * MicroserviceApiException}, carrying the failing microservice's own {@link ApiSubError} alongside
  * the fields inherited from {@link ApiError}
  */
-@ApiModel(
-    value = "ApiMicroserviceError",
-    description = "A detailed error information related to the microservice.",
-    parent = ApiError.class)
+@Schema(description = "Error body carrying the failure another platform service reported")
 public class ApiMicroserviceError extends ApiError {
 
   /** Error body returned by the microservice whose call raised the exception */
-  @ApiModelProperty(value = "Detailed error from another microservice.")
   private ApiSubError apiSubError;
 
   private ApiMicroserviceError() {

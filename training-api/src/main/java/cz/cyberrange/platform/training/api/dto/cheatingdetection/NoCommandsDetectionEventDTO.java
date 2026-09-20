@@ -1,6 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -13,8 +13,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "NoCommandsDetectionEventDTO",
-    description = "A detection event of type No Commands.",
-    parent = AbstractDetectionEventDTO.class)
+@Schema(
+    description =
+        "A finding that a level was answered correctly with no command run and no solution shown.")
 public class NoCommandsDetectionEventDTO extends AbstractDetectionEventDTO {}

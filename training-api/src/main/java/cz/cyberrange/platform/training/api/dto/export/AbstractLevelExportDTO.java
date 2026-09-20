@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,32 +11,27 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @NoArgsConstructor
-@ApiModel(
-    value = "AbstractLevelExportDTO",
+@Schema(
+    description = "One level of an exported training definition",
     subTypes = {
       TrainingLevelExportDTO.class,
       AccessLevelExportDTO.class,
       InfoLevelExportDTO.class,
       AssessmentLevelExportDTO.class
-    },
-    description =
-        "Superclass for classes TrainingLevelExportDTO, AccessLevelExportDTO, InfoLevelExportDTO and AssessmentLevelExportDTO")
+    })
 public class AbstractLevelExportDTO {
 
-  @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
+  @Schema(example = "Training Level1")
   protected String title;
 
-  @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
+  @Schema(example = "TRAINING_LEVEL")
   protected LevelType levelType;
 
-  @ApiModelProperty(
-      value = "Estimated time (minutes) taken by the player to solve the level.",
-      example = "5")
+  @Schema(description = "Time the level is expected to take, in minutes", example = "5")
   protected int estimatedDuration;
 
-  @ApiModelProperty(
-      value =
-          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+  @Schema(
+      description = "Threshold in minutes below which a correct answer is flagged as cheating",
       example = "5")
   protected Integer minimalPossibleSolveTime;
 }

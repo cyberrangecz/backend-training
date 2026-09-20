@@ -3,8 +3,8 @@ package cz.cyberrange.platform.training.api.dto.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -17,9 +17,8 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "TrainingEventDTO",
-    description = "Parent class for all training audit events",
+@Schema(
+    description = "Common shape of every audit event recorded for a training run.",
     subTypes = {
       AssessmentAnsweredDTO.class,
       CorrectAnswerSubmittedDTO.class,
@@ -31,6 +30,22 @@ import lombok.ToString;
       TrainingRunFinishedDTO.class,
       TrainingRunResumedDTO.class,
       TrainingRunStartedDTO.class
+    },
+    discriminatorMapping = {
+      @DiscriminatorMapping(value = "assessment_answered", schema = AssessmentAnsweredDTO.class),
+      @DiscriminatorMapping(
+          value = "correct_answer_submitted",
+          schema = CorrectAnswerSubmittedDTO.class),
+      @DiscriminatorMapping(
+          value = "wrong_answer_submitted",
+          schema = WrongAnswerSubmittedDTO.class),
+      @DiscriminatorMapping(value = "hint_taken", schema = HintTakenDTO.class),
+      @DiscriminatorMapping(value = "level_completed", schema = LevelCompletedDTO.class),
+      @DiscriminatorMapping(value = "level_started", schema = LevelStartedDTO.class),
+      @DiscriminatorMapping(value = "solution_displayed", schema = SolutionDisplayedDTO.class),
+      @DiscriminatorMapping(value = "training_run_finished", schema = TrainingRunFinishedDTO.class),
+      @DiscriminatorMapping(value = "training_run_resumed", schema = TrainingRunResumedDTO.class),
+      @DiscriminatorMapping(value = "training_run_started", schema = TrainingRunStartedDTO.class)
     })
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -52,30 +67,23 @@ import lombok.ToString;
 public abstract class TrainingEventDTO extends AbstractEventDTO {
 
   /** Sandbox pool of the training instance, copied from {@code TrainingInstance.poolId} */
-  @ApiModelProperty(value = "Pool ID")
   @JsonProperty("pool_id")
   private Long poolId;
 
-  @ApiModelProperty(value = "Training Definition ID")
   @JsonProperty("training_definition_id")
   private Long trainingDefinitionId;
 
-  @ApiModelProperty(value = "Training Instance ID")
   @JsonProperty("training_instance_id")
   private Long trainingInstanceId;
 
-  @ApiModelProperty(value = "Training Run ID")
   @JsonProperty("training_run_id")
   private Long trainingRunId;
 
-  @ApiModelProperty(value = "Actual score in level")
   @JsonProperty("actual_score_in_level")
   private Integer actualScoreInLevel;
 
-  @ApiModelProperty(value = "Level ID")
   private Long level;
 
-  @ApiModelProperty(value = "Level order")
   @JsonProperty("level_order")
   private Long levelOrder;
 
@@ -83,15 +91,12 @@ public abstract class TrainingEventDTO extends AbstractEventDTO {
    * Cross-service user reference id of the training run's participant, copied from {@code
    * UserRef.userRefId}; never the participant's local primary key
    */
-  @ApiModelProperty(value = "User reference ID")
   @JsonProperty("user_ref_id")
   private Long userRefId;
 
-  @ApiModelProperty(value = "Total training level score")
   @JsonProperty("total_training_level_score")
   private Integer totalTrainingScore;
 
-  @ApiModelProperty(value = "Total assessment level score")
   @JsonProperty("total_assessment_level_score")
   private Integer totalAssessmentScore;
 }

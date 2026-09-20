@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Map;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,14 +14,11 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "ExtendedMatchingEventAnswerDTO",
-    description = "Extended-matching assessment answer")
+@Schema(description = "The option a trainee matched to each statement of a question.")
 public class ExtendedMatchingEventAnswerDTO extends EventAnswerDTO {
 
   public static final String TYPE = "EMI";
 
-  @ApiModelProperty(value = "Statement order mapped to the matched option with its correctness")
   @JsonProperty("pairs")
   private Map<Integer, AnswerSelectionDTO<Integer>> pairs;
 }

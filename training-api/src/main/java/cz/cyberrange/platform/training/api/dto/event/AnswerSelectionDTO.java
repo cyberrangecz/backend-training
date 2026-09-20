@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -14,18 +13,16 @@ import lombok.Data;
  *     for multiple-choice and extended-matching answers
  */
 @Data
-@ApiModel(
-    value = "AnswerSelectionDTO",
-    description = "A submitted value together with whether that selection is correct")
+@Schema(description = "One value a trainee chose for an assessment question.")
 public class AnswerSelectionDTO<T> {
 
-  @ApiModelProperty(value = "The submitted value", example = "2")
+  @Schema(
+      example = "2",
+      description = "The typed text for a free-form answer, otherwise the chosen option order.")
   @JsonProperty("value")
   private T value;
 
-  @ApiModelProperty(
-      value = "Whether this specific selection is correct; null when the assessment is not scored",
-      example = "true")
+  @Schema(example = "true", description = "Whether this one selection is correct.")
   @JsonProperty("correct")
   private Boolean correct;
 }

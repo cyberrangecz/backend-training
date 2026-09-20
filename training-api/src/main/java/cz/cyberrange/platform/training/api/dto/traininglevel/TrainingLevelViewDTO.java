@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.traininglevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintForTrainingLevelViewDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Data;
@@ -18,36 +17,30 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "TrainingLevelViewDTO",
-    description = "An assignment containing security tasks whose completion yields a answer.",
-    parent = AbstractLevelDTO.class)
+@Schema(description = "The training level as shown to the participant solving it.")
 public class TrainingLevelViewDTO extends AbstractLevelDTO {
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
-      example = "Play me")
+  @Schema(description = "The task presented to the participant.", example = "Play me")
   private String content;
 
   /** Whether requesting the solution reduces the score awardable for the level to zero */
-  @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
+  @Schema(
+      description = "Whether showing the solution drops the level's score to zero.",
+      example = "true")
   private boolean solutionPenalized;
 
-  @ApiModelProperty(
-      value = "Estimated time (minutes) taken by the player to solve the level.",
-      example = "25")
+  @Schema(description = "Estimated time to solve the level, in minutes.", example = "25")
   private int estimatedDuration;
 
   /**
    * Number of incorrect answer submissions allowed for the level, against which the number of
    * remaining attempts is calculated
    */
-  @ApiModelProperty(
-      value = "How many times player can submit incorrect answer before displaying solution.",
+  @Schema(
+      description = "How many wrong answers may be submitted before attempts run out.",
       example = "5")
   private int incorrectAnswerLimit;
 
   /** Hints as configured for the level, each with its title and point cost, advice withheld */
-  @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<HintForTrainingLevelViewDTO> hints = new HashSet<>();
 }

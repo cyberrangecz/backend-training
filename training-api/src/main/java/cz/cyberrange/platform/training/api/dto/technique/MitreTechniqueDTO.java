@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.technique;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -12,10 +11,7 @@ import lombok.Data;
  * a null.
  */
 @Data
-@ApiModel(
-    value = "MitreTechniqueDTO",
-    description =
-        "Represent 'how' an trainee achieves a tactical goal of the training level by performing an action.")
+@Schema(description = "One MITRE ATT&CK technique attached to a training level.")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MitreTechniqueDTO {
 
@@ -23,10 +19,15 @@ public class MitreTechniqueDTO {
    * Identifies the stored technique. Left unset when the technique travels inside an exported
    * training level, which carries the key alone.
    */
-  @ApiModelProperty(value = "Main identifier of Mitre technique.", required = true, example = "1")
+  @Schema(
+      description = "Identifies the stored technique; absent inside an exported level.",
+      example = "1")
   private Long id;
 
-  @ApiModelProperty(example = "T1548.001")
+  @Schema(
+      description = "The technique's key in the MITRE ATT&CK catalogue.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      example = "T1548.001")
   @NotEmpty(message = "{mitreTechnique.techniqueKey.NotEmpty.message}")
   private String techniqueKey;
 }

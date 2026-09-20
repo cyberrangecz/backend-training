@@ -1,11 +1,9 @@
 package cz.cyberrange.platform.training.api.responses;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /** Holds a sandbox definition's id, name, url, and revision as reported by the sandbox service */
-@ApiModel(
-    value = "SandboxDefinitionInfo",
-    description = "Basic information about the sandbox definition.")
+@Schema(description = "A sandbox definition as the sandbox service describes it")
 public class SandboxDefinitionInfo {
   private Long id;
   private String name;

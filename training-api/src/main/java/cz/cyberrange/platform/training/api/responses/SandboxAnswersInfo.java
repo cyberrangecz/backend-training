@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 /**
@@ -11,25 +11,24 @@ import java.util.List;
  */
 public class SandboxAnswersInfo {
 
-  @ApiModelProperty(
-      value = "The identifier of a sandbox for that we store the answers",
-      example = "12")
+  @Schema(
+      description = "UUID of the sandbox the answers belong to.",
+      example = "d2f6b1c4-9a3e-4c07-8b52-1e7a5c9d3f80")
   @JsonProperty("sandbox_ref_id")
   private String sandboxRefId;
 
-  @ApiModelProperty(
-      value = "The access token of the training instance used to identify local sandbox.",
+  @Schema(
+      description = "Access token of the training instance, used when there is no sandbox.",
       example = "token-1234")
   @JsonProperty("access_token")
   private String accessToken;
 
-  @ApiModelProperty(
-      value = "The identifier of a user used to identify local sandbox",
+  @Schema(
+      description = "The id the trainee is known by across the platform's services.",
       example = "12")
   @JsonProperty("user_id")
   private Long userId;
 
-  @ApiModelProperty(value = "The answers for given sandbox")
   @JsonProperty("sandbox_answers")
   private List<VariantAnswer> variantAnswers;
 

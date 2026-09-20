@@ -1,6 +1,5 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
@@ -17,19 +16,20 @@ import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
-import cz.cyberrange.platform.training.rest.utils.annotations.ApiPageableSwagger;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import javax.validation.Valid;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -40,22 +40,24 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /** The rest controller for Training runs */
-@Api(
-    value = "/training-runs",
-    tags = "Training runs",
-    consumes = MediaType.APPLICATION_JSON_VALUE,
-    authorizations = @Authorization(value = "bearerAuth"))
-@ApiResponses(
-    value = {
-      @ApiResponse(
-          code = 401,
-          message = "Full authentication is required to access this resource.",
-          response = ApiError.class),
-      @ApiResponse(
-          code = 403,
-          message = "The necessary permissions are required for a resource.",
-          response = ApiError.class)
-    })
+@Tag(
+    name = "Training runs",
+    description = "One trainee's passage through the levels of a training instance")
+@SecurityRequirement(name = "bearerAuth")
+@ApiResponses({
+  @ApiResponse(
+      responseCode = "401",
+      description = "Missing or invalid bearer token.",
+      content = @Content(schema = @Schema(implementation = ApiError.class))),
+  @ApiResponse(
+      responseCode = "403",
+      description = "The caller lacks the required role or relationship.",
+      content = @Content(schema = @Schema(implementation = ApiError.class))),
+  @ApiResponse(
+      responseCode = "500",
+      description = "Unexpected server error.",
+      content = @Content(schema = @Schema(implementation = ApiError.class)))
+})
 @RestController
 @RequestMapping(value = "/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
@@ -79,27 +81,31 @@ public class TrainingRunsRestController {
    * @param forceDelete whether a run still in the running state may be deleted anyway
    * @return the response entity
    */
-  @ApiOperation(
-      httpMethod = "DELETE",
-      value = "Delete training runs",
-      nickname = "deleteTrainingRuns")
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "The training runs have been deleted."),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "deleteTrainingRuns",
+      summary = "Delete several training runs",
+      description =
+          "A training administrator may delete any run. A training organizer has to organize every"
+              + " run listed. Each run's answers, submissions and recorded events go with it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The runs were deleted."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The ids are missing or not numbers.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with one of these ids.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "A run is still running and the delete was not forced.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @DeleteMapping
   public ResponseEntity<Void> deleteTrainingRuns(
-      @ApiParam(value = "Ids of training runs that will be deleted", required = true)
-          @RequestParam(value = "trainingRunIds", required = true)
-          List<Long> trainingRunIds,
-      @ApiParam(
-              value =
-                  "Indication if this training run must be deleted no matter of any check (force it)",
-              required = false)
+      @RequestParam(value = "trainingRunIds", required = true) List<Long> trainingRunIds,
+      @Parameter(description = "Delete even a run that is still running.")
           @RequestParam(value = "forceDelete", required = false, defaultValue = "false")
           boolean forceDelete) {
     trainingRunFacade.deleteTrainingRuns(trainingRunIds, forceDelete);
@@ -115,35 +121,31 @@ public class TrainingRunsRestController {
    * @param forceDelete whether a run still in the running state may be deleted anyway
    * @return the response entity
    */
-  @ApiOperation(
-      httpMethod = "DELETE",
-      value = "Delete training run",
-      nickname = "deleteTrainingRun")
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "The training run has been deleted."),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 409,
-            message = "The training run is still running.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "deleteTrainingRun",
+      summary = "Delete one training run",
+      description =
+          "A training administrator, or an organizer of the run, may call it. The run's answers,"
+              + " submissions and recorded events go with it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The run was deleted."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id or the force flag has an invalid value.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The run is still running and the delete was not forced.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @DeleteMapping(path = "/{runId}")
   public ResponseEntity<Void> deleteTrainingRun(
-      @ApiParam(value = "Id of training run that will be deleted", required = true)
-          @PathVariable("runId")
-          Long runId,
-      @ApiParam(
-              value =
-                  "Indication if this training run must be deleted no matter of any check (force it)",
-              required = false)
+      @PathVariable("runId") Long runId,
+      @Parameter(description = "Delete even a run that is still running.")
           @RequestParam(value = "forceDelete", required = false, defaultValue = "false")
           boolean forceDelete) {
     trainingRunFacade.deleteTrainingRun(runId, forceDelete);
@@ -157,30 +159,23 @@ public class TrainingRunsRestController {
    * @param runId of Training Run to return.
    * @return Requested Training Run by id.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get training run by ID.",
-      response = TrainingRunByIdDTO.class,
-      nickname = "findTrainingRunById",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The training run has been found.",
-            response = TrainingRunByIdDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findTrainingRunById",
+      summary = "Find one training run",
+      description = "A training administrator, or the run's own participant, may call it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The training run."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<TrainingRunByIdDTO> findTrainingRunById(
-      @ApiParam(value = "Id of training run", required = true) @PathVariable("runId") Long runId) {
+  public ResponseEntity<TrainingRunByIdDTO> findTrainingRunById(@PathVariable("runId") Long runId) {
     TrainingRunByIdDTO trainingRunResource = trainingRunFacade.findById(runId);
     return new ResponseEntity<>(trainingRunResource, HttpStatus.OK);
   }
@@ -193,28 +188,17 @@ public class TrainingRunsRestController {
    * @param pageable pageable parameter with information about pagination.
    * @return all Training Runs.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get all training runs.",
-      response = TrainingRunRestResource.class,
-      nickname = "findAllTrainingRuns",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The training runs have been found.",
-            response = TrainingRunRestResource.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
-  @ApiPageableSwagger
+  @Operation(
+      operationId = "findAllTrainingRuns",
+      summary = "List training runs matching a filter",
+      description =
+          "Only a training administrator may call it. Text filters match partially and ignore"
+              + " case.")
+  @ApiResponses(@ApiResponse(responseCode = "200", description = "The matching runs."))
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<TrainingRunDTO>> findAllTrainingRuns(
       @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
+      @ParameterObject Pageable pageable) {
     PageResultResource<TrainingRunDTO> trainingRunResource =
         trainingRunFacade.findAll(predicate, pageable);
     return new ResponseEntity<>(trainingRunResource, HttpStatus.OK);
@@ -229,35 +213,43 @@ public class TrainingRunsRestController {
    * @param accessToken the access token
    * @return the resumed or newly created run's current level and related run information.
    */
-  @ApiOperation(
-      httpMethod = "POST",
-      value = "Access training run.",
-      response = AccessTrainingRunDTO.class,
-      nickname = "createTrainingRun",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The training run has been accessed.",
-            response = AccessTrainingRunDTO.class),
-        @ApiResponse(
-            code = 404,
-            message =
-                "There is no training instance with given accessToken or first level not found in database.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 409,
-            message = "No assigned pool to the training instance.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Some error occurred during getting info about sandboxes.",
-            response = ApiError.class),
-      })
+  @Operation(
+      operationId = "createTrainingRun",
+      summary = "Enter a training instance and start a run",
+      description =
+          "Only a trainee or a training administrator may call it. A run of the caller already"
+              + " under way is resumed instead of a second one being started. A new run is given a"
+              + " sandbox unless the instance uses a local environment.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The run's current level and its context."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The access token is missing.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "403",
+        description =
+            "No sandbox is free in the instance's pool, or the caller lacks the required role or"
+                + " relationship.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No instance is open right now under this access token.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description =
+            "The caller's existing run cannot be resumed, or the training instance has no sandbox"
+                + " pool allocated yet.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "429",
+        description = "The caller is already entering this instance.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
   @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AccessTrainingRunDTO> accessTrainingRun(
-      @ApiParam(value = "accessToken", required = true)
+      @Parameter(description = "Access token of the training instance to enter.")
           @RequestParam(value = "accessToken", required = true)
           String accessToken) {
     AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(accessToken);
@@ -273,33 +265,22 @@ public class TrainingRunsRestController {
    *     omitted for no sort
    * @return all accessed Training Runs.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get all accessed training runs.",
-      notes = "Returns training run which was accessed by logged in user",
-      response = AccessedTrainingRunRestResource.class,
-      nickname = "getAllAccessedTrainingRuns",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The accessed training runs have been found.",
-            response = AccessedTrainingRunRestResource.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
-  @ApiPageableSwagger
+  @Operation(
+      operationId = "getAllAccessedTrainingRuns",
+      summary = "List the caller's own training runs",
+      description =
+          "Only a trainee or a training administrator may call it. Text filters match partially and"
+              + " ignore case.")
+  @ApiResponses(@ApiResponse(responseCode = "200", description = "The caller's runs."))
   @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<AccessedTrainingRunDTO>> getAllAccessedTrainingRuns(
       @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(
-              value = "Sort by title attribute. As values us asc|desc",
-              required = false,
-              example = "asc")
+      @ParameterObject Pageable pageable,
+      @Parameter(
+              description =
+                  "asc or desc to order the returned page by title; any other value leaves the"
+                      + " order alone.",
+              schema = @Schema(example = "asc"))
           @RequestParam(value = "sortByTitle", required = false)
           String sortByTitle) {
     PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS =
@@ -313,32 +294,29 @@ public class TrainingRunsRestController {
    * @param runId of Training Run for which to get next level.
    * @return Requested next level.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get level of given training run.",
-      notes =
-          "Returns (assessment, training, info) level if any next level exists and training run as well",
-      response = AbstractLevelDTO.class,
-      nickname = "getNextLevel",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The next level has been found.",
-            response = AbstractLevelDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The next level has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "getNextLevel",
+      summary = "Move the run on to its next level",
+      description =
+          "A training administrator, or the run's own participant, may call it. The run's current"
+              + " level advances, and the new level is recorded as started.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The level the run moved to."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id, or the run is on its last level.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The current level has not been answered yet.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{runId}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<AbstractLevelDTO> getNextLevel(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
+  public ResponseEntity<AbstractLevelDTO> getNextLevel(@PathVariable("runId") Long runId) {
     AbstractLevelDTO levelDTO = trainingRunFacade.getNextLevel(runId);
     return ResponseEntity.ok(levelDTO);
   }
@@ -349,32 +327,29 @@ public class TrainingRunsRestController {
    * @param runId of Training Run for which to get solution.
    * @return Requested solution of training level.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get solution of training level.",
-      notes = "Returns solution if given training runs exists and current level is training level",
-      response = String.class,
-      nickname = "getSolution",
-      produces = MediaType.TEXT_PLAIN_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "The solution has been found.", response = String.class),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 400,
-            message = "Current level is not training level and does not have solution.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "getSolution",
+      summary = "Reveal the solution of the run's current level",
+      description =
+          "A training administrator, or the run's own participant, may call it. The first reveal is"
+              + " recorded and, where the level penalizes it, wipes out the score still on offer.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The solution text of the current level.",
+        content =
+            @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(type = "string"))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The current level is not a training level.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{runId}/solutions", produces = MediaType.TEXT_PLAIN_VALUE)
-  public ResponseEntity<String> getSolution(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
+  public ResponseEntity<String> getSolution(@PathVariable("runId") Long runId) {
     return ResponseEntity.ok(trainingRunFacade.getSolution(runId));
   }
 
@@ -385,37 +360,30 @@ public class TrainingRunsRestController {
    * @param hintId the hint id
    * @return Requested hint of training level.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get hint of training level.",
-      notes = "Returns hint if given training runs exists and current level is training level",
-      response = String.class,
-      nickname = "getHint",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "The hint has been found.", response = HintDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The hint has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 409,
-            message = "The hint with given id is not in current level of training run.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 400,
-            message = "Current level is not training level and does not have hints.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "getHint",
+      summary = "Take a hint of the run's current level",
+      description =
+          "A training administrator, or the run's own participant, may call it. Taking the hint is"
+              + " recorded and adds its penalty to the run.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The hint."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The current level is not a training level.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run, or no hint, with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The hint belongs to another level than the run's current one.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<HintDTO> getHint(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Hint ID", required = true) @PathVariable Long hintId) {
+      @PathVariable("runId") Long runId, @PathVariable Long hintId) {
     HintDTO hintDTO = trainingRunFacade.getHint(runId, hintId);
     return ResponseEntity.ok(hintDTO);
   }
@@ -428,37 +396,31 @@ public class TrainingRunsRestController {
    * @return whether the answer was correct, the attempts remaining, and the solution once attempts
    *     are exhausted.
    */
-  @ApiOperation(
-      httpMethod = "POST",
-      value = "Check answer of training level",
-      notes = "Current level of given training run must be training level",
-      response = Boolean.class,
-      nickname = "isCorrectAnswer",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The answer has been checked.",
-            response = IsCorrectAnswerDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 400,
-            message = "Current level is not training level and does not have answer.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "isCorrectAnswer",
+      summary = "Check an answer against the run's current level",
+      description =
+          "A training administrator, or the run's own participant, may call it. Every submission is"
+              + " recorded. Once no attempts remain, the response carries the solution.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200", description = "The verdict and the attempts still remaining."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The current level is not a training level.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The current level has already been answered.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @PostMapping(path = "/{runId}/is-correct-answer", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<IsCorrectAnswerDTO> isCorrectAnswer(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Submitted answer", required = true) @RequestBody @Valid
-          ValidateAnswerDTO validateAnswerDTO) {
+      @PathVariable("runId") Long runId, @RequestBody @Valid ValidateAnswerDTO validateAnswerDTO) {
     return ResponseEntity.ok(
         trainingRunFacade.isCorrectAnswer(runId, validateAnswerDTO.getAnswer()));
   }
@@ -470,37 +432,31 @@ public class TrainingRunsRestController {
    * @param validatePasskeyDTO submitted passkey.
    * @return True if passkey is correct, false if passkey is wrong.
    */
-  @ApiOperation(
-      httpMethod = "POST",
-      value = "Check passkey of the access level",
-      notes = "Current level of given training run must be access level",
-      response = Boolean.class,
-      nickname = "isCorrectPasskey",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The passkey has been checked.",
-            response = Boolean.class),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 400,
-            message = "Current level is not training level and does not have answer.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "isCorrectPasskey",
+      summary = "Check a passkey against the run's current level",
+      description =
+          "A training administrator, or the run's own participant, may call it. Every attempt is"
+              + " recorded, the successful one included.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "True when the passkey matches."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The current level is not an access level.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The current level has already been answered.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @PostMapping(path = "/{runId}/is-correct-passkey", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Boolean> isCorrectPasskey(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Submitted passkey", required = true) @RequestBody @Valid
-          ValidatePasskeyDTO validatePasskeyDTO) {
+      @PathVariable("runId") Long runId,
+      @RequestBody @Valid ValidatePasskeyDTO validatePasskeyDTO) {
     return ResponseEntity.ok(
         trainingRunFacade.isCorrectPasskey(runId, validatePasskeyDTO.getPasskey()));
   }
@@ -514,34 +470,30 @@ public class TrainingRunsRestController {
    * @param runId id of training run.
    * @return current level of training run.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get current level of resumed training run",
-      response = AccessTrainingRunDTO.class,
-      nickname = "resumeTrainingRun",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The training run has been resumed.",
-            response = AccessTrainingRunDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 409,
-            message = "Cannot resume finished training run.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "resumeTrainingRun",
+      summary = "Resume a training run",
+      description =
+          "A training administrator, or the run's own participant, may call it. On a training"
+              + " level, the response also carries the solution and hints already taken there.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The run's current level and its context."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description =
+            "The run is finished or archived, its instance has ended, or its sandbox is gone.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{runId}/resumption", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<AccessTrainingRunDTO> resumeTrainingRun(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
+  public ResponseEntity<AccessTrainingRunDTO> resumeTrainingRun(@PathVariable("runId") Long runId) {
     AccessTrainingRunDTO resumedTrainingRunDTO = trainingRunFacade.resumeTrainingRun(runId);
     return ResponseEntity.ok(resumedTrainingRunDTO);
   }
@@ -553,32 +505,29 @@ public class TrainingRunsRestController {
    * @param runId id of training run.
    * @return the response entity
    */
-  @ApiOperation(
-      httpMethod = "PUT",
-      value = "Finish training run",
-      nickname = "finishTrainingRun",
-      notes =
-          "Training run will be finished if the current level is the last level and it is answered.",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "The training run has been finished."),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 409,
-            message = "Cannot finish training run because of the current state.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "finishTrainingRun",
+      summary = "Finish a training run",
+      description =
+          "A training administrator, or the run's own participant, may call it. The call waits a"
+              + " short while so the run's recorded events settle before it answers.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The run was finished."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The run is not on its last level, or that level is unanswered.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @PutMapping(path = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> finishTrainingRun(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
+  public ResponseEntity<Void> finishTrainingRun(@PathVariable("runId") Long runId) {
     trainingRunFacade.finishTrainingRun(runId);
     return ResponseEntity.ok().build();
   }
@@ -590,37 +539,32 @@ public class TrainingRunsRestController {
    * @param responses to assessment
    * @return the response entity
    */
-  @ApiOperation(
-      httpMethod = "PUT",
-      value = "Evaluate responses to assessment",
-      nickname = "evaluateResponsesToAssessment",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 204,
-            message = "The responses to assessment has been evaluated and stored."),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 409,
-            message =
-                "Current level of training is not assessment level or level has been already answered.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "evaluateResponsesToAssessment",
+      summary = "Submit answers to the run's assessment level",
+      description =
+          "A training administrator, or the run's own participant, may call it. The answers are"
+              + " stored and the level is marked answered. A test level is scored as well.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "The answers were stored."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The current level is not an assessment level.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The current level has already been answered.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @PutMapping(
       value = "/{runId}/assessment-evaluations",
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> evaluateResponsesToAssessment(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Responses to assessment", required = true) @Valid @RequestBody
-          List<QuestionAnswerDTO> responses) {
+      @PathVariable("runId") Long runId, @Valid @RequestBody List<QuestionAnswerDTO> responses) {
     trainingRunFacade.evaluateResponsesToAssessment(runId, responses);
     return ResponseEntity.noContent().build();
   }
@@ -631,31 +575,25 @@ public class TrainingRunsRestController {
    * @param trainingRunId id of training run for which to get participant
    * @return Participant of specific training run.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get participant.",
-      response = UserRefDTO.class,
-      nickname = "getParticipant",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The participant has been found.",
-            response = UserRefDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "getParticipant",
+      summary = "Find the participant of a training run",
+      description =
+          "A training administrator, or the run's own participant, may call it. The details come"
+              + " from the user and group service.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The participant of the run."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{runId}/participant", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<UserRefDTO> getParticipant(
-      @ApiParam(value = "Get participant for the given runId.") @PathVariable("runId")
-          Long trainingRunId) {
+  public ResponseEntity<UserRefDTO> getParticipant(@PathVariable("runId") Long trainingRunId) {
     UserRefDTO participant = trainingRunFacade.getParticipant(trainingRunId);
     return ResponseEntity.ok(participant);
   }
@@ -666,27 +604,25 @@ public class TrainingRunsRestController {
    * @param runId id of training run.
    * @return the response entity
    */
-  @ApiOperation(
-      httpMethod = "PATCH",
-      value = "Archive training run",
-      nickname = "archiveTrainingRun",
-      notes = "The state of the Training run will be change to archived.",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "The training run has been archived."),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "archiveTrainingRun",
+      summary = "Archive a training run",
+      description =
+          "A training administrator, or an organizer of the run, may call it. The run's sandbox"
+              + " reference moves to its previous sandbox and is cleared.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The run was archived."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @PatchMapping(path = "/{runId}/archive", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> archiveTrainingRun(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
+  public ResponseEntity<Void> archiveTrainingRun(@PathVariable("runId") Long runId) {
     trainingRunFacade.archiveTrainingRun(runId);
     return ResponseEntity.ok().build();
   }
@@ -699,32 +635,26 @@ public class TrainingRunsRestController {
    * @param runId of Training Run for which to get correct answers.
    * @return Requested correct answers of the training run.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get correct answers of the training run.",
-      notes =
-          "Returns non-empty list of answers if given training run exists and contains at least one training level",
-      response = CorrectAnswerDTO[].class,
-      nickname = "getCorrectAnswers",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The correct answers have been found.",
-            response = CorrectAnswerDTO[].class),
-        @ApiResponse(
-            code = 404,
-            message = "The training run has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "getCorrectAnswers",
+      summary = "List the correct answers of the run's training levels",
+      description =
+          "A training organizer or a training administrator may call it. A level with variant"
+              + " answers is resolved for this run's participant from the answer storage service.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "One correct answer per training level."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{runId}/answers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CorrectAnswerDTO>> getCorrectAnswers(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
+      @PathVariable("runId") Long runId) {
     List<CorrectAnswerDTO> correctAnswerDTOs = trainingRunFacade.getCorrectAnswers(runId);
     return ResponseEntity.ok(correctAnswerDTOs);
   }
@@ -736,33 +666,30 @@ public class TrainingRunsRestController {
    * @param levelId ID of the visited level.
    * @return Requested level.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get visited level of given training run.",
-      notes =
-          "Returns (assessment, training, info) level if any level exists and training run as well",
-      response = AbstractLevelDTO.class,
-      nickname = "getVisitedLevel",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The visited level has been found.",
-            response = AbstractLevelDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The visited level has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "getVisitedLevel",
+      summary = "Find a level the run has already reached",
+      description =
+          "A training administrator, or the run's own participant, may call it. The run's current"
+              + " level counts as reached.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The level."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The run id or the level id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training run, or no level, with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The level belongs to another definition, or the run has not reached it.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{runId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AbstractLevelDTO> getVisitedLevel(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Level ID", required = true) @PathVariable("levelId") Long levelId) {
+      @PathVariable("runId") Long runId, @PathVariable("levelId") Long levelId) {
     AbstractLevelDTO levelDTO = trainingRunFacade.getVisitedLevel(runId, levelId);
     return ResponseEntity.ok(levelDTO);
   }
@@ -776,30 +703,23 @@ public class TrainingRunsRestController {
    * @param ids the ids of Training Runs to return.
    * @return List of requested Training Runs.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get training runs by ids.",
-      response = TrainingRunBasicDTO.class,
-      nickname = "findTrainingRunsByIds",
-      notes = "Returns training runs matching the given ids.",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The training runs have been found.",
-            response = TrainingRunBasicDTO.class,
-            responseContainer = "List"),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findTrainingRunsByIds",
+      summary = "Find training runs by their ids",
+      description =
+          "A training administrator, an organizer of the runs, or their participant may call it."
+              + " A caller who is neither administrator nor organizer sees the sandbox id of"
+              + " another trainee's run only as a hash.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The matching runs."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The ids are missing or not numbers.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
   @GetMapping(path = "/by-ids", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<TrainingRunBasicDTO>> findTrainingRunsByIds(
-      @ApiParam(value = "Ids of training runs", required = true)
-          @RequestParam(value = "ids", required = true)
-          List<Long> ids) {
+      @RequestParam(value = "ids", required = true) List<Long> ids) {
     List<TrainingRunBasicDTO> trainingRuns = trainingRunFacade.findTrainingRunsByIds(ids);
     return ResponseEntity.ok(trainingRuns);
   }
@@ -810,73 +730,23 @@ public class TrainingRunsRestController {
    * @param ids the ids of Users to return.
    * @return List of requested Users.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get users by ids.",
-      response = UserRefDTO.class,
-      nickname = "findUsersByIds",
-      notes = "Returns users matching the given ids.",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The users have been found.",
-            response = UserRefDTO.class,
-            responseContainer = "List"),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findUsersByIds",
+      summary = "Find users by their user reference ids",
+      description =
+          "A training administrator may call it. Anyone else has to share a training instance with"
+              + " every user listed.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The matching users."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The ids are missing or not numbers.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
   @GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<UserRefDTO>> findUsersByIds(
-      @ApiParam(value = "Ids of users", required = true)
-          @RequestParam(value = "ids", required = true)
-          List<Long> ids) {
+      @RequestParam(value = "ids", required = true) List<Long> ids) {
     List<UserRefDTO> users = trainingRunFacade.findUsersByIds(ids);
     return ResponseEntity.ok(users);
-  }
-
-  /**
-   * Reifies a page of {@link TrainingRunDTO} as its own type so Swagger can document its shape,
-   * which generic erasure would otherwise hide. Never constructed; declared only as a Swagger
-   * response type.
-   */
-  @ApiModel(
-      value = "TrainingRunRestResource",
-      description =
-          "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-  public static class TrainingRunRestResource extends PageResultResource<TrainingRunDTO> {
-    @JsonProperty(required = true)
-    @ApiModelProperty(value = "Retrieved Training Runs from databases.")
-    private List<TrainingRunDTO> content;
-
-    @JsonProperty(required = true)
-    @ApiModelProperty(
-        value =
-            "Pagination including: page number, number of elements in page, size, total elements and total pages.")
-    private Pagination pagination;
-  }
-
-  /**
-   * Reifies a page of {@link AccessedTrainingRunDTO} as its own type so Swagger can document its
-   * shape, which generic erasure would otherwise hide. Never constructed; declared only as a
-   * Swagger response type.
-   */
-  @ApiModel(
-      description =
-          "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-  private static class AccessedTrainingRunRestResource
-      extends PageResultResource<AccessedTrainingRunDTO> {
-    @JsonProperty(required = true)
-    @ApiModelProperty(value = "Retrieved Accessed Training Runs from databases.")
-    private List<AccessedTrainingRunDTO> content;
-
-    @JsonProperty(required = true)
-    @ApiModelProperty(
-        value =
-            "Pagination including: page number, number of elements in page, size, total elements and total pages.")
-    private Pagination pagination;
   }
 }

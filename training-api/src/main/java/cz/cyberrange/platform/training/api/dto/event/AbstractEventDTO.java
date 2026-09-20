@@ -3,8 +3,8 @@ package cz.cyberrange.platform.training.api.dto.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -16,10 +16,11 @@ import lombok.Data;
  * event kind.
  */
 @Data
-@ApiModel(
-    value = "AbstractEventDTO",
-    description = "Parent class for all event DTOs (training events and commands)",
-    subTypes = {CommandEventDTO.class, TrainingEventDTO.class})
+@Schema(
+    description =
+        "One event recorded during a training run: a console command or a training audit event.",
+    subTypes = {CommandEventDTO.class, TrainingEventDTO.class},
+    discriminatorMapping = @DiscriminatorMapping(value = "COMMAND", schema = CommandEventDTO.class))
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
@@ -29,7 +30,6 @@ import lombok.Data;
 @JsonSubTypes({@JsonSubTypes.Type(value = CommandEventDTO.class, name = "COMMAND")})
 public abstract class AbstractEventDTO {
 
-  @ApiModelProperty(value = "OpenSearch document identifier of the event")
   @JsonProperty("event_id")
   private String eventId;
 
@@ -38,7 +38,6 @@ public abstract class AbstractEventDTO {
    * EventMapper} assigns it; for a training event, the {@code TYPE} constant declared on the audit
    * POJO the event was recorded as, copied through unchanged
    */
-  @ApiModelProperty(value = "Type of the event")
   private String type;
 
   /**
@@ -46,15 +45,10 @@ public abstract class AbstractEventDTO {
    * training event, converted by {@code EventMapper} from the epoch-millisecond value the audit
    * document stores, interpreted in the JVM's default time zone.
    */
-  @ApiModelProperty(value = "Timestamp of the event", example = "2021-03-24T12:00:00")
+  @Schema(example = "2021-03-24T12:00:00")
   private LocalDateTime timestamp;
 
-  @ApiModelProperty(
-      value =
-          "Sandbox identifier. Plain sandbox UUID for administrators and organizers of the training"
-              + " instance; for other callers, plain only for their own run's sandbox and a SHA-256"
-              + " hash otherwise.",
-      example = "db5c9da0-e2d9-482a-a924-a12def8ac2ef")
+  @Schema(example = "db5c9da0-e2d9-482a-a924-a12def8ac2ef")
   @JsonProperty("sandbox_id")
   private String sandboxId;
 
@@ -63,7 +57,10 @@ public abstract class AbstractEventDTO {
    * event, converted by {@code EventMapper} from the elapsed-millisecond value the audit document
    * stores for time spent in the training run so far.
    */
-  @ApiModelProperty(value = "Training time", dataType = "string", example = "PT15M")
+  @Schema(
+      type = "string",
+      example = "PT15M",
+      description = "Time spent in the run when the event was recorded, as an ISO 8601 duration.")
   @JsonProperty("training_time")
   private java.time.Duration trainingTime;
 }

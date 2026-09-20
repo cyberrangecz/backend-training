@@ -1,32 +1,27 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /** Encapsulates information about Hint */
 @Data
 @NoArgsConstructor
-@ApiModel(
-    value = "HintExportDTO",
-    description = "An exported brief textual description to aid the participant.")
+@Schema(description = "An exported hint a trainee can take during a training level")
 public class HintExportDTO {
 
-  @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
+  @Schema(example = "Hint1")
   private String title;
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
-      example = "Very good advice")
+  @Schema(example = "Very good advice")
   private String content;
 
-  @ApiModelProperty(
-      value = "The number of points the participant loses after receiving the hint.",
+  @Schema(
+      description = "Points added to the run's penalty for the level each time the hint is taken",
       example = "10")
   private Integer hintPenalty;
 
   /** Position among the hints of the level that carries it, not among the training's levels */
-  @ApiModelProperty(value = "The order of hint in training level", example = "1")
+  @Schema(description = "Position among the hints of the level that carries it", example = "1")
   private int order;
 }

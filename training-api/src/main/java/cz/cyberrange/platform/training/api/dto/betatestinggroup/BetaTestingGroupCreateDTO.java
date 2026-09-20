@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.betatestinggroup;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Set;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
@@ -11,15 +10,13 @@ import lombok.Data;
  * unreleased, carried as part of a definition being created
  */
 @Data
-@ApiModel(
-    value = "BetaTestingGroupCreateDTO",
-    description = "BetaTestingGroup to create. (Deprecated)")
+@Schema(description = "The organizers to put in a new definition's beta testing group.")
 public class BetaTestingGroupCreateDTO {
 
   /** Carries each organizer's {@code userRefId}, not the local primary key */
-  @ApiModelProperty(
-      value = "Logins of users who is allowed to see training definition.",
-      required = true)
+  @Schema(
+      description = "Ids of the organizers as the user and group service numbers them.",
+      requiredMode = Schema.RequiredMode.REQUIRED)
   @NotNull(message = "{betaTestingGroup.organizersRefIds.NotNull.message}")
   private Set<Long> organizersRefIds;
 }

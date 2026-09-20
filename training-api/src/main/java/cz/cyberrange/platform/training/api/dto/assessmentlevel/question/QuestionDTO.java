@@ -2,7 +2,7 @@ package cz.cyberrange.platform.training.api.dto.assessmentlevel.question;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import cz.cyberrange.platform.training.api.validation.ValidOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -19,30 +19,24 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@Schema(description = "An assessment question with the answer options its type calls for.")
 public class QuestionDTO extends QuestionBasicDTO {
 
-  @ApiModelProperty(
-      value = "The content of the question.",
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "What transport protocol is used for reliable transmission?")
   @NotEmpty(message = "{question.text.NotEmpty.message}")
   private String text = "Example Question";
 
   /** Answer choices offered when the question type is free-form or multiple-choice */
-  @ApiModelProperty(value = "Choices displayed to the participant in case of FFQ or MCQ.")
-  @Valid
-  @ValidOrder
-  private List<QuestionChoiceDTO> choices = new ArrayList<>();
+  @Valid @ValidOrder private List<QuestionChoiceDTO> choices = new ArrayList<>();
 
   /** Answer options offered when the question type is extended matching */
-  @ApiModelProperty(value = "Options displayed to the participant in case of EMI.")
-  @Valid
-  @ValidOrder
+  @Valid @ValidOrder
   private List<ExtendedMatchingOptionDTO> extendedMatchingOptions = new ArrayList<>();
 
   /** Statements to be matched against options when the question type is extended matching */
-  @ApiModelProperty(value = "Statements displayed to the participant in case of EMI.")
-  @Valid
-  @ValidOrder
+  @Valid @ValidOrder
   private List<ExtendedMatchingStatementDTO> extendedMatchingStatements = new ArrayList<>();
 
   /**

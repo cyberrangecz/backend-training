@@ -1,37 +1,32 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /** Encapsulates information about user reference */
 @Data
-@ApiModel(value = "UserRefExportDTO", description = "An exported information about user reference.")
+@Schema(description = "The trainee an exported training run belongs to")
 public class UserRefExportDTO {
 
-  @ApiModelProperty(
-      value = "Reference to user in another microservice.",
-      example = "999999@mail.example.cz")
+  @Schema(description = "Left unset: no source field feeds it on export")
   private String userRefLogin;
 
-  @ApiModelProperty(
-      value = "Reference to user in another microservice and get his full name",
-      example = "Mgr. John Doe")
+  @Schema(example = "Mgr. John Doe")
   private String userRefFullName;
 
-  @ApiModelProperty(value = "User given name", example = "John")
+  @Schema(example = "John")
   private String userRefGivenName;
 
-  @ApiModelProperty(value = "User family name", example = "Doe")
+  @Schema(example = "Doe")
   private String userRefFamilyName;
 
-  @ApiModelProperty(
-      value = "Reference to user in another microservice and get his iss",
+  @Schema(
+      description = "Issuer of the identity the user signed in with",
       example = "https://oidc.provider.cz")
   private String iss;
 
-  @ApiModelProperty(
-      value = "Reference to user in another microservice and get his id",
+  @Schema(
+      description = "Id of the user in the user and group service, the one used across services",
       example = "1")
   private Long userRefId;
 }

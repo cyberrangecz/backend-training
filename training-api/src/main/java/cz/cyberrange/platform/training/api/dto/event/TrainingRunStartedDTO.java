@@ -1,6 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.event;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -9,5 +9,5 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "TrainingRunStartedDTO", description = "Training run started event")
+@Schema(description = "Records that a trainee started a training run.")
 public class TrainingRunStartedDTO extends TrainingEventDTO {}

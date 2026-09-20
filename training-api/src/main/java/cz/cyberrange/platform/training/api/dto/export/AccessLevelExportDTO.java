@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,22 +11,19 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @NoArgsConstructor
-@ApiModel(
-    value = "AccessLevelExportDTO",
-    description = "Exported access level.",
-    parent = AbstractLevelExportDTO.class)
+@Schema(description = "An exported access level, telling the trainee how to reach the machines")
 public class AccessLevelExportDTO extends AbstractLevelExportDTO {
 
-  @ApiModelProperty(value = "Keyword used for access next level.", example = "secretAnswer")
+  @Schema(description = "Text the trainee submits to complete the level", example = "secretAnswer")
   private String passkey;
 
-  @ApiModelProperty(
-      value = "The instructions on how to connect to the machine in cloud environment.",
+  @Schema(
+      description = "How to reach the machines in a cloud environment",
       example = "Connect using SSH config.")
   private String cloudContent;
 
-  @ApiModelProperty(
-      value = "The instructions on how to connect to the machine in local (non-cloud) environment.",
+  @Schema(
+      description = "How to reach the machines in a local environment",
       example = "Use vagrant SSH connection.")
   private String localContent;
 }
