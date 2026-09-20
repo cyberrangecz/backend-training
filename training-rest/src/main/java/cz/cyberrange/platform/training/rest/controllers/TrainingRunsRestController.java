@@ -1,9 +1,6 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
@@ -65,13 +62,10 @@ import org.springframework.web.bind.annotation.*;
 public class TrainingRunsRestController {
 
   private TrainingRunFacade trainingRunFacade;
-  private ObjectMapper objectMapper;
 
   @Autowired
-  public TrainingRunsRestController(
-      TrainingRunFacade trainingRunFacade, ObjectMapper objectMapper) {
+  public TrainingRunsRestController(TrainingRunFacade trainingRunFacade) {
     this.trainingRunFacade = trainingRunFacade;
-    this.objectMapper = objectMapper;
   }
 
   /**
@@ -106,7 +100,7 @@ public class TrainingRunsRestController {
               value =
                   "Indication if this training run must be deleted no matter of any check (force it)",
               required = false)
-          @RequestParam(value = "forceDelete", required = false)
+          @RequestParam(value = "forceDelete", required = false, defaultValue = "false")
           boolean forceDelete) {
     trainingRunFacade.deleteTrainingRuns(trainingRunIds, forceDelete);
     return new ResponseEntity<>(HttpStatus.OK);
@@ -150,7 +144,7 @@ public class TrainingRunsRestController {
               value =
                   "Indication if this training run must be deleted no matter of any check (force it)",
               required = false)
-          @RequestParam(value = "forceDelete", required = false)
+          @RequestParam(value = "forceDelete", required = false, defaultValue = "false")
           boolean forceDelete) {
     trainingRunFacade.deleteTrainingRun(runId, forceDelete);
     return new ResponseEntity<>(HttpStatus.OK);
@@ -161,7 +155,6 @@ public class TrainingRunsRestController {
    * service.
    *
    * @param runId of Training Run to return.
-   * @param fields attributes of the object to be returned as the result.
    * @return Requested Training Run by id.
    */
   @ApiOperation(
@@ -175,7 +168,7 @@ public class TrainingRunsRestController {
         @ApiResponse(
             code = 200,
             message = "The training run has been found.",
-            response = TrainingRunDTO.class),
+            response = TrainingRunByIdDTO.class),
         @ApiResponse(
             code = 404,
             message = "The training run has not been found.",
@@ -186,15 +179,10 @@ public class TrainingRunsRestController {
             response = ApiError.class)
       })
   @GetMapping(path = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findTrainingRunById(
-      @ApiParam(value = "Id of training run", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<TrainingRunByIdDTO> findTrainingRunById(
+      @ApiParam(value = "Id of training run", required = true) @PathVariable("runId") Long runId) {
     TrainingRunByIdDTO trainingRunResource = trainingRunFacade.findById(runId);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
+    return new ResponseEntity<>(trainingRunResource, HttpStatus.OK);
   }
 
   /**
@@ -203,7 +191,6 @@ public class TrainingRunsRestController {
    *
    * @param predicate specifies query to database.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all Training Runs.
    */
   @ApiOperation(
@@ -225,17 +212,12 @@ public class TrainingRunsRestController {
       })
   @ApiPageableSwagger
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllTrainingRuns(
+  public ResponseEntity<PageResultResource<TrainingRunDTO>> findAllTrainingRuns(
       @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+      @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
     PageResultResource<TrainingRunDTO> trainingRunResource =
         trainingRunFacade.findAll(predicate, pageable);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, trainingRunResource), HttpStatus.OK);
+    return new ResponseEntity<>(trainingRunResource, HttpStatus.OK);
   }
 
   /**
@@ -287,7 +269,6 @@ public class TrainingRunsRestController {
    *
    * @param predicate specifies query to database.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending, or
    *     omitted for no sort
    * @return all accessed Training Runs.
@@ -304,8 +285,7 @@ public class TrainingRunsRestController {
         @ApiResponse(
             code = 200,
             message = "The accessed training runs have been found.",
-            response = AccessedTrainingRunDTO.class,
-            responseContainer = "List"),
+            response = AccessedTrainingRunRestResource.class),
         @ApiResponse(
             code = 500,
             message = "Unexpected condition was encountered.",
@@ -313,12 +293,9 @@ public class TrainingRunsRestController {
       })
   @ApiPageableSwagger
   @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> getAllAccessedTrainingRuns(
+  public ResponseEntity<PageResultResource<AccessedTrainingRunDTO>> getAllAccessedTrainingRuns(
       @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
       @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields,
       @ApiParam(
               value = "Sort by title attribute. As values us asc|desc",
               required = false,
@@ -327,16 +304,13 @@ public class TrainingRunsRestController {
           String sortByTitle) {
     PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOS =
         trainingRunFacade.findAllAccessedTrainingRuns(predicate, pageable, sortByTitle);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, accessedTrainingRunDTOS), HttpStatus.OK);
+    return new ResponseEntity<>(accessedTrainingRunDTOS, HttpStatus.OK);
   }
 
   /**
    * Advances the given training run to its next level and returns that level.
    *
    * @param runId of Training Run for which to get next level.
-   * @param fields attributes of the object to be returned as the result.
    * @return Requested next level.
    */
   @ApiOperation(
@@ -363,14 +337,10 @@ public class TrainingRunsRestController {
             response = ApiError.class)
       })
   @GetMapping(path = "/{runId}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> getNextLevel(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<AbstractLevelDTO> getNextLevel(
+      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
     AbstractLevelDTO levelDTO = trainingRunFacade.getNextLevel(runId);
-    Squiggly.init(objectMapper, fields);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, levelDTO));
+    return ResponseEntity.ok(levelDTO);
   }
 
   /**
@@ -385,7 +355,7 @@ public class TrainingRunsRestController {
       notes = "Returns solution if given training runs exists and current level is training level",
       response = String.class,
       nickname = "getSolution",
-      produces = MediaType.APPLICATION_JSON_VALUE)
+      produces = MediaType.TEXT_PLAIN_VALUE)
   @ApiResponses(
       value = {
         @ApiResponse(code = 200, message = "The solution has been found.", response = String.class),
@@ -402,7 +372,7 @@ public class TrainingRunsRestController {
             message = "Unexpected condition was encountered.",
             response = ApiError.class)
       })
-  @GetMapping(path = "/{runId}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(path = "/{runId}/solutions", produces = MediaType.TEXT_PLAIN_VALUE)
   public ResponseEntity<String> getSolution(
       @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
     return ResponseEntity.ok(trainingRunFacade.getSolution(runId));
@@ -413,7 +383,6 @@ public class TrainingRunsRestController {
    *
    * @param runId of Training Run for which to get hint.
    * @param hintId the hint id
-   * @param fields attributes of the object to be returned as the result.
    * @return Requested hint of training level.
    */
   @ApiOperation(
@@ -444,15 +413,11 @@ public class TrainingRunsRestController {
             response = ApiError.class)
       })
   @GetMapping(path = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> getHint(
+  public ResponseEntity<HintDTO> getHint(
       @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Hint ID", required = true) @PathVariable Long hintId,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+      @ApiParam(value = "Hint ID", required = true) @PathVariable Long hintId) {
     HintDTO hintDTO = trainingRunFacade.getHint(runId, hintId);
-    Squiggly.init(objectMapper, fields);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, hintDTO));
+    return ResponseEntity.ok(hintDTO);
   }
 
   /**
@@ -688,11 +653,11 @@ public class TrainingRunsRestController {
             response = ApiError.class)
       })
   @GetMapping(path = "/{runId}/participant", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> getParticipant(
+  public ResponseEntity<UserRefDTO> getParticipant(
       @ApiParam(value = "Get participant for the given runId.") @PathVariable("runId")
           Long trainingRunId) {
     UserRefDTO participant = trainingRunFacade.getParticipant(trainingRunId);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, participant));
+    return ResponseEntity.ok(participant);
   }
 
   /**
@@ -732,7 +697,6 @@ public class TrainingRunsRestController {
    * per participant from the answer storage service.
    *
    * @param runId of Training Run for which to get correct answers.
-   * @param fields attributes of the object to be returned as the result.
    * @return Requested correct answers of the training run.
    */
   @ApiOperation(
@@ -759,14 +723,10 @@ public class TrainingRunsRestController {
             response = ApiError.class)
       })
   @GetMapping(path = "/{runId}/answers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> getCorrectAnswers(
-      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<List<CorrectAnswerDTO>> getCorrectAnswers(
+      @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId) {
     List<CorrectAnswerDTO> correctAnswerDTOs = trainingRunFacade.getCorrectAnswers(runId);
-    Squiggly.init(objectMapper, fields);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, correctAnswerDTOs));
+    return ResponseEntity.ok(correctAnswerDTOs);
   }
 
   /**
@@ -774,7 +734,6 @@ public class TrainingRunsRestController {
    *
    * @param runId of Training Run for which to get previous or current level.
    * @param levelId ID of the visited level.
-   * @param fields attributes of the object to be returned as the result.
    * @return Requested level.
    */
   @ApiOperation(
@@ -801,15 +760,11 @@ public class TrainingRunsRestController {
             response = ApiError.class)
       })
   @GetMapping(path = "/{runId}/levels/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> getVisitedLevel(
+  public ResponseEntity<AbstractLevelDTO> getVisitedLevel(
       @ApiParam(value = "Training run ID", required = true) @PathVariable("runId") Long runId,
-      @ApiParam(value = "Level ID", required = true) @PathVariable("levelId") Long levelId,
-      @ApiParam(value = "Fields which should be returned in REST API response")
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+      @ApiParam(value = "Level ID", required = true) @PathVariable("levelId") Long levelId) {
     AbstractLevelDTO levelDTO = trainingRunFacade.getVisitedLevel(runId, levelId);
-    Squiggly.init(objectMapper, fields);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, levelDTO));
+    return ResponseEntity.ok(levelDTO);
   }
 
   /**

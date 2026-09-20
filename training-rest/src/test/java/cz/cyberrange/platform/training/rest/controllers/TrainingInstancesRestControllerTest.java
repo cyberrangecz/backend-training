@@ -100,8 +100,7 @@ public class TrainingInstancesRestControllerTest {
     snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
 
     closeable = MockitoAnnotations.openMocks(this);
-    trainingInstancesRestController =
-        new TrainingInstancesRestController(trainingInstanceFacade, snakeCaseMapper);
+    trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade);
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
             .setCustomArgumentResolvers(

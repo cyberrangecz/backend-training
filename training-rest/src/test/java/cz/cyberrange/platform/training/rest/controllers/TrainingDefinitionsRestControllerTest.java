@@ -122,7 +122,7 @@ public class TrainingDefinitionsRestControllerTest {
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingDefinitionsRestController =
-        new TrainingDefinitionsRestController(trainingDefinitionFacade, snakeCaseMapper);
+        new TrainingDefinitionsRestController(trainingDefinitionFacade);
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(trainingDefinitionsRestController)
             .setCustomArgumentResolvers(

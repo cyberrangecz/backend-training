@@ -1,9 +1,6 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.event.AbstractEventDTO;
@@ -61,20 +58,16 @@ import org.springframework.web.bind.annotation.*;
 public class TrainingInstancesRestController {
 
   private TrainingInstanceFacade trainingInstanceFacade;
-  private ObjectMapper objectMapper;
 
   @Autowired
-  public TrainingInstancesRestController(
-      TrainingInstanceFacade trainingInstanceFacade, ObjectMapper objectMapper) {
+  public TrainingInstancesRestController(TrainingInstanceFacade trainingInstanceFacade) {
     this.trainingInstanceFacade = trainingInstanceFacade;
-    this.objectMapper = objectMapper;
   }
 
   /**
    * Returns the training instance for the given id, including its training definition.
    *
    * @param id id of the training instance to return.
-   * @param fields accepted but not applied to the response of this endpoint.
    * @return the requested training instance.
    */
   @ApiOperation(
@@ -101,12 +94,9 @@ public class TrainingInstancesRestController {
             response = ApiError.class)
       })
   @GetMapping(path = "/{instanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findTrainingInstanceById(
+  public ResponseEntity<TrainingInstanceDTO> findTrainingInstanceById(
       @ApiParam(value = "Training instance ID", required = true) @PathVariable("instanceId")
-          Long id,
-      @ApiParam(value = "Fields which should be returned in REST API response")
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+          Long id) {
     TrainingInstanceDTO trainingInstanceResource = trainingInstanceFacade.findById(id);
     return ResponseEntity.ok(trainingInstanceResource);
   }
@@ -129,7 +119,7 @@ public class TrainingInstancesRestController {
         @ApiResponse(
             code = 200,
             message = "The access token has been found",
-            response = TrainingInstanceDTO.class),
+            response = String.class),
         @ApiResponse(
             code = 404,
             message = "The access token has not been found.",
@@ -151,7 +141,6 @@ public class TrainingInstancesRestController {
    *
    * @param predicate specifies query to database.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all Training Instances.
    */
   @ApiOperation(
@@ -171,24 +160,21 @@ public class TrainingInstancesRestController {
             message = "Unexpected condition was encountered.",
             response = ApiError.class)
       })
+  @ApiPageableSwagger
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllTrainingInstances(
-      @QuerydslPredicate(root = TrainingInstance.class) Predicate predicate,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<TrainingInstanceFindAllResponseDTO>>
+      findAllTrainingInstances(
+          @QuerydslPredicate(root = TrainingInstance.class) Predicate predicate,
+          @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
     PageResultResource<TrainingInstanceFindAllResponseDTO> trainingInstanceResource =
         trainingInstanceFacade.findAll(predicate, pageable);
-    Squiggly.init(objectMapper, fields);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
+    return ResponseEntity.ok(trainingInstanceResource);
   }
 
   /**
    * Create new Training Instance.
    *
    * @param trainingInstanceCreateDTO the Training Instance to be created
-   * @param fields attributes of the object to be returned as the result.
    * @return the newly created instance
    */
   @ApiOperation(
@@ -225,16 +211,12 @@ public class TrainingInstancesRestController {
   @PostMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> createTrainingInstance(
+  public ResponseEntity<TrainingInstanceDTO> createTrainingInstance(
       @ApiParam(value = "Training instance to be created", required = true) @Valid @RequestBody
-          TrainingInstanceCreateDTO trainingInstanceCreateDTO,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+          TrainingInstanceCreateDTO trainingInstanceCreateDTO) {
     TrainingInstanceDTO trainingInstanceResource =
         trainingInstanceFacade.create(trainingInstanceCreateDTO);
-    Squiggly.init(objectMapper, fields);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingInstanceResource));
+    return ResponseEntity.ok(trainingInstanceResource);
   }
 
   /**
@@ -360,7 +342,7 @@ public class TrainingInstancesRestController {
             message = "Unexpected condition was encountered.",
             response = ApiError.class)
       })
-  @PatchMapping(path = "/{instanceId}/assign-pool")
+  @PatchMapping(path = "/{instanceId}/assign-pool", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingInstanceBasicInfoDTO> assignPool(
       @ApiParam(value = "Id of training instance to be updated", required = true)
           @PathVariable("instanceId")
@@ -411,7 +393,6 @@ public class TrainingInstancesRestController {
    * @param instanceId the Training Instance id
    * @param isActive if true, only active Training Runs are returned
    * @param pageable Pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all Training Runs in given Training Instance.
    */
   @ApiOperation(
@@ -432,21 +413,18 @@ public class TrainingInstancesRestController {
             message = "Unexpected condition was encountered.",
             response = ApiError.class)
       })
+  @ApiPageableSwagger
   @GetMapping(path = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllTrainingRunsByTrainingInstanceId(
+  public ResponseEntity<PageResultResource<TrainingRunDTO>> findAllTrainingRunsByTrainingInstanceId(
       @ApiParam(value = "Training Instance Id", required = true) @PathVariable("instanceId")
           Long instanceId,
       @ApiParam(value = "If only active or not active training runs should be returned.")
           @RequestParam(value = "isActive", required = false)
           Boolean isActive,
-      @ApiParam(value = "Pagination support.") Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+      @ApiParam(value = "Pagination support.") Pageable pageable) {
     PageResultResource<TrainingRunDTO> trainingRunResource =
         trainingInstanceFacade.findTrainingRunsByTrainingInstance(instanceId, isActive, pageable);
-    Squiggly.init(objectMapper, fields);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingRunResource));
+    return ResponseEntity.ok(trainingRunResource);
   }
 
   /**
@@ -481,23 +459,23 @@ public class TrainingInstancesRestController {
       })
   @ApiPageableSwagger
   @GetMapping(path = "/{instanceId}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> getOrganizersOfTrainingInstance(
+  public ResponseEntity<PageResultResource<UserRefDTO>> getOrganizersOfTrainingInstance(
       @ApiParam(
               value = "ID of training instance for which to retrieve the organizers.",
               required = true)
           @PathVariable("instanceId")
           Long trainingInstanceId,
-      @ApiParam(value = "Given name filter.", required = true)
+      @ApiParam(value = "Given name filter.", required = false)
           @RequestParam(value = "givenName", required = false)
           String givenName,
-      @ApiParam(value = "Family name filter.", required = true)
+      @ApiParam(value = "Family name filter.", required = false)
           @RequestParam(value = "familyName", required = false)
           String familyName,
       @ApiParam(value = "Pagination support.") Pageable pageable) {
     PageResultResource<UserRefDTO> designers =
         trainingInstanceFacade.getOrganizersOfTrainingInstance(
             trainingInstanceId, pageable, givenName, familyName);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+    return ResponseEntity.ok(designers);
   }
 
   /**
@@ -507,7 +485,7 @@ public class TrainingInstancesRestController {
    * @param givenName the given name
    * @param familyName the family name
    * @param pageable pageable parameter with information about pagination.
-   * @return List of users login and full name with role organizer.
+   * @return organizers not in the given training instance, filtered by name.
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -534,7 +512,7 @@ public class TrainingInstancesRestController {
   @GetMapping(
       path = "{instanceId}/organizers-not-in-training-instance",
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> getOrganizersNotInGivenTrainingInstance(
+  public ResponseEntity<PageResultResource<UserRefDTO>> getOrganizersNotInGivenTrainingInstance(
       @ApiParam(
               value =
                   "ID of the training instance which do not contains organizers you want to retrieve.",
@@ -551,7 +529,7 @@ public class TrainingInstancesRestController {
     PageResultResource<UserRefDTO> designers =
         trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(
             trainingInstanceId, pageable, givenName, familyName);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, designers));
+    return ResponseEntity.ok(designers);
   }
 
   /**
@@ -577,7 +555,6 @@ public class TrainingInstancesRestController {
                 "Unexpected condition was encountered. Probably error during calling other microservice.",
             response = ApiError.class)
       })
-  @ApiPageableSwagger
   @PutMapping(path = "/{instanceId}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> editOrganizers(
       @ApiParam(value = "ID of training instance to be updated.", required = true)

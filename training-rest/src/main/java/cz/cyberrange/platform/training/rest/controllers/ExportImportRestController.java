@@ -1,10 +1,5 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
-import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
-import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
@@ -18,6 +13,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
+import java.io.File;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +24,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -55,19 +50,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExportImportRestController {
 
   private ExportImportFacade exportImportFacade;
-  private ObjectMapper objectMapper;
 
   /**
    * Instantiates a new Export import rest controller.
    *
    * @param exportImportFacade the export import facade
-   * @param objectMapper the object mapper
    */
   @Autowired
-  public ExportImportRestController(
-      ExportImportFacade exportImportFacade, ObjectMapper objectMapper) {
+  public ExportImportRestController(ExportImportFacade exportImportFacade) {
     this.exportImportFacade = exportImportFacade;
-    this.objectMapper = objectMapper;
   }
 
   /**
@@ -81,7 +72,7 @@ public class ExportImportRestController {
   @ApiOperation(
       httpMethod = "GET",
       value = "Get exported training definitions and levels.",
-      response = ExportTrainingDefinitionAndLevelsDTO.class,
+      response = File.class,
       nickname = "getExportedTrainingDefinitionAndLevels",
       produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   @ApiResponses(
@@ -89,7 +80,7 @@ public class ExportImportRestController {
         @ApiResponse(
             code = 200,
             message = "Training definitions and levels found and exported.",
-            response = ExportTrainingDefinitionAndLevelsDTO.class),
+            response = File.class),
         @ApiResponse(
             code = 404,
             message = "Training definition not found.",
@@ -116,13 +107,11 @@ public class ExportImportRestController {
   }
 
   /**
-   * Creates a new training definition from the submitted one, levels included, and returns it
-   * serialized to JSON narrowed to the requested attributes. The new definition starts out
-   * unreleased whatever state was submitted, and its estimated duration is the sum of its levels'.
-   * Only a training administrator or a designer may import.
+   * Creates a new training definition from the submitted one, levels included. The new definition
+   * starts out unreleased whatever state was submitted, and its estimated duration is the sum of
+   * its levels'. Only a training administrator or a designer may import.
    *
    * @param importTrainingDefinitionDTO the training definition to be imported
-   * @param fields attributes of the object to be returned as the result.
    * @return the created definition with its levels
    */
   @ApiOperation(
@@ -158,16 +147,12 @@ public class ExportImportRestController {
       path = "/imports/training-definitions",
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> importTrainingDefinition(
+  public ResponseEntity<TrainingDefinitionWithLevelsDTO> importTrainingDefinition(
       @ApiParam(value = "Training definition to be imported", required = true) @Valid @RequestBody
-          ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+          ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
     TrainingDefinitionWithLevelsDTO trainingDefinitionResource =
         exportImportFacade.dbImport(importTrainingDefinitionDTO);
-    Squiggly.init(objectMapper, fields);
-    return ResponseEntity.ok(SquigglyUtils.stringify(objectMapper, trainingDefinitionResource));
+    return ResponseEntity.ok(trainingDefinitionResource);
   }
 
   /**
@@ -184,15 +169,12 @@ public class ExportImportRestController {
   @ApiOperation(
       httpMethod = "GET",
       value = "Archive training instance",
-      response = TrainingInstanceArchiveDTO.class,
+      response = File.class,
       nickname = "archiveTrainingInstance",
       produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   @ApiResponses(
       value = {
-        @ApiResponse(
-            code = 200,
-            message = "Training instance archived.",
-            response = TrainingInstanceArchiveDTO.class),
+        @ApiResponse(code = 200, message = "Training instance archived.", response = File.class),
         @ApiResponse(
             code = 404,
             message = "Training instance not found.",

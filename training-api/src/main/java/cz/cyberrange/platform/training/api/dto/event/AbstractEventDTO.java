@@ -63,7 +63,7 @@ public abstract class AbstractEventDTO {
    * event, converted by {@code EventMapper} from the elapsed-millisecond value the audit document
    * stores for time spent in the training run so far.
    */
-  @ApiModelProperty(value = "Training time")
+  @ApiModelProperty(value = "Training time", dataType = "string", example = "PT15M")
   @JsonProperty("training_time")
   private java.time.Duration trainingTime;
 }

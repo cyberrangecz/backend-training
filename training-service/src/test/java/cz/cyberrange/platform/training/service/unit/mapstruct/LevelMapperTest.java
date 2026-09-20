@@ -55,8 +55,7 @@ class LevelMapperTest {
       InfoLevel result = sut.mapImportToEntity(importDto);
 
       assertNotNull(result);
-      assertEquals(
-          Long.valueOf(MINIMAL_POSSIBLE_SOLVE_TIME), result.getMinimalPossibleSolveTime());
+      assertEquals(Long.valueOf(MINIMAL_POSSIBLE_SOLVE_TIME), result.getMinimalPossibleSolveTime());
     }
 
     @Test

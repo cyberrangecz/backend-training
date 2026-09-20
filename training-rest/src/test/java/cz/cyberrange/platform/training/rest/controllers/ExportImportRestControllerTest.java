@@ -81,7 +81,7 @@ public class ExportImportRestControllerTest {
     objectMapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
 
     closeable = MockitoAnnotations.openMocks(this);
-    exportImportRestController = new ExportImportRestController(exportImportFacade, objectMapper);
+    exportImportRestController = new ExportImportRestController(exportImportFacade);
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(exportImportRestController)
             .setCustomArgumentResolvers(
@@ -319,7 +319,7 @@ public class ExportImportRestControllerTest {
     ObjectMapper localMapper = new ObjectMapper();
     localMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
     TrainingDefinitionsRestController otherController =
-        new TrainingDefinitionsRestController(otherFacade, localMapper);
+        new TrainingDefinitionsRestController(otherFacade);
     MockMvc otherMockMvc =
         MockMvcBuilders.standaloneSetup(otherController)
             .setMessageConverters(new MappingJackson2HttpMessageConverter(localMapper))

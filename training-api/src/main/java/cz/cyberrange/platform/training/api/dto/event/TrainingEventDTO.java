@@ -11,53 +11,43 @@ import lombok.ToString;
 
 /**
  * Parent class for every training audit event. It registers one subtype per concrete event kind
- * under that kind's fully qualified audit model class name, while the {@code type} value actually
- * written into an audit document is the short constant the model class declares, so no registered
- * name matches the value a document carries.
+ * under that kind's own {@code type} discriminator value, the same short constant the corresponding
+ * audit model class declares.
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "TrainingEventDTO", description = "Parent class for all training audit events")
+@ApiModel(
+    value = "TrainingEventDTO",
+    description = "Parent class for all training audit events",
+    subTypes = {
+      AssessmentAnsweredDTO.class,
+      CorrectAnswerSubmittedDTO.class,
+      WrongAnswerSubmittedDTO.class,
+      HintTakenDTO.class,
+      LevelCompletedDTO.class,
+      LevelStartedDTO.class,
+      SolutionDisplayedDTO.class,
+      TrainingRunFinishedDTO.class,
+      TrainingRunResumedDTO.class,
+      TrainingRunStartedDTO.class
+    })
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "type",
     visible = true)
 @JsonSubTypes({
-  @JsonSubTypes.Type(
-      value = AssessmentAnsweredDTO.class,
-      name = "cz.cyberrange.platform.training.opensearch.events.training.model.AssessmentAnswered"),
-  @JsonSubTypes.Type(
-      value = CorrectAnswerSubmittedDTO.class,
-      name =
-          "cz.cyberrange.platform.training.opensearch.events.training.model.CorrectAnswerSubmitted"),
-  @JsonSubTypes.Type(
-      value = WrongAnswerSubmittedDTO.class,
-      name =
-          "cz.cyberrange.platform.training.opensearch.events.training.model.WrongAnswerSubmitted"),
-  @JsonSubTypes.Type(
-      value = HintTakenDTO.class,
-      name = "cz.cyberrange.platform.training.opensearch.events.training.model.HintTaken"),
-  @JsonSubTypes.Type(
-      value = LevelCompletedDTO.class,
-      name = "cz.cyberrange.platform.training.opensearch.events.training.model.LevelCompleted"),
-  @JsonSubTypes.Type(
-      value = LevelStartedDTO.class,
-      name = "cz.cyberrange.platform.training.opensearch.events.training.model.LevelStarted"),
-  @JsonSubTypes.Type(
-      value = SolutionDisplayedDTO.class,
-      name = "cz.cyberrange.platform.training.opensearch.events.training.model.SolutionDisplayed"),
-  @JsonSubTypes.Type(
-      value = TrainingRunFinishedDTO.class,
-      name =
-          "cz.cyberrange.platform.training.opensearch.events.training.model.TrainingRunFinished"),
-  @JsonSubTypes.Type(
-      value = TrainingRunResumedDTO.class,
-      name = "cz.cyberrange.platform.training.opensearch.events.training.model.TrainingRunResumed"),
-  @JsonSubTypes.Type(
-      value = TrainingRunStartedDTO.class,
-      name = "cz.cyberrange.platform.training.opensearch.events.training.model.TrainingRunStarted")
+  @JsonSubTypes.Type(value = AssessmentAnsweredDTO.class, name = "assessment_answered"),
+  @JsonSubTypes.Type(value = CorrectAnswerSubmittedDTO.class, name = "correct_answer_submitted"),
+  @JsonSubTypes.Type(value = WrongAnswerSubmittedDTO.class, name = "wrong_answer_submitted"),
+  @JsonSubTypes.Type(value = HintTakenDTO.class, name = "hint_taken"),
+  @JsonSubTypes.Type(value = LevelCompletedDTO.class, name = "level_completed"),
+  @JsonSubTypes.Type(value = LevelStartedDTO.class, name = "level_started"),
+  @JsonSubTypes.Type(value = SolutionDisplayedDTO.class, name = "solution_displayed"),
+  @JsonSubTypes.Type(value = TrainingRunFinishedDTO.class, name = "training_run_finished"),
+  @JsonSubTypes.Type(value = TrainingRunResumedDTO.class, name = "training_run_resumed"),
+  @JsonSubTypes.Type(value = TrainingRunStartedDTO.class, name = "training_run_started")
 })
 public abstract class TrainingEventDTO extends AbstractEventDTO {
 

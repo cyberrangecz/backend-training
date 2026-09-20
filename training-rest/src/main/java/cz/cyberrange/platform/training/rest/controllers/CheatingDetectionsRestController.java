@@ -1,11 +1,7 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
-import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.AbstractDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.AnswerSimilarityDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.CheatingDetectionDTO;
@@ -17,7 +13,6 @@ import cz.cyberrange.platform.training.api.dto.cheatingdetection.MinimalSolveTim
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.NoCommandsDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.TimeProximityDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
 import cz.cyberrange.platform.training.rest.utils.annotations.ApiPageableSwagger;
@@ -79,18 +74,15 @@ public class CheatingDetectionsRestController {
   private final CheatingDetectionFacade cheatingDetectionFacade;
   private final DetectionEventFacade detectionEventFacade;
   private final CheatingDetectionExportFacade cheatingDetectionExportFacade;
-  private final ObjectMapper objectMapper;
 
   @Autowired
   public CheatingDetectionsRestController(
       CheatingDetectionFacade cheatingDetectionFacade,
       DetectionEventFacade detectionEventFacade,
-      CheatingDetectionExportFacade cheatingDetectionExportFacade,
-      ObjectMapper objectMapper) {
+      CheatingDetectionExportFacade cheatingDetectionExportFacade) {
     this.cheatingDetectionFacade = cheatingDetectionFacade;
     this.cheatingDetectionExportFacade = cheatingDetectionExportFacade;
     this.detectionEventFacade = detectionEventFacade;
-    this.objectMapper = objectMapper;
   }
 
   /**
@@ -102,16 +94,12 @@ public class CheatingDetectionsRestController {
   @ApiOperation(
       httpMethod = "POST",
       value = "Create and Execute cheating detection",
-      response = TrainingDefinitionWithLevelsDTO.class,
       nickname = "createAndExecuteCheatingDetection",
       notes = "This can only be done by organizer of training instance or administrator.",
       consumes = MediaType.APPLICATION_JSON_VALUE)
   @ApiResponses(
       value = {
-        @ApiResponse(
-            code = 200,
-            message = "The Cheating Detection has been created and executed.",
-            response = CheatingDetectionDTO.class),
+        @ApiResponse(code = 200, message = "The Cheating Detection has been created and executed."),
         @ApiResponse(
             code = 400,
             message = "The provided cheating detection is not valid",
@@ -123,7 +111,7 @@ public class CheatingDetectionsRestController {
       })
   @PostMapping(path = "/detection", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> createAndExecuteCheatingDetection(
-      @ApiParam(value = "CheatingDetection to be created") @RequestBody @Valid
+      @ApiParam(value = "CheatingDetection to be created", required = true) @RequestBody @Valid
           CheatingDetectionDTO cheatingDetectionDTO) {
     cheatingDetectionFacade.createAndExecute(cheatingDetectionDTO);
     return ResponseEntity.ok().build();
@@ -216,7 +204,6 @@ public class CheatingDetectionsRestController {
    * @param cheatingDetectionId id of cheating detection.
    * @param trainingInstanceId id of training instance.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all Detection Events occurred in a cheating detection.
    */
   @ApiOperation(
@@ -243,24 +230,21 @@ public class CheatingDetectionsRestController {
       })
   @ApiPageableSwagger
   @GetMapping(path = "/{cheatingDetectionId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllDetectionEventsOfCheatingDetection(
-      @QuerydslPredicate(root = AbstractDetectionEvent.class) Predicate predicate,
-      @ApiParam(value = "id of cheating detection", required = true)
-          @PathVariable("cheatingDetectionId")
-          Long cheatingDetectionId,
-      @ApiParam(value = "id of training instance", required = true)
-          @RequestParam(value = "trainingInstanceId", required = true)
-          Long trainingInstanceId,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<AbstractDetectionEventDTO>>
+      findAllDetectionEventsOfCheatingDetection(
+          @QuerydslPredicate(root = AbstractDetectionEvent.class) Predicate predicate,
+          @ApiParam(value = "id of cheating detection", required = true)
+              @PathVariable("cheatingDetectionId")
+              Long cheatingDetectionId,
+          @ApiParam(value = "id of training instance", required = true)
+              @RequestParam(value = "trainingInstanceId", required = true)
+              Long trainingInstanceId,
+          @ApiParam(value = "Pagination support.", required = false, hidden = true)
+              Pageable pageable) {
     PageResultResource<AbstractDetectionEventDTO> detectionEventResource =
         detectionEventFacade.findAllDetectionEventsOfCheatingDetection(
             cheatingDetectionId, pageable, predicate, trainingInstanceId);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, detectionEventResource), HttpStatus.OK);
+    return new ResponseEntity<>(detectionEventResource, HttpStatus.OK);
   }
 
   /**
@@ -268,7 +252,6 @@ public class CheatingDetectionsRestController {
    *
    * @param eventId id of detection event.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all participants of a detection event.
    */
   @ApiOperation(
@@ -283,7 +266,7 @@ public class CheatingDetectionsRestController {
         @ApiResponse(
             code = 200,
             message = "Participants have been found.",
-            response = DetectionEventRestResource.class),
+            response = DetectionEventParticipantRestResource.class),
         @ApiResponse(
             code = 404,
             message = "The participants have not been found.",
@@ -295,19 +278,15 @@ public class CheatingDetectionsRestController {
       })
   @ApiPageableSwagger
   @GetMapping(path = "/participants", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllParticipantsOfDetectionEvent(
-      @ApiParam(value = "the event id", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<DetectionEventParticipantDTO>>
+      findAllParticipantsOfDetectionEvent(
+          @ApiParam(value = "the event id", required = true)
+              @RequestParam(value = "eventId", required = true)
+              Long eventId,
+          @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
     PageResultResource<DetectionEventParticipantDTO> participantsResource =
         detectionEventFacade.findAllParticipantsOfDetectionEvent(eventId, pageable);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
+    return new ResponseEntity<>(participantsResource, HttpStatus.OK);
   }
 
   /**
@@ -315,13 +294,12 @@ public class CheatingDetectionsRestController {
    *
    * @param eventId id of detection event.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all detected forbidden commands occurred in a detection event.
    */
   @ApiOperation(
       httpMethod = "GET",
       value = "Get all forbidden commands of detection event.",
-      response = DetectionEventParticipantRestResource.class,
+      response = DetectedForbiddenCommandRestResource.class,
       nickname = "findAllForbiddenCommandsOfEvent",
       notes = "This can only be done by organizer of training instance or administrator.",
       produces = MediaType.APPLICATION_JSON_VALUE)
@@ -330,7 +308,7 @@ public class CheatingDetectionsRestController {
         @ApiResponse(
             code = 200,
             message = "Forbidden commands have been found.",
-            response = DetectionEventRestResource.class),
+            response = DetectedForbiddenCommandRestResource.class),
         @ApiResponse(
             code = 404,
             message = "The forbidden commands have not been found.",
@@ -342,19 +320,15 @@ public class CheatingDetectionsRestController {
       })
   @ApiPageableSwagger
   @GetMapping(path = "/forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllForbiddenCommandsOfDetectionEvent(
-      @ApiParam(value = "the event id", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<DetectedForbiddenCommandDTO>>
+      findAllForbiddenCommandsOfDetectionEvent(
+          @ApiParam(value = "the event id", required = true)
+              @RequestParam(value = "eventId", required = true)
+              Long eventId,
+          @ApiParam(value = "Pagination support.", required = false) Pageable pageable) {
     PageResultResource<DetectedForbiddenCommandDTO> participantsResource =
         detectionEventFacade.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
+    return new ResponseEntity<>(participantsResource, HttpStatus.OK);
   }
 
   /**
@@ -365,16 +339,18 @@ public class CheatingDetectionsRestController {
    */
   @ApiOperation(
       httpMethod = "GET",
-      value = "Get all forbidden commands of detection event.",
-      response = Object.class,
-      nickname = "findAllForbiddenCommandsOfEvent",
+      value = "Get all forbidden commands of detection event, unpaged.",
+      response = DetectedForbiddenCommandDTO.class,
+      responseContainer = "List",
+      nickname = "findDetectedForbiddenCommandsOfEvent",
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiResponses(
       value = {
         @ApiResponse(
             code = 200,
             message = "Forbidden commands have been found.",
-            response = DetectionEventRestResource.class),
+            response = DetectedForbiddenCommandDTO.class,
+            responseContainer = "List"),
         @ApiResponse(
             code = 404,
             message = "The forbidden commands have not been found.",
@@ -402,7 +378,7 @@ public class CheatingDetectionsRestController {
   @ApiOperation(
       httpMethod = "GET",
       value = "Archive cheating detection results",
-      response = CheatingDetectionDTO.class,
+      response = byte[].class,
       nickname = "archiveCheatingDetectionResults",
       produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   @ApiResponses(
@@ -410,7 +386,7 @@ public class CheatingDetectionsRestController {
         @ApiResponse(
             code = 200,
             message = "Cheating Detection results archived.",
-            response = TrainingInstanceArchiveDTO.class),
+            response = byte[].class),
         @ApiResponse(
             code = 404,
             message = "Cheating Detection not found.",
@@ -707,7 +683,6 @@ public class CheatingDetectionsRestController {
    *
    * @param trainingInstanceId id of training instance.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all cheating Detections occurred in a training instance.
    */
   @ApiOperation(
@@ -736,20 +711,17 @@ public class CheatingDetectionsRestController {
   @GetMapping(
       path = "/{trainingInstanceId}/detections",
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllCheatingDetectionsOfInstance(
-      @ApiParam(value = "id of training instance", required = true)
-          @PathVariable("trainingInstanceId")
-          Long trainingInstanceId,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<CheatingDetectionDTO>>
+      findAllCheatingDetectionsOfInstance(
+          @ApiParam(value = "id of training instance", required = true)
+              @PathVariable("trainingInstanceId")
+              Long trainingInstanceId,
+          @ApiParam(value = "Pagination support.", required = false, hidden = true)
+              Pageable pageable) {
     PageResultResource<CheatingDetectionDTO> cheatingDetectionResource =
         cheatingDetectionFacade.findAllCheatingDetectionsOfTrainingInstance(
             trainingInstanceId, pageable);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, cheatingDetectionResource), HttpStatus.OK);
+    return new ResponseEntity<>(cheatingDetectionResource, HttpStatus.OK);
   }
 
   /** The type Detection Event rest resource */
@@ -798,6 +770,24 @@ public class CheatingDetectionsRestController {
     @JsonProperty(required = true)
     @ApiModelProperty(value = "Retrieved Event participants from databases.")
     private List<DetectionEventParticipantDTO> content;
+
+    @JsonProperty(required = true)
+    @ApiModelProperty(
+        value =
+            "Pagination including: page number, number of elements in page, size, total elements and total pages.")
+    private Pagination pagination;
+  }
+
+  /** The type Detected forbidden command rest resource */
+  @ApiModel(
+      value = "DetectedForbiddenCommandRestResource",
+      description =
+          "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
+  public static class DetectedForbiddenCommandRestResource
+      extends PageResultResource<DetectedForbiddenCommandDTO> {
+    @JsonProperty(required = true)
+    @ApiModelProperty(value = "Retrieved Detected forbidden commands from databases.")
+    private List<DetectedForbiddenCommandDTO> content;
 
     @JsonProperty(required = true)
     @ApiModelProperty(
