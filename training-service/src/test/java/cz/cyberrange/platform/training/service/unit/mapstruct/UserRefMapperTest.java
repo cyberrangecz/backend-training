@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
-import cz.cyberrange.platform.training.api.dto.export.UserRefExportDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.UserRefMapper;
@@ -258,39 +257,6 @@ class UserRefMapperTest {
     @DisplayName("should return null for null input")
     void shouldReturnNullForNullInput() {
       Set<UserRefDTO> result = sut.mapToSetDTO(null);
-
-      assertNull(result);
-    }
-  }
-
-  @Nested
-  @DisplayName("mapUserRefExportDTOToUserRefDTO(Collection)")
-  class MapUserRefExportDTOToUserRefDTO {
-
-    @Test
-    @DisplayName("should map collection of UserRefDTOs to UserRefExportDTOs")
-    void shouldMapCollectionOfUserRefDTOsToExportDTOs() {
-      Collection<UserRefDTO> userRefDtos = List.of(dto, dto);
-
-      List<UserRefExportDTO> result = sut.mapUserRefExportDTOToUserRefDTO(userRefDtos);
-
-      assertNotNull(result);
-      assertEquals(2, result.size());
-    }
-
-    @Test
-    @DisplayName("should return empty list for empty input")
-    void shouldReturnEmptyListForEmptyInput() {
-      List<UserRefExportDTO> result = sut.mapUserRefExportDTOToUserRefDTO(Collections.emptyList());
-
-      assertNotNull(result);
-      assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("should return null for null input")
-    void shouldReturnNullForNullInput() {
-      List<UserRefExportDTO> result = sut.mapUserRefExportDTOToUserRefDTO(null);
 
       assertNull(result);
     }

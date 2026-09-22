@@ -25,8 +25,7 @@ public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
    */
   @Schema(
       requiredMode = Schema.RequiredMode.REQUIRED,
-      description =
-          "Their points make up the level's maximum score when the assessment is a test")
+      description = "Their points make up the level's maximum score when the assessment is a test")
   @NotNull(message = "{assessmentLevel.questions.NotNull.message}")
   private List<QuestionDTO> questions = new ArrayList<>();
 

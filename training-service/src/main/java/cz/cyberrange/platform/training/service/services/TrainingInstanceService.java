@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -94,14 +93,21 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Find Training instance access token by pool id if exists.
+   * Find Training instance access token by pool id.
    *
    * @param poolId the pool id
    * @return the access token
+   * @throws EntityNotFoundException no training instance holds this pool.
    */
   public String findInstanceAccessTokenByPoolId(Long poolId) {
-    Optional<TrainingInstance> instance = trainingInstanceRepository.findByPoolId(poolId);
-    return instance.map(TrainingInstance::getAccessToken).orElse(null);
+    return trainingInstanceRepository
+        .findByPoolId(poolId)
+        .map(TrainingInstance::getAccessToken)
+        .orElseThrow(
+            () ->
+                new EntityNotFoundException(
+                    new EntityErrorDetail(
+                        TrainingInstance.class, "poolId", poolId.getClass(), poolId)));
   }
 
   /**

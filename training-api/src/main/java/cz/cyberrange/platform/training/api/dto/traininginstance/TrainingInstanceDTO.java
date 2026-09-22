@@ -5,8 +5,6 @@ import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -36,10 +34,6 @@ public class TrainingInstanceDTO extends TrainingInstanceBasicDTO {
 
   @Schema(example = "1")
   private Long poolId;
-
-  /** Never populated by the mapper or the facade; stays the empty list it is declared with */
-  @Schema(description = "Always empty; the server never fills it.", example = "[]")
-  private List<String> sandboxesWithTrainingRun = new ArrayList<>();
 
   @Schema(example = "2017-10-19 10:23:54+02")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)

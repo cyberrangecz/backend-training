@@ -23,15 +23,15 @@ import java.util.List;
 import java.util.Set;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
+import org.mapstruct.SubclassMapping;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
 /**
  * Maps cheating detection findings between their persistence subtype hierarchy, rooted at {@link
  * AbstractDetectionEvent}, and their DTO subtype hierarchy, rooted at {@link
- * AbstractDetectionEventDTO}. Each finding kind is mapped through its own pair of methods; the
- * mapper performs no dispatch by itself, so a caller holding a value as its base type must pick the
- * matching kind-specific method itself to carry the kind's own fields across.
+ * AbstractDetectionEventDTO}. Each finding kind is mapped through its own pair of methods; {@link
+ * #mapToDTO} dispatches a value held as the base type to the method matching its runtime kind.
  */
 @Mapper(
     componentModel = "spring",
@@ -117,14 +117,32 @@ public interface DetectionEventMapper extends ParentMapper {
 
   // ABSTRACT
   /**
-   * Maps a detection event entity to a plain {@link AbstractDetectionEventDTO}, matching only the
-   * fields declared on the base types. Passing a concrete subtype instance still yields a plain
-   * {@link AbstractDetectionEventDTO}: the fields the subtype adds are not carried across, since
-   * this method dispatches on the parameter's declared type, not its runtime type.
+   * Maps a detection event entity to the DTO of its matching kind, dispatching on the entity's
+   * runtime type so every field the kind adds on top of {@link AbstractDetectionEvent} is carried
+   * across.
    *
-   * @param entity the detection event to map
-   * @return the base detection event DTO
+   * @param entity the detection event to map, or {@code null}
+   * @return the detection event DTO of the matching kind, or {@code null} when {@code entity} is
+   *     {@code null}
    */
+  @SubclassMapping(
+      source = AnswerSimilarityDetectionEvent.class,
+      target = AnswerSimilarityDetectionEventDTO.class)
+  @SubclassMapping(
+      source = ForbiddenCommandsDetectionEvent.class,
+      target = ForbiddenCommandsDetectionEventDTO.class)
+  @SubclassMapping(
+      source = LocationSimilarityDetectionEvent.class,
+      target = LocationSimilarityDetectionEventDTO.class)
+  @SubclassMapping(
+      source = MinimalSolveTimeDetectionEvent.class,
+      target = MinimalSolveTimeDetectionEventDTO.class)
+  @SubclassMapping(
+      source = NoCommandsDetectionEvent.class,
+      target = NoCommandsDetectionEventDTO.class)
+  @SubclassMapping(
+      source = TimeProximityDetectionEvent.class,
+      target = TimeProximityDetectionEventDTO.class)
   AbstractDetectionEventDTO mapToDTO(AbstractDetectionEvent entity);
 
   List<AbstractDetectionEventDTO> mapToList(Collection<AbstractDetectionEventDTO> dtos);

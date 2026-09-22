@@ -11,10 +11,11 @@ import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstance
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceFindAllResponseDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
+import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
-import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
+import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -101,7 +102,8 @@ public class TrainingInstancesRestController {
    * Get Training instance access token by pool id.
    *
    * @param poolId id of the assigned pool.
-   * @return Requested access token by pool id if it exists.
+   * @return Requested access token by pool id.
+   * @throws EntityNotFoundException no training instance holds this pool.
    */
   @Operation(
       operationId = "findTrainingInstanceAccessTokenByPoolId",
@@ -112,7 +114,7 @@ public class TrainingInstancesRestController {
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
-        description = "The access token, empty when no instance holds that pool.",
+        description = "The access token.",
         content =
             @Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -120,7 +122,11 @@ public class TrainingInstancesRestController {
     @ApiResponse(
         responseCode = "400",
         description = "The pool id is not a number.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training instance holds this pool.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(path = "/access/{poolId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> findInstanceAccessTokenByPoolId(

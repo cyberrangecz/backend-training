@@ -37,9 +37,9 @@ public interface CheatingDetectionMapper extends ParentMapper {
   CheatingDetectionDTO mapToDTO(CheatingDetection entity);
 
   /**
-   * Maps a cheating detection DTO to a new entity, mapping {@code forbiddenCommands} through
-   * {@link ForbiddenCommandMapper} into {@code commands} and pointing each command back at the
-   * detection that owns it.
+   * Maps a cheating detection DTO to a new entity, mapping {@code forbiddenCommands} through {@link
+   * ForbiddenCommandMapper} into {@code commands} and pointing each command back at the detection
+   * that owns it.
    *
    * @param dto the cheating detection DTO to map
    * @return the mapped cheating detection

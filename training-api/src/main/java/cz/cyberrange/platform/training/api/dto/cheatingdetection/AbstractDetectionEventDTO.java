@@ -1,6 +1,5 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.DetectionEventType;
@@ -25,26 +24,6 @@ import lombok.Data;
       NoCommandsDetectionEventDTO.class,
       TimeProximityDetectionEventDTO.class
     })
-@JsonSubTypes({
-  @JsonSubTypes.Type(
-      value = AnswerSimilarityDetectionEventDTO.class,
-      name = "AnswerSimilarityDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = ForbiddenCommandsDetectionEventDTO.class,
-      name = "ForbiddenCommandsDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = LocationSimilarityDetectionEventDTO.class,
-      name = "LocationSimilarityDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = MinimalSolveTimeDetectionEventDTO.class,
-      name = "MinimalSolveTimeDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = NoCommandsDetectionEventDTO.class,
-      name = "NoCommandsDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = TimeProximityDetectionEventDTO.class,
-      name = "TimeProximityDetectionEventDTO")
-})
 public class AbstractDetectionEventDTO {
 
   @Schema(example = "1")

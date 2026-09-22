@@ -16,8 +16,8 @@ import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
-import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
+import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -404,7 +404,8 @@ public class TrainingRunsRestController {
               + " recorded. Once no attempts remain, the response carries the solution.")
   @ApiResponses({
     @ApiResponse(
-        responseCode = "200", description = "The verdict and the attempts still remaining."),
+        responseCode = "200",
+        description = "The verdict and the attempts still remaining."),
     @ApiResponse(
         responseCode = "400",
         description = "The current level is not a training level.",
