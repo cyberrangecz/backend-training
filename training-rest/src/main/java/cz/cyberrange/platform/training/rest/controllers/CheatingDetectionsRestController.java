@@ -99,8 +99,8 @@ public class CheatingDetectionsRestController {
       summary = "Create a cheating detection and run it",
       description =
           "A training administrator or an organizer of the training instance may call it. Only a"
-              + " detection sent as QUEUED is run. Forbidden commands sent in the body are not"
-              + " stored.")
+              + " detection sent as QUEUED is run. Forbidden commands sent in the body are stored"
+              + " with the detection and are what the forbidden commands sweep matches against.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The detection was created and executed."),
     @ApiResponse(

@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,13 +37,26 @@ public interface CheatingDetectionMapper extends ParentMapper {
   CheatingDetectionDTO mapToDTO(CheatingDetection entity);
 
   /**
-   * Maps a cheating detection DTO to a new entity, leaving {@code commands} unset; {@code
-   * forbiddenCommands} carries no source counterpart on the entity side.
+   * Maps a cheating detection DTO to a new entity, mapping {@code forbiddenCommands} through
+   * {@link ForbiddenCommandMapper} into {@code commands} and pointing each command back at the
+   * detection that owns it.
    *
    * @param dto the cheating detection DTO to map
    * @return the mapped cheating detection
    */
+  @Mapping(target = "commands", source = "forbiddenCommands")
   CheatingDetection mapToEntity(CheatingDetectionDTO dto);
+
+  /**
+   * Points every forbidden command of a mapped cheating detection back at the detection that owns
+   * it.
+   *
+   * @param entity the mapped cheating detection
+   */
+  @AfterMapping
+  default void linkCommandsToDetection(@MappingTarget CheatingDetection entity) {
+    entity.getCommands().forEach(command -> command.setCheatingDetection(entity));
+  }
 
   List<CheatingDetection> mapToList(Collection<CheatingDetectionDTO> dtos);
 
