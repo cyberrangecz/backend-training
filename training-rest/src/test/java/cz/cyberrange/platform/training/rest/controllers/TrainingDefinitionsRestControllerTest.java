@@ -210,7 +210,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         trainingDefinitionDTO1,
         convertJsonBytesToObject(
-            convertJsonBytesToObject(result.getContentAsString()),
+            result.getContentAsString(),
             TrainingDefinitionWithLevelsDTO.class));
   }
 
@@ -245,7 +245,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         trainingDefinitionDTOPageResultResource.getContent(),
         convertJsonBytesToObject(
-                convertJsonBytesToObject(result.getContentAsString()),
+                result.getContentAsString(),
                 new TypeReference<PageResultResource<TrainingDefinitionDTO>>() {})
             .getContent());
   }
@@ -266,7 +266,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         trainingDefinitionInfoDTOPageResultResource.getContent(),
         convertJsonBytesToObject(
-                convertJsonBytesToObject(result.getContentAsString()),
+                result.getContentAsString(),
                 new TypeReference<PageResultResource<TrainingDefinitionInfoDTO>>() {})
             .getContent());
   }
@@ -288,7 +288,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         trainingDefinitionDTO1,
         convertJsonBytesToObject(
-            convertJsonBytesToObject(result.getContentAsString()),
+            result.getContentAsString(),
             TrainingDefinitionWithLevelsDTO.class));
     then(trainingDefinitionFacade).should().create(any(TrainingDefinitionCreateDTO.class));
   }
@@ -668,7 +668,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         abstractLevelDTO,
         convertJsonBytesToObject(
-            convertJsonBytesToObject(result.getContentAsString()), TrainingLevelDTO.class));
+            result.getContentAsString(), TrainingLevelDTO.class));
   }
 
   @Test
@@ -710,7 +710,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         basicTrainingLevelInfoDTO,
         convertJsonBytesToObject(
-            convertJsonBytesToObject(result.getContentAsString()), BasicLevelInfoDTO.class));
+            result.getContentAsString(), BasicLevelInfoDTO.class));
   }
 
   @Test
@@ -753,7 +753,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         designers,
         convertJsonBytesToObject(
-                convertJsonBytesToObject(result.getContentAsString()),
+                result.getContentAsString(),
                 new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
@@ -800,7 +800,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         organizers,
         convertJsonBytesToObject(
-                convertJsonBytesToObject(result.getContentAsString()),
+                result.getContentAsString(),
                 new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
@@ -847,7 +847,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         authors,
         convertJsonBytesToObject(
-                convertJsonBytesToObject(result.getContentAsString()),
+                result.getContentAsString(),
                 new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }

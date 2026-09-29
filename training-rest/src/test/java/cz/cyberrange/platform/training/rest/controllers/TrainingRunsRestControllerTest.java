@@ -190,8 +190,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(
-            ObjectConverter.convertObjectToJsonBytes(trainingRunByIdDTO)),
+        ObjectConverter.convertObjectToJsonBytes(trainingRunByIdDTO),
         result.getContentAsString());
   }
 
@@ -223,8 +222,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(
-            ObjectConverter.convertObjectToJsonBytes(trainingRunDTOPageResultResource)),
+        ObjectConverter.convertObjectToJsonBytes(trainingRunDTOPageResultResource),
         result.getContentAsString());
   }
 
@@ -277,8 +275,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(
-            ObjectConverter.convertObjectToJsonBytes(accessedTrainingRunDTOPage)),
+        ObjectConverter.convertObjectToJsonBytes(accessedTrainingRunDTOPage),
         result.getContentAsString());
   }
 
@@ -294,8 +291,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(
-            ObjectConverter.convertObjectToJsonBytes(assessmentLevelDTO)),
+        ObjectConverter.convertObjectToJsonBytes(assessmentLevelDTO),
         result.getContentAsString());
   }
 
@@ -310,8 +306,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(
-            ObjectConverter.convertObjectToJsonBytes(trainingLevelDTO)),
+        ObjectConverter.convertObjectToJsonBytes(trainingLevelDTO),
         result.getContentAsString());
   }
 
@@ -326,8 +321,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(
-            ObjectConverter.convertObjectToJsonBytes(infoLevelDTO)),
+        ObjectConverter.convertObjectToJsonBytes(infoLevelDTO),
         result.getContentAsString());
   }
 
@@ -354,11 +348,10 @@ public class TrainingRunsRestControllerTest {
         mockMvc
             .perform(get("/training-runs/{runId}/solutions", 3L))
             .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
             .andReturn()
             .getResponse();
-    assertEquals(
-        "Solution",
-        ObjectConverter.convertJsonBytesToObject(result.getContentAsString(), String.class));
+    assertEquals("Solution", result.getContentAsString());
   }
 
   @Test
@@ -387,7 +380,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(ObjectConverter.convertObjectToJsonBytes(hintDTO)),
+        ObjectConverter.convertObjectToJsonBytes(hintDTO),
         result.getContentAsString());
   }
 
@@ -547,7 +540,7 @@ public class TrainingRunsRestControllerTest {
     Assertions.assertEquals(
         participantDTO1,
         ObjectConverter.convertJsonBytesToObject(
-            ObjectConverter.convertJsonBytesToObject(result.getContentAsString()),
+            result.getContentAsString(),
             UserRefDTO.class));
   }
 
