@@ -36,5 +36,7 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "cheating_detection_id")
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private CheatingDetection cheatingDetection;
 }

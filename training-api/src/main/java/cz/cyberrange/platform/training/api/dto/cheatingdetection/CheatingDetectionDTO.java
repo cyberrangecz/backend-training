@@ -6,6 +6,8 @@ import cz.cyberrange.platform.training.api.enums.CheatingDetectionState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -76,5 +78,5 @@ public class CheatingDetectionDTO {
    * nothing to match against.
    */
   @Schema(example = "[]", description = "Commands this run treats as forbidden.")
-  private List<ForbiddenCommandDTO> forbiddenCommands;
+  private List<@NotNull @Valid ForbiddenCommandDTO> forbiddenCommands;
 }
