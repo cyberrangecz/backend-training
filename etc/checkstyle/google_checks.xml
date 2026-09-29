@@ -4,6 +4,11 @@
           "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <!--
+    Derived from google_checks.xml in Checkstyle 9.3 (https://checkstyle.org),
+    licensed under LGPL-2.1-or-later.
+-->
+
+<!--
     Checkstyle configuration that checks the Google coding conventions from Google Java Style
     that can be found at https://google.github.io/styleguide/javaguide.html
 
