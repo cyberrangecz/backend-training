@@ -12,6 +12,7 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,7 +45,10 @@ public interface CheatingDetectionMapper extends ParentMapper {
    * @param dto the cheating detection DTO to map
    * @return the mapped cheating detection
    */
-  @Mapping(target = "commands", source = "forbiddenCommands")
+  @Mapping(
+      target = "commands",
+      source = "forbiddenCommands",
+      nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
   CheatingDetection mapToEntity(CheatingDetectionDTO dto);
 
   /**
