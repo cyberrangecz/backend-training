@@ -100,8 +100,7 @@ public class TrainingInstancesRestControllerTest {
     snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
 
     closeable = MockitoAnnotations.openMocks(this);
-    trainingInstancesRestController =
-        new TrainingInstancesRestController(trainingInstanceFacade, snakeCaseMapper);
+    trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade);
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
             .setCustomArgumentResolvers(
@@ -195,7 +194,7 @@ public class TrainingInstancesRestControllerTest {
             .andReturn()
             .getResponse();
     assertEquals(
-        convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstanceDTOPageResultResource)),
+        convertObjectToJsonBytes(trainingInstanceDTOPageResultResource),
         result.getContentAsString());
   }
 
@@ -213,7 +212,7 @@ public class TrainingInstancesRestControllerTest {
             .andReturn()
             .getResponse();
     assertEquals(
-        convertObjectToJsonBytes(convertObjectToJsonBytes(trainingInstance1DTO)),
+        convertObjectToJsonBytes(trainingInstance1DTO),
         result.getContentAsString());
   }
 
@@ -377,7 +376,7 @@ public class TrainingInstancesRestControllerTest {
     assertEquals(
         expectedUsersRefDTOs.getContent(),
         convertJsonBytesToObject(
-                convertJsonBytesToObject(result.getContentAsString()),
+                result.getContentAsString(),
                 new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
@@ -421,7 +420,7 @@ public class TrainingInstancesRestControllerTest {
     assertEquals(
         expectedUsersRefDTOs.getContent(),
         convertJsonBytesToObject(
-                convertJsonBytesToObject(result.getContentAsString()),
+                result.getContentAsString(),
                 new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }

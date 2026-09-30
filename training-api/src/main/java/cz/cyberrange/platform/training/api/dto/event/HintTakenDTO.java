@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -11,18 +10,15 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "HintTakenDTO", description = "Hint taken event")
+@Schema(description = "Records that a trainee revealed a hint of a training level.")
 public class HintTakenDTO extends TrainingEventDTO {
 
-  @ApiModelProperty(value = "Hint ID")
   @JsonProperty("hint_id")
   private Long hintId;
 
-  @ApiModelProperty(value = "Hint title")
   @JsonProperty("hint_title")
   private String hintTitle;
 
-  @ApiModelProperty(value = "Hint penalty points")
   @JsonProperty("hint_penalty_points")
   private Integer hintPenaltyPoints;
 }

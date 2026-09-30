@@ -268,7 +268,6 @@ public class TrainingInstancesIT {
   @Test
   public void findTrainingInstanceById() throws Exception {
     trainingInstanceRepository.save(futureTrainingInstance);
-    sandboxInfo1.setLockId(1);
     MockHttpServletResponse result =
         mvc.perform(get("/training-instances/{id}", futureTrainingInstance.getId()))
             .andExpect(status().isOk())
@@ -278,7 +277,6 @@ public class TrainingInstancesIT {
 
     TrainingInstanceDTO expectedInstanceDTO =
         trainingInstanceMapper.mapToDTO(futureTrainingInstance);
-    expectedInstanceDTO.setSandboxesWithTrainingRun(List.of(sandboxInfo1.getId()));
     TrainingInstanceDTO responseInstanceDTO =
         mapper.readValue(result.getContentAsString(), TrainingInstanceDTO.class);
     assertEquals(expectedInstanceDTO, responseInstanceDTO);

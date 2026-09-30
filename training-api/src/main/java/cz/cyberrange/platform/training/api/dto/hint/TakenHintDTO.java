@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.hint;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -12,23 +11,21 @@ import lombok.EqualsAndHashCode;
  * position.
  */
 @Data
-@ApiModel(
-    value = "TakenHintDTO",
-    description = "A taken brief textual description to aid the participant.")
+@Schema(description = "A hint already taken in a run, with the advice as recorded then.")
 public class TakenHintDTO {
 
-  @ApiModelProperty(value = "Main identifier of hint.", example = "1")
+  @Schema(example = "1")
   private Long id;
 
-  @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
+  @Schema(example = "Hint1")
   private String title;
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
+  @Schema(
+      description = "The advice as it was recorded when the hint was taken.",
       example = "Very good advice")
   private String content;
 
   @EqualsAndHashCode.Exclude
-  @ApiModelProperty(value = "The order of hint in training level", example = "1")
+  @Schema(description = "Position of the hint within its level.", example = "1")
   private int order;
 }

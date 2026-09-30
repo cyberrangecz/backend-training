@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.imports;
 
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -15,10 +14,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "AssessmentLevelImportDTO",
-    description = "Imported assessment level.",
-    parent = AbstractLevelImportDTO.class)
+@Schema(description = "An assessment level to create, with the questions it asks")
 public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
 
   /**
@@ -27,13 +23,13 @@ public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
    * carry a correct option order for each of its statements or the import is rejected. May be left
    * out of a submitted file, which leaves it empty, but a null value is refused.
    */
-  @ApiModelProperty(value = "Questions of assessment level to update.")
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description = "Their points make up the level's maximum score when the assessment is a test")
   @NotNull(message = "{assessmentLevel.questions.NotNull.message}")
   private List<QuestionDTO> questions = new ArrayList<>();
 
-  @ApiModelProperty(
-      value = "Instructions of assessment level to update.",
-      example = "Fill me up slowly")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Fill me up slowly")
   @NotNull(message = "{assessmentLevel.instructions.NotNull.message}")
   private String instructions;
 
@@ -42,9 +38,11 @@ public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
    * than accepted directly, and every extended-matching-item statement is checked and resolved to
    * its correct option. Other values leave the maximum score unset.
    */
-  @ApiModelProperty(
-      value = "Type of assessment level to update.",
-      required = true,
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description =
+          "A test is scored from its questions, and every matching statement has to name its"
+              + " correct option",
       example = "TEST")
   @NotNull(message = "{assessmentLevel.type.NotNull.message}")
   private AssessmentType assessmentType;

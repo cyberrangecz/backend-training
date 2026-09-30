@@ -20,6 +20,7 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPrevie
 import cz.cyberrange.platform.training.api.enums.Actions;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
+import cz.cyberrange.platform.training.api.exceptions.ForbiddenException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.api.responses.VariantAnswer;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
@@ -155,6 +156,8 @@ public class TrainingRunFacade {
    *
    * @param trainingRunIds training runs to delete
    * @param forceDelete indicates if this training run should be force deleted.
+   * @throws ForbiddenException if a non-administrator caller is not an organizer of one of the
+   *     given training runs
    */
   @IsOrganizerOrAdmin
   @TransactionalWO
@@ -166,7 +169,7 @@ public class TrainingRunFacade {
     if (!securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
       for (Long trainingRunId : trainingRunIds) {
         if (!securityService.isOrganizerOfGivenTrainingRun(trainingRunId)) {
-          throw new SecurityException("Cannot delete training runs from different instance.");
+          throw new ForbiddenException("Cannot delete training runs from different instance.");
         }
       }
     }

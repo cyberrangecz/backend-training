@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,12 +22,25 @@ import lombok.experimental.SuperBuilder;
  * concrete class among the {@link JsonSubTypes} declared here, and Jackson uses that same
  * registration in reverse to pick a subclass when reading a document back.
  */
-@ApiModel(
-    value = "Parent class for all audit POJO classes",
-    description =
-        "This class have to be extended when some event should be saved to OpenSearch."
-            + " It provides 2 member variables 'timestamp' and 'type': 'timestamp' is generated based on current time; 'type'"
-            + " is defined by the `TYPE` constant in each subclass")
+@Schema(
+    description = "Fields recorded on every training run audit event.",
+    discriminatorMapping = {
+      @DiscriminatorMapping(value = AssessmentAnswered.TYPE, schema = AssessmentAnswered.class),
+      @DiscriminatorMapping(
+          value = CorrectAnswerSubmitted.TYPE,
+          schema = CorrectAnswerSubmitted.class),
+      @DiscriminatorMapping(value = WrongAnswerSubmitted.TYPE, schema = WrongAnswerSubmitted.class),
+      @DiscriminatorMapping(value = HintTaken.TYPE, schema = HintTaken.class),
+      @DiscriminatorMapping(value = LevelCompleted.TYPE, schema = LevelCompleted.class),
+      @DiscriminatorMapping(value = LevelStarted.TYPE, schema = LevelStarted.class),
+      @DiscriminatorMapping(value = SolutionDisplayed.TYPE, schema = SolutionDisplayed.class),
+      @DiscriminatorMapping(value = TrainingRunFinished.TYPE, schema = TrainingRunFinished.class),
+      @DiscriminatorMapping(value = TrainingRunResumed.TYPE, schema = TrainingRunResumed.class),
+      @DiscriminatorMapping(value = TrainingRunStarted.TYPE, schema = TrainingRunStarted.class),
+      @DiscriminatorMapping(
+          value = "cz.cyberrange.platform.events.trainings.WrongFlagSubmitted",
+          schema = WrongAnswerSubmitted.class)
+    })
 @JsonPropertyOrder({"type", "timestamp"})
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(

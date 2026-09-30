@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.imports;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -10,16 +9,14 @@ import lombok.Data;
 
 /** Encapsulates information about Hint */
 @Data
-@ApiModel(value = "HintImportDTO", description = "Imported hint.")
+@Schema(description = "A hint to create on a training level, for the trainee to take when stuck")
 public class HintImportDTO {
 
-  @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Hint1")
   @NotEmpty(message = "{hint.title.NotEmpty.message}")
   private String title;
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
-      example = "Very good advice")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Very good advice")
   @NotEmpty(message = "{hint.content.NotEmpty.message}")
   private String content;
 
@@ -27,8 +24,9 @@ public class HintImportDTO {
    * Counted, together with every other hint on the same level, against that level's maximum score;
    * the import is rejected if the total exceeds it
    */
-  @ApiModelProperty(
-      value = "The number of points the participant loses after receiving the hint.",
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description = "Points added to the run's penalty for the level each time the hint is taken",
       example = "10")
   @NotNull(message = "{hint.hintPenalty.NotNull.message}")
   @Min(value = 0, message = "{hint.hintPenalty.Min.message}")
@@ -38,6 +36,9 @@ public class HintImportDTO {
   /** Carried through to the persisted hint as submitted; import does not renumber it */
   @NotNull(message = "{hint.order.NotNull.message}")
   @Min(value = 0, message = "{hint.order.Min.message}")
-  @ApiModelProperty(value = "The order of hint in training level", example = "1")
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description = "Position among the hints of the level, kept as submitted",
+      example = "1")
   private Integer order;
 }

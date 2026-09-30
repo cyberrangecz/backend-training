@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.betatestinggroup;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Set;
 import lombok.Data;
 
@@ -10,24 +9,18 @@ import lombok.Data;
  * leaves the service
  */
 @Data
-@ApiModel(
-    value = "BetaTestingGroupDTO",
-    description =
-        "Group of organizers who are allowed to see the specific training definitions. (Deprecated)")
+@Schema(description = "The users allowed to see a training definition before it is released.")
 public class BetaTestingGroupDTO {
 
-  @ApiModelProperty(
-      value = "Main identifier of beta testing group.",
-      required = true,
-      example = "1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   private Long id;
 
   /**
    * Carries each member's {@code userRefId}, the id spoken outside this service, rather than the
    * local primary key of the user row. Empty rather than null when the group has no members.
    */
-  @ApiModelProperty(
-      value = "Logins of users who is allowed to see training definition.",
-      required = true)
+  @Schema(
+      description = "Ids of the members as the user and group service numbers them.",
+      requiredMode = Schema.RequiredMode.REQUIRED)
   private Set<Long> organizersRefIds;
 }

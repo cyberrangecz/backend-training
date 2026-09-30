@@ -78,8 +78,7 @@ public interface TrainingInstanceMapper extends ParentMapper {
   /**
    * Maps a training instance entity to a {@link TrainingInstanceDTO}, flattening the training
    * definition's identifier into {@code definitionId} and mapping the full definition through
-   * {@link TrainingDefinitionMapper}. Leaves {@code sandboxesWithTrainingRun} at its default empty
-   * list.
+   * {@link TrainingDefinitionMapper}.
    *
    * @param entity the training instance to map
    * @return the instance DTO

@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.accesslevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import lombok.Data;
@@ -18,28 +17,30 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "AccessLevelUpdateDTO", description = "Access level to update.")
+@Schema(description = "New passkey and connection details to store on an access level.")
 public class AccessLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
   /** New value the participant must later submit to complete the level, replacing the stored one */
-  @ApiModelProperty(
-      value = "Keyword found in training, used for access next level.",
-      required = true,
+  @Schema(
+      description = "The value a participant must submit to finish the level.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "secretAnswer")
   @Size(max = 50, message = "{accessLevel.passkey.Size.message}")
   @NotEmpty(message = "{accessLevel.passkey.NotEmpty.message}")
   private String passkey;
 
   /** New cloud-environment connection instructions, replacing the stored ones verbatim */
-  @ApiModelProperty(
-      value = "The instructions on how to connect to the machine in cloud environment.",
+  @Schema(
+      description = "How to reach the level's virtual machines from a cloud environment.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "Connect using SSH config.")
   @NotEmpty(message = "{accessLevel.cloudContent.NotEmpty.message}")
   private String cloudContent;
 
   /** New local, non-cloud connection instructions, replacing the stored ones verbatim */
-  @ApiModelProperty(
-      value = "The instructions on how to connect to the machine in local (non-cloud) environment.",
+  @Schema(
+      description = "How to reach the level's virtual machines from a local environment.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "Use vagrant SSH connection.")
   @NotEmpty(message = "{accessLevel.localContent.NotEmpty.message}")
   private String localContent;

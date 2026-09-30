@@ -53,29 +53,8 @@
         </dependency>
         <!--COMPILE (DEFAULT SCOPE)-->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.bohnman</groupId>
-            <artifactId>squiggly-filter-jackson</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.github.kongchen</groupId>
-            <artifactId>swagger-maven-plugin</artifactId>
-            <version>${github.kongchen.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
         </dependency>
 
         <!--TEST-->
@@ -123,48 +102,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>com.github.kongchen</groupId>
-                <artifactId>swagger-maven-plugin</artifactId>
-                <version>${github.kongchen.version}</version>
-                <configuration>
-                    <skipSwaggerGeneration>${swagger.skip}</skipSwaggerGeneration>
-                    <apiSources>
-                        <apiSource>
-                            <springmvc>true</springmvc>
-                            <locations>
-                                <location>cz.cyberrange.platform.training</location>
-                            </locations>
-                            <schemes>http,https</schemes>
-                            <host>${swagger.host}</host>
-                            <basePath>/training/api/v1</basePath>
-                            <info>
-                                <title>Training - API Reference</title>
-                                <version>Version: ${project.version}</version>
-                            </info>
-                            <securityDefinitions>
-                                <securityDefinition>
-                                    <!-- This is configuration of security for Open API generated based on swagger, file in resources package.-->
-                                    <json>/securityDefinition.json</json>
-                                </securityDefinition>
-                            </securityDefinitions>
-                            <swaggerDirectory>${swagger.directory}</swaggerDirectory>
-                            <swaggerFileName>${project.artifactId}-swagger-docs</swaggerFileName>
-                            <outputFormats>yaml</outputFormats>
-                            <swaggerApiReader>cz.cyberrange.platform.training.rest.utils.reader.SnakeCaseSwaggerReader
-                            </swaggerApiReader>
-                        </apiSource>
-                    </apiSources>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

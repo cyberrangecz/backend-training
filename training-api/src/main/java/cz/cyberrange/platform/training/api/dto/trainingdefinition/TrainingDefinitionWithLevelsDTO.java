@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
@@ -16,15 +15,12 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "TrainingDefinitionWithLevelsDTO",
-    description = "A blueprint of abstract levels.")
+@Schema(description = "A training definition with the full detail of its levels.")
 public class TrainingDefinitionWithLevelsDTO extends TrainingDefinitionDTO {
 
   /**
    * Populated by the facade with the full detail of the definition's levels, in presentation order;
    * never derived from the definition entity itself
    */
-  @ApiModelProperty(value = "Information about all levels in training definition.")
   private List<AbstractLevelDTO> levels = new ArrayList<>();
 }

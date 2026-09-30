@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -12,15 +11,13 @@ import lombok.Data;
  * them there
  */
 @Data
-@ApiModel(
-    value = "DetectionEventParticipantDTO",
-    description = "Basic Information about a detection event participant.")
+@Schema(description = "One trainee implicated in a finding, with the submission that named them.")
 public class DetectionEventParticipantDTO {
 
-  @ApiModelProperty(value = "Ip address of participant.", example = "1.1.1.1")
+  @Schema(example = "1.1.1.1", description = "Address the submission came from.")
   private String ipAddress;
 
-  @ApiModelProperty(value = "Time when the event occurred.", example = "1.1.2022 5:55:23")
+  @Schema(example = "2022-01-01T05:55:23Z", description = "When the submission was made.")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime occurredAt;
 
@@ -28,19 +25,23 @@ public class DetectionEventParticipantDTO {
    * How long this trainee took over the level, in seconds, carried only by a finding that turns on
    * solving speed and left unset otherwise
    */
-  @ApiModelProperty(value = "Time in which the level was solved.", example = "20")
+  @Schema(
+      example = "20",
+      description = "Seconds the trainee took over the level; only a speed finding carries it.")
   private Long solvedInTime;
 
-  @ApiModelProperty(value = "Name of the participant.", example = "John Doe")
+  @Schema(example = "John Doe")
   private String participantName;
 
   /**
    * The trainee's {@code userRefId}, the id spoken outside this service, rather than the local
    * primary key of the user row
    */
-  @ApiModelProperty(value = "User id of participant.", example = "6")
+  @Schema(
+      example = "6",
+      description = "Cross-service user reference id of the trainee, not a local user key.")
   private Long userId;
 
-  @ApiModelProperty(value = "the id of detection event", example = "3")
+  @Schema(example = "3")
   private Long detectionEventId;
 }

@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -13,20 +12,19 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "LocationSimilarityDetectionEventDTO",
-    description = "A detection event of type Location Similarity.",
-    parent = AbstractDetectionEventDTO.class)
+@Schema(description = "A finding that several trainees submitted from the same network location.")
 public class LocationSimilarityDetectionEventDTO extends AbstractDetectionEventDTO {
 
-  @ApiModelProperty(value = "Ip address of participant.", example = "1.1.1.1")
+  @Schema(example = "1.1.1.1", description = "Address one of the grouped submissions came from.")
   private String ipAddress;
 
   /**
    * Host name the address resolves back to, or the literal {@code unspecified} when it cannot be
    * resolved
    */
-  @ApiModelProperty(value = "DNS of participant.", example = "dns.provider.cz")
+  @Schema(
+      example = "dns.provider.cz",
+      description = "Host name the address resolves to, or unspecified when it does not resolve.")
   private String dns;
 
   /**
@@ -34,6 +32,8 @@ public class LocationSimilarityDetectionEventDTO extends AbstractDetectionEventD
    * location as an artifact of the deployment rather than of the trainees. False whenever the
    * comparison could not be made at all.
    */
-  @ApiModelProperty(value = "If the address is the same as deployment.", example = "false")
+  @Schema(
+      example = "false",
+      description = "Whether the resolved host is the one this service runs on.")
   private boolean isAddressDeploy;
 }

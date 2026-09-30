@@ -133,7 +133,8 @@ public class TrainingInstanceFacade {
    * Get Training instance access token by pool id.
    *
    * @param poolId id of the assigned pool.
-   * @return Requested access token by pool id if it exists.
+   * @return Requested access token by pool id.
+   * @throws EntityNotFoundException no training instance holds this pool.
    */
   @IsOrganizerOrAdmin
   @TransactionalRO

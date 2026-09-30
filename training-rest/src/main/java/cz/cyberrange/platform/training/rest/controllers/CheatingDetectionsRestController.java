@@ -1,11 +1,6 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.bohnman.squiggly.Squiggly;
-import com.github.bohnman.squiggly.util.SquigglyUtils;
 import com.querydsl.core.types.Predicate;
-import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.AbstractDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.AnswerSimilarityDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.CheatingDetectionDTO;
@@ -17,25 +12,25 @@ import cz.cyberrange.platform.training.api.dto.cheatingdetection.MinimalSolveTim
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.NoCommandsDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.TimeProximityDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
-import cz.cyberrange.platform.training.rest.utils.annotations.ApiPageableSwagger;
+import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.service.facade.detection.CheatingDetectionExportFacade;
 import cz.cyberrange.platform.training.service.facade.detection.CheatingDetectionFacade;
 import cz.cyberrange.platform.training.service.facade.detection.DetectionEventFacade;
 import cz.cyberrange.platform.training.service.utils.AbstractFileExtensions;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import javax.validation.Valid;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -55,22 +50,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** The rest controller for Cheating detections */
-@Api(
-    value = "/cheating-detections",
-    tags = "Cheating detection",
-    consumes = MediaType.APPLICATION_JSON_VALUE,
-    authorizations = @Authorization(value = "bearerAuth"))
-@ApiResponses(
-    value = {
-      @ApiResponse(
-          code = 401,
-          message = "Full authentication is required to access this resource.",
-          response = ApiError.class),
-      @ApiResponse(
-          code = 403,
-          message = "The necessary permissions are required for a resource.",
-          response = ApiError.class)
-    })
+@Tag(
+    name = "Cheating detection",
+    description =
+        "Runs that look for signs of cheating in a training instance, and what they found")
+@SecurityRequirement(name = "bearerAuth")
+@ApiResponses({
+  @ApiResponse(
+      responseCode = "401",
+      description = "Missing or invalid bearer token.",
+      content = @Content(schema = @Schema(implementation = ApiError.class))),
+  @ApiResponse(
+      responseCode = "403",
+      description = "The caller lacks the required role or relationship.",
+      content = @Content(schema = @Schema(implementation = ApiError.class))),
+  @ApiResponse(
+      responseCode = "500",
+      description = "Unexpected server error.",
+      content = @Content(schema = @Schema(implementation = ApiError.class)))
+})
 @RestController
 @RequestMapping(value = "/cheating-detections", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
@@ -79,18 +77,15 @@ public class CheatingDetectionsRestController {
   private final CheatingDetectionFacade cheatingDetectionFacade;
   private final DetectionEventFacade detectionEventFacade;
   private final CheatingDetectionExportFacade cheatingDetectionExportFacade;
-  private final ObjectMapper objectMapper;
 
   @Autowired
   public CheatingDetectionsRestController(
       CheatingDetectionFacade cheatingDetectionFacade,
       DetectionEventFacade detectionEventFacade,
-      CheatingDetectionExportFacade cheatingDetectionExportFacade,
-      ObjectMapper objectMapper) {
+      CheatingDetectionExportFacade cheatingDetectionExportFacade) {
     this.cheatingDetectionFacade = cheatingDetectionFacade;
     this.cheatingDetectionExportFacade = cheatingDetectionExportFacade;
     this.detectionEventFacade = detectionEventFacade;
-    this.objectMapper = objectMapper;
   }
 
   /**
@@ -99,32 +94,23 @@ public class CheatingDetectionsRestController {
    * @param cheatingDetectionDTO the cheating detection to create and execute
    * @return an empty response
    */
-  @ApiOperation(
-      httpMethod = "POST",
-      value = "Create and Execute cheating detection",
-      response = TrainingDefinitionWithLevelsDTO.class,
-      nickname = "createAndExecuteCheatingDetection",
-      notes = "This can only be done by organizer of training instance or administrator.",
-      consumes = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The Cheating Detection has been created and executed.",
-            response = CheatingDetectionDTO.class),
-        @ApiResponse(
-            code = 400,
-            message = "The provided cheating detection is not valid",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "createAndExecuteCheatingDetection",
+      summary = "Create a cheating detection and run it",
+      description =
+          "A training administrator or an organizer of the training instance may call it. Only a"
+              + " detection sent as QUEUED is run. Forbidden commands sent in the body are stored"
+              + " with the detection and are what the forbidden commands sweep matches against.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The detection was created and executed."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The request body failed validation.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
   @PostMapping(path = "/detection", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> createAndExecuteCheatingDetection(
-      @ApiParam(value = "CheatingDetection to be created") @RequestBody @Valid
-          CheatingDetectionDTO cheatingDetectionDTO) {
+      @RequestBody @Valid CheatingDetectionDTO cheatingDetectionDTO) {
     cheatingDetectionFacade.createAndExecute(cheatingDetectionDTO);
     return ResponseEntity.ok().build();
   }
@@ -138,31 +124,29 @@ public class CheatingDetectionsRestController {
    * @param trainingInstanceId id of training instance.
    * @return an empty response
    */
-  @ApiOperation(
-      httpMethod = "PATCH",
-      value = "rerun cheating detection",
-      nickname = "rerunCheatingDetection",
-      notes = "This can only be done by organizer of training instance or administrator.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "The cheating detection was executed."),
-        @ApiResponse(
-            code = 404,
-            message = "The cheating detection has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "rerunCheatingDetection",
+      summary = "Run a cheating detection again from scratch",
+      description =
+          "A training administrator or an organizer of the instance the detection ran in may call"
+              + " it. Every detection not disabled is queued again.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The detection was run again."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "An id in the path is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No cheating detection with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @PatchMapping(
       path = "/{cheatingDetectionId}/rerun/{trainingInstanceId}",
       consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> rerunCheatingDetection(
-      @ApiParam(value = "Cheating Detection ID", required = true)
-          @PathVariable("cheatingDetectionId")
-          Long cheatingDetectionId,
-      @ApiParam(value = "id of training instance", required = true)
+      @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
+      @Parameter(description = "Not used; the rerun is scoped by the detection id.")
           @PathVariable("trainingInstanceId")
           Long trainingInstanceId) {
     cheatingDetectionFacade.rerunCheatingDetection(cheatingDetectionId, trainingInstanceId);
@@ -179,29 +163,28 @@ public class CheatingDetectionsRestController {
    *     flag cleared.
    * @return the response entity
    */
-  @ApiOperation(
-      httpMethod = "DELETE",
-      value = "Delete detection events of cheating detection",
-      nickname = "deleteDetectionEventsOfCheatingDetection",
-      notes = "This can only be done by organizer of training instance or administrator.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(code = 200, message = "The detection events have been deleted."),
-        @ApiResponse(
-            code = 404,
-            message = "The cheating detection has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "deleteDetectionEventsOfCheatingDetection",
+      summary = "Delete a cheating detection and its findings",
+      description =
+          "A training administrator, or an organizer of both the detection and the instance, may"
+              + " call it. Every training run of that instance loses its detection flag, not only"
+              + " the implicated ones.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The detection was deleted."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The training instance id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No cheating detection with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @DeleteMapping(path = "/{cheatingDetectionId}/delete")
   public ResponseEntity<Void> deleteDetectionEvents(
-      @ApiParam(value = "Cheating detection ID", required = true)
-          @PathVariable("cheatingDetectionId")
-          Long cheatingDetectionId,
-      @ApiParam(value = "id of training instance", required = true)
+      @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
+      @Parameter(description = "Instance whose training runs lose their detection flag.")
           @RequestParam(value = "trainingInstanceId")
           Long trainingInstanceId) {
     cheatingDetectionFacade.deleteCheatingDetection(cheatingDetectionId, trainingInstanceId);
@@ -216,51 +199,38 @@ public class CheatingDetectionsRestController {
    * @param cheatingDetectionId id of cheating detection.
    * @param trainingInstanceId id of training instance.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all Detection Events occurred in a cheating detection.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get all detection events of cheating detection.",
-      response = DetectionEventRestResource.class,
-      nickname = "findAllDetectionEvents",
-      notes = "This can only be done by organizer of training instance or administrator.",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "Detection Events have been found.",
-            response = DetectionEventRestResource.class),
-        @ApiResponse(
-            code = 404,
-            message = "The cheating detection has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
-  @ApiPageableSwagger
+  @Operation(
+      operationId = "findAllDetectionEvents",
+      summary = "List the findings of a cheating detection",
+      description =
+          "A training administrator or an organizer of the instance the detection ran in may call"
+              + " it. Text filters match partially and ignore case.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The matching findings."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The training instance id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No cheating detection with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/{cheatingDetectionId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllDetectionEventsOfCheatingDetection(
-      @QuerydslPredicate(root = AbstractDetectionEvent.class) Predicate predicate,
-      @ApiParam(value = "id of cheating detection", required = true)
-          @PathVariable("cheatingDetectionId")
-          Long cheatingDetectionId,
-      @ApiParam(value = "id of training instance", required = true)
-          @RequestParam(value = "trainingInstanceId", required = true)
-          Long trainingInstanceId,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<AbstractDetectionEventDTO>>
+      findAllDetectionEventsOfCheatingDetection(
+          @QuerydslPredicate(root = AbstractDetectionEvent.class) Predicate predicate,
+          @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
+          @Parameter(description = "Not used; the findings come from the cheating detection.")
+              @RequestParam(value = "trainingInstanceId", required = true)
+              Long trainingInstanceId,
+          @ParameterObject Pageable pageable) {
     PageResultResource<AbstractDetectionEventDTO> detectionEventResource =
         detectionEventFacade.findAllDetectionEventsOfCheatingDetection(
             cheatingDetectionId, pageable, predicate, trainingInstanceId);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, detectionEventResource), HttpStatus.OK);
+    return new ResponseEntity<>(detectionEventResource, HttpStatus.OK);
   }
 
   /**
@@ -268,46 +238,33 @@ public class CheatingDetectionsRestController {
    *
    * @param eventId id of detection event.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all participants of a detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get all participants of detection event.",
-      response = DetectionEventParticipantRestResource.class,
-      nickname = "findAllParticipantsOfEvent",
-      notes = "This can only be done by organizer of training instance or administrator.",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "Participants have been found.",
-            response = DetectionEventRestResource.class),
-        @ApiResponse(
-            code = 404,
-            message = "The participants have not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
-  @ApiPageableSwagger
+  @Operation(
+      operationId = "findAllParticipantsOfEvent",
+      summary = "List the trainees implicated in a finding",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The matching trainees."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/participants", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllParticipantsOfDetectionEvent(
-      @ApiParam(value = "the event id", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<DetectionEventParticipantDTO>>
+      findAllParticipantsOfDetectionEvent(
+          @RequestParam(value = "eventId", required = true) Long eventId,
+          @ParameterObject Pageable pageable) {
     PageResultResource<DetectionEventParticipantDTO> participantsResource =
         detectionEventFacade.findAllParticipantsOfDetectionEvent(eventId, pageable);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
+    return new ResponseEntity<>(participantsResource, HttpStatus.OK);
   }
 
   /**
@@ -315,46 +272,33 @@ public class CheatingDetectionsRestController {
    *
    * @param eventId id of detection event.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all detected forbidden commands occurred in a detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get all forbidden commands of detection event.",
-      response = DetectionEventParticipantRestResource.class,
-      nickname = "findAllForbiddenCommandsOfEvent",
-      notes = "This can only be done by organizer of training instance or administrator.",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "Forbidden commands have been found.",
-            response = DetectionEventRestResource.class),
-        @ApiResponse(
-            code = 404,
-            message = "The forbidden commands have not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
-  @ApiPageableSwagger
+  @Operation(
+      operationId = "findAllForbiddenCommandsOfEvent",
+      summary = "List the forbidden commands a finding caught",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The matching commands."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllForbiddenCommandsOfDetectionEvent(
-      @ApiParam(value = "the event id", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<DetectedForbiddenCommandDTO>>
+      findAllForbiddenCommandsOfDetectionEvent(
+          @RequestParam(value = "eventId", required = true) Long eventId,
+          @ParameterObject Pageable pageable) {
     PageResultResource<DetectedForbiddenCommandDTO> participantsResource =
         detectionEventFacade.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
+    return new ResponseEntity<>(participantsResource, HttpStatus.OK);
   }
 
   /**
@@ -363,30 +307,26 @@ public class CheatingDetectionsRestController {
    * @param eventId id of detection event.
    * @return every detected forbidden command of the event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get all forbidden commands of detection event.",
-      response = Object.class,
-      nickname = "findAllForbiddenCommandsOfEvent",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "Forbidden commands have been found.",
-            response = DetectionEventRestResource.class),
-        @ApiResponse(
-            code = 404,
-            message = "The forbidden commands have not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findDetectedForbiddenCommandsOfEvent",
+      summary = "List every forbidden command a finding caught",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it. The whole list comes back unpaged.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Every command the finding caught."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/detected-commands/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<DetectedForbiddenCommandDTO>> findAllForbiddenCommandsOfDetectionEvent(
-      @ApiParam(value = "the event id", required = true) @PathVariable Long eventId) {
+      @PathVariable Long eventId) {
     ;
     return ResponseEntity.ok(
         detectionEventFacade.findAllForbiddenCommandsOfDetectionEvent(eventId));
@@ -399,38 +339,35 @@ public class CheatingDetectionsRestController {
    * @param cheatingDetectionId the cheating detection id
    * @return the zip archive as a byte array response
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Archive cheating detection results",
-      response = CheatingDetectionDTO.class,
-      nickname = "archiveCheatingDetectionResults",
-      produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "Cheating Detection results archived.",
-            response = TrainingInstanceArchiveDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "Cheating Detection not found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 409,
-            message = "Cannot archive detection that is not finished.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "archiveCheatingDetectionResults",
+      summary = "Export a cheating detection and its findings",
+      description =
+          "A training administrator or an organizer of the instance the detection ran in may call"
+              + " it. The archive holds the settings of the run, its findings by kind, and the"
+              + " groups it evaluated.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The zip archive.",
+        content =
+            @Content(
+                mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                schema = @Schema(type = "string", format = "binary"))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The cheating detection id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No cheating detection with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(
       path = "/exports/{cheatingDetectionId}",
       produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
   public ResponseEntity<byte[]> archiveCheatingDetectionResults(
-      @ApiParam(value = "Id of cheating detection", required = true)
-          @PathVariable("cheatingDetectionId")
-          Long cheatingDetectionId) {
+      @PathVariable("cheatingDetectionId") Long cheatingDetectionId) {
     FileToReturnDTO file =
         cheatingDetectionExportFacade.archiveCheatingDetectionResults(cheatingDetectionId);
     HttpHeaders header = new HttpHeaders();
@@ -448,32 +385,29 @@ public class CheatingDetectionsRestController {
    * @param eventId the detection event id
    * @return detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Detection event.",
-      response = AbstractDetectionEventDTO.class,
-      nickname = "findDetectionEventById",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The detection event has been found.",
-            response = AbstractDetectionEventDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The detection event has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findDetectionEventById",
+      summary = "Find one finding by id",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The requested finding.",
+        content = @Content(schema = @Schema(implementation = AbstractDetectionEventDTO.class))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AbstractDetectionEventDTO> findDetectionEventById(
-      @ApiParam(value = "eventId", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId) {
+      @RequestParam(value = "eventId", required = true) Long eventId) {
     AbstractDetectionEventDTO abstractDetectionEventDTO =
         detectionEventFacade.findDetectionEventById(eventId);
     return ResponseEntity.ok(abstractDetectionEventDTO);
@@ -485,32 +419,26 @@ public class CheatingDetectionsRestController {
    * @param eventId the detection event id
    * @return detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Answer Similarity Detection event.",
-      response = AnswerSimilarityDetectionEventDTO.class,
-      nickname = "findDetectionEventOfAnswerSimilarityById",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The detection event has been found.",
-            response = AnswerSimilarityDetectionEventDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The detection event has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findDetectionEventOfAnswerSimilarityById",
+      summary = "Find one answer similarity finding",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The requested finding."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/answer-similarity", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<AnswerSimilarityDetectionEventDTO> findAnswerSimilarityDetectionEventById(
-      @ApiParam(value = "eventId", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId) {
+      @RequestParam(value = "eventId", required = true) Long eventId) {
     AnswerSimilarityDetectionEventDTO answerSimilarityDetectionEventDTO =
         detectionEventFacade.findAnswerSimilarityEventById(eventId);
     return ResponseEntity.ok(answerSimilarityDetectionEventDTO);
@@ -522,33 +450,27 @@ public class CheatingDetectionsRestController {
    * @param eventId the detection event id
    * @return detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Location Similarity Detection event.",
-      response = LocationSimilarityDetectionEventDTO.class,
-      nickname = "findDetectionEventOfLocationSimilarityById",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The detection event has been found.",
-            response = LocationSimilarityDetectionEventDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The detection event has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findDetectionEventOfLocationSimilarityById",
+      summary = "Find one location similarity finding",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The requested finding."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/location-similarity", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<LocationSimilarityDetectionEventDTO>
       findLocationSimilarityDetectionEventById(
-          @ApiParam(value = "eventId", required = true)
-              @RequestParam(value = "eventId", required = true)
-              Long eventId) {
+          @RequestParam(value = "eventId", required = true) Long eventId) {
     LocationSimilarityDetectionEventDTO locationSimilarityDetectionEventDTO =
         detectionEventFacade.findLocationSimilarityEventById(eventId);
     return ResponseEntity.ok(locationSimilarityDetectionEventDTO);
@@ -560,32 +482,26 @@ public class CheatingDetectionsRestController {
    * @param eventId the detection event id
    * @return detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Time Proximity Detection event.",
-      response = TimeProximityDetectionEventDTO.class,
-      nickname = "findDetectionEventOfTimeProximityById",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The detection event has been found.",
-            response = TimeProximityDetectionEventDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The detection event has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findDetectionEventOfTimeProximityById",
+      summary = "Find one time proximity finding",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The requested finding."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/time-proximity", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TimeProximityDetectionEventDTO> findTimeProximityDetectionEventById(
-      @ApiParam(value = "eventId", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId) {
+      @RequestParam(value = "eventId", required = true) Long eventId) {
     TimeProximityDetectionEventDTO timeProximityDetectionEventDTO =
         detectionEventFacade.findTimeProximityEventById(eventId);
     return ResponseEntity.ok(timeProximityDetectionEventDTO);
@@ -597,32 +513,26 @@ public class CheatingDetectionsRestController {
    * @param eventId the detection event id
    * @return detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Minimal Solve Time Detection event.",
-      response = MinimalSolveTimeDetectionEventDTO.class,
-      nickname = "findDetectionEventOfMinimalSolveTimeById",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The detection event has been found.",
-            response = MinimalSolveTimeDetectionEventDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The detection event has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findDetectionEventOfMinimalSolveTimeById",
+      summary = "Find one minimal solve time finding",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The requested finding."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/minimal-solve-time", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<MinimalSolveTimeDetectionEventDTO> findMinimalSolveTimeDetectionEventById(
-      @ApiParam(value = "eventId", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId) {
+      @RequestParam(value = "eventId", required = true) Long eventId) {
     MinimalSolveTimeDetectionEventDTO minimalSolveTimeDetectionEventDTO =
         detectionEventFacade.findMinimalSolveTimeEventById(eventId);
     return ResponseEntity.ok(minimalSolveTimeDetectionEventDTO);
@@ -634,32 +544,26 @@ public class CheatingDetectionsRestController {
    * @param eventId the detection event id
    * @return detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "No Commands Detection event.",
-      response = NoCommandsDetectionEventDTO.class,
-      nickname = "findDetectionEventOfNoCommandsById",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The detection event has been found.",
-            response = NoCommandsDetectionEventDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The detection event has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findDetectionEventOfNoCommandsById",
+      summary = "Find one no commands finding",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The requested finding."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/no-commands", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<NoCommandsDetectionEventDTO> findNoCommandsDetectionEventById(
-      @ApiParam(value = "eventId", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId) {
+      @RequestParam(value = "eventId", required = true) Long eventId) {
     NoCommandsDetectionEventDTO NoCommandsDetectionEventDTO =
         detectionEventFacade.findNoCommandsEventById(eventId);
     return ResponseEntity.ok(NoCommandsDetectionEventDTO);
@@ -671,32 +575,26 @@ public class CheatingDetectionsRestController {
    * @param eventId the detection event id
    * @return detection event.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Forbidden Commands Detection event.",
-      response = ForbiddenCommandsDetectionEventDTO.class,
-      nickname = "findDetectionEventOfForbiddenCommandsById",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "The detection event has been found.",
-            response = ForbiddenCommandsDetectionEventDTO.class),
-        @ApiResponse(
-            code = 404,
-            message = "The detection event has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
+  @Operation(
+      operationId = "findDetectionEventOfForbiddenCommandsById",
+      summary = "Find one forbidden commands finding",
+      description =
+          "A training administrator or an organizer of the instance the finding came from may call"
+              + " it.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The requested finding."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The event id is missing or not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No detection event with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
   @GetMapping(path = "/detected-forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ForbiddenCommandsDetectionEventDTO> findForbiddenCommandsDetectionEventById(
-      @ApiParam(value = "eventId", required = true)
-          @RequestParam(value = "eventId", required = true)
-          Long eventId) {
+      @RequestParam(value = "eventId", required = true) Long eventId) {
     ForbiddenCommandsDetectionEventDTO forbiddenCommandsDetectionEventDTO =
         detectionEventFacade.findForbiddenCommandsEventById(eventId);
     return ResponseEntity.ok(forbiddenCommandsDetectionEventDTO);
@@ -707,102 +605,31 @@ public class CheatingDetectionsRestController {
    *
    * @param trainingInstanceId id of training instance.
    * @param pageable pageable parameter with information about pagination.
-   * @param fields attributes of the object to be returned as the result.
    * @return all cheating Detections occurred in a training instance.
    */
-  @ApiOperation(
-      httpMethod = "GET",
-      value = "Get all cheating detections of training instance.",
-      response = CheatingDetectionRestResource.class,
-      nickname = "findAllCheatingDetections",
-      notes = "This can only be done by organizer of training instance or administrator.",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            code = 200,
-            message = "Cheating Detections have been found.",
-            response = CheatingDetectionRestResource.class),
-        @ApiResponse(
-            code = 404,
-            message = "The training instance has not been found.",
-            response = ApiError.class),
-        @ApiResponse(
-            code = 500,
-            message = "Unexpected condition was encountered.",
-            response = ApiError.class)
-      })
-  @ApiPageableSwagger
+  @Operation(
+      operationId = "findAllCheatingDetections",
+      summary = "List the cheating detections of a training instance",
+      description =
+          "A training administrator or an organizer of the training instance may call it. The"
+              + " oldest run comes first.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The matching detections."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The training instance id is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
   @GetMapping(
       path = "/{trainingInstanceId}/detections",
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> findAllCheatingDetectionsOfInstance(
-      @ApiParam(value = "id of training instance", required = true)
-          @PathVariable("trainingInstanceId")
-          Long trainingInstanceId,
-      @ApiParam(value = "Pagination support.", required = false) Pageable pageable,
-      @ApiParam(value = "Fields which should be returned in REST API response", required = false)
-          @RequestParam(value = "fields", required = false)
-          String fields) {
+  public ResponseEntity<PageResultResource<CheatingDetectionDTO>>
+      findAllCheatingDetectionsOfInstance(
+          @PathVariable("trainingInstanceId") Long trainingInstanceId,
+          @ParameterObject Pageable pageable) {
     PageResultResource<CheatingDetectionDTO> cheatingDetectionResource =
         cheatingDetectionFacade.findAllCheatingDetectionsOfTrainingInstance(
             trainingInstanceId, pageable);
-    Squiggly.init(objectMapper, fields);
-    return new ResponseEntity<>(
-        SquigglyUtils.stringify(objectMapper, cheatingDetectionResource), HttpStatus.OK);
-  }
-
-  /** The type Detection Event rest resource */
-  @ApiModel(
-      value = "DetectionEventRestResource",
-      description =
-          "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-  public static class DetectionEventRestResource
-      extends PageResultResource<AbstractDetectionEventDTO> {
-    @JsonProperty(required = true)
-    @ApiModelProperty(value = "Retrieved Detection events from databases.")
-    private List<AbstractDetectionEventDTO> content;
-
-    @JsonProperty(required = true)
-    @ApiModelProperty(
-        value =
-            "Pagination including: page number, number of elements in page, size, total elements and total pages.")
-    private Pagination pagination;
-  }
-
-  /** The type Cheating Detection rest resource */
-  @ApiModel(
-      value = "CheatingDetectionRestResource",
-      description =
-          "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-  public static class CheatingDetectionRestResource
-      extends PageResultResource<CheatingDetectionDTO> {
-    @JsonProperty(required = true)
-    @ApiModelProperty(value = "Retrieved Cheating detections from databases.")
-    private List<CheatingDetectionDTO> content;
-
-    @JsonProperty(required = true)
-    @ApiModelProperty(
-        value =
-            "Pagination including: page number, number of elements in page, size, total elements and total pages.")
-    private Pagination pagination;
-  }
-
-  /** The type Detection event participant rest resource */
-  @ApiModel(
-      value = "DetectionEventParticipantRestResource",
-      description =
-          "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")
-  public static class DetectionEventParticipantRestResource
-      extends PageResultResource<DetectionEventParticipantDTO> {
-    @JsonProperty(required = true)
-    @ApiModelProperty(value = "Retrieved Event participants from databases.")
-    private List<DetectionEventParticipantDTO> content;
-
-    @JsonProperty(required = true)
-    @ApiModelProperty(
-        value =
-            "Pagination including: page number, number of elements in page, size, total elements and total pages.")
-    private Pagination pagination;
+    return new ResponseEntity<>(cheatingDetectionResource, HttpStatus.OK);
   }
 }

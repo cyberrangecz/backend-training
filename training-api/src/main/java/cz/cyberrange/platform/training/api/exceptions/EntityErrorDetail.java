@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -15,18 +15,16 @@ import javax.validation.constraints.NotNull;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EntityErrorDetail {
-  @ApiModelProperty(value = "Class of the entity.", example = "IDMGroup")
+  @Schema(description = "Type of the entity the error concerns", example = "TrainingDefinition")
   private String entity;
 
-  @ApiModelProperty(value = "Identifier of the entity.", example = "id")
+  @Schema(description = "Name of the field the entity was looked up by", example = "id")
   private String identifier;
 
-  @ApiModelProperty(value = "Value of the identifier.", example = "1")
+  @Schema(description = "Value that field was looked up with", example = "1")
   private Object identifierValue;
 
-  @ApiModelProperty(
-      value = "Detailed message of the exception",
-      example = "Group with same name already exists.")
+  @Schema(example = "Entity TrainingDefinition (id: 1) not found.")
   private String reason;
 
   public EntityErrorDetail() {}

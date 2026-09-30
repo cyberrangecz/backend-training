@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
@@ -10,34 +9,19 @@ import lombok.NoArgsConstructor;
 /** Encapsulates information about training definition and its levels */
 @Data
 @NoArgsConstructor
-@ApiModel(
-    value = "ExportTrainingDefinitionAndLevelsDTO",
-    description =
-        "An exported detailed information about training definition which also include individual levels.")
+@Schema(description = "A training definition with its levels, as written to the exported file")
 public class ExportTrainingDefinitionAndLevelsDTO {
 
-  @ApiModelProperty(
-      value = "A name of the training/game (e.g., Photo Hunter) .",
-      example = "TrainingDefinition2")
+  @Schema(example = "TrainingDefinition2")
   private String title;
 
-  @ApiModelProperty(
-      value = "Description of training definition that is visible to the participant.",
-      example = "Unreleased training definition")
+  @Schema(example = "Unreleased training definition")
   private String description;
 
-  @ApiModelProperty(
-      value = "List of knowledge and skills necessary to complete the training.",
-      example = "")
   private String[] prerequisites;
 
-  @ApiModelProperty(
-      value =
-          "A list of knowledge and skills that the participant should learn by attending the training (if it is used for educational purposes) ",
-      example = "")
   private String[] outcomes;
 
   /** Ordered by each level's position in the training definition */
-  @ApiModelProperty(value = "Information about all levels in training definition.")
   private List<AbstractLevelExportDTO> levels = new ArrayList<>();
 }

@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto;
 
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,22 +13,18 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel(
-    value = "BasicLevelInfoDTO",
-    description = "Basic information about the level and its type.")
+@Schema(description = "One level of a training definition, named and placed in its sequence.")
 public class BasicLevelInfoDTO {
 
-  @ApiModelProperty(value = "Main identifier of level.", example = "1")
+  @Schema(example = "1")
   private Long id;
 
-  @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
+  @Schema(example = "Training Level1")
   private String title;
 
-  @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
+  @Schema(example = "TRAINING_LEVEL")
   private LevelType levelType;
 
-  @ApiModelProperty(
-      value = "Order of level among levels in training definition starting from 0.",
-      example = "1")
+  @Schema(description = "Zero-based position of the level within its definition.", example = "1")
   private int order;
 }

@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingRunArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
-import cz.cyberrange.platform.training.api.dto.export.TrainingRunExportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.enums.TRState;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
@@ -67,7 +66,6 @@ class ExportImportMapperTest {
   private ImportTrainingDefinitionDTO importDto;
   private ExportTrainingDefinitionAndLevelsDTO exportDto;
   private TrainingInstanceArchiveDTO instanceArchiveDto;
-  private TrainingRunExportDTO runExportDto;
   private TrainingRunArchiveDTO runArchiveDto;
 
   @BeforeEach
@@ -140,12 +138,6 @@ class ExportImportMapperTest {
     instanceArchiveDto.setLocalEnvironment(LOCAL_ENVIRONMENT);
     instanceArchiveDto.setShowStepperBar(SHOW_STEPPER_BAR);
     instanceArchiveDto.setBackwardMode(BACKWARD_MODE);
-
-    runExportDto = new TrainingRunExportDTO();
-    runExportDto.setStartTime(START_TIME);
-    runExportDto.setEndTime(END_TIME);
-    runExportDto.setEventLogReference(EVENT_LOG_REFERENCE);
-    runExportDto.setState(RUN_STATE);
 
     runArchiveDto = new TrainingRunArchiveDTO();
     runArchiveDto.setId(ENTITY_ID);
@@ -291,46 +283,6 @@ class ExportImportMapperTest {
 
       assertNotNull(result);
       assertNotNull(result.getOrganizersRefIds());
-    }
-  }
-
-  @Nested
-  @DisplayName("mapToDTO(TrainingRun)")
-  class MapToDtoTrainingRun {
-
-    @Test
-    @DisplayName("should map training run entity to export DTO")
-    void shouldMapTrainingRunEntityToExportDto() {
-      TrainingRunExportDTO result = sut.mapToDTO(trainingRunEntity);
-
-      assertNotNull(result);
-      assertEquals(trainingRunEntity.getStartTime(), result.getStartTime());
-      assertEquals(trainingRunEntity.getEndTime(), result.getEndTime());
-      assertEquals(trainingRunEntity.getEventLogReference(), result.getEventLogReference());
-      assertEquals(enumMapper.mapTRState(trainingRunEntity.getState()), result.getState());
-      assertNotNull(result.getParticipantRef());
-    }
-
-    @Test
-    @DisplayName("should map entity with null event log reference")
-    void shouldMapEntityWithNullEventLogReference() {
-      trainingRunEntity.setEventLogReference(null);
-
-      TrainingRunExportDTO result = sut.mapToDTO(trainingRunEntity);
-
-      assertNotNull(result);
-      assertNull(result.getEventLogReference());
-    }
-
-    @Test
-    @DisplayName("should map entity with null participant ref")
-    void shouldMapEntityWithNullParticipantRef() {
-      trainingRunEntity.setParticipantRef(null);
-
-      TrainingRunExportDTO result = sut.mapToDTO(trainingRunEntity);
-
-      assertNotNull(result);
-      assertNull(result.getParticipantRef());
     }
   }
 

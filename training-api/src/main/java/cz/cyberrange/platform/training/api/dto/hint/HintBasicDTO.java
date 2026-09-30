@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.hint;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -13,15 +12,13 @@ import lombok.Data;
  * trainee would read
  */
 @Data
-@ApiModel(
-    value = "HintBasicDTO",
-    description = "A brief textual description to aid the participant.")
+@Schema(description = "A hint's title and point cost, without the advice itself.")
 public class HintBasicDTO {
 
-  @ApiModelProperty(value = "Main identifier of hint.", example = "1")
+  @Schema(example = "1")
   protected Long id;
 
-  @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Hint1")
   @NotEmpty(message = "{hint.title.NotEmpty.message}")
   protected String title;
 
@@ -29,8 +26,9 @@ public class HintBasicDTO {
   @NotNull(message = "{hint.hintPenalty.NotNull.message}")
   @Min(value = 0, message = "{hint.hintPenalty.Min.message}")
   @Max(value = 100, message = "{hint.hintPenalty.Max.message}")
-  @ApiModelProperty(
-      value = "The number of points the participant loses after receiving the hint.",
+  @Schema(
+      description = "Points taken off the level's score once the hint is taken.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "10")
   protected Integer hintPenalty;
 }

@@ -13,6 +13,4 @@ public enum EventLevelType {
   TRAINING,
   /** The current level is an {@code AccessLevel} */
   ACCESS,
-  /** Used when the current level matches none of the other level classes */
-  PVP
 }

@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.export;
 
 import cz.cyberrange.platform.training.api.dto.imports.AttachmentImportDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,69 +16,54 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @NoArgsConstructor
-@ApiModel(
-    value = "TrainingLevelExportDTO",
-    description = "Exported training level.",
-    parent = AbstractLevelExportDTO.class)
+@Schema(description = "An exported training level, the task a trainee solves")
 public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
 
-  @ApiModelProperty(
-      value = "Keyword found in training, used for access next level.",
+  @Schema(
+      description = "The correct answer, when every trainee is given the same one",
       example = "secretAnswer")
   private String answer;
 
-  @ApiModelProperty(
-      value = "Identifier that is used to obtain answer from remote storage.",
+  @Schema(
+      description = "Identifier each trainee's own answer is fetched under, when answers vary",
       example = "username")
   private String answerVariableName;
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
-      example = "Play me")
+  @Schema(example = "Play me")
   private String content;
 
-  @ApiModelProperty(
-      value = "Instruction how to get answer in training.",
-      example = "This is how you do it")
+  @Schema(example = "This is how you do it")
   private String solution;
 
-  @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
+  @Schema(
+      description = "Whether displaying the solution costs the trainee the level's whole score",
+      example = "true")
   private boolean solutionPenalized;
 
-  @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<HintExportDTO> hints = new HashSet<>();
 
-  @ApiModelProperty(
-      value = "How many times player can submit incorrect answer before displaying solution.",
-      example = "5")
+  @Schema(example = "5")
   private int incorrectAnswerLimit;
 
   /** Carries only each attachment's {@code content}; no other attachment field survives export */
-  @ApiModelProperty(value = "List of attachments.", example = "[]")
+  @Schema(description = "Only each attachment's content survives the export", example = "[]")
   private List<AttachmentImportDTO> attachments;
 
-  @ApiModelProperty(
-      value = "The maximum score a participant can achieve during a level.",
+  @Schema(
+      description = "Points for solving the level, before any hint or solution penalty",
       example = "20")
   private int maxScore;
 
-  @ApiModelProperty(
-      value =
-          "Indicates if flags/answers are randomly generated and are different for each trainee. Default is false.",
-      example = "false")
+  @Schema(description = "Whether each trainee is given their own correct answer", example = "false")
   private boolean variantAnswers;
 
   /** Each entry carries no id; only the technique's own data is exported */
-  @ApiModelProperty(value = "Set of mitre techniques used in the training level.")
   private Set<MitreTechniqueDTO> mitreTechniques;
 
-  @ApiModelProperty(
-      value = "Set of the expected commands to be executed during the training level.")
   private Set<String> expectedCommands;
 
-  @ApiModelProperty(
-      value =
-          "Indicates if at least one command has to be executed to complete the level. Default is true.",
+  @Schema(
+      description = "Whether a correct answer with no command run beforehand counts as cheating",
       example = "true")
   private boolean commandsRequired;
 }

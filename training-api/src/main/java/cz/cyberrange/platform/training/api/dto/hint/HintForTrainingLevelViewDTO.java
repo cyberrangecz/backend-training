@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.hint;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -9,22 +8,18 @@ import lombok.Data;
  * and what taking it would cost, with the advice itself withheld
  */
 @Data
-@ApiModel(
-    value = "HintForTrainingLevelViewDTO",
-    description = "Basic information about hint viewed in a training level.")
+@Schema(description = "A hint offered on the level being played, with the advice withheld.")
 public class HintForTrainingLevelViewDTO {
 
-  @ApiModelProperty(value = "Main identifier of hint.", example = "1")
+  @Schema(example = "1")
   private Long id;
 
-  @ApiModelProperty(value = "Short textual description of the hint.", example = "Hint1")
+  @Schema(example = "Hint1")
   private String title;
 
-  @ApiModelProperty(
-      value = "The number of points the participant loses after receiving the hint.",
-      example = "10")
+  @Schema(description = "Points taken off the score once the hint is taken.", example = "10")
   private Integer hintPenalty;
 
-  @ApiModelProperty(value = "The order of hint in training level", example = "1")
+  @Schema(description = "Position of the hint within its level.", example = "1")
   private int order;
 }

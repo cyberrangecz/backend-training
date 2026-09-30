@@ -3,7 +3,7 @@ package cz.cyberrange.platform.training.api.dto.assessmentlevel.preview;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.ExtendedMatchingOptionDTO;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -21,25 +21,25 @@ import lombok.ToString;
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@Schema(description = "A question shown to a participant, with their answers but no correct ones.")
 public class QuestionPreviewDTO {
 
-  @ApiModelProperty(value = "Main identifier of the question.", example = "1")
+  @Schema(example = "1")
   private Long id;
 
-  @ApiModelProperty(value = "Type of the question.", required = true, example = "FFQ")
+  @Schema(
+      description = "Free-form (FFQ), multiple choice (MCQ) or extended matching (EMI).",
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      example = "FFQ")
   private QuestionType questionType = QuestionType.FFQ;
 
-  @ApiModelProperty(
-      value = "The content of the question.",
-      example = "What transport protocol is used for reliable transmission?")
+  @Schema(example = "What transport protocol is used for reliable transmission?")
   private String text = "Example Question";
 
-  @ApiModelProperty(value = "Order of the question, starts with 0", example = "0")
+  @Schema(description = "Zero-based position of the question in its level.", example = "0")
   private int order;
 
-  @ApiModelProperty(
-      value = "Sign if the question must be answered by the participant or not.",
-      example = "true")
+  @Schema(example = "true")
   private boolean answerRequired;
 
   /**
@@ -47,24 +47,23 @@ public class QuestionPreviewDTO {
    * question in this preview, since the same choices double as the accepted answer texts; kept for
    * a multiple-choice question.
    */
-  @ApiModelProperty(value = "Choices displayed to the participant in case of FFQ or MCQ.")
   private List<QuestionChoicePreviewDTO> choices = new ArrayList<>();
 
-  @ApiModelProperty(value = "Options displayed to the participant in case of EMI.")
   private List<ExtendedMatchingOptionDTO> extendedMatchingOptions = new ArrayList<>();
 
   /**
    * Statements displayed to the participant in case of EMI, each carrying the participant's chosen
    * option order but never the correct one
    */
-  @ApiModelProperty(value = "Statements displayed to the participant in case of EMI.")
   private List<ExtendedMatchingStatementPreviewDTO> extendedMatchingStatements = new ArrayList<>();
 
   /**
    * The participant's submitted answers for a free-form or multiple-choice question; left unset for
    * an extended matching question, whose answers are carried on the statements instead
    */
-  @ApiModelProperty(value = "User answers to the question", example = "[\"An answer\"]")
+  @Schema(
+      description = "The participant's answers; unset for an extended matching question.",
+      example = "[\"An answer\"]")
   private Set<String> userAnswers;
 
   /**

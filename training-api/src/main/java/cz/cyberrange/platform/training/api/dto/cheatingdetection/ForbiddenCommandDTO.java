@@ -1,8 +1,9 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
 import cz.cyberrange.platform.training.api.enums.CommandType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -10,15 +11,19 @@ import lombok.Data;
  * as a match only when it contains this command's text and was run in the same kind of shell.
  */
 @Data
-@ApiModel(value = "ForbiddenCommandDTO", description = "Basic information about forbidden command.")
+@Schema(
+    description =
+        "A command a detection run forbids, matched inside any command of the same console.")
 public class ForbiddenCommandDTO {
 
-  @ApiModelProperty(value = "command.", example = "nmap")
+  @NotBlank
+  @Schema(example = "nmap")
   private String command;
 
-  @ApiModelProperty(value = "Type of command.", example = "BASH")
+  @NotNull
+  @Schema(example = "BASH")
   private CommandType type;
 
-  @ApiModelProperty(value = "Id of cheating detection.", example = "1")
+  @Schema(example = "1")
   private Long cheatingDetectionId;
 }

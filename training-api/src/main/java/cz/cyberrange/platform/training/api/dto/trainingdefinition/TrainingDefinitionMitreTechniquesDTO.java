@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,25 +8,21 @@ import lombok.Data;
 /** Encapsulates the MITRE techniques used by a Training Definition */
 @Data
 @AllArgsConstructor
-@ApiModel(
-    value = "TrainingDefinitionMitreTechniquesDTO",
-    description = "Training definition with all MITRE techniques used by its training levels.")
+@Schema(description = "The MITRE ATT&CK techniques one released training definition uses.")
 public class TrainingDefinitionMitreTechniquesDTO {
 
-  @ApiModelProperty(value = "Main identifier of training definition.", example = "1")
+  @Schema(example = "1")
   private Long id;
 
-  @ApiModelProperty(
-      value = "A name of the training/game (e.g., Photo Hunter).",
-      example = "TrainingDefinition2")
+  @Schema(example = "TrainingDefinition2")
   private String title;
 
   /**
    * True when the requesting user's own user reference id appears as a participant on a training
    * run created from this definition
    */
-  @ApiModelProperty(
-      value = "Indicates whether the requesting user has played the training definition.",
+  @Schema(
+      description = "Whether the requesting user has taken part in a run of this definition.",
       example = "true")
   private boolean played;
 
@@ -35,8 +30,8 @@ public class TrainingDefinitionMitreTechniquesDTO {
    * Built by the facade one technique at a time from the query results for the definition, never
    * mapped as a whole
    */
-  @ApiModelProperty(
-      value = "Distinct MITRE technique keys used by the training levels of the definition.",
+  @Schema(
+      description = "Technique keys used across the definition's levels.",
       example = "[\"TA0042.T1588.006\", \"TA0043.T1595\"]")
   private List<String> mitreTechniques;
 }

@@ -264,6 +264,7 @@ public class AuditEventsService {
     } else if (abstractLevel instanceof AccessLevel) {
       return EventLevelType.ACCESS;
     }
-    return EventLevelType.PVP;
+    throw new IllegalArgumentException(
+        "Unknown level type: " + abstractLevel.getClass().getSimpleName());
   }
 }

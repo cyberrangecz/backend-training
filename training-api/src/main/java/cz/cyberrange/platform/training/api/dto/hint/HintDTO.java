@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.hint;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
@@ -15,17 +14,18 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "HintDTO", description = "A brief textual description to aid the participant.")
+@Schema(description = "A hint including the advice it gives.")
 public class HintDTO extends HintBasicDTO {
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
+  @Schema(
+      description = "The advice shown once the trainee takes the hint.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "Very good advice")
   @NotEmpty(message = "{hint.content.NotEmpty.message}")
   private String content;
 
   /** Position of the hint within its level's sequence of hints */
-  @ApiModelProperty(value = "The order of hint in training level", example = "1")
+  @Schema(description = "Position of the hint within its level.", example = "1")
   @Min(value = 0, message = "{hint.order.Min.message}")
   private int order;
 }

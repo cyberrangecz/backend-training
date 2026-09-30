@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.rest.utils.error;
 
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
@@ -13,13 +12,9 @@ import org.springframework.http.HttpStatus;
  * {@code UnprocessableEntityException}, carrying the exception's {@link EntityErrorDetail}
  * alongside the fields inherited from {@link ApiError}
  */
-@ApiModel(
-    value = "ApiEntityError",
-    description = "A detailed error information related to the entity.",
-    parent = ApiError.class)
+@Schema(description = "Error body naming the entity the failed request concerned")
 public class ApiEntityError extends ApiError {
   /** Entity detail carried by the exception that produced this error, when the exception set one */
-  @ApiModelProperty(value = "Detail of the entity which is related to the error.")
   private EntityErrorDetail entityErrorDetail;
 
   private ApiEntityError() {

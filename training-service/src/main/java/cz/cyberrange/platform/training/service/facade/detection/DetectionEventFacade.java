@@ -10,7 +10,16 @@ import cz.cyberrange.platform.training.api.dto.cheatingdetection.LocationSimilar
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.MinimalSolveTimeDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.NoCommandsDetectionEventDTO;
 import cz.cyberrange.platform.training.api.dto.cheatingdetection.TimeProximityDetectionEventDTO;
+import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
+import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
+import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
+import cz.cyberrange.platform.training.persistence.model.detection.AnswerSimilarityDetectionEvent;
+import cz.cyberrange.platform.training.persistence.model.detection.ForbiddenCommandsDetectionEvent;
+import cz.cyberrange.platform.training.persistence.model.detection.LocationSimilarityDetectionEvent;
+import cz.cyberrange.platform.training.persistence.model.detection.MinimalSolveTimeDetectionEvent;
+import cz.cyberrange.platform.training.persistence.model.detection.NoCommandsDetectionEvent;
+import cz.cyberrange.platform.training.persistence.model.detection.TimeProximityDetectionEvent;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.detection.DetectedForbiddenCommandMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.detection.DetectionEventMapper;
@@ -150,14 +159,20 @@ public class DetectionEventFacade {
    *
    * @param eventId the detection event ID
    * @return the event as {@link AbstractDetectionEventDTO}
+   * @throws EntityNotFoundException when the detection event with the given id does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public AbstractDetectionEventDTO findDetectionEventById(Long eventId) {
-    return detectionEventMapper.mapToDTO(
-        this.detectionEventService.findDetectionEventById(eventId));
+    AbstractDetectionEvent detectionEvent =
+        this.detectionEventService.findDetectionEventById(eventId);
+    if (detectionEvent == null) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail(AbstractDetectionEvent.class, "id", eventId.getClass(), eventId));
+    }
+    return detectionEventMapper.mapToDTO(detectionEvent);
   }
 
   /**
@@ -165,14 +180,23 @@ public class DetectionEventFacade {
    *
    * @param eventId the detection event ID
    * @return the event as {@link AnswerSimilarityDetectionEventDTO}
+   * @throws EntityNotFoundException when the answer similarity detection event with the given id
+   *     does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public AnswerSimilarityDetectionEventDTO findAnswerSimilarityEventById(Long eventId) {
+    AnswerSimilarityDetectionEvent answerSimilarityDetectionEvent =
+        this.answerSimilarityService.findAnswerSimilarityEventById(eventId);
+    if (answerSimilarityDetectionEvent == null) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail(
+              AnswerSimilarityDetectionEvent.class, "id", eventId.getClass(), eventId));
+    }
     return detectionEventMapper.mapToAnswerSimilarityDetectionEventDTO(
-        this.answerSimilarityService.findAnswerSimilarityEventById(eventId));
+        answerSimilarityDetectionEvent);
   }
 
   /**
@@ -180,14 +204,23 @@ public class DetectionEventFacade {
    *
    * @param eventId the detection event ID
    * @return the event as {@link LocationSimilarityDetectionEventDTO}
+   * @throws EntityNotFoundException when the location similarity detection event with the given id
+   *     does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public LocationSimilarityDetectionEventDTO findLocationSimilarityEventById(Long eventId) {
+    LocationSimilarityDetectionEvent locationSimilarityDetectionEvent =
+        this.locationSimilarityService.findLocationSimilarityEventById(eventId);
+    if (locationSimilarityDetectionEvent == null) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail(
+              LocationSimilarityDetectionEvent.class, "id", eventId.getClass(), eventId));
+    }
     return detectionEventMapper.mapToLocationSimilarityDetectionEventDTO(
-        this.locationSimilarityService.findLocationSimilarityEventById(eventId));
+        locationSimilarityDetectionEvent);
   }
 
   /**
@@ -195,14 +228,22 @@ public class DetectionEventFacade {
    *
    * @param eventId the detection event ID
    * @return the event as {@link TimeProximityDetectionEventDTO}
+   * @throws EntityNotFoundException when the time proximity detection event with the given id does
+   *     not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public TimeProximityDetectionEventDTO findTimeProximityEventById(Long eventId) {
-    return detectionEventMapper.mapToTimeProximityDetectionEventDTO(
-        this.timeProximityService.findTimeProximityEventById(eventId));
+    TimeProximityDetectionEvent timeProximityDetectionEvent =
+        this.timeProximityService.findTimeProximityEventById(eventId);
+    if (timeProximityDetectionEvent == null) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail(
+              TimeProximityDetectionEvent.class, "id", eventId.getClass(), eventId));
+    }
+    return detectionEventMapper.mapToTimeProximityDetectionEventDTO(timeProximityDetectionEvent);
   }
 
   /**
@@ -210,14 +251,23 @@ public class DetectionEventFacade {
    *
    * @param eventId the detection event ID
    * @return the event as {@link MinimalSolveTimeDetectionEventDTO}
+   * @throws EntityNotFoundException when the minimal solve time detection event with the given id
+   *     does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public MinimalSolveTimeDetectionEventDTO findMinimalSolveTimeEventById(Long eventId) {
+    MinimalSolveTimeDetectionEvent minimalSolveTimeDetectionEvent =
+        this.minimalSolveTimeService.findMinimalSolveTimeEventById(eventId);
+    if (minimalSolveTimeDetectionEvent == null) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail(
+              MinimalSolveTimeDetectionEvent.class, "id", eventId.getClass(), eventId));
+    }
     return detectionEventMapper.mapToMinimalSolveTimeDetectionEventDTO(
-        this.minimalSolveTimeService.findMinimalSolveTimeEventById(eventId));
+        minimalSolveTimeDetectionEvent);
   }
 
   /**
@@ -225,14 +275,21 @@ public class DetectionEventFacade {
    *
    * @param eventId the detection event ID
    * @return the event as {@link NoCommandsDetectionEventDTO}
+   * @throws EntityNotFoundException when the no commands detection event with the given id does not
+   *     exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public NoCommandsDetectionEventDTO findNoCommandsEventById(Long eventId) {
-    return detectionEventMapper.mapToNoCommandsDetectionEventDTO(
-        this.noCommandsService.findNoCommandsEventById(eventId));
+    NoCommandsDetectionEvent noCommandsDetectionEvent =
+        this.noCommandsService.findNoCommandsEventById(eventId);
+    if (noCommandsDetectionEvent == null) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail(NoCommandsDetectionEvent.class, "id", eventId.getClass(), eventId));
+    }
+    return detectionEventMapper.mapToNoCommandsDetectionEventDTO(noCommandsDetectionEvent);
   }
 
   /**
@@ -240,13 +297,22 @@ public class DetectionEventFacade {
    *
    * @param eventId the detection event ID
    * @return the event as {@link ForbiddenCommandsDetectionEventDTO}
+   * @throws EntityNotFoundException when the forbidden commands detection event with the given id
+   *     does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public ForbiddenCommandsDetectionEventDTO findForbiddenCommandsEventById(Long eventId) {
+    ForbiddenCommandsDetectionEvent forbiddenCommandsDetectionEvent =
+        this.forbiddenCommandsService.findForbiddenCommandsEventById(eventId);
+    if (forbiddenCommandsDetectionEvent == null) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail(
+              ForbiddenCommandsDetectionEvent.class, "id", eventId.getClass(), eventId));
+    }
     return detectionEventMapper.mapToForbiddenCommandsDetectionEventDTO(
-        this.forbiddenCommandsService.findForbiddenCommandsEventById(eventId));
+        forbiddenCommandsDetectionEvent);
   }
 }

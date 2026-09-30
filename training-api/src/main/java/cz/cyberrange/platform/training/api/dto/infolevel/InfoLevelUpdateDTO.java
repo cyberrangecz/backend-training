@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.infolevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,12 +15,13 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "InfoLevelUpdateDTO", description = "Info level to update.")
+@Schema(description = "The text that replaces what an info level currently presents.")
 public class InfoLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
   /** Text that replaces the level's stored content verbatim when the update is applied */
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
+  @Schema(
+      description = "Text that replaces the level's current content.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "Informational stuff")
   @NotEmpty(message = "{infoLevel.content.NotEmpty.message}")
   private String content;

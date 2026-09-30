@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.service.mapping.mapstruct;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingRunArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
-import cz.cyberrange.platform.training.api.dto.export.TrainingRunExportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
@@ -57,15 +56,6 @@ public interface ExportImportMapper extends ParentMapper {
   @Mapping(target = "organizersRefIds", source = "organizers")
   @Mapping(target = "definitionId", source = "trainingDefinition.id")
   TrainingInstanceArchiveDTO mapToDTO(TrainingInstance entity);
-
-  /**
-   * Copies a run's timing, state, event log reference and participant into its exported shape, the
-   * participant carried whole rather than reduced to an id.
-   *
-   * @param entity the run being exported
-   * @return its exported shape
-   */
-  TrainingRunExportDTO mapToDTO(TrainingRun entity);
 
   /**
    * Copies a run into its archived shape, reducing its participant to that participant's

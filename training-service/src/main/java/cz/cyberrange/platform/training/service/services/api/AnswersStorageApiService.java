@@ -6,6 +6,7 @@ import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.api.responses.SandboxAnswersInfo;
 import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -38,6 +39,7 @@ public class AnswersStorageApiService {
       return answersStorageWebClient
           .get()
           .uri("/sandboxes/{sandboxId}/answers/{answerVariableName}", sandboxId, answerVariableName)
+          .accept(MediaType.TEXT_PLAIN)
           .retrieve()
           .bodyToMono(String.class)
           .block();
@@ -72,6 +74,7 @@ public class AnswersStorageApiService {
               accessToken,
               userId,
               answerVariableName)
+          .accept(MediaType.TEXT_PLAIN)
           .retrieve()
           .bodyToMono(String.class)
           .block();

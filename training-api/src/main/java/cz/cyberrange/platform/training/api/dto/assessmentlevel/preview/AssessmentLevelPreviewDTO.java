@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.assessmentlevel.preview;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,20 +15,17 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "AssessmentLevelPreviewDTO",
-    description = "A questionnaire or a test that is displayed to the participant.",
-    parent = AbstractLevelDTO.class)
+@Schema(description = "An assessment level replayed with the participant's own answers.")
 public class AssessmentLevelPreviewDTO extends AbstractLevelDTO {
 
-  @ApiModelProperty(
-      value = "List of questions in this assessment as JSON.",
-      example = "What is my mothers name?")
+  @Schema(description = "The level's questions, each with the participant's answers.")
   private List<QuestionPreviewDTO> questions;
 
-  @ApiModelProperty(value = "Assessment instructions for participant.", example = "Fill me up")
+  @Schema(example = "Fill me up")
   private String instructions;
 
-  @ApiModelProperty(value = "Type of assessment.", example = "TEST")
+  @Schema(
+      description = "Whether the answers are graded (TEST) or only collected (QUESTIONNAIRE).",
+      example = "TEST")
   private AssessmentType assessmentType;
 }

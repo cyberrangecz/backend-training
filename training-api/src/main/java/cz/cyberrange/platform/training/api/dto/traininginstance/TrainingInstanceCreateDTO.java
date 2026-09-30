@@ -2,8 +2,7 @@ package cz.cyberrange.platform.training.api.dto.traininginstance;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCDeserializer;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -15,29 +14,20 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@ApiModel(value = "TrainingInstanceCreateDTO", description = "Training Instance to create.")
+@Schema(description = "A new training instance to schedule for a training definition")
 public class TrainingInstanceCreateDTO {
 
-  @ApiModelProperty(
-      value = "Date when training instance starts.",
-      required = true,
-      example = "2020-11-20T10:28:02.727Z")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2020-11-20T10:28:02.727Z")
   @NotNull(message = "{trainingInstance.startTime.NotNull.message}")
   @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
   private LocalDateTime startTime;
 
-  @ApiModelProperty(
-      value = "Date when training instance ends.",
-      required = true,
-      example = "2020-11-25T10:26:02.727Z")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2020-11-25T10:26:02.727Z")
   @NotNull(message = "{traininginstancecreate.endTime.NotNull.message}")
   @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
   private LocalDateTime endTime;
 
-  @ApiModelProperty(
-      value = "Short textual description of the training instance.",
-      required = true,
-      example = "December instance")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "December instance")
   @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
   private String title;
 
@@ -45,9 +35,9 @@ public class TrainingInstanceCreateDTO {
    * Trimmed and used as a prefix: the service appends a generated pin to it to form the actual
    * stored access token
    */
-  @ApiModelProperty(
-      value = "AccessToken which will be modified and then used for accessing training run.",
-      required = true,
+  @Schema(
+      description = "Prefix of the access token; the server appends a generated pin to it.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "hunter")
   @NotEmpty(message = "{traininginstancecreate.accessToken.NotEmpty.message}")
   private String accessToken;
@@ -56,10 +46,7 @@ public class TrainingInstanceCreateDTO {
    * Primary key of the training definition to base the instance on; resolved by the facade, not the
    * mapper
    */
-  @ApiModelProperty(
-      value = "Reference to training definition from which is training instance created.",
-      required = true,
-      example = "1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
   private long trainingDefinitionId;
 
@@ -68,11 +55,12 @@ public class TrainingInstanceCreateDTO {
    * it is false. When given, the facade locks the pool with the instance's generated access token
    * once the instance is created.
    */
-  @ApiModelProperty(value = "Id of sandbox pool assigned to training instance", example = "1")
+  @Schema(example = "1")
   private Long poolId;
 
-  @ApiModelProperty(
-      value = "Indicates if local sandboxes are used for training runs.",
+  @Schema(
+      description =
+          "True when sandboxes come from the sandbox definition locally instead of from a pool.",
       example = "true")
   private boolean localEnvironment;
 
@@ -80,19 +68,13 @@ public class TrainingInstanceCreateDTO {
    * Rejected when localEnvironment is false. Identifies the sandbox definition later used to create
    * each participant's local sandbox for a training run of this instance.
    */
-  @ApiModelProperty(value = "Id of sandbox definition assigned to training instance", example = "1")
+  @Schema(example = "1")
   private Long sandboxDefinitionId;
 
-  @ApiModelProperty(
-      value = "Sign if stepper bar should be displayed.",
-      required = true,
-      example = "true")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "true")
   private boolean showStepperBar;
 
-  @ApiModelProperty(
-      value =
-          "Indicates if trainee can during training run move to the previous already solved levels.",
-      example = "true")
+  @Schema(example = "true")
   private boolean backwardMode;
 
   public LocalDateTime getStartTime() {

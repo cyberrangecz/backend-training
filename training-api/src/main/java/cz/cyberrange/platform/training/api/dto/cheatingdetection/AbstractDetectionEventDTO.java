@@ -1,11 +1,9 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.DetectionEventType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -15,8 +13,9 @@ import lombok.Data;
  * implicated. Each kind of finding adds its own evidence in a subtype.
  */
 @Data
-@ApiModel(
-    value = "AbstractDetectionEventDTO",
+@Schema(
+    description =
+        "One finding of a cheating detection run, with the level and people it implicates.",
     subTypes = {
       AnswerSimilarityDetectionEventDTO.class,
       ForbiddenCommandsDetectionEventDTO.class,
@@ -24,72 +23,49 @@ import lombok.Data;
       MinimalSolveTimeDetectionEventDTO.class,
       NoCommandsDetectionEventDTO.class,
       TimeProximityDetectionEventDTO.class
-    },
-    description =
-        "Superclass for classes AnswerSimilarityDetectionEventDTO, ForbiddenCommandsDetectionEventDTO, LocationSimilarityDetectionEventDTO,"
-            + "MinimalSolveTimeDetectionEventDTO, NoCommandsDetectionEventDTO and TimeProximityDetectionEventDTO")
-@JsonSubTypes({
-  @JsonSubTypes.Type(
-      value = AnswerSimilarityDetectionEventDTO.class,
-      name = "AnswerSimilarityDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = ForbiddenCommandsDetectionEventDTO.class,
-      name = "ForbiddenCommandsDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = LocationSimilarityDetectionEventDTO.class,
-      name = "LocationSimilarityDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = MinimalSolveTimeDetectionEventDTO.class,
-      name = "MinimalSolveTimeDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = NoCommandsDetectionEventDTO.class,
-      name = "NoCommandsDetectionEventDTO"),
-  @JsonSubTypes.Type(
-      value = TimeProximityDetectionEventDTO.class,
-      name = "TimeProximityDetectionEventDTO")
-})
+    })
 public class AbstractDetectionEventDTO {
 
-  @ApiModelProperty(value = "id of detection event.", example = "1")
+  @Schema(example = "1")
   private Long id;
 
-  @ApiModelProperty(
-      value = "id of a training instance in which the event was detected.",
-      example = "1")
+  @Schema(example = "1")
   private Long trainingInstanceId;
 
-  @ApiModelProperty(
-      value = "id of a cheating detection during which the event was detected.",
-      example = "2")
+  @Schema(example = "2")
   private Long cheatingDetectionId;
 
-  @ApiModelProperty(value = "id of a training run in which the event was detected.", example = "2")
+  @Schema(example = "2")
   private Long trainingRunId;
 
-  @ApiModelProperty(value = "Training level id in which the event occurred.", example = "3")
+  @Schema(example = "3")
   private Long levelId;
 
-  @ApiModelProperty(value = "Training level order in which the event occurred.", example = "3")
+  @Schema(example = "3")
   private int levelOrder;
 
-  @ApiModelProperty(value = "Title of the training level.", example = "SQL injection")
+  @Schema(example = "SQL injection")
   private String levelTitle;
 
   /**
    * The moment the detection run was executed, shared by every finding of that run, rather than the
    * moment the trainee did the thing being flagged
    */
-  @ApiModelProperty(value = "Time at which the event was detected.", example = "1.1.2022 5:55:23")
+  @Schema(
+      example = "2022-01-01T05:55:23Z",
+      description = "When the detection run executed, not when the flagged thing happened.")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime detectedAt;
 
-  @ApiModelProperty(value = "number of participants of the event.", example = "3")
+  @Schema(example = "3")
   private Long participantCount;
 
-  @ApiModelProperty(value = "type of the event.", example = "answer similarity")
+  @Schema(example = "ANSWER_SIMILARITY")
   private DetectionEventType detectionEventType;
 
   /** The implicated people's display names, run together into one comma-separated string */
-  @ApiModelProperty(value = "participants of the event.", example = "John Doe,Jane Doe")
+  @Schema(
+      example = "John Doe,Jane Doe",
+      description = "The names of the implicated people, joined into one comma-separated string.")
   private String participants;
 }

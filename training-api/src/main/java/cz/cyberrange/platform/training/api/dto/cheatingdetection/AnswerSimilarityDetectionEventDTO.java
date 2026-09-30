@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -13,18 +12,17 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "AnswerSimilarityDetectionEventDTO",
-    description = "A detection event of type Answer Similarity.",
-    parent = AbstractDetectionEventDTO.class)
+@Schema(
+    description =
+        "A finding that a submitted answer was generated for another trainee or another level.")
 public class AnswerSimilarityDetectionEventDTO extends AbstractDetectionEventDTO {
   /** The answer value that was submitted, as the trainee typed it */
-  @ApiModelProperty(value = "Correct answer to the level.", example = "pass")
+  @Schema(example = "pass")
   private String answer;
 
   /** Display name of the trainee the submitted answer was generated for */
-  @ApiModelProperty(
-      value = "Name of a player who was assigned the correct answer.",
-      example = "John Doe")
+  @Schema(
+      example = "John Doe",
+      description = "Name of the trainee the submitted answer was generated for.")
   private String answerOwner;
 }

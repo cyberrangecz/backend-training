@@ -2,10 +2,8 @@ package cz.cyberrange.platform.training.api.dto.imports;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.cyberrange.platform.training.api.dto.export.AbstractLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,10 +21,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "TrainingLevelImportDTO",
-    description = "Imported training level.",
-    parent = AbstractLevelExportDTO.class)
+@Schema(description = "A training level to create, the task a trainee solves")
 @JsonIgnoreProperties({"reference_solution", "order"})
 public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
 
@@ -34,8 +29,8 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
    * Blank is normalized to {@code null} on import. Required, and {@link #answerVariableName} must
    * then be {@code null}, when {@link #variantAnswers} is {@code false}; forbidden otherwise.
    */
-  @ApiModelProperty(
-      value = "Keyword found in training, used for access next level.",
+  @Schema(
+      description = "The correct answer, required when every trainee is given the same one",
       example = "secretAnswer")
   @Size(max = 50, message = "{trainingLevel.answer.Size.message}")
   @JsonAlias({"flag"})
@@ -45,35 +40,31 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
    * Blank is normalized to {@code null} on import. Required, and {@link #answer} must then be
    * {@code null}, when {@link #variantAnswers} is {@code true}; forbidden otherwise.
    */
-  @ApiModelProperty(
-      value = "Identifier that is used to obtain answer from remote storage.",
+  @Schema(
+      description =
+          "Identifier each trainee's own answer is fetched under, required when answers vary",
       example = "username")
   private String answerVariableName;
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
-      example = "Play me")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Play me")
   @NotEmpty(message = "{trainingLevel.content.NotEmpty.message}")
   private String content;
 
-  @ApiModelProperty(
-      value = "Instruction how to get answer in training.",
-      example = "This is how you do it")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "This is how you do it")
   @NotEmpty(message = "{trainingLevel.solution.NotEmpty.message}")
   private String solution;
 
-  @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description = "Whether displaying the solution costs the trainee the level's whole score",
+      example = "true")
   @NotNull(message = "{trainingLevel.solutionPenalized.NotNull.message}")
   private Boolean solutionPenalized;
 
   /** Rejected on import if the sum of every hint's penalty exceeds {@link #maxScore} */
-  @Valid
-  @ApiModelProperty(value = "Information which helps player resolve the level.")
-  private Set<HintImportDTO> hints = new HashSet<>();
+  @Valid private Set<HintImportDTO> hints = new HashSet<>();
 
-  @ApiModelProperty(
-      value = "How many times player can submit incorrect answer before displaying solution.",
-      example = "5")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "5")
   @NotNull(message = "{trainingLevel.incorrectAnswerLimit.NotNull.message}")
   @Min(value = 0, message = "{trainingLevel.incorrectAnswerLimit.Min.message}")
   @Max(value = 100, message = "{trainingLevel.incorrectAnswerLimit.Max.message}")
@@ -81,12 +72,13 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   private Integer incorrectAnswerLimit;
 
   @Valid
-  @ApiModelProperty(value = "List of attachments.", example = "[]")
+  @Schema(example = "[]")
   private List<AttachmentImportDTO> attachments;
 
   /** Caps the total penalty the level's {@link #hints} may carry; see {@link #hints} */
-  @ApiModelProperty(
-      value = "The maximum score a participant can achieve during a level.",
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description = "Points for solving the level, before any hint or solution penalty",
       example = "20")
   @NotNull(message = "{abstractLevel.maxScore.NotNull.message}")
   @Min(value = 0, message = "{abstractLevel.maxScore.Min.message}")
@@ -97,24 +89,20 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
    * Selects which of {@link #answer} or {@link #answerVariableName} the import requires: {@code
    * true} requires {@link #answerVariableName}, {@code false} requires {@link #answer}
    */
-  @ApiModelProperty(
-      value =
-          "Marking if flags/answers are randomly generated and are different for each trainee. Default is false.",
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description = "Whether each trainee is given their own correct answer",
       example = "false")
   @NotNull(message = "{trainingLevel.variantAnswers.NotNull.message}")
   private Boolean variantAnswers;
 
-  @Valid
-  @ApiModelProperty(value = "List of mitre techniques used in the training level.")
-  private List<MitreTechniqueDTO> mitreTechniques;
+  @Valid private List<MitreTechniqueDTO> mitreTechniques;
 
-  @ApiModelProperty(
-      value = "Set of the expected commands to be executed during the training level.")
   private Set<String> expectedCommands;
 
-  @ApiModelProperty(
-      value =
-          "Indicates if at least one command has to be executed to complete the level. Default is true.",
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      description = "Whether a correct answer with no command run beforehand counts as cheating",
       example = "true")
   @NotNull(message = "{trainingLevel.commandsRequired.NotNull.message}")
   private Boolean commandsRequired;

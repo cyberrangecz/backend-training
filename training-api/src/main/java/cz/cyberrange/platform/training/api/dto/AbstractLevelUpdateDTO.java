@@ -7,8 +7,8 @@ import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUp
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
@@ -24,16 +24,22 @@ import lombok.Data;
  * field, once translated through the service's snake-case property naming strategy.
  */
 @Data
-@ApiModel(
-    value = "AbstractLevelUpdateDTO",
+@Schema(
+    description = "The fields every level update carries, whatever the level type.",
     subTypes = {
       TrainingLevelUpdateDTO.class,
       AccessLevelUpdateDTO.class,
       AssessmentLevelUpdateDTO.class,
       InfoLevelUpdateDTO.class
     },
-    description =
-        "Superclass for classes TrainingLevelUpdateDTO, AccessLevelUpdateDTO, AssessmentLevelUpdateDTO and InfoLevelUpdateDTO")
+    discriminatorProperty = "level_type",
+    discriminatorMapping = {
+      @DiscriminatorMapping(value = "TRAINING_LEVEL", schema = TrainingLevelUpdateDTO.class),
+      @DiscriminatorMapping(value = "GAME_LEVEL", schema = TrainingLevelUpdateDTO.class),
+      @DiscriminatorMapping(value = "ACCESS_LEVEL", schema = AccessLevelUpdateDTO.class),
+      @DiscriminatorMapping(value = "ASSESSMENT_LEVEL", schema = AssessmentLevelUpdateDTO.class),
+      @DiscriminatorMapping(value = "INFO_LEVEL", schema = InfoLevelUpdateDTO.class)
+    })
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
@@ -48,17 +54,19 @@ import lombok.Data;
 })
 public abstract class AbstractLevelUpdateDTO {
 
-  @ApiModelProperty(value = "Main identifier of level.", required = true, example = "1")
+  @Schema(
+      description = "Identifies the level to update within the definition.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      example = "1")
   @NotNull(message = "{abstractLevel.id.NotNull.message}")
   protected Long id;
 
-  @ApiModelProperty(
-      value = "Short textual description of the level.",
-      required = true,
-      example = "Training Level1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Training Level1")
   @NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
   protected String title;
 
-  @ApiModelProperty(value = "Type of the level.", example = "TRAINING_LEVEL")
+  @Schema(
+      description = "Selects the payload's level type; GAME_LEVEL is read as TRAINING_LEVEL.",
+      example = "TRAINING_LEVEL")
   protected LevelType levelType;
 }

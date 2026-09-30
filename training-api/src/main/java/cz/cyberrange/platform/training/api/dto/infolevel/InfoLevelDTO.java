@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.infolevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -15,14 +14,11 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "InfoLevelDTO",
-    description = "A HTML content for the participant to read.",
-    parent = AbstractLevelDTO.class)
+@Schema(description = "An info level together with the text it presents to the participant.")
 public class InfoLevelDTO extends AbstractLevelDTO {
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards a participant.",
+  @Schema(
+      description = "The text the level presents to the participant.",
       example = "Informational stuff")
   private String content;
 }

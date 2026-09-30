@@ -5,8 +5,7 @@ import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.hint.TakenHintDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,32 +13,30 @@ import lombok.Data;
 
 /** Encapsulates information about Training Run, intended as a response to run accessing */
 @Data
-@ApiModel(value = "AccessTrainingRunDTO", description = "Just accessed training run.")
+@Schema(description = "The run's current level and the context a trainee needs to work through it")
 public class AccessTrainingRunDTO {
 
-  @ApiModelProperty(value = "Main identifier of training run.", example = "1")
+  @Schema(example = "1")
   private Long trainingRunID;
 
-  @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
+  @Schema(example = "false")
   private boolean showStepperBar;
 
   /** Plain sandbox UUID, never hashed; the caller is always this run's owner or an admin */
-  @ApiModelProperty(
-      value = "Main identifier of sandbox which is assigned to training run.",
-      example = "2")
+  @Schema(
+      description = "UUID of the sandbox assigned to this run.",
+      example = "d2f6b1c4-9a3e-4c07-8b52-1e7a5c9d3f80")
   private String sandboxInstanceRefId;
 
   /** The training run's current level, not necessarily the first level of the definition */
-  @ApiModelProperty(value = "First level in the current training run.")
   private AbstractLevelDTO abstractLevelDTO;
 
-  @ApiModelProperty(value = "Information about all levels in training instance.")
   private List<BasicLevelInfoDTO> infoAboutLevels;
 
-  @ApiModelProperty(value = "Id of associated training instance", example = "1")
+  @Schema(example = "1")
   private Long instanceId;
 
-  @ApiModelProperty(value = "Date when training run started.", example = "2016-10-19 10:23:54+02")
+  @Schema(example = "2016-10-19 10:23:54+02")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime startTime;
 
@@ -48,38 +45,30 @@ public class AccessTrainingRunDTO {
    * its solution has been taken; {@code null} otherwise. Despite its name, this does not hold a
    * boolean sign.
    */
-  @ApiModelProperty(
-      value = "Sign if solution of current training level was taken",
-      example = "true")
+  @Schema(
+      description = "Solution text already revealed for the current training level, if any.",
+      example = "Scan the target with nmap and read the open ports.")
   private String takenSolution;
 
   /**
    * Hints already taken in the current level. Populated only when resuming an existing run; empty
    * when a run is newly created.
    */
-  @ApiModelProperty(value = "All already taken hints.")
   private List<TakenHintDTO> takenHints = new ArrayList<>();
 
-  @ApiModelProperty(
-      value = "Indicates if local sandboxes are used for training runs.",
+  @Schema(
+      description =
+          "True when sandboxes come from the sandbox definition locally instead of from a pool.",
       example = "true")
   private boolean localEnvironment;
 
-  @ApiModelProperty(
-      value =
-          "Main identifier of sandbox definition which is assigned to training instance of the training run.",
-      example = "2")
+  @Schema(example = "2")
   private Long sandboxDefinitionId;
 
-  @ApiModelProperty(
-      value =
-          "Indicates if trainee can during training run move to the previous already solved levels.",
-      example = "true")
+  @Schema(example = "true")
   private boolean backwardMode;
 
-  @ApiModelProperty(
-      value = "Indicates if the current level has been already corrected/answered.",
-      example = "true")
+  @Schema(example = "true")
   private boolean isLevelAnswered;
 
   /**

@@ -1,8 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
 import cz.cyberrange.platform.training.api.enums.CommandType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -11,21 +10,21 @@ import lombok.Data;
  * the moment it was entered
  */
 @Data
-@ApiModel(
-    value = "DetectedForbiddenCommandDTO",
-    description = "Basic information about detected forbidden command.")
+@Schema(description = "One recorded console command that matched a forbidden one.")
 public class DetectedForbiddenCommandDTO {
 
   /** The command line as it was recorded, not the forbidden text that matched it */
-  @ApiModelProperty(value = "Command.", example = "nmap")
+  @Schema(
+      example = "nmap",
+      description = "The command line as recorded, not the forbidden text that matched it.")
   private String command;
 
-  @ApiModelProperty(value = "Type of command.", example = "BASH")
+  @Schema(example = "BASH")
   private CommandType type;
 
-  @ApiModelProperty(value = "Hostname.", example = "attacker")
+  @Schema(example = "attacker")
   private String hostname;
 
-  @ApiModelProperty(value = "When the command was submitted", example = "1.1.2022 5:55:23")
+  @Schema(example = "2022-01-01T05:55:23")
   private LocalDateTime occurredAt;
 }

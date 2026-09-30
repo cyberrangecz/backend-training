@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -12,25 +12,24 @@ import lombok.Data;
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "One training level's correct answer, resolved for the asking participant.")
 public class CorrectAnswerDTO {
 
-  @ApiModelProperty(value = "Main identifier of the training level.", example = "1")
+  @Schema(example = "1")
   private Long levelId;
 
-  @ApiModelProperty(
-      value = "Short textual description of the training level.",
-      example = "Training Level1")
+  @Schema(example = "Training Level1")
   private String levelTitle;
 
-  @ApiModelProperty(value = "Order of level, starts with 0", example = "2")
+  @Schema(description = "Zero-based position of the level within its definition.", example = "2")
   private Integer levelOrder;
 
   /**
    * Holds the level's static answer, or, for a level using variant answers, whatever value the
    * variant-answer lookup resolved for it, which may be null when that lookup found none
    */
-  @ApiModelProperty(
-      value = "Correct answer (static or variable) of the training level.",
+  @Schema(
+      description = "The level's answer, resolved for this participant when answers vary.",
       example = "john")
   private String correctAnswer;
 
@@ -38,6 +37,8 @@ public class CorrectAnswerDTO {
    * Names the answer variable the level was configured with; unset when the level uses a single
    * static answer
    */
-  @ApiModelProperty(value = "Identifier of the variant answer.", example = "username")
+  @Schema(
+      description = "The answer variable the level uses; absent for a fixed answer.",
+      example = "username")
   private String variableName;
 }

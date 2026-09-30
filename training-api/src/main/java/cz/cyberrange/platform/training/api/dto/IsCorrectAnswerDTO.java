@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.api.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -9,22 +8,18 @@ import lombok.Data;
  * answer
  */
 @Data
-@ApiModel(
-    value = "IsCorrectAnswerDTO",
-    description =
-        "A response for the request about the validation of the answer. May also "
-            + "include solution if remaining attempts reach 0.")
+@Schema(description = "The verdict on a submitted answer and what the trainee has left.")
 public class IsCorrectAnswerDTO {
 
-  @ApiModelProperty(value = "True/false if answer has been correct/incorrect.", example = "false")
+  @Schema(example = "false")
   private boolean isCorrect;
 
-  @ApiModelProperty(value = "Number of attempts to submit a bad answer.", example = "3")
+  @Schema(description = "How many wrong answers may still be submitted.", example = "3")
   private int remainingAttempts;
 
   /** Set only once {@code remainingAttempts} has reached zero; left unset otherwise */
-  @ApiModelProperty(
-      value = "Instruction how to get answer in training.",
+  @Schema(
+      description = "The level's solution, sent once no attempts remain.",
       example = "This is how you do it")
   private String solution;
 }

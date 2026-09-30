@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.service.mapping.mapstruct;
 
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
-import cz.cyberrange.platform.training.api.dto.export.UserRefExportDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import java.util.ArrayList;
@@ -81,17 +80,6 @@ public interface UserRefMapper extends ParentMapper {
    * @return the mapped DTOs
    */
   Set<UserRefDTO> mapToSetDTO(Collection<UserRef> entities);
-
-  /**
-   * Maps each user reference to its export DTO, copying {@code userRefFullName}, {@code
-   * userRefGivenName}, {@code userRefFamilyName}, {@code iss} and {@code userRefId}. {@code
-   * userRefLogin} carries no matching source field, since the DTO's own login-shaped property is
-   * named {@code userRefSub}, and is left unset.
-   *
-   * @param userRefDTOs the user references to map
-   * @return the exported user references
-   */
-  List<UserRefExportDTO> mapUserRefExportDTOToUserRefDTO(Collection<UserRefDTO> userRefDTOs);
 
   default Optional<UserRef> mapToEntityOptional(UserRefDTO dto) {
     return Optional.ofNullable(mapToEntity(dto));

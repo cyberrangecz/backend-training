@@ -3,8 +3,7 @@ package cz.cyberrange.platform.training.api.dto.traininglevel;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintBasicDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,28 +18,25 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "TrainingLevelBasicDTO",
-    description = "An assignment containing security tasks whose completion yields a answer.",
-    parent = AbstractLevelBasicDTO.class)
+@Schema(description = "A training level in outline, without its task, answer or solution.")
 public class TrainingLevelBasicDTO extends AbstractLevelBasicDTO {
   /** Hints reduced to their title and point cost, with the advice text withheld */
-  @ApiModelProperty(value = "Information which helps player resolve the level.")
   protected Set<HintBasicDTO> hints = new HashSet<>();
 
   /**
    * Number of incorrect answer submissions allowed for the level, against which the number of
    * remaining attempts is calculated
    */
-  @ApiModelProperty(
-      value = "How many times player can submit incorrect answer before displaying solution.",
+  @Schema(
+      description = "How many wrong answers may be submitted before attempts run out.",
       example = "5")
   protected int incorrectAnswerLimit;
 
   /** Whether requesting the solution reduces the score awardable for the level to zero */
-  @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
+  @Schema(
+      description = "Whether showing the solution drops the level's score to zero.",
+      example = "true")
   protected boolean solutionPenalized;
 
-  @ApiModelProperty(value = "List of mitre techniques used in the training level.")
   protected List<MitreTechniqueDTO> mitreTechniques;
 }

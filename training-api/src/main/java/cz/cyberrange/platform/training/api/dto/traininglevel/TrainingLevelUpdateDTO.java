@@ -4,8 +4,7 @@ import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
 import cz.cyberrange.platform.training.api.enums.LevelType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,100 +26,86 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(value = "TrainingLevelUpdateDTO", description = "Training level to update.")
+@Schema(
+    description = "The content stored on a training level; a field left out clears what was there.")
 public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
-  @ApiModelProperty(
-      value = "The maximum score a participant can achieve during a level.",
-      required = true,
-      example = "20")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "20")
   @NotNull(message = "{trainingLevel.maxScore.NotNull.message}")
   @Min(value = 0, message = "{trainingLevel.maxScore.Min.message}")
   @Max(value = 100, message = "{trainingLevel.maxScore.Max.message}")
   private int maxScore;
 
   /** A blank submission is converted to a null answer when the entity is built */
-  @ApiModelProperty(
-      value = "Keyword found in training, used for access next level.",
-      required = true,
+  @Schema(
+      description = "The keyword a submission must match; blank stores no answer.",
       example = "secretAnswer")
   @Size(max = 50, message = "{trainingLevel.answer.Size.message}")
   private String answer;
 
   /** A blank submission is converted to a null answer variable name when the entity is built */
-  @ApiModelProperty(
-      value = "Identifier that is used to obtain answer from remote storage.",
+  @Schema(
+      description = "Name to look each participant's own answer up under; blank stores none.",
       example = "username")
   @Size(max = 50, message = "{trainingLevel.answerVariableName.Size.message}")
   private String answerVariableName;
 
-  @ApiModelProperty(
-      value = "The information and experiences that are directed towards an player.",
+  @Schema(
+      description = "The task presented to the participant.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "Play me")
   @NotEmpty(message = "{trainingLevel.content.NotEmpty.message}")
   private String content;
 
-  @ApiModelProperty(
-      value = "Instruction how to get answer in training.",
-      example = "This is how you do it")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "This is how you do it")
   @NotEmpty(message = "{trainingLevel.solution.NotEmpty.message}")
   private String solution;
 
   /** Whether requesting the solution reduces the score awardable for the level to zero */
-  @ApiModelProperty(
-      value = "Sign if displaying of solution is penalized.",
-      required = true,
+  @Schema(
+      description = "Whether showing the solution drops the level's score to zero.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "false")
   @NotNull(message = "{trainingLevel.solutionPenalized.NotNull.message}")
   private boolean solutionPenalized;
 
-  @ApiModelProperty(
-      value = "Estimated time (minutes) taken by the player to solve the level.",
-      example = "20")
+  @Schema(description = "Estimated time to solve the level, in minutes.", example = "20")
   private int estimatedDuration;
 
   /**
    * Number of incorrect answer submissions allowed for the level, against which the number of
    * remaining attempts is calculated
    */
-  @ApiModelProperty(
-      value = "How many times participant can submit incorrect answer before displaying solution.",
-      required = true,
+  @Schema(
+      description = "How many wrong answers may be submitted before attempts run out.",
+      requiredMode = Schema.RequiredMode.REQUIRED,
       example = "5")
   @NotNull(message = "{trainingLevel.incorrectAnswerLimit.NotNull.message}")
   @Min(value = 0, message = "{trainingLevel.incorrectAnswerLimit.Min.message}")
   @Max(value = 100, message = "{trainingLevel.incorrectAnswerLimit.Max.message}")
   private int incorrectAnswerLimit;
 
-  @Valid
-  @ApiModelProperty(value = "Information which helps participant resolve the level.")
-  private Set<HintDTO> hints = new HashSet<>();
+  @Valid private Set<HintDTO> hints = new HashSet<>();
 
   /**
    * Whether each trainee's answer is resolved from the external answer storage service, keyed by
    * the answer variable name, instead of taken from the literal answer field
    */
-  @ApiModelProperty(
-      value =
-          "Indicates if flags/answers are randomly generated and are different for each trainee. Default is false.",
+  @Schema(
+      description = "Whether each participant gets their own answer instead of the fixed one.",
       example = "false")
   private boolean variantAnswers;
 
-  @Valid
-  @ApiModelProperty(value = "List of mitre techniques used in the training level.")
-  private List<MitreTechniqueDTO> mitreTechniques;
+  @Valid private List<MitreTechniqueDTO> mitreTechniques;
 
-  @ApiModelProperty(
-      value = "Set of the expected commands to be executed during the training level.")
   private Set<String> expectedCommands;
 
   /**
    * Minimum time, in minutes, a trainee is expected to take on the level; the run's cheat-detection
    * check compares it, converted to seconds, against the elapsed submission time
    */
-  @ApiModelProperty(
-      value =
-          "Minimal possible solve time (minutes) that must be taken by the player to solve the level.",
+  @Schema(
+      description = "Time in minutes below which a solve is flagged as suspiciously fast.",
       example = "5")
   protected Integer minimalPossibleSolveTime;
 
@@ -129,9 +114,8 @@ public class TrainingLevelUpdateDTO extends AbstractLevelUpdateDTO {
    * A request that omits this field deserializes it as false, clearing the entity's default of true
    * rather than leaving it at true.
    */
-  @ApiModelProperty(
-      value =
-          "Indicates if at least one command has to be executed to complete the level. Default is true.",
+  @Schema(
+      description = "Whether cheating detection expects a command; omitting it stores false.",
       example = "true")
   private boolean commandsRequired;
 

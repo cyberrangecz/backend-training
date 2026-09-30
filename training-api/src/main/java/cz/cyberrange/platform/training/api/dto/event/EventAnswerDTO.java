@@ -3,8 +3,8 @@ package cz.cyberrange.platform.training.api.dto.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -14,9 +14,19 @@ import lombok.Data;
  * discriminates the subtype.
  */
 @Data
-@ApiModel(
-    value = "EventAnswerDTO",
-    description = "A single trainee answer discriminated by question type")
+@Schema(
+    description = "One trainee answer to a single assessment question.",
+    discriminatorMapping = {
+      @DiscriminatorMapping(
+          value = FreeFormEventAnswerDTO.TYPE,
+          schema = FreeFormEventAnswerDTO.class),
+      @DiscriminatorMapping(
+          value = MultipleChoiceEventAnswerDTO.TYPE,
+          schema = MultipleChoiceEventAnswerDTO.class),
+      @DiscriminatorMapping(
+          value = ExtendedMatchingEventAnswerDTO.TYPE,
+          schema = ExtendedMatchingEventAnswerDTO.class)
+    })
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
   @JsonSubTypes.Type(value = FreeFormEventAnswerDTO.class, name = FreeFormEventAnswerDTO.TYPE),
@@ -29,19 +39,17 @@ import lombok.Data;
 })
 public abstract class EventAnswerDTO {
 
-  @ApiModelProperty(value = "ID of the answered question", example = "1")
+  @Schema(example = "1")
   @JsonProperty("question_id")
   private Long questionId;
 
-  @ApiModelProperty(
-      value = "Whether the answer was correct; null when the assessment is not scored",
-      example = "true")
+  @Schema(
+      example = "true",
+      description = "Whether the answer to the question as a whole is correct.")
   @JsonProperty("correct")
   private Boolean correct;
 
-  @ApiModelProperty(
-      value = "Net points gained for the answer; null when the assessment is not scored",
-      example = "5")
+  @Schema(example = "5")
   @JsonProperty("points_gained")
   private Integer pointsGained;
 }

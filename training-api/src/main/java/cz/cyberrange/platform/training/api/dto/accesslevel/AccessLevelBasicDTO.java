@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.accesslevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -13,8 +13,5 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@ApiModel(
-    value = "AccessLevelBasicDTO",
-    description = "A level containing instructions on how to connect to the virtual machines.",
-    parent = AbstractLevelBasicDTO.class)
+@Schema(description = "An access level in outline, without its passkey or connection details.")
 public class AccessLevelBasicDTO extends AbstractLevelBasicDTO {}

@@ -1,9 +1,7 @@
 package cz.cyberrange.platform.training.rest.utils.error;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -17,30 +15,23 @@ import org.springframework.http.HttpStatus;
  * subtype) and returns it as the {@link org.springframework.http.ResponseEntity} body, with {@link
  * #getStatus()} also supplying that response's HTTP status.
  */
-@ApiModel(
-    value = "ApiError",
-    subTypes = {ApiEntityError.class, ApiMicroserviceError.class},
-    description = "Superclass for classes ApiEntityError and ApiMicroserviceError")
-@JsonSubTypes({
-  @JsonSubTypes.Type(value = ApiEntityError.class, name = "ApiEntityError"),
-  @JsonSubTypes.Type(value = ApiMicroserviceError.class, name = "ApiMicroserviceError")
-})
+@Schema(description = "Body of a failed request, describing what went wrong")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
 
   /** Epoch millisecond at which the handler that produced this error ran */
-  @ApiModelProperty(
-      value = "The time when the exception occurred",
-      example = "1574062900 (different for each type of exception)")
+  @Schema(
+      description = "When the error was produced, in milliseconds since the epoch",
+      example = "1789862400000")
   private long timestamp;
 
   /**
    * Status carried in the error body, which the handler also sets as the actual HTTP response
    * status
    */
-  @ApiModelProperty(
-      value = "The HTTP response status code",
-      example = "404 Not found (different for each type of exception).")
+  @Schema(
+      description = "The response's own HTTP status, repeated in the body",
+      example = "NOT_FOUND")
   private HttpStatus status;
 
   /**
@@ -50,19 +41,16 @@ public class ApiError {
    * on the {@code ApiEntityError} handlers, or the joined validation messages on {@link
    * CustomRestExceptionHandlerTraining#handleMethodArgumentNotValid}.
    */
-  @ApiModelProperty(
-      value = "The specific description of the ApiError.",
-      example =
-          "The IDMGroup could not be found in database (different for each type of exception).")
+  @Schema(example = "Entity TrainingDefinition (id: 1) not found.")
   private String message;
 
   /**
    * Single-element list holding the caught exception's own message, set through {@link
    * #setError(String)}
    */
-  @ApiModelProperty(
-      value = "The list of main reasons of the ApiError.",
-      example = "[The requested resource was not found (different for each type of exception).]")
+  @Schema(
+      description = "The underlying failure's own message, held as the single entry",
+      example = "[Entity TrainingDefinition (id: 1) not found.]")
   private List<String> errors;
 
   /**
@@ -72,9 +60,7 @@ public class ApiError {
    * and on {@link CustomRestExceptionHandlerTraining#handleAuthenticationException}, or the full
    * request URI on the other custom {@code @ExceptionHandler} methods.
    */
-  @ApiModelProperty(
-      value = "The requested URI path which caused error.",
-      example = "/user-and-group/api/v1/groups/1000 (different for each type of exception).")
+  @Schema(example = "/training/api/v1/training-definitions/1")
   private String path;
 
   protected ApiError() {}
