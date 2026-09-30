@@ -9,4 +9,4 @@ nb-configuration.xml
 *.log
 spring.log*
 logs/
-.idea/
+.idea/doc-files/
