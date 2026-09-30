@@ -11,14 +11,14 @@ import lombok.Data;
 @Schema(description = "A training instance as both its organizers and its trainees may see it")
 public class TrainingInstanceBasicDTO {
 
-  @Schema(example = "1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   protected Long id;
 
-  @Schema(example = "2016-10-19 10:23:54+02")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2016-10-19 10:23:54+02")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   protected LocalDateTime startTime;
 
-  @Schema(example = "2017-10-19 10:23:54+02")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2017-10-19 10:23:54+02")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   protected LocalDateTime endTime;
 
@@ -30,6 +30,6 @@ public class TrainingInstanceBasicDTO {
    * trainingDefinition relation. This DTO carries no accessToken field; it is returned to instance
    * organizers and to its trainee participants alike.
    */
-  @Schema(example = "1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   protected Long definitionId;
 }

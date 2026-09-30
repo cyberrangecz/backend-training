@@ -45,7 +45,7 @@ public abstract class AbstractEventDTO {
    * training event, converted by {@code EventMapper} from the epoch-millisecond value the audit
    * document stores, interpreted in the JVM's default time zone.
    */
-  @Schema(example = "2021-03-24T12:00:00")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2021-03-24T12:00:00")
   private LocalDateTime timestamp;
 
   @Schema(example = "db5c9da0-e2d9-482a-a924-a12def8ac2ef")

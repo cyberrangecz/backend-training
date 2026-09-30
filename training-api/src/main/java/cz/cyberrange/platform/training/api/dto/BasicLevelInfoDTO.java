@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Schema(description = "One level of a training definition, named and placed in its sequence.")
 public class BasicLevelInfoDTO {
 
-  @Schema(example = "1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   private Long id;
 
   @Schema(example = "Training Level1")

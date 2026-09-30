@@ -9,10 +9,10 @@ import lombok.Data;
 public abstract class AbstractTrainingDefinitionDTO {
 
   /** Primary key of the training definition row, distinct from any user id space */
-  @Schema(example = "1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   protected Long id;
 
-  @Schema(example = "TrainingDefinition2")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "TrainingDefinition2")
   protected String title;
 
   @Schema(example = "Unreleased training definition")
