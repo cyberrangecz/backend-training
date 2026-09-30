@@ -14,7 +14,11 @@ import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-/** The type Service config. */
+/**
+ * Assembles the service layer: it registers the services, this configuration package and the
+ * startup components, enables asynchronous method execution, and pulls in persistence, audit
+ * storage, security and the external service clients
+ */
 @Configuration
 @EnableAsync(proxyTargetClass = true)
 @Import({
@@ -34,17 +38,16 @@ public class ServiceConfig {
 
   private Environment env;
 
-  /** Instantiates a new Service config. */
   @Autowired
   public ServiceConfig(Environment env) {
     this.env = env;
   }
 
   /**
-   * This configuration is necessary for sharing SecurityContext between worker threads (to pass
-   * SecurityContext to the @Async methods.)
+   * Switches the security context to be inherited by a thread from the thread that started it, so
+   * that a method running asynchronously still sees the caller's authentication instead of none.
    *
-   * @return method invoking factory bean
+   * @return the bean whose creation performs that switch
    */
   @Bean
   public MethodInvokingFactoryBean methodInvokingFactoryBean() {

@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-/** Encapsulates information about user reference. */
+/** Encapsulates information about user reference */
 @Data
 @ApiModel(value = "UserRefExportDTO", description = "An exported information about user reference.")
 public class UserRefExportDTO {

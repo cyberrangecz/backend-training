@@ -73,7 +73,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets answer that needs to be found by trainee to complete level
+   * Gets answer that needs to be found by trainee to complete level.
    *
    * @return the answer
    */
@@ -82,7 +82,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets answer that needs to be found by trainee to complete level
+   * Sets answer that needs to be found by trainee to complete level.
    *
    * @param answer the answer
    */
@@ -109,7 +109,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets text assignment of task that needs to be performed by trainee
+   * Gets text assignment of task that needs to be performed by trainee.
    *
    * @return the content
    */
@@ -118,7 +118,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets text assignment of task that needs to be performed by trainee
+   * Sets text assignment of task that needs to be performed by trainee.
    *
    * @param content the content
    */
@@ -127,7 +127,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets solution to the level that is shown if trainee fails or if they request it
+   * Gets solution to the level that is shown if trainee fails or if they request it.
    *
    * @return the solution
    */
@@ -136,7 +136,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets solution to the level that is shown if trainee fails or if they request it
+   * Sets solution to the level that is shown if trainee fails or if they request it.
    *
    * @param solution the solution
    */
@@ -145,8 +145,9 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets if solution is penalized. If true, points for solving level will be decreased to 1 after
-   * trainee displays solution
+   * Gets if solution is penalized. If true, the run's penalty for the level is set to the level's
+   * full maximum score when the trainee displays the solution, so a subsequent correct answer earns
+   * zero points for it.
    *
    * @return the boolean
    */
@@ -155,8 +156,9 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets if solution is penalized. If true, points for solving level will be decreased to 1 after
-   * trainee displays solution
+   * Sets if solution is penalized. If true, the run's penalty for the level is set to the level's
+   * full maximum score when the trainee displays the solution, so a subsequent correct answer earns
+   * zero points for it.
    *
    * @param solutionPenalized the solution penalized
    */
@@ -165,7 +167,8 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets attachments.
+   * Gets the attachments belonging to this level, carried along whenever the level is exported,
+   * imported, or cloned.
    *
    * @return the attachments
    */
@@ -174,7 +177,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets attachments.
+   * Sets the attachments belonging to this level.
    *
    * @param attachments the attachments
    */
@@ -183,7 +186,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Add attachment.
+   * Adds an attachment to this level.
    *
    * @param attachment the attachment
    */
@@ -192,7 +195,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets hints associated with training level
+   * Gets hints associated with training level.
    *
    * @return the hints
    */
@@ -201,7 +204,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Adds hint to be associated with training level
+   * Adds hint to be associated with training level.
    *
    * @param hint the hint
    */
@@ -210,7 +213,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets hints associated with training level
+   * Sets hints associated with training level.
    *
    * @param hints the hints
    */
@@ -220,7 +223,7 @@ public class TrainingLevel extends AbstractLevel {
 
   /**
    * Gets number of attempts available to trainee to input incorrect answer before the solution is
-   * displayed
+   * displayed.
    *
    * @return the incorrect answer limit
    */
@@ -230,7 +233,7 @@ public class TrainingLevel extends AbstractLevel {
 
   /**
    * Sets number of attempts available to trainee to input incorrect answer before the solution is
-   * displayed
+   * displayed.
    *
    * @param incorrectAnswerLimit the incorrect answer limit
    */
@@ -257,7 +260,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets set of MITRE techniques used in the training level
+   * Gets set of MITRE techniques used in the training level.
    *
    * @return set of MITRE techniques
    */
@@ -266,7 +269,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets set of MITRE techniques used in the training level
+   * Sets set of MITRE techniques used in the training level.
    *
    * @param mitreTechniques set of MITRE techniques
    */
@@ -274,18 +277,30 @@ public class TrainingLevel extends AbstractLevel {
     this.mitreTechniques = mitreTechniques;
   }
 
+  /**
+   * Adds the technique to this level's set and registers this level on the technique's own side of
+   * the association.
+   *
+   * @param mitreTechnique the technique to add
+   */
   public void addMitreTechnique(MitreTechnique mitreTechnique) {
     this.mitreTechniques.add(mitreTechnique);
     mitreTechnique.addTrainingLevel(this);
   }
 
+  /**
+   * Removes the technique from this level's set and unregisters this level on the technique's own
+   * side of the association.
+   *
+   * @param mitreTechnique the technique to remove
+   */
   public void removeMitreTechnique(MitreTechnique mitreTechnique) {
     this.mitreTechniques.remove(mitreTechnique);
     mitreTechnique.removeTrainingLevel(this);
   }
 
   /**
-   * Gets set of expected commands executed in the training level
+   * Gets the set of console command strings recorded for this level.
    *
    * @return set of expected commands
    */
@@ -294,7 +309,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets set of expected commands executed in the training level
+   * Sets the set of console command strings recorded for this level.
    *
    * @param expectedCommands set of expected commands
    */
@@ -303,7 +318,8 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets boolean if at least one command has to be executed to complete the training level
+   * Gets if this level is subject to the NO_COMMANDS cheating detection, which flags a correct
+   * submission for which no console command was run beforehand. Defaults to true when left unset.
    *
    * @return true if commands are required, false otherwise
    */
@@ -312,7 +328,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Sets a boolean if at least one command has to be executed to complete the training level
+   * Sets whether this level is subject to the NO_COMMANDS cheating detection.
    *
    * @param commandsRequired boolean value
    */

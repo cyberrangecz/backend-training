@@ -9,7 +9,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates information about assessment level. Inherits from {@link AbstractLevelDTO} */
+/**
+ * An assessment level as shown for a level the participant has already visited, carrying the
+ * participant's own submitted answers but never disclosing which choice or option was correct
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

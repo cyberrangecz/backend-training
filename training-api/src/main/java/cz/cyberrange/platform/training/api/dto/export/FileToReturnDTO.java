@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Class encapsulating entity into file. */
+/** Class encapsulating entity into file */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

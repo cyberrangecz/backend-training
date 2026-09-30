@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+/** Implements the {@link UserRef} lookup and insert declared by {@link UserRefRepositoryCustom} */
 @Repository
 public class UserRefRepositoryImpl implements UserRefRepositoryCustom {
 
@@ -17,6 +18,12 @@ public class UserRefRepositoryImpl implements UserRefRepositoryCustom {
 
   @PersistenceContext private EntityManager entityManager;
 
+  /**
+   * Runs a native {@code INSERT ... ON CONFLICT DO NOTHING} against the {@code user_ref} table's
+   * {@code user_ref_id} column, then fetches and returns the row for that value, whether the insert
+   * created it or it already existed. The unique constraint on {@code user_ref_id} is what makes
+   * the conflict path silent rather than an error.
+   */
   @Override
   public UserRef createOrGet(Long userRefId) {
     int rowsAffected =

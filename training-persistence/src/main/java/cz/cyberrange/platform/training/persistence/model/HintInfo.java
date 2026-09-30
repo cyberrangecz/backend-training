@@ -8,7 +8,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Class represents information of hint associated with current level of training run */
+/**
+ * Snapshot of a {@link Hint} taken by a trainee, copied from the hint at the moment it was
+ * requested and held in the owning training run's set of taken hints
+ */
 @Getter
 @Setter
 @NoArgsConstructor

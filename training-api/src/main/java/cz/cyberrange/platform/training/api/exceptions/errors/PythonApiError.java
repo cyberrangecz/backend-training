@@ -6,6 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * The error body returned by a failing call to the sandbox microservice, deserialized by {@code
+ * ObjectMapper.readValue} from that response's JSON, or built through {@link #of} when the response
+ * carried no readable body
+ */
 @ApiModel(
     value = "PythonApiError",
     description = "A detailed error from another Python mircorservice.",
@@ -23,12 +28,14 @@ public class PythonApiError extends ApiSubError {
 
   private PythonApiError() {}
 
+  /** Builds an error carrying only the given detail message */
   public static PythonApiError of(String detail) {
     PythonApiError apiError = new PythonApiError();
     apiError.setDetail(detail);
     return apiError;
   }
 
+  /** Builds an error carrying the given detail message and its associated parameters */
   public static PythonApiError of(String detail, Map<String, String> parameters) {
     PythonApiError apiError = new PythonApiError();
     apiError.setDetail(detail);
@@ -52,6 +59,7 @@ public class PythonApiError extends ApiSubError {
     this.parameters = parameters;
   }
 
+  /** Returns the error detail, or a placeholder when none was set */
   @Override
   public String getMessage() {
     return detail == null ? "No specific message provided." : detail;

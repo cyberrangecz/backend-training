@@ -34,17 +34,56 @@ import org.springframework.data.domain.PageImpl;
 public interface TrainingInstanceMapper extends ParentMapper {
   TrainingInstance mapToEntity(TrainingInstanceDTO dto);
 
+  /**
+   * Maps a training instance update into a new entity, leaving its training definition association
+   * unset; the facade resolves {@code trainingDefinitionId} via {@code
+   * TrainingDefinitionService.findById} and assigns the definition itself.
+   *
+   * @param dto the update to map
+   * @return the mapped training instance
+   */
   TrainingInstance mapUpdateToEntity(TrainingInstanceUpdateDTO dto);
 
+  /**
+   * Maps a training instance creation request into a new entity, leaving its training definition
+   * association unset; the facade resolves {@code trainingDefinitionId} and assigns the definition
+   * itself.
+   *
+   * @param dto the creation request to map
+   * @return the mapped training instance
+   */
   TrainingInstance mapCreateToEntity(TrainingInstanceCreateDTO dto);
 
   TrainingInstance mapPartialUpdateToEntity(TrainingInstanceAssignPoolIdDTO dto);
 
+  /**
+   * Maps a training instance entity to a {@link TrainingInstanceBasicInfoDTO}, copying every field
+   * the two share.
+   *
+   * @param dto the training instance entity to map
+   * @return the basic info DTO
+   */
   TrainingInstanceBasicInfoDTO mapToBasicDto(TrainingInstance dto);
 
+  /**
+   * Maps a list of training instance entities, in order, to {@link TrainingInstanceBasicDTO}
+   * through {@link #mapToBasicDTO}.
+   *
+   * @param allByIds the training instances to map
+   * @return the mapped basic DTOs, in the same order
+   */
   @IterableMapping(qualifiedByName = "trainingInstanceToBasicDTO")
   List<TrainingInstanceBasicDTO> mapToBasicDtoList(List<TrainingInstance> allByIds);
 
+  /**
+   * Maps a training instance entity to a {@link TrainingInstanceDTO}, flattening the training
+   * definition's identifier into {@code definitionId} and mapping the full definition through
+   * {@link TrainingDefinitionMapper}. Leaves {@code sandboxesWithTrainingRun} at its default empty
+   * list.
+   *
+   * @param entity the training instance to map
+   * @return the instance DTO
+   */
   @Mapping(
       target = "trainingDefinition",
       source = "trainingDefinition",
@@ -52,10 +91,24 @@ public interface TrainingInstanceMapper extends ParentMapper {
   @Mapping(target = "definitionId", source = "trainingDefinition.id")
   TrainingInstanceDTO mapToDTO(TrainingInstance entity);
 
+  /**
+   * Maps a training instance entity to a {@link TrainingInstanceBasicDTO}, flattening the training
+   * definition's identifier into {@code definitionId}.
+   *
+   * @param entity the training instance to map
+   * @return the basic instance DTO
+   */
   @Named("trainingInstanceToBasicDTO")
   @Mapping(target = "definitionId", source = "trainingDefinition.id")
   TrainingInstanceBasicDTO mapToBasicDTO(TrainingInstance entity);
 
+  /**
+   * Maps a training instance entity to a {@link TrainingInstanceFindAllResponseDTO}, mapping the
+   * full training definition through {@link TrainingDefinitionMapper}.
+   *
+   * @param entity the training instance to map
+   * @return the find-all response DTO
+   */
   @Mapping(
       target = "trainingDefinition",
       source = "trainingDefinition",
@@ -88,6 +141,12 @@ public interface TrainingInstanceMapper extends ParentMapper {
     return new PageImpl<>(mapped, objects.getPageable(), objects.getTotalElements());
   }
 
+  /**
+   * Maps a page of training instances to a page result resource holding their DTOs.
+   *
+   * @param objects the page of training instances to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingInstanceDTO> mapToPageResultResource(
       Page<TrainingInstance> objects) {
     List<TrainingInstanceDTO> mapped = new ArrayList<>();
@@ -95,6 +154,12 @@ public interface TrainingInstanceMapper extends ParentMapper {
     return new PageResultResource<>(mapped, createPagination(objects));
   }
 
+  /**
+   * Maps a page of training instances to a page result resource holding their find-all view DTOs.
+   *
+   * @param objects the page of training instances to map
+   * @return the mapped view DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingInstanceFindAllResponseDTO> mapToPageResultResourceBasicView(
       Page<TrainingInstance> objects) {
     List<TrainingInstanceFindAllResponseDTO> mapped = new ArrayList<>();

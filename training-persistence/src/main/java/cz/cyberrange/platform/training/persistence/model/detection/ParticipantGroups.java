@@ -2,6 +2,10 @@ package cz.cyberrange.platform.training.persistence.model.detection;
 
 import java.util.List;
 
+/**
+ * Pairs a grouping of trainee ids with the corresponding grouping of detection event ids, each held
+ * as a list of lists so that entries at the same outer index belong to the same group
+ */
 public class ParticipantGroups {
   private List<List<Long>> userIdGroups;
   private List<List<Long>> eventIdGroups;

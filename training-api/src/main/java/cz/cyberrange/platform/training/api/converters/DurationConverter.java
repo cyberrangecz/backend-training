@@ -3,6 +3,7 @@ package cz.cyberrange.platform.training.api.converters;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import java.time.Duration;
 
+/** Converts a {@link Duration} into an {@code HH:mm:ss} formatted string */
 public class DurationConverter extends StdConverter<Duration, String> {
 
   @Override

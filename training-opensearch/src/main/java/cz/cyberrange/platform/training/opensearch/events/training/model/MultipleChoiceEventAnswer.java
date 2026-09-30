@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 
 /**
  * Multiple-choice assessment answer holding the options the trainee selected, ordered by option
- * order, each carrying whether that individual option is a correct choice.
+ * order, each carrying whether that individual option is a correct choice
  */
 @SuperBuilder
 @NoArgsConstructor

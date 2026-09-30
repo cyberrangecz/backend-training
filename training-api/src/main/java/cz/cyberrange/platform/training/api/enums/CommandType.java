@@ -1,10 +1,13 @@
 package cz.cyberrange.platform.training.api.enums;
 
-/** The enumeration of Command Types. */
+/**
+ * Classifies the console a forbidden command definition matches against a training run's recorded
+ * console commands
+ */
 public enum CommandType {
 
-  /** represents a command used in bash console. */
+  /** Matches a recorded command whose console type is the bash console */
   BASH,
-  /** represents a command used in msfconsole. */
+  /** Matches a recorded command whose console type is msfconsole */
   MSF;
 }

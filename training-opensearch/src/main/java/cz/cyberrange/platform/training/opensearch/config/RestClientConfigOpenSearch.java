@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Spring configuration that creates an OpenSearch low-level {@link RestClient} bean used for
- * executing raw HTTP requests against OpenSearch.
+ * executing raw HTTP requests against OpenSearch
  */
 @Configuration
 public class RestClientConfigOpenSearch {

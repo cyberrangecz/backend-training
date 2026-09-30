@@ -1,28 +1,27 @@
 package cz.cyberrange.platform.training.api.dto.imports;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Encapsulates information about training definition and its levels. */
+/**
+ * Encapsulates information about training definition and its levels. Carries no state and no
+ * estimated duration: both are decided when the definition is created
+ */
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 @ApiModel(value = "ImportTrainingDefinitionDTO", description = "A basic information about hint.")
-// Properties accepted and discarded so that training definitions exported by earlier versions
-// remain importable
-@JsonIgnoreProperties({"show_stepper_bar", "variant_sandboxes"})
+@JsonIgnoreProperties({"show_stepper_bar", "variant_sandboxes", "state", "estimated_duration"})
 public class ImportTrainingDefinitionDTO {
 
   @ApiModelProperty(
@@ -47,21 +46,13 @@ public class ImportTrainingDefinitionDTO {
       example = "")
   private String[] outcomes;
 
-  @ApiModelProperty(value = "Current state of training definition.", example = "UNRELEASED")
-  @NotNull(message = "{trainingDefinition.state.NotNull.message}")
-  private TDState state;
-
   @Valid
   @ApiModelProperty(value = "Information about all levels in training definition.")
   private List<AbstractLevelImportDTO> levels = new ArrayList<>();
 
-  @ApiModelProperty(
-      value = "Estimated time it takes to finish runs created from this definition.",
-      example = "5")
-  private Integer estimatedDuration;
-
   /**
-   * Sets levels.
+   * Replaces the level list with a new list holding the same elements, so later mutation of the
+   * argument list does not affect this instance.
    *
    * @param levels the list of {@link AbstractLevelImportDTO}
    */

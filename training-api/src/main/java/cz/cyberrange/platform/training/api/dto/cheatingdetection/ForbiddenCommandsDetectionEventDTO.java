@@ -6,7 +6,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates information about forbidden commands detection event. */
+/**
+ * A finding that a trainee ran commands the detection was configured to forbid. Unlike the other
+ * kinds, it implicates exactly one trainee, so the inherited participant string carries a single
+ * name.
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -16,6 +20,7 @@ import lombok.ToString;
     parent = AbstractDetectionEventDTO.class)
 public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDTO {
 
+  /** How many forbidden commands this finding gathered, counting every occurrence */
   @ApiModelProperty(value = "count of forbidden commands.", example = "10")
   private int commandCount;
 }

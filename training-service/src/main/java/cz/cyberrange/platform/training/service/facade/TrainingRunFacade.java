@@ -71,7 +71,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The type Training run facade. */
+/**
+ * Orchestrates a trainee's progress through a training run between the REST layer and the
+ * underlying services: starting, resuming, answering and finishing a run, retrieving its levels and
+ * hints, and reporting run and participant data to organizers and administrators
+ */
 @Service
 public class TrainingRunFacade {
 
@@ -89,16 +93,6 @@ public class TrainingRunFacade {
   private final LevelMapper levelMapper;
   private final HintMapper hintMapper;
 
-  /**
-   * Instantiates a new Training run facade.
-   *
-   * @param trainingRunService the training run service
-   * @param securityService the security service
-   * @param userService the user service
-   * @param trainingRunMapper the training run mapper
-   * @param levelMapper the level mapper
-   * @param hintMapper the hint mapper
-   */
   @Autowired
   public TrainingRunFacade(
       TrainingRunService trainingRunService,
@@ -118,7 +112,7 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Finds specific Training Run by id
+   * Finds specific Training Run by id.
    *
    * @param id of a Training Run that would be returned
    * @return specific {@link TrainingRunByIdDTO}
@@ -215,10 +209,12 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Resume given training run.
+   * Resumes a training run. When the current level is a training level, adds the solution the
+   * participant has already taken for it, if any, and every hint the participant has already taken
+   * for that same level.
    *
    * @param trainingRunId id of Training Run to be resumed.
-   * @return {@link AccessTrainingRunDTO} response
+   * @return {@link AccessTrainingRunDTO} describing the run's current level
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -245,10 +241,16 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Access Training Run by logged in user based on given accessToken.
+   * Accesses a training instance identified by its access token on behalf of the logged in user.
+   * Resumes the user's own already-running training run for that instance if one exists. Otherwise
+   * acquires a per-user lock preventing concurrent accesses from the same user, creates a new
+   * training run, assigns it a sandbox unless the instance runs in a local environment, and audits
+   * the run as started. If any step inside the try block fails — creating the run, assigning a
+   * sandbox, or auditing the run as started — the acquisition lock is released before the exception
+   * is rethrown.
    *
    * @param accessToken of one training instance
-   * @return {@link AccessTrainingRunDTO} response
+   * @return {@link AccessTrainingRunDTO} describing the resumed or newly created run
    */
   @IsTraineeOrAdmin
   @Transactional
@@ -424,11 +426,13 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Check given answer of given Training Run.
+   * Checks a submitted answer against the current level of the given training run. When no attempts
+   * remain after this submission, the current level's solution is included in the result.
    *
    * @param trainingRunId id of Training Run to check answer.
    * @param answer string which player submit.
-   * @return true if answer is correct, false if answer is wrong.
+   * @return whether the answer was correct, the attempts remaining, and the solution once attempts
+   *     are exhausted
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -460,7 +464,8 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Finish training run.
+   * Finishes a training run, then blocks the calling thread for a fixed delay to let its audited
+   * events propagate before returning.
    *
    * @param trainingRunId id of Training Run to be finished.
    */
@@ -622,10 +627,13 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Gets correct answers of the given Training Run.
+   * Gets the correct answer of every training level in the definition backing the given training
+   * run. For a level using variant answers, the correct answer is looked up per participant from
+   * the answer storage service, either by the instance's access token (local environment) or by the
+   * run's sandbox instance reference id.
    *
-   * @param trainingRunId id of Training Run which current level gets hint for.
-   * @return {@link CorrectAnswerDTO[]}
+   * @param trainingRunId id of the Training Run whose definition's correct answers are returned.
+   * @return the correct answer of every training level, ordered by level order.
    */
   @IsOrganizerOrAdmin
   @TransactionalWO

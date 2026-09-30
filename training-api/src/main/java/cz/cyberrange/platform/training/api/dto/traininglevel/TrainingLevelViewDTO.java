@@ -10,7 +10,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/** Encapsulates basic information about training level. */
+/**
+ * The level as shown to a trainee currently solving it, on resuming a run or moving to the next
+ * level. Carries no answer and no solution field, so a trainee playing the level cannot read either
+ * through this shape.
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -25,6 +29,7 @@ public class TrainingLevelViewDTO extends AbstractLevelDTO {
       example = "Play me")
   private String content;
 
+  /** Whether requesting the solution reduces the score awardable for the level to zero */
   @ApiModelProperty(value = "Sign if displaying of solution is penalized.", example = "true")
   private boolean solutionPenalized;
 
@@ -33,11 +38,16 @@ public class TrainingLevelViewDTO extends AbstractLevelDTO {
       example = "25")
   private int estimatedDuration;
 
+  /**
+   * Number of incorrect answer submissions allowed for the level, against which the number of
+   * remaining attempts is calculated
+   */
   @ApiModelProperty(
       value = "How many times player can submit incorrect answer before displaying solution.",
       example = "5")
   private int incorrectAnswerLimit;
 
+  /** Hints as configured for the level, each with its title and point cost, advice withheld */
   @ApiModelProperty(value = "Information which helps player resolve the level.")
   private Set<HintForTrainingLevelViewDTO> hints = new HashSet<>();
 }

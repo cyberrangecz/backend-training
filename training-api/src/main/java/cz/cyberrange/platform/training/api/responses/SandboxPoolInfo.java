@@ -2,7 +2,7 @@ package cz.cyberrange.platform.training.api.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/** Represents basic info about Sandbox pools. */
+/** Represents basic info about Sandbox pools */
 public class SandboxPoolInfo {
   private Long id;
 

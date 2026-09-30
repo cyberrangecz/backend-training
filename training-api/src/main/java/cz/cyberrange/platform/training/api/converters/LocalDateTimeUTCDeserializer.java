@@ -10,8 +10,11 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 /**
- * Deserializes UTC time with 'Z' suffix from Angular typescript Date, e.g., the date:
- * '2018-11-30T10:26:02.727Z'
+ * Reads a JSON string in ISO-8601 instant form with a trailing {@code Z} (for example {@code
+ * 2018-11-30T10:26:02.727Z}) into a {@link LocalDateTime} holding that same instant's date and time
+ * as observed in UTC. A JSON string that {@link java.time.Instant#parse} cannot parse in that form
+ * throws a {@link java.time.format.DateTimeParseException}. A JSON null never reaches here and
+ * yields a null field.
  */
 public class LocalDateTimeUTCDeserializer extends StdDeserializer<LocalDateTime> {
 

@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Encapsulates information about Training Instance, intended for creation of new instance. */
+/** Encapsulates information about Training Instance, intended for creation of new instance */
 @Getter
 @Setter
 @ToString
@@ -41,6 +41,10 @@ public class TrainingInstanceCreateDTO {
   @NotEmpty(message = "{traininginstancecreate.title.NotEmpty.message}")
   private String title;
 
+  /**
+   * Trimmed and used as a prefix: the service appends a generated pin to it to form the actual
+   * stored access token
+   */
   @ApiModelProperty(
       value = "AccessToken which will be modified and then used for accessing training run.",
       required = true,
@@ -48,6 +52,10 @@ public class TrainingInstanceCreateDTO {
   @NotEmpty(message = "{traininginstancecreate.accessToken.NotEmpty.message}")
   private String accessToken;
 
+  /**
+   * Primary key of the training definition to base the instance on; resolved by the facade, not the
+   * mapper
+   */
   @ApiModelProperty(
       value = "Reference to training definition from which is training instance created.",
       required = true,
@@ -55,6 +63,11 @@ public class TrainingInstanceCreateDTO {
   @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
   private long trainingDefinitionId;
 
+  /**
+   * Mutually exclusive with localEnvironment: rejected when localEnvironment is true, required when
+   * it is false. When given, the facade locks the pool with the instance's generated access token
+   * once the instance is created.
+   */
   @ApiModelProperty(value = "Id of sandbox pool assigned to training instance", example = "1")
   private Long poolId;
 
@@ -63,6 +76,10 @@ public class TrainingInstanceCreateDTO {
       example = "true")
   private boolean localEnvironment;
 
+  /**
+   * Rejected when localEnvironment is false. Identifies the sandbox definition later used to create
+   * each participant's local sandbox for a training run of this instance.
+   */
   @ApiModelProperty(value = "Id of sandbox definition assigned to training instance", example = "1")
   private Long sandboxDefinitionId;
 
@@ -78,182 +95,82 @@ public class TrainingInstanceCreateDTO {
       example = "true")
   private boolean backwardMode;
 
-  /**
-   * Gets start time.
-   *
-   * @return the start time
-   */
   public LocalDateTime getStartTime() {
     return startTime;
   }
 
-  /**
-   * Sets start time.
-   *
-   * @param startTime the start time
-   */
   public void setStartTime(LocalDateTime startTime) {
     this.startTime = startTime;
   }
 
-  /**
-   * Gets end time.
-   *
-   * @return the end time
-   */
   public LocalDateTime getEndTime() {
     return endTime;
   }
 
-  /**
-   * Sets end time.
-   *
-   * @param endTime the end time
-   */
   public void setEndTime(LocalDateTime endTime) {
     this.endTime = endTime;
   }
 
-  /**
-   * Gets title.
-   *
-   * @return the title
-   */
   public String getTitle() {
     return title;
   }
 
-  /**
-   * Sets title.
-   *
-   * @param title the title
-   */
   public void setTitle(String title) {
     this.title = title;
   }
 
-  /**
-   * Gets access token.
-   *
-   * @return the access token
-   */
   public String getAccessToken() {
     return accessToken;
   }
 
-  /**
-   * Sets access token.
-   *
-   * @param accessToken the access token
-   */
   public void setAccessToken(String accessToken) {
     this.accessToken = accessToken;
   }
 
-  /**
-   * Gets training definition id.
-   *
-   * @return the training definition id
-   */
   public long getTrainingDefinitionId() {
     return trainingDefinitionId;
   }
 
-  /**
-   * Sets training definition id.
-   *
-   * @param trainingDefinitionId the training definition id
-   */
   public void setTrainingDefinitionId(long trainingDefinitionId) {
     this.trainingDefinitionId = trainingDefinitionId;
   }
 
-  /**
-   * Gets pool id.
-   *
-   * @return the pool id
-   */
   public Long getPoolId() {
     return poolId;
   }
 
-  /**
-   * Sets pool id.
-   *
-   * @param poolId the pool id
-   */
   public void setPoolId(Long poolId) {
     this.poolId = poolId;
   }
 
-  /**
-   * Gets if local environment (local sandboxes) is used for the training runs.
-   *
-   * @return true if local environment is enabled
-   */
   public boolean isLocalEnvironment() {
     return localEnvironment;
   }
 
-  /**
-   * Sets if local environment (local sandboxes) is used for the training runs.
-   *
-   * @param localEnvironment true if local environment is enabled.
-   */
   public void setLocalEnvironment(boolean localEnvironment) {
     this.localEnvironment = localEnvironment;
   }
 
-  /**
-   * Gets sandbox definition id.
-   *
-   * @return the sandbox definition id
-   */
   public Long getSandboxDefinitionId() {
     return sandboxDefinitionId;
   }
 
-  /**
-   * Sets sandbox definition id.
-   *
-   * @param sandboxDefinitionId the sandbox definition id
-   */
   public void setSandboxDefinitionId(Long sandboxDefinitionId) {
     this.sandboxDefinitionId = sandboxDefinitionId;
   }
 
-  /**
-   * Gets if stepper bar is shown while in run.
-   *
-   * @return true if bar is shown
-   */
   public boolean isShowStepperBar() {
     return showStepperBar;
   }
 
-  /**
-   * Sets if stepper bar is shown while in run.
-   *
-   * @param showStepperBar true if bar is shown
-   */
   public void setShowStepperBar(boolean showStepperBar) {
     this.showStepperBar = showStepperBar;
   }
 
-  /**
-   * Gets if trainee can during training run move back to the previous levels.
-   *
-   * @return true if backward mode is enabled.
-   */
   public boolean isBackwardMode() {
     return backwardMode;
   }
 
-  /**
-   * Sets if trainee can during training run move back to the previous levels.
-   *
-   * @param backwardMode true if backward mode is enabled.
-   */
   public void setBackwardMode(boolean backwardMode) {
     this.backwardMode = backwardMode;
   }

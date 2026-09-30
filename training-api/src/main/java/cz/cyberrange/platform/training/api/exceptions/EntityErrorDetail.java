@@ -6,6 +6,13 @@ import java.util.Objects;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+/**
+ * Structured detail about the entity involved in an {@link ExceptionWithEntity}. The training-rest
+ * error handler reads it off the exception and serializes it into the error response body; a {@link
+ * cz.cyberrange.platform.training.api.exceptions.errors.JavaApiError} deserialized from another
+ * Java microservice's error response can likewise carry one, though nothing in this codebase reads
+ * that copy back out.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EntityErrorDetail {
   @ApiModelProperty(value = "Class of the entity.", example = "IDMGroup")
@@ -28,11 +35,17 @@ public class EntityErrorDetail {
     this.reason = reason;
   }
 
+  /** Attaches the entity's simple class name to {@code reason}, leaving the identifier unset */
   public EntityErrorDetail(@NotNull Class<?> entityClass, @NotBlank String reason) {
     this(reason);
     this.entity = entityClass.getSimpleName();
   }
 
+  /**
+   * Records the entity's simple class name, a caller-chosen identifier label, and its value
+   * alongside an explicit reason, skipping the reason this type would otherwise derive from {@link
+   * ExceptionWithEntity#createDefaultReason}
+   */
   public EntityErrorDetail(
       @NotNull Class<?> entityClass,
       @NotBlank String identifier,
@@ -44,6 +57,11 @@ public class EntityErrorDetail {
     this.identifierValue = identifierClass.cast(identifierValue);
   }
 
+  /**
+   * Records the entity's simple class name, a caller-chosen identifier label, and its value,
+   * leaving the reason unset so it is derived later from {@link
+   * ExceptionWithEntity#createDefaultReason}
+   */
   public EntityErrorDetail(
       @NotNull Class<?> entityClass,
       @NotBlank String identifier,

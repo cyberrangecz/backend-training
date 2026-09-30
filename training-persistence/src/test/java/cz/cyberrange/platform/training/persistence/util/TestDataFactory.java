@@ -282,8 +282,7 @@ public class TestDataFactory {
           "Imported definition",
           "Imported description",
           new String[] {"ip1", "ip2"},
-          new String[] {"io1", "io2"},
-          cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED);
+          new String[] {"io1", "io2"});
   private TrainingDefinitionWithLevelsDTO trainingDefinitionWithLevelsDTO =
       generateTrainingDefinitionWithLevelsDTO(
           "TDbyId",
@@ -1162,6 +1161,7 @@ public class TestDataFactory {
     infoLevelImportDTO.setContent(content);
     infoLevelImportDTO.setLevelType(LevelType.INFO_LEVEL);
     infoLevelImportDTO.setEstimatedDuration(estimatedDuration);
+    infoLevelImportDTO.setMinimalPossibleSolveTime(1);
     return infoLevelImportDTO;
   }
 
@@ -1177,6 +1177,7 @@ public class TestDataFactory {
     assessmentLevelImportDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
     assessmentLevelImportDTO.setInstructions(instructions);
     assessmentLevelImportDTO.setAssessmentType(type);
+    assessmentLevelImportDTO.setMinimalPossibleSolveTime(1);
     return assessmentLevelImportDTO;
   }
 
@@ -1199,21 +1200,19 @@ public class TestDataFactory {
     trainingLevelImportDTO.setSolutionPenalized(solutionPenalized);
     trainingLevelImportDTO.setIncorrectAnswerLimit(incorrectAnswerLimit);
     trainingLevelImportDTO.setMaxScore(maxScore);
+    trainingLevelImportDTO.setMinimalPossibleSolveTime(1);
+    trainingLevelImportDTO.setVariantAnswers(false);
+    trainingLevelImportDTO.setCommandsRequired(true);
     return trainingLevelImportDTO;
   }
 
   private ImportTrainingDefinitionDTO generateImportTrainingDefinitionDTO(
-      String title,
-      String description,
-      String[] prerequisites,
-      String[] outcomes,
-      cz.cyberrange.platform.training.api.enums.TDState state) {
+      String title, String description, String[] prerequisites, String[] outcomes) {
     ImportTrainingDefinitionDTO importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
     importTrainingDefinitionDTO.setTitle(title);
     importTrainingDefinitionDTO.setDescription(description);
     importTrainingDefinitionDTO.setPrerequisites(prerequisites);
     importTrainingDefinitionDTO.setOutcomes(outcomes);
-    importTrainingDefinitionDTO.setState(state);
     return importTrainingDefinitionDTO;
   }
 

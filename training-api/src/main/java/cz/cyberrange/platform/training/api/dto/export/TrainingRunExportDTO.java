@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-/** Encapsulates information about Training Run. */
+/** Encapsulates information about Training Run */
 @Data
 @ApiModel(
     value = "TrainingRunExportDTO",

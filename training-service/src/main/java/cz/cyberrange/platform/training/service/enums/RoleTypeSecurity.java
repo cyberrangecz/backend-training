@@ -1,13 +1,13 @@
 package cz.cyberrange.platform.training.service.enums;
 
-/** The enumeration of Role types used for security. */
+/**
+ * The authority names this service authorizes against. A constant's own name is the authority
+ * string compared against the caller's granted authorities, so the security annotations name these
+ * constants rather than repeating the strings.
+ */
 public enum RoleTypeSecurity {
-  /** Role of training administrator. */
   ROLE_TRAINING_ADMINISTRATOR,
-  /** Role of training designer permits user to work with training definitions. */
   ROLE_TRAINING_DESIGNER,
-  /** Role of training organizer permits user to work with training instances. */
   ROLE_TRAINING_ORGANIZER,
-  /** Role of training trainee permits user to work with training runs. */
   ROLE_TRAINING_TRAINEE
 }

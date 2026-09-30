@@ -35,11 +35,12 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
   /**
    * Maps a training definition entity together with its levels to a {@link
-   * TrainingDefinitionWithLevelsDTO}.
+   * TrainingDefinitionWithLevelsDTO}, flattening the beta testing group's identifier into {@code
+   * betaTestingGroupId} and leaving {@code canBeArchived} unset.
    *
    * @param entity the training definition to map
    * @param levels the full levels of the definition, in the order they are presented in
-   * @return the definition DTO carrying the given levels
+   * @return the definition DTO carrying the given levels, without its archiving flag
    */
   @Mapping(target = "betaTestingGroupId", source = "entity.betaTestingGroup.id")
   @Mapping(target = "levels", source = "levels")
@@ -47,6 +48,14 @@ public interface TrainingDefinitionMapper extends ParentMapper {
   TrainingDefinitionWithLevelsDTO mapToDTOWithLevels(
       TrainingDefinition entity, List<AbstractLevelDTO> levels);
 
+  /**
+   * Maps a training definition entity to a {@link TrainingDefinitionDTO}, flattening the beta
+   * testing group's identifier into {@code betaTestingGroupId} and leaving {@code canBeArchived}
+   * unset.
+   *
+   * @param entity the training definition to map
+   * @return the definition DTO, without its archiving flag
+   */
   @Named("trainingDefinitionToDTO")
   @Mapping(target = "betaTestingGroupId", source = "betaTestingGroup.id")
   @Mapping(target = "canBeArchived", ignore = true)
@@ -54,10 +63,10 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
   /**
    * Maps a training definition entity together with its levels to a {@link
-   * TrainingDefinitionBasicDTO}, the projection reachable by trainees.
+   * TrainingDefinitionBasicDTO}.
    *
    * @param entity the training definition to map
-   * @param levels the trainee-safe levels of the definition, in the order they are presented in
+   * @param levels the levels of the definition, in the order they are presented in
    * @return the basic definition DTO carrying the given levels
    */
   @Mapping(target = "levels", source = "levels")
@@ -66,10 +75,30 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
   TrainingDefinitionInfoDTO mapToInfoDTO(TrainingDefinition entity);
 
+  /**
+   * Maps a training definition creation request into a new entity, leaving its beta testing group's
+   * organizers unpopulated for the caller to assign.
+   *
+   * @param dto the creation request to map
+   * @return the mapped training definition
+   */
   TrainingDefinition mapCreateToEntity(TrainingDefinitionCreateDTO dto);
 
+  /**
+   * Maps a training definition update into a new entity, leaving its beta testing group's
+   * organizers unpopulated for the caller to assign.
+   *
+   * @param dto the update to map
+   * @return the mapped training definition
+   */
   TrainingDefinition mapUpdateToEntity(TrainingDefinitionUpdateDTO dto);
 
+  /**
+   * Maps a page of training definitions to a page result resource holding their DTOs.
+   *
+   * @param objects the page of training definitions to map
+   * @return the mapped DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingDefinitionDTO> mapToPageResultResource(
       Page<TrainingDefinition> objects) {
     List<TrainingDefinitionDTO> mapped = new ArrayList<>();
@@ -77,6 +106,12 @@ public interface TrainingDefinitionMapper extends ParentMapper {
     return new PageResultResource<>(mapped, createPagination(objects));
   }
 
+  /**
+   * Maps a page of training definitions to a page result resource holding their info DTOs.
+   *
+   * @param objects the page of training definitions to map
+   * @return the mapped info DTOs alongside the page's pagination metadata
+   */
   default PageResultResource<TrainingDefinitionInfoDTO> mapToPageResultResourceInfoDTO(
       Page<TrainingDefinition> objects) {
     List<TrainingDefinitionInfoDTO> mapped = new ArrayList<>();

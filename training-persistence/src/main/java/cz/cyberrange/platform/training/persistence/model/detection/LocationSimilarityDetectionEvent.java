@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * A finding that several trainees submitted from the same network location, evidenced by the
+ * address one of those submissions came from
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -32,9 +36,14 @@ public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
   @Column(name = "ip_address")
   private String ipAddress;
 
+  /** Host name the address resolves back to, or {@code unspecified} when it cannot be resolved */
   @Column(name = "dns")
   private String dns;
 
+  /**
+   * Whether the resolved host is the one this service runs on, which explains the shared location
+   * as an artifact of the deployment. False whenever the comparison could not be made.
+   */
   @Column(name = "is_address_deploy")
   private boolean isAddressDeploy;
 }

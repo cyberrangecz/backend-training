@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+/** Serializes a {@link LocalTime} to its ISO-8601 time string representation */
 public class LocalTimeSerializer extends StdSerializer<LocalTime> {
 
   private static final long serialVersionUID = -4665110529123750815L;

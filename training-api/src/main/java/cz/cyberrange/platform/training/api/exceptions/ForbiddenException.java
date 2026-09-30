@@ -3,6 +3,10 @@ package cz.cyberrange.platform.training.api.exceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Signals that the caller is not permitted to carry out an otherwise well-formed request. Mapped to
+ * HTTP 403 Forbidden by the {@code @ResponseStatus} on this type.
+ */
 @ResponseStatus(
     value = HttpStatus.FORBIDDEN,
     reason = "Request is formed correctly, but the server doesn't want to carry it out.")

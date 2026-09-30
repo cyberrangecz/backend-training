@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Encapsulates information about Training instance. Used for archiving */
+/** Snapshot of one finished training instance, written as a single JSON file into its archive */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,6 +23,7 @@ public class TrainingInstanceArchiveDTO {
   @ApiModelProperty(value = "Main identifier of training instance.", example = "1")
   private Long id;
 
+  /** Primary key of the training definition this instance was created from */
   @ApiModelProperty(
       value = "Main identifier of training definition associated with this instance.",
       example = "1")
@@ -43,6 +44,10 @@ public class TrainingInstanceArchiveDTO {
       example = "Concluded Instance")
   private String title;
 
+  /**
+   * User reference ids ({@code UserRef.userRefId}) of the organizers of this training instance, not
+   * their local primary keys
+   */
   @ApiModelProperty(value = "Reference to organizersRefIds which organize training instance.")
   private Set<Long> organizersRefIds;
 

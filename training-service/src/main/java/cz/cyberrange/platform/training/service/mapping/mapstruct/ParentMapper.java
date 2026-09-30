@@ -9,6 +9,12 @@ import org.springframework.data.domain.Page;
  */
 public interface ParentMapper {
 
+  /**
+   * Builds pagination metadata from a page's number, size, element counts and total page count.
+   *
+   * @param objects the page to read the metadata from
+   * @return the resulting pagination metadata
+   */
   default PageResultResource.Pagination createPagination(Page<?> objects) {
     PageResultResource.Pagination pageMetadata = new PageResultResource.Pagination();
     pageMetadata.setNumber(objects.getNumber());

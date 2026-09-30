@@ -24,7 +24,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-/** The type Cheating detection service. */
+/**
+ * Runs a cheating detection sweep across its six kind-specific detectors, tracking a state per
+ * detector so a re-execution can skip what already finished and leave out what was disabled, and
+ * manages the lifecycle of sweep records and their findings
+ */
 @Service
 public class CheatingDetectionService {
 
@@ -44,21 +48,8 @@ public class CheatingDetectionService {
   private final ForbiddenCommandsService forbiddenCommandsService;
 
   /**
-   * Instantiates a new Cheating detection service.
-   *
-   * @param abstractDetectionEventRepository the cheat repository
-   * @param cheatingDetectionRepository the cheating detection repository
-   * @param detectionEventParticipantRepository the detection event participant repository
-   * @param detectedForbiddenCommandRepository the detected forbidden commands repository
-   * @param trainingRunRepository the training run repository
-   * @param trainingRunService the training run service
-   * @param userService the user service
-   * @param answerSimilarityService the answer similarity service
-   * @param locationSimilarityService the location similarity service
-   * @param minimalSolveTimeService the minimal solve time service
-   * @param timeProximityService the time proximity service
-   * @param noCommandsService the no commands service
-   * @param forbiddenCommandsService the forbidden commands service
+   * Creates the service with the repositories and per-kind detection services it coordinates across
+   * a cheating detection sweep
    */
   @Autowired
   public CheatingDetectionService(
@@ -91,9 +82,11 @@ public class CheatingDetectionService {
   }
 
   /**
-   * Creates a new cheating detection
+   * Stamps a sweep record with the display name of the current caller, a zero result count and the
+   * current time, then saves it. The per-detector states set on the record beforehand are left
+   * untouched.
    *
-   * @param cheatingDetection to be created
+   * @param cheatingDetection the sweep record to persist
    */
   public void createCheatingDetection(CheatingDetection cheatingDetection) {
     cheatingDetection.setExecutedBy(userService.getUserRefFromUserAndGroup().getUserRefFullName());
@@ -103,9 +96,10 @@ public class CheatingDetectionService {
   }
 
   /**
-   * Executes a cheating detection
+   * Runs every one of the sweep's six detectors that is queued, in a fixed order, then marks the
+   * sweep itself finished. A detector left disabled or already finished is skipped.
    *
-   * @param cd the cheating detection to be executed
+   * @param cd the sweep to execute
    */
   public void executeCheatingDetection(CheatingDetection cd) {
     cd.setCurrentState(CheatingDetectionState.RUNNING);
@@ -115,10 +109,13 @@ public class CheatingDetectionService {
   }
 
   /**
-   * deletes cheating detection
+   * Deletes one sweep record together with its events, their participants and any detected
+   * forbidden commands. As a side effect it clears the {@code hasDetectionEvent} flag on every
+   * training run of {@code trainingInstanceId}, not only the runs implicated by this particular
+   * sweep.
    *
-   * @param cheatingDetectionId the id of the cheating detection
-   * @param trainingInstanceId the id training instance
+   * @param cheatingDetectionId the id of the sweep to delete
+   * @param trainingInstanceId the training instance whose runs have the flag cleared
    */
   public void deleteCheatingDetection(Long cheatingDetectionId, Long trainingInstanceId) {
     trainingRunService.findAllByTrainingInstanceId(trainingInstanceId).stream()
@@ -136,9 +133,12 @@ public class CheatingDetectionService {
   }
 
   /**
-   * deletes all cheating detection of training instance
+   * Deletes every sweep record of a training instance, one at a time through {@link
+   * #deleteCheatingDetection}. Because that method clears the {@code hasDetectionEvent} flag on
+   * every run of the instance, the flag gets cleared once per existing sweep rather than once
+   * overall.
    *
-   * @param trainingInstanceId the training instance id
+   * @param trainingInstanceId the training instance whose sweeps are deleted
    */
   public void deleteAllCheatingDetectionsOfTrainingInstance(Long trainingInstanceId) {
     cheatingDetectionRepository.findAllByTrainingInstanceId(trainingInstanceId).stream()
@@ -147,19 +147,22 @@ public class CheatingDetectionService {
   }
 
   /**
-   * finds cheating detection by provided id
+   * Returns the sweep record with the given primary key, or {@code null} if none matches.
    *
-   * @param cheatingDetectionId the cheating detection id
-   * @return cheating detection
+   * @param cheatingDetectionId the primary key of the sweep
+   * @return the matching sweep record, or {@code null}
    */
   public CheatingDetection findCheatingDetectionById(Long cheatingDetectionId) {
     return cheatingDetectionRepository.findCheatingDetectionById(cheatingDetectionId);
   }
 
   /**
-   * re-executes an existing cheating detection
+   * Re-runs an existing sweep from scratch: queues every detector that is not disabled, discards
+   * the sweep's existing detection events, their participants and any detected forbidden commands,
+   * resets the execute time and result count, then executes it again.
    *
-   * @param cheatingDetectionId id of the cheating detection
+   * @param cheatingDetectionId id of the sweep to re-run
+   * @throws EntityNotFoundException if no sweep with that id exists
    */
   public void reExecuteCheatingDetection(Long cheatingDetectionId) {
     CheatingDetection cd =
@@ -191,10 +194,11 @@ public class CheatingDetectionService {
   }
 
   /**
-   * finds all detection event participants of a cheating detection
+   * Returns every participant implicated by any detection event of one sweep, across every kind of
+   * finding, in no defined order.
    *
-   * @param cheatingDetectionId the cheating detection id
-   * @return detection event participants
+   * @param cheatingDetectionId the sweep whose participants are returned
+   * @return the matching participants
    */
   public List<DetectionEventParticipant> findAllParticipantsOfCheatingDetection(
       Long cheatingDetectionId) {
@@ -203,11 +207,12 @@ public class CheatingDetectionService {
   }
 
   /**
-   * finds all cheating detection of a training instance
+   * Returns, as one page, the sweep records of one training instance, ordered by their execute
+   * time.
    *
-   * @param trainingInstanceId the training instance id
-   * @param pageable the pageable
-   * @return page of cheating detection
+   * @param trainingInstanceId the training instance whose sweeps are returned
+   * @param pageable the page to return
+   * @return the matching page of sweep records
    */
   public Page<CheatingDetection> findAllCheatingDetectionsOfTrainingInstance(
       Long trainingInstanceId, Pageable pageable) {
@@ -259,6 +264,10 @@ public class CheatingDetectionService {
     }
   }
 
+  /**
+   * Runs the time proximity detector when it is queued, defaulting the sweep's proximity threshold
+   * to 120 seconds first if none was set
+   */
   private void handleTimeProximityExecution(CheatingDetection cd) {
     if (cd.getTimeProximityState() == CheatingDetectionState.QUEUED) {
       if (cd.getProximityThreshold() == null) {

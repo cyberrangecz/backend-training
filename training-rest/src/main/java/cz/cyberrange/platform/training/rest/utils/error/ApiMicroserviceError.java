@@ -9,12 +9,18 @@ import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Error body built by {@link CustomRestExceptionHandlerTraining} for {@code
+ * MicroserviceApiException}, carrying the failing microservice's own {@link ApiSubError} alongside
+ * the fields inherited from {@link ApiError}
+ */
 @ApiModel(
     value = "ApiMicroserviceError",
     description = "A detailed error information related to the microservice.",
     parent = ApiError.class)
 public class ApiMicroserviceError extends ApiError {
 
+  /** Error body returned by the microservice whose call raised the exception */
   @ApiModelProperty(value = "Detailed error from another microservice.")
   private ApiSubError apiSubError;
 
@@ -22,6 +28,10 @@ public class ApiMicroserviceError extends ApiError {
     super();
   }
 
+  /**
+   * Builds the error, falling back to {@link MicroserviceApiException}'s own
+   * {@code @ResponseStatus} reason when {@code message} is {@code null}
+   */
   private ApiMicroserviceError(
       HttpStatus httpStatus, String message, String path, ApiSubError apiSubError) {
     super();
@@ -35,6 +45,20 @@ public class ApiMicroserviceError extends ApiError {
     this.setTimestamp(System.currentTimeMillis());
   }
 
+  /**
+   * Builds the error body, falling back to {@link MicroserviceApiException}'s own
+   * {@code @ResponseStatus} reason when {@code message} is {@code null}, and setting {@link
+   * #getErrors()} directly from {@code errors}.
+   *
+   * @param httpStatus the failing microservice call's own status, reported and used for the HTTP
+   *     response
+   * @param message description of the error, or {@code null} to fall back to {@link
+   *     MicroserviceApiException}'s own {@code @ResponseStatus} reason
+   * @param errors the list stored as {@link #getErrors()}
+   * @param path the request URI associated with the error
+   * @param apiSubError the failing microservice's own error body
+   * @return the built error body
+   */
   public static ApiError of(
       HttpStatus httpStatus,
       String message,
@@ -47,6 +71,22 @@ public class ApiMicroserviceError extends ApiError {
     return apiMicroserviceError;
   }
 
+  /**
+   * Builds the error body used by {@link CustomRestExceptionHandlerTraining} for {@code
+   * MicroserviceApiException}, taking {@code httpStatus} from the failing microservice call's own
+   * status rather than the exception's {@code @ResponseStatus}, and wrapping {@code error} as the
+   * single element of {@link #getErrors()}.
+   *
+   * @param httpStatus the failing microservice call's own status, reported and used for the HTTP
+   *     response
+   * @param message description of the error, or {@code null} to fall back to {@link
+   *     MicroserviceApiException}'s own {@code @ResponseStatus} reason
+   * @param error the caught exception's own message, wrapped as the sole entry of {@link
+   *     #getErrors()}
+   * @param path the request URI associated with the error
+   * @param apiSubError the failing microservice's own error body
+   * @return the built error body
+   */
   public static ApiError of(
       HttpStatus httpStatus, String message, String error, String path, ApiSubError apiSubError) {
     ApiMicroserviceError apiMicroserviceError =
@@ -65,20 +105,10 @@ public class ApiMicroserviceError extends ApiError {
     return ApiMicroserviceError.of(httpStatus, message, error, "", apiSubError);
   }
 
-  /**
-   * Gets api sub error.
-   *
-   * @return the api sub error
-   */
   public ApiSubError getApiSubError() {
     return apiSubError;
   }
 
-  /**
-   * Sets api sub error.
-   *
-   * @param apiSubError the api sub error
-   */
   public void setApiSubError(ApiSubError apiSubError) {
     this.apiSubError = apiSubError;
   }

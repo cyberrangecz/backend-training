@@ -10,6 +10,10 @@ import io.swagger.annotations.ApiModel;
 /**
  * Encapsulates information about abstract level. Extended by {@link AssessmentLevelDTO}, {@link
  * TrainingLevelDTO}, {@link AccessLevelDTO} and {@link InfoLevelDTO}
+ *
+ * <p>Lists those four subtypes through {@code @JsonSubTypes} but declares no {@code @JsonTypeInfo}
+ * of its own, so that listing carries no wire discriminator; the concrete subtype is whichever one
+ * the caller already holds, not one Jackson resolves from a type property.
  */
 @ApiModel(
     value = "AbstractLevelDTO",

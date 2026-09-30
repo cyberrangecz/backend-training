@@ -12,6 +12,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * One trainee implicated in one finding, kept alongside the details of the submission that put them
+ * there. A trainee implicated in several findings has a row for each.
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
@@ -41,9 +45,17 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
   @Column(name = "participant_name", nullable = false)
   private String participantName;
 
+  /**
+   * How long the trainee took over the level, in seconds. Set only where the finding turns on
+   * solving speed.
+   */
   @Column(name = "solved_in_time", nullable = true)
   private Long solvedInTime;
 
+  /**
+   * The trainee's {@code userRefId}, the id spoken outside this service, rather than the primary
+   * key of their {@code user_ref} row
+   */
   @Column(name = "user_id", nullable = false)
   private Long userId;
 

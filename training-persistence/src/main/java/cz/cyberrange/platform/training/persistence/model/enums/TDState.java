@@ -1,14 +1,17 @@
 package cz.cyberrange.platform.training.persistence.model.enums;
 
-/** States represented in Training Definition entity. */
+/**
+ * How far along its life a training definition is, stored by name. A definition may move from
+ * unreleased to released, from released to archived, and from released back to unreleased; being
+ * put back to unreleased is refused once an instance runs the definition, and any other move is
+ * refused outright.
+ */
 public enum TDState {
-
-  /** Privated definition state. */
   PRIVATED,
-  /** Released definition state. */
+  /** Available for instances to run */
   RELEASED,
-  /** Archived definition state. */
+  /** Retired from use; it may not be moved out of this state */
   ARCHIVED,
-  /** Unreleased definition state. */
+  /** Still being authored, visible to its authors and its beta testing group */
   UNRELEASED;
 }

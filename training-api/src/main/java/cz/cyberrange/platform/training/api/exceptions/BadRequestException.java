@@ -3,6 +3,10 @@ package cz.cyberrange.platform.training.api.exceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Signals a client request that cannot be processed as sent. Mapped to HTTP 400 Bad Request by the
+ * {@code @ResponseStatus} on this type.
+ */
 @ResponseStatus(
     value = HttpStatus.BAD_REQUEST,
     reason =

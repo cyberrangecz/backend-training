@@ -26,6 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+/**
+ * Detects groups of trainees whose submissions on the same training level came from the same or an
+ * equivalent IP address. Every level of a training instance is scanned independently: its
+ * submissions are grouped by resolved IP address, and a group naming more than one trainee is
+ * recorded as a {@link LocationSimilarityDetectionEvent}.
+ */
 @Service
 public class LocationSimilarityService {
   private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
@@ -40,15 +46,8 @@ public class LocationSimilarityService {
   @Autowired Environment environment;
 
   /**
-   * Instantiates a new Cheating detection service.
-   *
-   * @param trainingLevelRepository the training level repository
-   * @param submissionRepository the submission repository
-   * @param locationSimilarityDetectionEventRepository the location similarity detection event
-   *     repository
-   * @param trainingRunRepository the training run repository
-   * @param trainingRunService the training run service
-   * @param trainingInstanceService the training instance service
+   * Creates the service with the repositories and collaborators it uses to group a level's
+   * submissions by resolved IP address
    */
   @Autowired
   public LocationSimilarityService(
@@ -69,10 +68,10 @@ public class LocationSimilarityService {
   }
 
   /**
-   * find all location similarity events of cheating detection
+   * Finds every location similarity event recorded under the given cheating detection.
    *
    * @param cheatingDetectionId the cheating detection id
-   * @return list of events
+   * @return the matching events
    */
   public List<LocationSimilarityDetectionEvent> findAllLocationSimilarityEventsOfDetection(
       Long cheatingDetectionId) {
@@ -81,19 +80,21 @@ public class LocationSimilarityService {
   }
 
   /**
-   * find location similarity event by id
+   * Finds a location similarity event by its id.
    *
    * @param eventId the event id
-   * @return event
+   * @return the matching event
    */
   public LocationSimilarityDetectionEvent findLocationSimilarityEventById(Long eventId) {
     return locationSimilarityDetectionEventRepository.findLocationSimilarityEventById(eventId);
   }
 
   /**
-   * Executes a cheating detection of type LOCATION_SIMILARITY
+   * For every level of the cheating detection's training instance, groups that level's submissions
+   * by IP-address similarity and persists a {@link LocationSimilarityDetectionEvent} for each group
+   * naming more than one trainee.
    *
-   * @param cd the training instance id
+   * @param cd the cheating detection whose training instance is scanned
    */
   void executeCheatingDetectionOfLocationSimilarity(CheatingDetection cd) {
     Long trainingInstanceId = cd.getTrainingInstanceId();
@@ -108,6 +109,7 @@ public class LocationSimilarityService {
         .forEach(submissions -> evaluateLocationSimilarityByLevels(submissions, cd));
   }
 
+  /** Groups the level's submissions by IP-address similarity and audits each resulting group */
   private void evaluateLocationSimilarityByLevels(
       List<Submission> submissions, CheatingDetection cd) {
 
@@ -118,6 +120,11 @@ public class LocationSimilarityService {
     }
   }
 
+  /**
+   * Marks every run in the group as having a detection event, and, when the group names more than
+   * one distinct trainee, persists a {@link LocationSimilarityDetectionEvent} for it. A group of
+   * fewer than 2 submissions is skipped entirely.
+   */
   private void generateEventFromGroup(CheatingDetection cd, List<Submission> group) {
     List<Long> runIds;
     Set<DetectionEventParticipant> participants;
@@ -143,6 +150,12 @@ public class LocationSimilarityService {
     }
   }
 
+  /**
+   * Assigns each submission to every existing group whose first submission's IP address it resolves
+   * as similar to. A submission matching no group starts a new one, unless the level being scanned
+   * carries exactly one submission in total. A submission can end up added to several groups at
+   * once.
+   */
   private void generateLocationSimilarityGroups(
       List<Submission> submissions, List<List<Submission>> groups) {
     boolean hasSimilarIPToExistingGroup;
@@ -166,6 +179,11 @@ public class LocationSimilarityService {
     }
   }
 
+  /**
+   * Reports whether the two addresses resolve to the same {@link InetAddress}, falling back to a
+   * literal string comparison when either fails to resolve. Reports {@code false} when either
+   * address is {@code null}.
+   */
   private boolean checkLocationSimilarity(String ip, String otherIp) {
     if (ip != null && otherIp != null) {
       try {
@@ -179,6 +197,11 @@ public class LocationSimilarityService {
     return false;
   }
 
+  /**
+   * Marks the group's first submission's run as having a detection event, then persists a {@link
+   * LocationSimilarityDetectionEvent} built from that submission and saves each of the given
+   * participants against it
+   */
   private void auditLocationSimilarityEvent(
       Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
     TrainingRun run = submission.getTrainingRun();
@@ -193,6 +216,13 @@ public class LocationSimilarityService {
         participants, locationSimilarityDetectionEventRepository.save(event).getId(), cd.getId());
   }
 
+  /**
+   * Resolves the submission's IP address and the {@code server.address} property to host names and
+   * sets {@code addressDeploy} to whether the two host names are equal. When either address fails
+   * to resolve, sets {@code addressDeploy} to {@code false} and {@code dns} to the literal {@code
+   * "unspecified"} instead of leaving it unset. Sets {@code ipAddress} to the submission's raw IP
+   * address unconditionally.
+   */
   private void extractLocationSimilaritySpecificInfo(
       Submission submission, LocationSimilarityDetectionEvent event) {
     String submissionDomainName;

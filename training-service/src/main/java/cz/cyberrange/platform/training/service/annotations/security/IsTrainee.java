@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
- * The custom annotation <i>@IsTrainee<i/>. All methods annotated with this annotation expect the
- * user has a role <strong>ROLE_TRAINING_TRAINEE<strong/>.
+ * Admits only a trainee to the annotated method. Anyone else, an administrator included, is refused
+ * before the method body runs.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

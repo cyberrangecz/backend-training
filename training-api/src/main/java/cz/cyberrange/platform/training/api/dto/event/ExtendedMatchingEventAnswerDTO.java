@@ -10,7 +10,7 @@ import lombok.ToString;
 
 /**
  * Extended-matching assessment answer holding, per statement order, the option the trainee matched
- * to it together with whether that individual pairing is correct.
+ * to it together with whether that individual pairing is correct
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 
 /**
  * Free-form assessment answer holding the trainee's submitted text together with whether that text
- * is correct.
+ * is correct
  */
 @SuperBuilder
 @NoArgsConstructor

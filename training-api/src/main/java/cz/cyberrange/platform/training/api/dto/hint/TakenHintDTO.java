@@ -5,7 +5,12 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/** Encapsulates information about hint that was already taken */
+/**
+ * A hint a training run has already taken, carrying the advice as it was recorded on the run rather
+ * than as the level currently defines it. The penalty is not carried, having been applied when the
+ * hint was taken. Two of these compare equal on identity, name and advice alone, disregarding
+ * position.
+ */
 @Data
 @ApiModel(
     value = "TakenHintDTO",

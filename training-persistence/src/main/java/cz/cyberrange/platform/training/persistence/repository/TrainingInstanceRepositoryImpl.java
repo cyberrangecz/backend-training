@@ -17,18 +17,28 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The type Training instance repository. */
+/**
+ * Implements the {@link TrainingInstance} lookup declared by {@link
+ * TrainingInstanceRepositoryCustom}
+ */
 @Repository
 public class TrainingInstanceRepositoryImpl extends QuerydslRepositorySupport
     implements TrainingInstanceRepositoryCustom {
 
   @PersistenceContext private EntityManager entityManager;
 
-  /** Instantiates a new Training instance repository. */
+  /**
+   * Configures the QueryDSL support base class to build queries against {@link TrainingInstance}
+   */
   public TrainingInstanceRepositoryImpl() {
     super(TrainingInstance.class);
   }
 
+  /**
+   * Left-joins each candidate instance to its organizers, then keeps only the instances where an
+   * organizer has the given cross-service {@code userRefId}. Deduplicates the joined rows before
+   * applying the given predicate and paging.
+   */
   @Override
   @Transactional
   public Page<TrainingInstance> findAll(

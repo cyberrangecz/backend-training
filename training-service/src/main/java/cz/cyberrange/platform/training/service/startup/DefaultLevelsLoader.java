@@ -15,6 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+/**
+ * Holds the level content a newly created level starts out with, read once as the component is
+ * built. The content comes from the configured file, or from the copy bundled with the application
+ * when no path is configured.
+ */
 @Component
 public class DefaultLevelsLoader {
 
@@ -29,6 +34,15 @@ public class DefaultLevelsLoader {
     this.validator = validator;
   }
 
+  /**
+   * Reads and validates the default level content, refusing to start the component rather than
+   * carrying content that is unusable. Property names are read in snake case, and a property the
+   * shape does not declare is rejected instead of ignored, so an unrecognised key fails the startup
+   * rather than passing silently.
+   *
+   * @throws InternalServerErrorException when the content cannot be read, or when any required
+   *     piece of it is missing or empty
+   */
   @PostConstruct
   private void loadDefaultLevels() {
     ObjectMapper mapper = new ObjectMapper();

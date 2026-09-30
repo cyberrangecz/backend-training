@@ -39,7 +39,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/** The rest controller for Training instances. */
+/** The rest controller for Training instances */
 @Api(
     value = "/training-instances",
     tags = "Training instances",
@@ -63,12 +63,6 @@ public class TrainingInstancesRestController {
   private TrainingInstanceFacade trainingInstanceFacade;
   private ObjectMapper objectMapper;
 
-  /**
-   * Instantiates a new Training instances rest controller.
-   *
-   * @param trainingInstanceFacade the training instance facade
-   * @param objectMapper the object mapper
-   */
   @Autowired
   public TrainingInstancesRestController(
       TrainingInstanceFacade trainingInstanceFacade, ObjectMapper objectMapper) {
@@ -77,11 +71,11 @@ public class TrainingInstancesRestController {
   }
 
   /**
-   * Get requested Training Instance by id.
+   * Returns the training instance for the given id, including its training definition.
    *
-   * @param id id of the Training Instance to return.
-   * @param fields attributes of the object to be returned as the result.
-   * @return Requested Training Instance by id.
+   * @param id id of the training instance to return.
+   * @param fields accepted but not applied to the response of this endpoint.
+   * @return the requested training instance.
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -244,10 +238,12 @@ public class TrainingInstancesRestController {
   }
 
   /**
-   * Update Training Instance.
+   * Updates a training instance. Refuses the update if the instance has already started and the
+   * assigned training definition would change, and validates that the referenced sandbox definition
+   * or pool exposes every variable name the training definition requires.
    *
-   * @param trainingInstanceUpdateDTO the Training Instance to be updated
-   * @return the response entity
+   * @param trainingInstanceUpdateDTO the training instance to be updated
+   * @return the access token in effect after the update, whether it changed or was kept
    */
   @ApiOperation(
       httpMethod = "PUT",
@@ -282,11 +278,12 @@ public class TrainingInstancesRestController {
   }
 
   /**
-   * Delete Training Instance.
+   * Deletes a training instance together with its training runs, cheating detections and audited
+   * events. Unless {@code forceDelete} is set, refuses to delete an instance that has not finished
+   * and still has training runs, and refuses to delete an instance with a pool still assigned.
    *
-   * @param id id of the Training Instance to be deleted
-   * @param forceDelete the force delete
-   * @return the response entity
+   * @param id id of the training instance to be deleted
+   * @param forceDelete indicates if the instance should be deleted regardless of these checks.
    */
   @ApiOperation(
       httpMethod = "DELETE",
@@ -330,11 +327,12 @@ public class TrainingInstancesRestController {
   }
 
   /**
-   * Assign pool response entity.
+   * Assigns a sandbox pool to a training instance that currently has none. Refuses instances
+   * running in a local environment and instances that already have a pool assigned.
    *
-   * @param id the id
-   * @param trainingInstanceAssignPoolIdDTO the training instance assign pool id dto
-   * @return the response entity
+   * @param id id of the training instance to update
+   * @param trainingInstanceAssignPoolIdDTO carries the id of the pool to assign
+   * @return the training instance after the pool assignment
    */
   @ApiOperation(
       httpMethod = "PATCH",
@@ -376,10 +374,11 @@ public class TrainingInstancesRestController {
   }
 
   /**
-   * Unassign pool response entity.
+   * Unassigns the sandbox pool currently assigned to a training instance, unlocking the pool and
+   * deleting its recorded console commands. Refuses an instance with no pool assigned.
    *
-   * @param id the id
-   * @return the response entity
+   * @param id id of the training instance to update
+   * @return the training instance after the pool removal
    */
   @ApiOperation(
       httpMethod = "PATCH",
@@ -457,7 +456,7 @@ public class TrainingInstancesRestController {
    * @param givenName the given name
    * @param familyName the family name
    * @param pageable pageable parameter with information about pagination.
-   * @return List of users login and full name with role designer.
+   * @return organizers already assigned to the training instance, filtered by name.
    */
   @ApiOperation(
       httpMethod = "GET",
@@ -556,12 +555,13 @@ public class TrainingInstancesRestController {
   }
 
   /**
-   * Concurrently add/remove organizers with given ids to/from the training instance.
+   * Adds and removes organizers of the training instance in one call. The caller's own user
+   * reference id is dropped from {@code organizersRemoval} before it is applied, so a caller cannot
+   * remove itself as organizer through this endpoint.
    *
-   * @param trainingInstanceId id of training instance for which to retrieve organizers
+   * @param trainingInstanceId id of the training instance whose organizers are being edited
    * @param organizersAddition ids of the organizers to be added to the training instance.
    * @param organizersRemoval ids of the organizers to be removed from the training instance.
-   * @return the response entity
    */
   @ApiOperation(httpMethod = "PUT", value = "Edit organizers.", nickname = "editOrganizers")
   @ApiResponses(
@@ -630,12 +630,12 @@ public class TrainingInstancesRestController {
   }
 
   /**
-   * Get events for a specific Training Instance.
+   * Returns training events for the given instance, filtered by event type and timestamp.
    *
    * @param instanceId the id of the Training Instance whose events to retrieve.
-   * @param eventType the type of events to retrieve.
-   * @param sinceTimestamp lower bound timestamp in epoch milliseconds; only events after this time
-   *     are returned.
+   * @param eventType the type of events to retrieve; passing {@code "COMMAND"} retrieves console
+   *     command events read from the pool assigned to the instance instead of audit events.
+   * @param sinceTimestamp lower bound timestamp in epoch milliseconds, exclusive.
    * @return list of events matching the given criteria.
    */
   @ApiOperation(
@@ -679,6 +679,10 @@ public class TrainingInstancesRestController {
     return ResponseEntity.ok(events);
   }
 
+  /**
+   * Declares the JSON shape of a page of {@link TrainingInstanceFindAllResponseDTO} for Swagger.
+   * Never constructed; the actual response is a {@link PageResultResource} of that type.
+   */
   @ApiModel(
       value = "TrainingInstanceRestResource",
       description =

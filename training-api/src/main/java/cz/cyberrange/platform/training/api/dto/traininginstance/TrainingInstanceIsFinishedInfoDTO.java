@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-/** Encapsulates the information stating if training instance has finished. */
+/** Encapsulates the information stating if training instance has finished */
 @Data
 @ApiModel(
     value = "TrainingInstanceIsFinishedInfoDTO",

@@ -1,10 +1,16 @@
 package cz.cyberrange.platform.training.persistence.model.enums;
 
-/** Enumeration of Assessment level types. */
+/**
+ * What an assessment level is for, which decides whether the answers given to it are marked. Stored
+ * by name.
+ */
 public enum AssessmentType {
 
-  /** Test assessment are validated with points. */
+  /**
+   * Answers are marked against the correct ones and the level awards score, its maximum being the
+   * sum of its questions' points
+   */
   TEST,
-  /** Questionnaire assessments are for feedback. */
+  /** Answers are collected without being marked, and the level awards no score */
   QUESTIONNAIRE;
 }

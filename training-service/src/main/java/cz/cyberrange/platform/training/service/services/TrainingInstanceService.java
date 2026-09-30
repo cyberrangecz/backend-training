@@ -27,7 +27,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-/** The type Training instance service. */
+/**
+ * Business logic for creating, updating, deleting and querying training instances, and for the
+ * training runs and organizers attached to them
+ */
 @Service
 public class TrainingInstanceService {
 
@@ -40,12 +43,8 @@ public class TrainingInstanceService {
   private UserService userService;
 
   /**
-   * Instantiates a new Training instance service.
-   *
-   * @param trainingInstanceRepository the training instance repository
-   * @param trainingRunRepository the training run repository
-   * @param userRefRepository the organizer ref repository
-   * @param securityService the security service
+   * Creates the service with the repositories and collaborators it uses to manage training
+   * instances, their runs and their organizers
    */
   @Autowired
   public TrainingInstanceService(
@@ -62,7 +61,7 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Finds basic info about Training Instance by id
+   * Finds basic info about Training Instance by id.
    *
    * @param instanceId of a Training Instance that would be returned
    * @return specific {@link TrainingInstance} by id
@@ -117,11 +116,12 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Find all training instances based on the logged in user.
+   * Finds the training instances organized by the given user, further narrowed by the predicate.
    *
    * @param predicate the predicate
    * @param pageable the pageable
-   * @param loggedInUserId the logged in user id
+   * @param loggedInUserId the cross-service {@code userRefId} of the organizer, matched against
+   *     each instance's organizers
    * @return the page
    */
   public Page<TrainingInstance> findAll(
@@ -140,10 +140,12 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Creates new training instance
+   * Creates a training instance. Generates a fresh access token from the given base token, adds the
+   * logged in user as an organizer, and persists the result.
    *
    * @param trainingInstance to be created
    * @return created {@link TrainingInstance}
+   * @throws EntityConflictException when the start time is after the end time
    */
   public TrainingInstance create(TrainingInstance trainingInstance) {
     trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken().trim()));
@@ -161,10 +163,13 @@ public class TrainingInstanceService {
   }
 
   /**
-   * updates training instance
+   * Updates a training instance. Before the instance has started, any field may change and the
+   * access token is regenerated when its base value changed; once started or finished, {@link
+   * #checkChangedFieldsOfTrainingInstance} restricts which fields may change and the stored access
+   * token is kept.
    *
    * @param trainingInstanceToUpdate to be updated
-   * @return new access token if it was changed
+   * @return the resulting access token, freshly generated or the one already stored
    * @throws EntityNotFoundException training instance is not found.
    * @throws EntityConflictException cannot be updated for some reason.
    */
@@ -175,7 +180,9 @@ public class TrainingInstanceService {
     // add original organizers to update
     trainingInstanceToUpdate.setOrganizers(new HashSet<>(trainingInstance.getOrganizers()));
     addLoggedInUserAsOrganizerToTrainingInstance(trainingInstanceToUpdate);
-    // check if TI is running, true - only title can be changed, false - any field can be changed
+    // before the instance has started, every field may change and the access token may be
+    // regenerated; once started or finished, checkChangedFieldsOfTrainingInstance restricts what
+    // may change and the stored access token is kept as is
     if (trainingInstance.notStarted()) {
       // check if access token has changed and new should be generated, if not original is kept
       if (isAccessTokenChanged(
@@ -204,6 +211,13 @@ public class TrainingInstanceService {
     }
   }
 
+  /**
+   * Rejects moving the end time of an already finished instance into the future, while allowing
+   * every other update to a finished instance.
+   *
+   * @throws EntityConflictException when the current instance is finished and the update would make
+   *     it no longer finished
+   */
   private void checkNotRevivingAnExpiredInstance(
       TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
     if (currentTrainingInstance.finished() && !trainingInstanceToUpdate.finished()) {
@@ -217,6 +231,16 @@ public class TrainingInstanceService {
     }
   }
 
+  /**
+   * Rejects a change to the start time, the access token, or the pool id of a training instance
+   * that is already running or finished. Every other field, including {@code localEnvironment},
+   * {@code sandboxDefinitionId}, {@code showStepperBar} and {@code backwardMode}, is left unchecked
+   * here and so remains free to change regardless of the instance's state, though the exception
+   * messages this method throws describe the update as restricted to title and end time.
+   *
+   * @throws EntityConflictException when any of the three checked fields differs from the current
+   *     instance
+   */
   private void checkChangedFieldsOfTrainingInstance(
       TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
     if (!currentTrainingInstance.getStartTime().equals(trainingInstanceToUpdate.getStartTime())) {
@@ -248,12 +272,26 @@ public class TrainingInstanceService {
     }
   }
 
+  /**
+   * Decides whether the candidate token differs from the original token with its trailing generated
+   * pin stripped off.
+   *
+   * @param originalToken the token currently stored, carrying a generated pin suffix
+   * @param newToken the candidate token, without a pin suffix
+   * @return true when the candidate does not match the original's base token
+   */
   private boolean isAccessTokenChanged(String originalToken, String newToken) {
-    // new token should not be generated if token in update equals original token without PIN
     String originalTokenWithoutPin = originalToken.substring(0, originalToken.length() - 5);
     return !newToken.equals(originalTokenWithoutPin);
   }
 
+  /**
+   * Appends a random pin to the given base token, generating a new pin whenever the result collides
+   * with a token already stored on another training instance.
+   *
+   * @param accessToken the base token the pin is appended to
+   * @return the base token followed by a separator and a pin unique among stored access tokens
+   */
   private String generateAccessToken(String accessToken) {
     Random rand = new Random();
     String newPass;
@@ -265,17 +303,21 @@ public class TrainingInstanceService {
     return newPass;
   }
 
+  /**
+   * Resolves the local {@link UserRef} row of the logged in user, creating it if it does not yet
+   * exist, and adds it to the given training instance's organizers.
+   *
+   * @param trainingInstance the training instance the logged in user is added to as an organizer
+   */
   private void addLoggedInUserAsOrganizerToTrainingInstance(TrainingInstance trainingInstance) {
     UserRef userRef = userRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup());
     trainingInstance.addOrganizer(userRef);
   }
 
   /**
-   * deletes training instance
+   * Deletes the given training instance.
    *
    * @param trainingInstance the training instance to be deleted.
-   * @throws EntityNotFoundException training instance is not found.
-   * @throws EntityConflictException cannot be deleted for some reason.
    */
   public void delete(TrainingInstance trainingInstance) {
     trainingInstanceRepository.delete(trainingInstance);
@@ -283,11 +325,9 @@ public class TrainingInstanceService {
   }
 
   /**
-   * deletes training instance
+   * Deletes the training instance with the given id.
    *
    * @param id the training instance to be deleted.
-   * @throws EntityNotFoundException training instance is not found.
-   * @throws EntityConflictException cannot be deleted for some reason.
    */
   public void deleteById(Long id) {
     trainingInstanceRepository.deleteById(id);
@@ -330,7 +370,7 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Find UserRefs by userRefId
+   * Find UserRefs by userRefId.
    *
    * @param usersRefId of wanted UserRefs
    * @return {@link UserRef}s with corresponding userRefIds
@@ -352,7 +392,7 @@ public class TrainingInstanceService {
 
   /**
    * Find specific Training instance by its access token and with start time before current time and
-   * ending time after current time
+   * ending time after current time.
    *
    * @param accessToken of Training instance
    * @return Training instance
@@ -399,9 +439,11 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Sets audit attributes to training instance and save.
+   * Stamps the training instance with the current UTC time and the full name of the logged in user,
+   * then persists it.
    *
    * @param trainingInstance the training instance to be saved.
+   * @return the persisted {@link TrainingInstance}
    */
   public TrainingInstance auditAndSave(TrainingInstance trainingInstance) {
     trainingInstance.setLastEdited(getCurrentTimeInUTC());

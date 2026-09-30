@@ -6,12 +6,17 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/**
+ * One recorded console command that matched a forbidden one, kept with the machine it ran on and
+ * the moment it was entered
+ */
 @Data
 @ApiModel(
     value = "DetectedForbiddenCommandDTO",
     description = "Basic information about detected forbidden command.")
 public class DetectedForbiddenCommandDTO {
 
+  /** The command line as it was recorded, not the forbidden text that matched it */
   @ApiModelProperty(value = "Command.", example = "nmap")
   private String command;
 

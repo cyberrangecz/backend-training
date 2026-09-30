@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+/**
+ * Deserializes a JSON string into a {@link LocalDateTime} using {@link
+ * LocalDateTime#parse(CharSequence)}
+ */
 public class LocalDateTimeDeserializer extends StdDeserializer<LocalDateTime> {
 
   private static final long serialVersionUID = 732450547359556911L;

@@ -19,6 +19,10 @@ import lombok.ToString;
     parent = AbstractLevelExportDTO.class)
 public class AssessmentLevelExportDTO extends AbstractLevelExportDTO {
 
+  /**
+   * Each question and its nested choices, extended-matching statements and options carry no id;
+   * only their own data is exported
+   */
   @ApiModelProperty(
       value = "List of questions in this assessment as JSON.",
       example = "What is my mothers name?")

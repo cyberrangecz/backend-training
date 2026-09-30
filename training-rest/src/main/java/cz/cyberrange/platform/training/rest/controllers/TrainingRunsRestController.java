@@ -42,7 +42,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-/** The rest controller for Training runs. */
+/** The rest controller for Training runs */
 @Api(
     value = "/training-runs",
     tags = "Training runs",
@@ -67,12 +67,6 @@ public class TrainingRunsRestController {
   private TrainingRunFacade trainingRunFacade;
   private ObjectMapper objectMapper;
 
-  /**
-   * Instantiates a new Training runs rest controller.
-   *
-   * @param trainingRunFacade the training run facade
-   * @param objectMapper the object mapper
-   */
   @Autowired
   public TrainingRunsRestController(
       TrainingRunFacade trainingRunFacade, ObjectMapper objectMapper) {
@@ -81,10 +75,14 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Delete training runs.
+   * Deletes several training runs. A caller who is not an administrator must be an organizer of
+   * every listed run. Deleting a run also removes its question answers and submissions, purges its
+   * OpenSearch command and training-event data, and releases the concurrent-access lock held for
+   * its participant.
    *
-   * @param trainingRunIds the training run ids
-   * @param forceDelete the force delete
+   * @param trainingRunIds ids of the training runs to delete; the call is a no-op when this list is
+   *     empty
+   * @param forceDelete whether a run still in the running state may be deleted anyway
    * @return the response entity
    */
   @ApiOperation(
@@ -115,10 +113,12 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Delete a given training run.
+   * Deletes a given training run, along with its question answers and submissions, purges its
+   * OpenSearch command and training-event data, and releases the concurrent-access lock held for
+   * its participant.
    *
    * @param runId the training run id
-   * @param forceDelete the force delete
+   * @param forceDelete whether a run still in the running state may be deleted anyway
    * @return the response entity
    */
   @ApiOperation(
@@ -157,7 +157,8 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Get requested Training Run by id.
+   * Gets a training run by id, with its participant reference resolved from the user management
+   * service.
    *
    * @param runId of Training Run to return.
    * @param fields attributes of the object to be returned as the result.
@@ -197,7 +198,8 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Get all Training Runs.
+   * Gets a page of all training runs matching the given predicate, each with its participant
+   * reference resolved from the user management service.
    *
    * @param predicate specifies query to database.
    * @param pageable pageable parameter with information about pagination.
@@ -237,10 +239,13 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Access training run.
+   * Accesses the training instance identified by the given access token on behalf of the logged in
+   * user. Resumes the user's own already-running training run for that instance if one exists;
+   * otherwise creates a new run, assigns it a sandbox unless the instance runs in a local
+   * environment, and audits the run as started.
    *
    * @param accessToken the access token
-   * @return first level of training run.
+   * @return the resumed or newly created run's current level and related run information.
    */
   @ApiOperation(
       httpMethod = "POST",
@@ -278,12 +283,13 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Get all accessed Training Runs.
+   * Gets a page of the training runs the logged in user is a participant of.
    *
    * @param predicate specifies query to database.
    * @param pageable pageable parameter with information about pagination.
    * @param fields attributes of the object to be returned as the result.
-   * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending
+   * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending, or
+   *     omitted for no sort
    * @return all accessed Training Runs.
    */
   @ApiOperation(
@@ -327,7 +333,7 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Get next level of given Training Run.
+   * Advances the given training run to its next level and returns that level.
    *
    * @param runId of Training Run for which to get next level.
    * @param fields attributes of the object to be returned as the result.
@@ -450,11 +456,12 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Check if submitted answer is correct.
+   * Checks a submitted answer against the current level of the given training run.
    *
    * @param runId the run id
    * @param validateAnswerDTO submitted answer.
-   * @return True if answer is correct, false if answer is wrong.
+   * @return whether the answer was correct, the attempts remaining, and the solution once attempts
+   *     are exhausted.
    */
   @ApiOperation(
       httpMethod = "POST",
@@ -534,7 +541,10 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Resume paused training run.
+   * Re-enters an existing training run, refused once the run is finished or archived, its training
+   * instance has ended, its pool assignment is missing, or its sandbox has been deleted on a
+   * non-local instance. When the current level is a training level, the response also carries any
+   * solution and hints the participant already took for it.
    *
    * @param runId id of training run.
    * @return current level of training run.
@@ -572,7 +582,8 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Finish training run.
+   * Finishes the given training run. The call blocks for a fixed delay after finishing to let the
+   * run's audited events propagate before returning.
    *
    * @param runId id of training run.
    * @return the response entity
@@ -716,7 +727,9 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Get correct answers of all training levels for the specific training run.
+   * Gets the correct answer of every training level in the definition backing the given training
+   * run, ordered by level order. For a level using variant answers, the correct answer is looked up
+   * per participant from the answer storage service.
    *
    * @param runId of Training Run for which to get correct answers.
    * @param fields attributes of the object to be returned as the result.
@@ -800,7 +813,10 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Get Training Runs by their ids.
+   * Gets training runs by their ids. The sandbox instance reference id of each run is masked
+   * according to caller privilege: administrators and organizers of the runs see the plain sandbox
+   * id for every run; any other caller sees the plain id only for their own run and a hash of it
+   * for every other run.
    *
    * @param ids the ids of Training Runs to return.
    * @return List of requested Training Runs.
@@ -867,7 +883,11 @@ public class TrainingRunsRestController {
     return ResponseEntity.ok(users);
   }
 
-  /** The type Training run rest resource. */
+  /**
+   * Reifies a page of {@link TrainingRunDTO} as its own type so Swagger can document its shape,
+   * which generic erasure would otherwise hide. Never constructed; declared only as a Swagger
+   * response type.
+   */
   @ApiModel(
       value = "TrainingRunRestResource",
       description =
@@ -884,6 +904,11 @@ public class TrainingRunsRestController {
     private Pagination pagination;
   }
 
+  /**
+   * Reifies a page of {@link AccessedTrainingRunDTO} as its own type so Swagger can document its
+   * shape, which generic erasure would otherwise hide. Never constructed; declared only as a
+   * Swagger response type.
+   */
   @ApiModel(
       description =
           "Content (Retrieved data) and meta information about REST API result page. Including page number, number of elements in page, size of elements, total number of elements and total number of pages")

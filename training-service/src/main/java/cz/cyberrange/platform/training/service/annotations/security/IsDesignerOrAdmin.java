@@ -7,9 +7,8 @@ import java.lang.annotation.Target;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
- * The custom annotation <i>@IsDesignerOrAdmin<i/>. All methods annotated with this annotation
- * expect the user has a role <strong>ROLE_TRAINING_ADMINISTRATOR<strong/> or
- * <strong>ROLE_TRAINING_DESIGNER<strong/>.
+ * Admits a training designer or a training administrator to the annotated method. Anyone else is
+ * refused before the method body runs.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

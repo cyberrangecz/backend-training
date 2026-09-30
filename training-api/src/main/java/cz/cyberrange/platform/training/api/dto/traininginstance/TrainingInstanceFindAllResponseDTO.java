@@ -31,10 +31,19 @@ public class TrainingInstanceFindAllResponseDTO {
       example = "Concluded Instance")
   private String title;
 
+  /**
+   * Mapped through {@code TrainingDefinitionMapper.mapToDTO}; its {@code canBeArchived} is never
+   * patched afterward here, so it always carries that flag's default value of false
+   */
   @ApiModelProperty(
       value = "Reference to training definition from which is training instance created.")
   private TrainingDefinitionDTO trainingDefinition;
 
+  /**
+   * Carries the full token as stored on the instance, including the pin suffix the service appended
+   * when it was generated. Returned only from the administrator- and organizer-only listing
+   * endpoint.
+   */
   @ApiModelProperty(
       value = "Token used to access training run.",
       required = true,

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import java.io.IOException;
 
+/** Deserializes a JSON value of any shape into its literal JSON text */
 public class JsonRawValueDeserializer extends JsonDeserializer<String> {
 
   @Override

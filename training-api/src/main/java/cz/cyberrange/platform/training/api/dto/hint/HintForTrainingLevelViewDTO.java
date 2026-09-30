@@ -4,7 +4,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-/** Encapsulates basic information about Hint */
+/**
+ * A hint as it appears in a training level being viewed rather than played: its name, its position
+ * and what taking it would cost, with the advice itself withheld
+ */
 @Data
 @ApiModel(
     value = "HintForTrainingLevelViewDTO",

@@ -3,7 +3,7 @@ package cz.cyberrange.platform.training.service.utils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-/** This class is a representation of a logged command retrieved by the openSearch search api. */
+/** This class is a representation of a logged command retrieved by the openSearch search api */
 @Data
 public class OpenSearchCommand {
   private String hostname;

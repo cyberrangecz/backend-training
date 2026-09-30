@@ -14,7 +14,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
-/** The type Audit service. */
+/**
+ * Emits training run audit events. An event is stamped with a time and its own type name, then
+ * written as a single JSON line to the application log; getting it from there into the audit store
+ * is somebody else's job, so a successful call proves only that the line was written.
+ */
 @Service
 public class AuditService {
 
@@ -24,25 +28,24 @@ public class AuditService {
 
   private final ObjectMapper objectMapper;
 
-  /**
-   * Instantiates a new Audit service.
-   *
-   * @param objectMapper the object mapper
-   */
   @Autowired
   public AuditService(@Qualifier("openSearchObjectMapper") ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
   }
 
   /**
-   * Method for saving general class into OpenSearch under specific index and type.
+   * Writes the given event as one JSON line, stamping it with the current time nudged forward by
+   * the given priority and with the type name registered for its class. The nudge exists because
+   * two events emitted in the same millisecond would otherwise be indistinguishable in time: a
+   * higher priority pushes an event later, so events emitted back to back keep the order they were
+   * emitted in.
    *
-   * @param <T> the type parameter of the class to be saved, must extend {@link AbstractAuditPOJO}
-   * @param pojoClass class saved to OpenSearch
-   * @param priority used to delay the timestamp of the log entry, so that the priority of events is
-   *     properly reflected in OpenSearch logs (e.g., level answer event should have priority 0,
-   *     level complete which is logged immediately after level answer should have priority 1)
-   * @throws OpenSearchSerializeException exception when writing to OpenSearch logs fails
+   * @param <T> the kind of event being written
+   * @param pojoClass the event to write
+   * @param priority how many places after the immediate moment to stamp the event; 0 leaves the
+   *     time as it is
+   * @throws IllegalArgumentException when the given priority is negative
+   * @throws OpenSearchSerializeException when the event cannot be turned into JSON
    */
   @SneakyThrows
   public <T extends AbstractAuditPOJO> void saveTrainingRunEvent(
@@ -64,12 +67,12 @@ public class AuditService {
   }
 
   /**
-   * Method for saving general class into OpenSearch under specific index and type. Highest priority
-   * is used (see {@link #saveTrainingRunEvent(AbstractAuditPOJO, int)})
+   * Writes the given event stamped with the current moment, leaving it ahead of anything written
+   * alongside it under a priority.
    *
-   * @param <T> the type parameter of the class to be saved, must extend {@link AbstractAuditPOJO}
-   * @param pojoClass class saved to OpenSearch
-   * @throws OpenSearchSerializeException exception when writing to OpenSearch logs fails
+   * @param <T> the kind of event being written
+   * @param pojoClass the event to write
+   * @throws OpenSearchSerializeException when the event cannot be turned into JSON
    */
   @SneakyThrows
   public <T extends AbstractAuditPOJO> void saveTrainingRunEvent(@NonNull T pojoClass) {

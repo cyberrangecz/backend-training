@@ -18,6 +18,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+/**
+ * Reads and persists detection event rows and their participants, on behalf of the per-kind
+ * detectors and the sweep's own service and export path. Holds no detection logic of its own.
+ */
 @Service
 public class DetectionEventService {
   private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
@@ -27,12 +31,8 @@ public class DetectionEventService {
   private final UserService userService;
 
   /**
-   * Instantiates a new Cheating detection service.
-   *
-   * @param abstractDetectionEventRepository the cheat repository
-   * @param detectionEventParticipantRepository the detection event participant repository
-   * @param detectedForbiddenCommandRepository the detected forbidden commands repository
-   * @param userService the user service
+   * Creates the service with the repositories it reads and persists detection events, their
+   * participants and their forbidden-command findings through
    */
   @Autowired
   public DetectionEventService(
@@ -47,21 +47,23 @@ public class DetectionEventService {
   }
 
   /**
-   * deletes all detection events of a given cheating detection
+   * Deletes every detection event of one sweep in a single bulk statement, across every finding
+   * kind. Leaves the sweep's participant and detected-forbidden-command rows untouched.
    *
-   * @param cheatingDetectionId the cheating detection id
+   * @param cheatingDetectionId the sweep whose events are deleted
    */
   public void deleteDetectionEvents(Long cheatingDetectionId) {
     detectionEventRepository.deleteDetectionEventsOfCheatingDetection(cheatingDetectionId);
   }
 
   /**
-   * finds all events of a cheating detection
+   * Returns, as one page of distinct rows, the detection events of one sweep that also satisfy the
+   * given predicate.
    *
-   * @param cheatingDetectionId the cheating detection id
-   * @param pageable the pageable
-   * @param predicate the predicate
-   * @return page of detection events
+   * @param cheatingDetectionId the sweep whose events are returned
+   * @param pageable the page to return
+   * @param predicate an extra condition ANDed onto the sweep filter
+   * @return the matching page of detection events
    */
   public Page<AbstractDetectionEvent> findAllDetectionEventsOfCheatingDetection(
       Long cheatingDetectionId, Pageable pageable, Predicate predicate) {
@@ -70,21 +72,23 @@ public class DetectionEventService {
   }
 
   /**
-   * finds all participants of a detection event
+   * Returns every participant of one detection event, ordered by the moment their submission
+   * occurred.
    *
-   * @param eventId the event id
-   * @return detection event participants
+   * @param eventId the detection event whose participants are returned
+   * @return the matching participants
    */
   public List<DetectionEventParticipant> findAllParticipantsOfEvent(Long eventId) {
     return detectionEventParticipantRepository.findAllByEventId(eventId);
   }
 
   /**
-   * finds all forbidden commands of a detection event
+   * Returns, as one page, the detected forbidden commands of one detection event, in no defined
+   * order.
    *
-   * @param eventId the event id
-   * @param pageable the pageable
-   * @return page of detected forbidden commands
+   * @param eventId the detection event whose matched commands are returned
+   * @param pageable the page to return
+   * @return the matching page of detected forbidden commands
    */
   public Page<DetectedForbiddenCommand> findAllForbiddenCommandsOfDetectionEvent(
       Long eventId, Pageable pageable) {
@@ -92,19 +96,32 @@ public class DetectionEventService {
   }
 
   /**
-   * finds all forbidden commands of a detection event
+   * Returns every detected forbidden command of one detection event, in no defined order.
    *
-   * @param eventId the event id
-   * @return page of detected forbidden commands
+   * @param eventId the detection event whose matched commands are returned
+   * @return the matching detected forbidden commands
    */
   public List<DetectedForbiddenCommand> findAllForbiddenCommandsOfDetectionEvent(Long eventId) {
     return detectedForbiddenCommandRepository.findAllByEventId(eventId);
   }
 
+  /**
+   * Returns the detection event with the given primary key, as its concrete finding subtype.
+   *
+   * @param eventId the primary key of the detection event
+   * @return the matching detection event
+   */
   public AbstractDetectionEvent findDetectionEventById(Long eventId) {
     return detectionEventRepository.findDetectionEventById(eventId);
   }
 
+  /**
+   * Stamps each participant with the detection event and sweep it belongs to, then saves it.
+   *
+   * @param participants the participants to stamp and save
+   * @param eventId the detection event the participants are implicated in
+   * @param cheatingDetectionId the sweep the participants belong to
+   */
   void saveParticipants(
       Set<DetectionEventParticipant> participants, Long eventId, Long cheatingDetectionId) {
     for (var participant : participants) {
@@ -114,11 +131,26 @@ public class DetectionEventService {
     }
   }
 
+  /**
+   * Returns, as one page, the participants of one detection event, ordered by the moment their
+   * submission occurred.
+   *
+   * @param eventId the detection event whose participants are returned
+   * @param pageable the page to return
+   * @return the matching page of participants
+   */
   public Page<DetectionEventParticipant> findAllParticipantsOfEvent(
       Long eventId, Pageable pageable) {
     return detectionEventParticipantRepository.findAllByEventId(eventId, pageable);
   }
 
+  /**
+   * Asks the user-and-group service for the display name of the trainee who made the submission,
+   * resolved through the trainee's {@code userRefId} rather than the local key of their user row.
+   *
+   * @param currentSubmission the submission whose trainee's name is resolved
+   * @return that trainee's display name
+   */
   String getUserFullName(Submission currentSubmission) {
     return userService
         .getUserRefDTOByUserRefId(
