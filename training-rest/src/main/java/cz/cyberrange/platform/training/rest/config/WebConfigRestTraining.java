@@ -11,35 +11,33 @@ import org.springframework.web.servlet.config.annotation.ContentNegotiationConfi
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Configures content negotiation to recognize the {@code .yml} and {@code .yaml} path extensions
- * alongside JSON, and registers a message converter for the media types those extensions resolve to
+ * Configures content negotiation from the {@code Accept} header, defaulting to JSON, and registers a
+ * message converter for the {@code text/yaml} and {@code text/yml} media types
  */
 @Configuration
 public class WebConfigRestTraining implements WebMvcConfigurer {
 
-  /** Media type matched by the {@code .yaml} path extension */
+  /** Media type {@code text/yaml} */
   private static final MediaType MEDIA_TYPE_YAML = MediaType.valueOf("text/yaml");
 
-  /** Media type matched by the {@code .yml} path extension */
+  /** Media type {@code text/yml} */
   private static final MediaType MEDIA_TYPE_YML = MediaType.valueOf("text/yml");
 
   @Autowired private ObjectMapper objectMapper;
 
   /**
-   * Resolves the response content type from the request path extension or the {@code Accept}
-   * header, defaulting to JSON, and additionally recognizes the {@code .yml} and {@code .yaml}
-   * extensions
+   * Resolves the response content type from the {@code Accept} header. Without one, JSON is
+   * preferred, falling back to any type the handler produces. The path extension is not consulted,
+   * so a path ending in {@code .yaml}, such as {@code /v3/api-docs.yaml}, keeps the media type its
+   * handler produces
    */
   @Override
   public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
     configurer
-        .favorPathExtension(true)
+        .favorPathExtension(false)
         .favorParameter(false)
         .ignoreAcceptHeader(false)
-        .defaultContentType(MediaType.APPLICATION_JSON)
-        .mediaType(MediaType.APPLICATION_JSON.getSubtype(), MediaType.APPLICATION_JSON)
-        .mediaType(MEDIA_TYPE_YML.getSubtype(), MEDIA_TYPE_YML)
-        .mediaType(MEDIA_TYPE_YAML.getSubtype(), MEDIA_TYPE_YAML);
+        .defaultContentType(MediaType.APPLICATION_JSON, MediaType.ALL);
   }
 
   /**
