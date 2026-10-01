@@ -27,6 +27,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.test.web.servlet.MockMvc;
@@ -82,6 +83,8 @@ class OpenApiDocsGeneratorTest {
       basePackages = {
         "cz.cyberrange.platform.training.rest.controllers",
         "cz.cyberrange.platform.training.rest.utils.error"
-      })
+      },
+      // Test configurations such as RestConfigTest live in the same packages.
+      excludeFilters = @ComponentScan.Filter(Configuration.class))
   static class DocsApplication {}
 }
