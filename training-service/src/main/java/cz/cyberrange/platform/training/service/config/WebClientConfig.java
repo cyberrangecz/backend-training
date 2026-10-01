@@ -153,6 +153,7 @@ public class WebClientConfig {
               || clientResponse.statusCode().is5xxServerError()) {
             return clientResponse
                 .bodyToMono(String.class)
+                .defaultIfEmpty("")
                 .flatMap(
                     errorBody -> {
                       PythonApiError pythonApiError = obtainSuitablePythonApiError(errorBody);
@@ -198,6 +199,7 @@ public class WebClientConfig {
               || clientResponse.statusCode().is5xxServerError()) {
             return clientResponse
                 .bodyToMono(String.class)
+                .defaultIfEmpty("")
                 .flatMap(
                     errorBody -> {
                       JavaApiError javaApiError = obtainSuitableJavaApiError(errorBody);
