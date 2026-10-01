@@ -102,7 +102,44 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <!--Expose the project version to OpenApiConfiguration via BuildProperties-->
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--Generate OpenAPI documentation into doc-files, activated by -Dswagger.skip=false.
+            Runs only OpenApiDocsGeneratorTest, even when -DskipTests is given.-->
+        <profile>
+            <id>docs</id>
+            <activation>
+                <property>
+                    <name>swagger.skip</name>
+                    <value>false</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <test>OpenApiDocsGeneratorTest</test>
+                            <systemPropertyVariables>
+                                <docs.output.directory>${project.basedir}/../doc-files</docs.output.directory>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
