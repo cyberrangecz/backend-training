@@ -5,15 +5,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import cz.cyberrange.platform.training.rest.config.OpenApiConfiguration;
 import cz.cyberrange.platform.training.rest.config.WebConfigRestTraining;
-import cz.cyberrange.platform.training.rest.controllers.CheatingDetectionsRestController;
-import cz.cyberrange.platform.training.rest.controllers.ExportImportRestController;
-import cz.cyberrange.platform.training.rest.controllers.TrainingDefinitionsRestController;
-import cz.cyberrange.platform.training.rest.controllers.TrainingInstancesRestController;
-import cz.cyberrange.platform.training.rest.controllers.TrainingRunsRestController;
-import cz.cyberrange.platform.training.rest.utils.error.ApiErrorResponder;
-import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
-import cz.cyberrange.platform.training.rest.utils.error.ImportedFileErrorAdvice;
-import cz.cyberrange.platform.training.rest.utils.error.ImportedFileErrorDescriber;
 import cz.cyberrange.platform.training.service.config.ObjectMappersConfiguration;
 import cz.cyberrange.platform.training.service.facade.ExportImportFacade;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
@@ -29,11 +20,13 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,7 +41,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @EnabledIfSystemProperty(named = "docs.output.directory", matches = ".+")
 class OpenApiDocsGeneratorTest {
 
-  private static final String CONTEXT_PATH = "/training/api/v1";
   private static final String FILE_NAME = "training-rest-swagger-docs.yaml";
 
   @MockBean private CheatingDetectionFacade cheatingDetectionFacade;
@@ -61,10 +53,13 @@ class OpenApiDocsGeneratorTest {
 
   @Autowired private MockMvc mvc;
 
+  @Value("${server.servlet.context-path}")
+  private String contextPath;
+
   @Test
   void generateOpenApiDocs() throws Exception {
     String yaml =
-        mvc.perform(get(CONTEXT_PATH + "/v3/api-docs.yaml").contextPath(CONTEXT_PATH))
+        mvc.perform(get(contextPath + "/v3/api-docs.yaml").contextPath(contextPath))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -81,16 +76,12 @@ class OpenApiDocsGeneratorTest {
   @Import({
     ObjectMappersConfiguration.class,
     WebConfigRestTraining.class,
-    OpenApiConfiguration.class,
-    CheatingDetectionsRestController.class,
-    ExportImportRestController.class,
-    TrainingDefinitionsRestController.class,
-    TrainingInstancesRestController.class,
-    TrainingRunsRestController.class,
-    CustomRestExceptionHandlerTraining.class,
-    ImportedFileErrorAdvice.class,
-    ImportedFileErrorDescriber.class,
-    ApiErrorResponder.class
+    OpenApiConfiguration.class
   })
+  @ComponentScan(
+      basePackages = {
+        "cz.cyberrange.platform.training.rest.controllers",
+        "cz.cyberrange.platform.training.rest.utils.error"
+      })
   static class DocsApplication {}
 }
