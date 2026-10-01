@@ -410,8 +410,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
 
   /** Returns whether the current moment falls between the instance's start and end time */
   public boolean running() {
-    return LocalDateTime.now(Clock.systemUTC()).isAfter(this.startTime)
-        && LocalDateTime.now().isBefore(this.endTime);
+    LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
+    return now.isAfter(this.startTime) && now.isBefore(this.endTime);
   }
 
   /** Returns whether the instance's end time has passed */

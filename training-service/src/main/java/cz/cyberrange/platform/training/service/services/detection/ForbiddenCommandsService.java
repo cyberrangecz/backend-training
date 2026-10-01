@@ -20,6 +20,7 @@ import cz.cyberrange.platform.training.persistence.repository.detection.Detected
 import cz.cyberrange.platform.training.persistence.repository.detection.DetectionEventParticipantRepository;
 import cz.cyberrange.platform.training.persistence.repository.detection.ForbiddenCommandsDetectionEventRepository;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -135,7 +136,7 @@ public class ForbiddenCommandsService {
       currentSubmission = submissions.get(submissionIndex - 1);
       if (run.getState() == TRState.RUNNING) {
         from = currentSubmission.getDate();
-        to = LocalDateTime.now();
+        to = LocalDateTime.now(Clock.systemUTC());
       } else {
         return;
       }

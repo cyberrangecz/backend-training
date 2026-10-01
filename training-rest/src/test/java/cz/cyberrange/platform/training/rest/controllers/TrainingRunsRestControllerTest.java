@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -344,14 +345,11 @@ public class TrainingRunsRestControllerTest {
   public void getSolution() throws Exception {
     String solution = "Solution";
     given(trainingRunFacade.getSolution(assessmentLevelDTO.getId())).willReturn(solution);
-    MockHttpServletResponse result =
-        mockMvc
-            .perform(get("/training-runs/{runId}/solutions", 3L))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-            .andReturn()
-            .getResponse();
-    assertEquals("Solution", result.getContentAsString());
+    mockMvc
+        .perform(get("/training-runs/{runId}/solutions", 3L))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.solution").value(solution));
   }
 
   @Test

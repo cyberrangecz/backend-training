@@ -4,6 +4,8 @@ import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
+import cz.cyberrange.platform.training.api.dto.IsCorrectPasskeyDTO;
+import cz.cyberrange.platform.training.api.dto.SolutionDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.ValidatePasskeyDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
@@ -334,23 +336,27 @@ public class TrainingRunsRestController {
           "A training administrator, or the run's own participant, may call it. The first reveal is"
               + " recorded and, where the level penalizes it, wipes out the score still on offer.")
   @ApiResponses({
-    @ApiResponse(
-        responseCode = "200",
-        description = "The solution text of the current level.",
-        content =
-            @Content(mediaType = MediaType.TEXT_PLAIN_VALUE, schema = @Schema(type = "string"))),
+    @ApiResponse(responseCode = "200", description = "The solution text of the current level."),
     @ApiResponse(
         responseCode = "400",
         description = "The current level is not a training level.",
         content = @Content(schema = @Schema(implementation = ApiError.class))),
     @ApiResponse(
+        responseCode = "403",
+        description = "The caller lacks the required role or relationship.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
         responseCode = "404",
         description = "No training run with this id.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "500",
+        description = "Unexpected server error.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
   })
-  @GetMapping(path = "/{runId}/solutions", produces = MediaType.TEXT_PLAIN_VALUE)
-  public ResponseEntity<String> getSolution(@PathVariable("runId") Long runId) {
-    return ResponseEntity.ok(trainingRunFacade.getSolution(runId));
+  @GetMapping(path = "/{runId}/solutions", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SolutionDTO> getSolution(@PathVariable("runId") Long runId) {
+    return ResponseEntity.ok(new SolutionDTO(trainingRunFacade.getSolution(runId)));
   }
 
   /**
@@ -431,7 +437,7 @@ public class TrainingRunsRestController {
    *
    * @param runId the run id
    * @param validatePasskeyDTO submitted passkey.
-   * @return True if passkey is correct, false if passkey is wrong.
+   * @return the verdict, true if passkey is correct, false if passkey is wrong.
    */
   @Operation(
       operationId = "isCorrectPasskey",
@@ -455,11 +461,12 @@ public class TrainingRunsRestController {
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PostMapping(path = "/{runId}/is-correct-passkey", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Boolean> isCorrectPasskey(
+  public ResponseEntity<IsCorrectPasskeyDTO> isCorrectPasskey(
       @PathVariable("runId") Long runId,
       @RequestBody @Valid ValidatePasskeyDTO validatePasskeyDTO) {
     return ResponseEntity.ok(
-        trainingRunFacade.isCorrectPasskey(runId, validatePasskeyDTO.getPasskey()));
+        new IsCorrectPasskeyDTO(
+            trainingRunFacade.isCorrectPasskey(runId, validatePasskeyDTO.getPasskey())));
   }
 
   /**

@@ -18,7 +18,7 @@ import lombok.Data;
 @Schema(description = "One run of the cheating detections over a training instance.")
 public class CheatingDetectionDTO {
 
-  @Schema(example = "1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   private Long trainingInstanceId;
 
   /** Display name of the user who started the run, as the user service reported it at the time */
@@ -42,7 +42,10 @@ public class CheatingDetectionDTO {
       description = "Seconds within which two solves count as close; defaults to 120 if unset.")
   private Long proximityThreshold;
 
-  @Schema(example = "1")
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      accessMode = Schema.AccessMode.READ_ONLY,
+      example = "1")
   private Long id;
 
   /** Where the run as a whole stands, moved on as the individual detections are worked through */

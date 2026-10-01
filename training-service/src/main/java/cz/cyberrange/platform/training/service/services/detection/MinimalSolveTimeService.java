@@ -3,6 +3,8 @@ package cz.cyberrange.platform.training.service.services.detection;
 import static cz.cyberrange.platform.training.service.utils.CheatingDetectionUtils.extractParticipant;
 import static cz.cyberrange.platform.training.service.utils.CheatingDetectionUtils.generateParticipantString;
 
+import cz.cyberrange.platform.training.opensearch.events.training.model.LevelStarted;
+import cz.cyberrange.platform.training.opensearch.events.training.query.TrainingEventsService;
 import cz.cyberrange.platform.training.persistence.model.Submission;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.detection.CheatingDetection;
@@ -14,13 +16,16 @@ import cz.cyberrange.platform.training.persistence.repository.TrainingRunReposit
 import cz.cyberrange.platform.training.persistence.repository.detection.MinimalSolveTimeDetectionEventRepository;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +35,8 @@ import org.springframework.stereotype.Service;
 /**
  * Detects a correct submission entered faster than a training level's configured minimal solve
  * time. Every correct submission of a training instance is timed against when its trainee started
- * the level (the run's start time when the current submission's run differs from the previous
- * submission processed, or the date of the trainee's previous correct submission otherwise); a
+ * the level, read from the run's level-started audit event in OpenSearch (or, without that event,
+ * the date of the run's previous correct submission, or the run's start time when there is none); a
  * submission faster than the level's {@code minimalPossibleSolveTime} (in minutes) is recorded,
  * grouped by level, into a {@link MinimalSolveTimeDetectionEvent}. Nothing here requires more than
  * one trainee to be implicated before an event is recorded, so an event commonly names a single
@@ -45,6 +50,7 @@ public class MinimalSolveTimeService {
   private final TrainingRunRepository trainingRunRepository;
   private final TrainingRunService trainingRunService;
   private final DetectionEventService detectionEventService;
+  private final TrainingEventsService trainingEventsService;
 
   /**
    * Creates the service with the repositories and collaborators it uses to time a level's correct
@@ -56,12 +62,14 @@ public class MinimalSolveTimeService {
       MinimalSolveTimeDetectionEventRepository minimalSolveTimeDetectionEventRepository,
       TrainingRunRepository trainingRunRepository,
       TrainingRunService trainingRunService,
-      DetectionEventService detectionEventService) {
+      DetectionEventService detectionEventService,
+      TrainingEventsService trainingEventsService) {
     this.submissionRepository = submissionRepository;
     this.minimalSolveTimeDetectionEventRepository = minimalSolveTimeDetectionEventRepository;
     this.trainingRunRepository = trainingRunRepository;
     this.trainingRunService = trainingRunService;
     this.detectionEventService = detectionEventService;
+    this.trainingEventsService = trainingEventsService;
   }
 
   /**
@@ -149,35 +157,28 @@ public class MinimalSolveTimeService {
 
   /**
    * Walks every correct submission of the training instance, ordered by training run then date,
-   * timing each submission whose level carries a minimal solve time against the moment its trainee
-   * started that level: the run's start time when the current submission's run differs from the
-   * previous correct submission's run (eligible or not), otherwise the date of that previous
-   * correct submission. A submission timed under its level's minimal solve time (in minutes,
-   * converted to seconds) is added to {@code detectedByLevel} under its level id and to {@code
-   * submissionTimes} under its own id.
+   * timing each submission whose level carries a minimal solve time from the moment its run started
+   * that level, as recorded by the run's level-started audit event. Without such an event the
+   * submission is timed from the date of the previous correct submission of the same run, or from
+   * the run's start time when there is none. A submission timed under its level's minimal solve
+   * time (in minutes, converted to seconds) is added to {@code detectedByLevel} under its level id
+   * and to {@code submissionTimes} under its own id.
    */
   private void aggregateMinimalSolveTimeSubmissionsByLevels(
       CheatingDetection cd,
       Map<Long, List<Submission>> detectedByLevel,
       Map<Long, Long> submissionTimes) {
-    boolean isNewParticipant = true;
-    LocalDateTime levelStart;
-    Submission current;
-    Submission previous = new Submission();
-    for (Submission submission :
+    Submission previous = null;
+    for (Submission current :
         submissionRepository.getCorrectSubmissionsOfTrainingInstance(cd.getTrainingInstanceId())) {
-      current = submission;
       if (current.getLevel().getMinimalPossibleSolveTime() != null) {
-        if (isNewParticipant) {
-          levelStart = current.getTrainingRun().getStartTime();
-          isNewParticipant = false;
-        } else {
-          if (current.getTrainingRun().equals(previous.getTrainingRun())) {
-            levelStart = previous.getDate();
-          } else {
-            levelStart = current.getTrainingRun().getStartTime();
-          }
-        }
+        LocalDateTime earliestLevelStart =
+            previous != null && current.getTrainingRun().equals(previous.getTrainingRun())
+                ? previous.getDate()
+                : current.getTrainingRun().getStartTime();
+        LocalDateTime levelStart =
+            findLevelStartTime(cd.getTrainingInstanceId(), current, earliestLevelStart)
+                .orElse(earliestLevelStart);
         long levelDuration = Duration.between(levelStart, current.getDate()).toSeconds();
         if (levelDuration < current.getLevel().getMinimalPossibleSolveTime() * 60) {
           addMinimalSolveTimeDataToMaps(detectedByLevel, submissionTimes, current, levelDuration);
@@ -185,6 +186,29 @@ public class MinimalSolveTimeService {
       }
       previous = current;
     }
+  }
+
+  /**
+   * Returns when the submission's run started the submission's level, taken from the run's
+   * level-started audit event recorded at or after {@code earliestLevelStart}, or empty when no
+   * such event is found
+   */
+  private Optional<LocalDateTime> findLevelStartTime(
+      Long trainingInstanceId, Submission submission, LocalDateTime earliestLevelStart) {
+    TrainingRun run = submission.getTrainingRun();
+    long levelId = submission.getLevel().getId();
+    long sinceTimestamp = earliestLevelStart.toInstant(ZoneOffset.UTC).toEpochMilli() - 1;
+    return trainingEventsService
+        .findFilteredTrainingEvents(
+            trainingInstanceId,
+            LevelStarted.TYPE,
+            sinceTimestamp,
+            run.getParticipantRef().getUserRefId())
+        .stream()
+        .filter(event -> event.getTrainingRunId() == run.getId() && event.getLevel() == levelId)
+        .findFirst()
+        .map(event -> Instant.ofEpochMilli(event.getTimestamp()))
+        .map(timestamp -> LocalDateTime.ofInstant(timestamp, ZoneOffset.UTC));
   }
 
   /**

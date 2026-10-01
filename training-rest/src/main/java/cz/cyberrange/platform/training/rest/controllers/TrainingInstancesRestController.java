@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
 import com.querydsl.core.types.Predicate;
+import cz.cyberrange.platform.training.api.dto.AccessTokenDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.event.AbstractEventDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
@@ -32,7 +33,6 @@ import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -112,13 +112,7 @@ public class TrainingInstancesRestController {
           "Any training organizer or training administrator may call it, whether or not they run"
               + " that instance.")
   @ApiResponses({
-    @ApiResponse(
-        responseCode = "200",
-        description = "The access token.",
-        content =
-            @Content(
-                mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = @Schema(type = "string"))),
+    @ApiResponse(responseCode = "200", description = "The access token."),
     @ApiResponse(
         responseCode = "400",
         description = "The pool id is not a number.",
@@ -129,10 +123,10 @@ public class TrainingInstancesRestController {
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(path = "/access/{poolId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> findInstanceAccessTokenByPoolId(
+  public ResponseEntity<AccessTokenDTO> findInstanceAccessTokenByPoolId(
       @PathVariable("poolId") Long poolId) {
     String accessToken = trainingInstanceFacade.findInstanceAccessTokenByPoolId(poolId);
-    return ResponseEntity.ok(accessToken);
+    return ResponseEntity.ok(new AccessTokenDTO(accessToken));
   }
 
   /**
@@ -219,11 +213,7 @@ public class TrainingInstancesRestController {
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
-        description = "The access token in effect after the update.",
-        content =
-            @Content(
-                mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = @Schema(type = "string"))),
+        description = "The access token in effect after the update."),
     @ApiResponse(
         responseCode = "400",
         description =
@@ -242,10 +232,10 @@ public class TrainingInstancesRestController {
   @PutMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> updateTrainingInstance(
+  public ResponseEntity<AccessTokenDTO> updateTrainingInstance(
       @RequestBody @Valid TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
     String newToken = trainingInstanceFacade.update(trainingInstanceUpdateDTO);
-    return new ResponseEntity<>(newToken, HttpStatus.OK);
+    return ResponseEntity.ok(new AccessTokenDTO(newToken));
   }
 
   /**

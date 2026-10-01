@@ -14,6 +14,7 @@ import cz.cyberrange.platform.training.persistence.repository.detection.Detected
 import cz.cyberrange.platform.training.persistence.repository.detection.DetectionEventParticipantRepository;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -91,7 +92,7 @@ public class CheatingDetectionService {
   public void createCheatingDetection(CheatingDetection cheatingDetection) {
     cheatingDetection.setExecutedBy(userService.getUserRefFromUserAndGroup().getUserRefFullName());
     cheatingDetection.setResults(0L);
-    cheatingDetection.setExecuteTime(LocalDateTime.now());
+    cheatingDetection.setExecuteTime(LocalDateTime.now(Clock.systemUTC()));
     cheatingDetectionRepository.save(cheatingDetection);
   }
 
@@ -187,7 +188,7 @@ public class CheatingDetectionService {
     detectionEventParticipantRepository.deleteAllParticipantsByCheatingDetectionId(
         cheatingDetectionId);
 
-    cd.setExecuteTime(LocalDateTime.now());
+    cd.setExecuteTime(LocalDateTime.now(Clock.systemUTC()));
     cd.setResults(0L);
     cheatingDetectionRepository.save(cd);
     executeCheatingDetection(cd);
