@@ -16,6 +16,7 @@ import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.search.Hit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class TrainingEventsService {
   private static final String TIMESTAMP_FIELD = "timestamp";
+  private static final String DOCUMENT_ID_FIELD = "_id";
+  private static final int PAGE_SIZE = 10000;
   private static final String TRAINING_RUN_ID_FIELD = "training_run_id";
   private static final String TRAINING_INSTANCE_ID_FIELD = "training_instance_id";
   private static final String TYPE_FIELD = "type";
@@ -114,7 +117,8 @@ public class TrainingEventsService {
    *     timestamp > sinceTimestampMs} are returned
    * @param userRefIdFilter when non-null, restricts results to events where {@code user_ref_id ==
    *     userRefIdFilter}; when null, no user filter
-   * @return list of matching events, never null
+   * @return every matching event, oldest first, never null
+   * @throws OpenSearchQueryException if the OpenSearch query fails
    */
   public List<AbstractAuditPOJO> findFilteredTrainingEvents(
       Long instanceId, String eventType, long sinceTimestampMs, Long userRefIdFilter) {
@@ -151,21 +155,51 @@ public class TrainingEventsService {
       boolQueryBuilder.must(mustMatchUser);
     }
 
-    Query filteredQuery = boolQueryBuilder.build()._toQuery();
+    return searchAllPages(instanceIndex, boolQueryBuilder.build()._toQuery());
+  }
 
-    SearchRequest searchRequest =
-        SearchRequest.of(
-            request ->
-                request
-                    .index(instanceIndex)
-                    .ignoreUnavailable(true)
-                    .allowNoIndices(true)
-                    .sort(
-                        sort ->
-                            sort.field(field -> field.field(TIMESTAMP_FIELD).order(SortOrder.Asc)))
-                    .query(filteredQuery));
+  /**
+   * Reads every hit of {@code query} over {@code index} in ascending timestamp order, page by page,
+   * each page resuming after the timestamp and document id of the previous page's last hit.
+   *
+   * @throws OpenSearchQueryException if any page's query fails
+   */
+  private List<AbstractAuditPOJO> searchAllPages(String index, Query query) {
+    List<AbstractAuditPOJO> events = new ArrayList<>();
+    List<FieldValue> lastSortValues = List.of();
+    List<Hit<AbstractAuditPOJO>> page;
+    do {
+      page = searchHits(pageRequest(index, query, lastSortValues));
+      events.addAll(toEvents(page));
+      if (!page.isEmpty()) {
+        lastSortValues = page.get(page.size() - 1).sortVals();
+      }
+    } while (page.size() == PAGE_SIZE);
+    return events;
+  }
 
-    return executeSearch(searchRequest);
+  /**
+   * Builds one page of {@code query} over {@code index}, sorted by timestamp then document id, that
+   * starts after {@code searchAfter} unless it is empty.
+   */
+  private static SearchRequest pageRequest(
+      String index, Query query, List<FieldValue> searchAfter) {
+    return SearchRequest.of(
+        request -> {
+          request
+              .index(index)
+              .ignoreUnavailable(true)
+              .allowNoIndices(true)
+              .size(PAGE_SIZE)
+              .sort(sort -> sort.field(field -> field.field(TIMESTAMP_FIELD).order(SortOrder.Asc)))
+              .sort(
+                  sort -> sort.field(field -> field.field(DOCUMENT_ID_FIELD).order(SortOrder.Asc)))
+              .query(query);
+          if (!searchAfter.isEmpty()) {
+            request.searchAfterVals(searchAfter);
+          }
+          return request;
+        });
   }
 
   /**
@@ -197,24 +231,42 @@ public class TrainingEventsService {
    * @throws OpenSearchQueryException if the OpenSearch query fails
    */
   private List<AbstractAuditPOJO> executeSearch(SearchRequest searchRequest) {
+    return toEvents(searchHits(searchRequest));
+  }
+
+  /**
+   * Runs a search request and returns its raw hits, or an empty list when the response carries
+   * none.
+   *
+   * @throws OpenSearchQueryException if the OpenSearch query fails
+   */
+  private List<Hit<AbstractAuditPOJO>> searchHits(SearchRequest searchRequest) {
     try {
       SearchResponse<AbstractAuditPOJO> response =
           openSearchClient.search(searchRequest, AbstractAuditPOJO.class);
       if (response.hits() == null || response.hits().hits() == null) {
-        return new ArrayList<>();
+        return List.of();
       }
-      return response.hits().hits().stream()
-          .filter(hit -> hit.source() != null)
-          .map(
-              hit -> {
-                AbstractAuditPOJO event = hit.source();
-                event.setEventId(hit.id());
-                return event;
-              })
-          .collect(Collectors.toList());
+      return response.hits().hits();
     } catch (IOException | OpenSearchException e) {
       throw new OpenSearchQueryException(QUERY_FAILED_MSG, e);
     }
+  }
+
+  /**
+   * Converts hits into audit events carrying their OpenSearch document id, skipping a hit whose
+   * source is null.
+   */
+  private static List<AbstractAuditPOJO> toEvents(List<Hit<AbstractAuditPOJO>> hits) {
+    return hits.stream()
+        .filter(hit -> hit.source() != null)
+        .map(
+            hit -> {
+              AbstractAuditPOJO event = hit.source();
+              event.setEventId(hit.id());
+              return event;
+            })
+        .collect(Collectors.toList());
   }
 
   private void deleteIndex(String indexPattern) {

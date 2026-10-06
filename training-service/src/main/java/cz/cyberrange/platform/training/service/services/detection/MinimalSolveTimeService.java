@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MinimalSolveTimeService {
   private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
+  private static final long BEFORE_EPOCH = -1L;
   private final SubmissionRepository submissionRepository;
   private final MinimalSolveTimeDetectionEventRepository minimalSolveTimeDetectionEventRepository;
   private final TrainingRunRepository trainingRunRepository;
@@ -168,6 +171,8 @@ public class MinimalSolveTimeService {
       CheatingDetection cd,
       Map<Long, List<Submission>> detectedByLevel,
       Map<Long, Long> submissionTimes) {
+    Map<RunLevel, List<LocalDateTime>> levelStartTimes =
+        findLevelStartTimes(cd.getTrainingInstanceId());
     Submission previous = null;
     for (Submission current :
         submissionRepository.getCorrectSubmissionsOfTrainingInstance(cd.getTrainingInstanceId())) {
@@ -177,7 +182,7 @@ public class MinimalSolveTimeService {
                 ? previous.getDate()
                 : current.getTrainingRun().getStartTime();
         LocalDateTime levelStart =
-            findLevelStartTime(cd.getTrainingInstanceId(), current, earliestLevelStart)
+            findLevelStartTime(levelStartTimes, current, earliestLevelStart)
                 .orElse(earliestLevelStart);
         long levelDuration = Duration.between(levelStart, current.getDate()).toSeconds();
         if (levelDuration < current.getLevel().getMinimalPossibleSolveTime() * 60) {
@@ -189,27 +194,42 @@ public class MinimalSolveTimeService {
   }
 
   /**
-   * Returns when the submission's run started the submission's level, taken from the run's
-   * level-started audit event recorded at or after {@code earliestLevelStart}, or empty when no
-   * such event is found
+   * Returns the time of every level-started audit event of the training instance, grouped by run
+   * and level, each group oldest first
    */
-  private Optional<LocalDateTime> findLevelStartTime(
-      Long trainingInstanceId, Submission submission, LocalDateTime earliestLevelStart) {
-    TrainingRun run = submission.getTrainingRun();
-    long levelId = submission.getLevel().getId();
-    long sinceTimestamp = earliestLevelStart.toInstant(ZoneOffset.UTC).toEpochMilli() - 1;
+  private Map<RunLevel, List<LocalDateTime>> findLevelStartTimes(Long trainingInstanceId) {
     return trainingEventsService
-        .findFilteredTrainingEvents(
-            trainingInstanceId,
-            LevelStarted.TYPE,
-            sinceTimestamp,
-            run.getParticipantRef().getUserRefId())
+        .findFilteredTrainingEvents(trainingInstanceId, LevelStarted.TYPE, BEFORE_EPOCH, null)
         .stream()
-        .filter(event -> event.getTrainingRunId() == run.getId() && event.getLevel() == levelId)
-        .findFirst()
-        .map(event -> Instant.ofEpochMilli(event.getTimestamp()))
-        .map(timestamp -> LocalDateTime.ofInstant(timestamp, ZoneOffset.UTC));
+        .collect(
+            Collectors.groupingBy(
+                event -> new RunLevel(event.getTrainingRunId(), event.getLevel()),
+                Collectors.mapping(
+                    event ->
+                        LocalDateTime.ofInstant(
+                            Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC),
+                    Collectors.toList())));
   }
+
+  /**
+   * Returns when the submission's run started the submission's level, taken from the first
+   * level-started time of that run and level recorded at or after {@code earliestLevelStart}
+   * (compared at millisecond precision), or empty when there is none
+   */
+  private static Optional<LocalDateTime> findLevelStartTime(
+      Map<RunLevel, List<LocalDateTime>> levelStartTimes,
+      Submission submission,
+      LocalDateTime earliestLevelStart) {
+    LocalDateTime earliestMillisecond = earliestLevelStart.truncatedTo(ChronoUnit.MILLIS);
+    RunLevel runLevel =
+        new RunLevel(submission.getTrainingRun().getId(), submission.getLevel().getId());
+    return levelStartTimes.getOrDefault(runLevel, List.of()).stream()
+        .filter(levelStart -> !levelStart.isBefore(earliestMillisecond))
+        .findFirst();
+  }
+
+  /** Identifies one level within one training run */
+  private record RunLevel(long trainingRunId, long levelId) {}
 
   /**
    * Appends the submission to the level's list in {@code detectedByLevel}, creating it if absent,

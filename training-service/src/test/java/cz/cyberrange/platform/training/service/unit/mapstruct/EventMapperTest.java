@@ -14,10 +14,13 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.EventMapper;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,7 +45,23 @@ class EventMapperTest {
   private static final int TOTAL_TRAINING_SCORE = 50;
   private static final int TOTAL_ASSESSMENT_SCORE = 20;
 
+  private static final TimeZone NON_UTC_DEFAULT_ZONE = TimeZone.getTimeZone("Europe/Prague");
+
+  private static TimeZone originalDefaultZone;
+
   private EventMapper sut;
+
+  /** Runs every case under a non-UTC JVM default zone so a zone-dependent mapping fails */
+  @BeforeAll
+  static void pinNonUtcDefaultZone() {
+    originalDefaultZone = TimeZone.getDefault();
+    TimeZone.setDefault(NON_UTC_DEFAULT_ZONE);
+  }
+
+  @AfterAll
+  static void restoreDefaultZone() {
+    TimeZone.setDefault(originalDefaultZone);
+  }
 
   @BeforeEach
   void setUp() {
@@ -72,7 +91,7 @@ class EventMapperTest {
     assertEquals(event.getEventId(), dto.getEventId());
     assertEquals(event.getType(), dto.getType());
     assertEquals(
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneId.systemDefault()),
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC),
         dto.getTimestamp());
     assertEquals(Duration.ofMillis(event.getTrainingTime()), dto.getTrainingTime());
     assertEquals(event.getSandboxId(), dto.getSandboxId());
@@ -483,7 +502,7 @@ class EventMapperTest {
     void shouldConvertEpochMillisToLocalDateTime() {
       long epoch = 1609459200000L;
       LocalDateTime expected =
-          LocalDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.systemDefault());
+          LocalDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
 
       LocalDateTime result = sut.mapTimestamp(epoch);
 
