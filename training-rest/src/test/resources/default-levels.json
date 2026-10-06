@@ -1,9 +1,9 @@
 {
-  "intro_info_level": {
+  "default_info_level": {
     "title" : "Test info title",
     "content" : "Test content"
   },
-  "get_access_level": {
+  "default_access_level": {
       "title" : "Test training title",
       "passkey" : "test",
       "cloud_content" : "Test cloud content",

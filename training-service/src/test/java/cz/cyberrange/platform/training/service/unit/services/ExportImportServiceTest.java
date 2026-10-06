@@ -17,22 +17,22 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(classes = {TestDataFactory.class})
 public class ExportImportServiceTest {
 
   private static ExportImportService exportImportService;
-  @MockBean private static TrainingDefinitionRepository trainingDefinitionRepository;
-  @MockBean private static AbstractLevelRepository abstractLevelRepository;
-  @MockBean private static AssessmentLevelRepository assessmentLevelRepository;
-  @MockBean private static QuestionAnswerRepository questionAnswerRepository;
-  @MockBean private static InfoLevelRepository infoLevelRepository;
-  @MockBean private static TrainingLevelRepository trainingLevelRepository;
-  @MockBean private static MitreTechniqueRepository mitreTechniqueRepository;
-  @MockBean private static AccessLevelRepository accessLevelRepository;
-  @MockBean private static TrainingInstanceRepository trainingInstanceRepository;
-  @MockBean private static TrainingRunRepository trainingRunRepository;
+  @MockitoBean private TrainingDefinitionRepository trainingDefinitionRepository;
+  @MockitoBean private AbstractLevelRepository abstractLevelRepository;
+  @MockitoBean private AssessmentLevelRepository assessmentLevelRepository;
+  @MockitoBean private QuestionAnswerRepository questionAnswerRepository;
+  @MockitoBean private InfoLevelRepository infoLevelRepository;
+  @MockitoBean private TrainingLevelRepository trainingLevelRepository;
+  @MockitoBean private MitreTechniqueRepository mitreTechniqueRepository;
+  @MockitoBean private AccessLevelRepository accessLevelRepository;
+  @MockitoBean private TrainingInstanceRepository trainingInstanceRepository;
+  @MockitoBean private TrainingRunRepository trainingRunRepository;
 
   @Mock private static AssessmentLevel assessmentLevel;
   @Mock private static TrainingLevel trainingLevel;

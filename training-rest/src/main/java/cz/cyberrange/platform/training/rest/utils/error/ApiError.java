@@ -53,13 +53,7 @@ public class ApiError {
       example = "[Entity TrainingDefinition (id: 1) not found.]")
   private List<String> errors;
 
-  /**
-   * Request path associated with the error. Its source varies by handler method: the request's
-   * context path on the overridden {@link
-   * org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler} methods
-   * and on {@link CustomRestExceptionHandlerTraining#handleAuthenticationException}, or the full
-   * request URI on the other custom {@code @ExceptionHandler} methods.
-   */
+  /** Request path associated with the error, empty when the error was built without one */
   @Schema(example = "/training/api/v1/training-definitions/1")
   private String path;
 
@@ -78,7 +72,7 @@ public class ApiError {
    * @param httpStatus the status reported in the body and used for the HTTP response
    * @param message description of the error
    * @param errors the list stored as {@link #getErrors()}
-   * @param path the request path or context path associated with the error
+   * @param path the request path associated with the error
    * @return the built error body
    */
   public static ApiError of(
@@ -97,7 +91,7 @@ public class ApiError {
    * @param message description of the error
    * @param error the caught exception's own message, wrapped as the sole entry of {@link
    *     #getErrors()}
-   * @param path the request path or context path associated with the error
+   * @param path the request path associated with the error
    * @return the built error body
    */
   public static ApiError of(HttpStatus httpStatus, String message, String error, String path) {

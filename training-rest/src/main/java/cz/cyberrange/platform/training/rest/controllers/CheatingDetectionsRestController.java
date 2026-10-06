@@ -14,8 +14,10 @@ import cz.cyberrange.platform.training.api.dto.cheatingdetection.TimeProximityDe
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
+import cz.cyberrange.platform.training.rest.utils.ZipMediaType;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.service.export.ExportFormats;
 import cz.cyberrange.platform.training.service.facade.detection.CheatingDetectionExportFacade;
 import cz.cyberrange.platform.training.service.facade.detection.CheatingDetectionFacade;
 import cz.cyberrange.platform.training.service.facade.detection.DetectionEventFacade;
@@ -28,9 +30,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
-import javax.validation.Valid;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -77,15 +79,18 @@ public class CheatingDetectionsRestController {
   private final CheatingDetectionFacade cheatingDetectionFacade;
   private final DetectionEventFacade detectionEventFacade;
   private final CheatingDetectionExportFacade cheatingDetectionExportFacade;
+  private final ExportFormats exportFormats;
 
   @Autowired
   public CheatingDetectionsRestController(
       CheatingDetectionFacade cheatingDetectionFacade,
       DetectionEventFacade detectionEventFacade,
-      CheatingDetectionExportFacade cheatingDetectionExportFacade) {
+      CheatingDetectionExportFacade cheatingDetectionExportFacade,
+      ExportFormats exportFormats) {
     this.cheatingDetectionFacade = cheatingDetectionFacade;
     this.cheatingDetectionExportFacade = cheatingDetectionExportFacade;
     this.detectionEventFacade = detectionEventFacade;
+    this.exportFormats = exportFormats;
   }
 
   /**
@@ -334,9 +339,11 @@ public class CheatingDetectionsRestController {
 
   /**
    * Builds and returns a zip archive holding the cheating detection's own configuration, two
-   * entries per finding it produced, plus the trainee participant groups it evaluated.
+   * entries per finding it produced, both in the requested format, plus the trainee participant
+   * groups it evaluated.
    *
    * @param cheatingDetectionId the cheating detection id
+   * @param formatName the name of the format the configuration and finding entries are written in
    * @return the zip archive as a byte array response
    */
   @Operation(
@@ -352,11 +359,12 @@ public class CheatingDetectionsRestController {
         description = "The zip archive.",
         content =
             @Content(
-                mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                mediaType = ZipMediaType.APPLICATION_ZIP_VALUE,
                 schema = @Schema(type = "string", format = "binary"))),
     @ApiResponse(
         responseCode = "400",
-        description = "The cheating detection id is not a number.",
+        description =
+            "The cheating detection id is not a number, or the format is not json or yaml.",
         content = @Content(schema = @Schema(implementation = ApiError.class))),
     @ApiResponse(
         responseCode = "404",
@@ -365,13 +373,21 @@ public class CheatingDetectionsRestController {
   })
   @GetMapping(
       path = "/exports/{cheatingDetectionId}",
-      produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+      produces = ZipMediaType.APPLICATION_ZIP_VALUE)
   public ResponseEntity<byte[]> archiveCheatingDetectionResults(
-      @PathVariable("cheatingDetectionId") Long cheatingDetectionId) {
+      @PathVariable("cheatingDetectionId") Long cheatingDetectionId,
+      @Parameter(
+              description =
+                  "Format of the settings and finding entries inside the archive; each entry"
+                      + " carries its extension. The participant groups stay CSV.",
+              schema = @Schema(allowableValues = {"json", "yaml"}))
+          @RequestParam(name = "format", defaultValue = "json")
+          String formatName) {
     FileToReturnDTO file =
-        cheatingDetectionExportFacade.archiveCheatingDetectionResults(cheatingDetectionId);
+        cheatingDetectionExportFacade.archiveCheatingDetectionResults(
+            cheatingDetectionId, exportFormats.byName(formatName));
     HttpHeaders header = new HttpHeaders();
-    header.setContentType(new MediaType("application", "octet-stream"));
+    header.setContentType(ZipMediaType.APPLICATION_ZIP);
     header.set(
         "Content-Disposition",
         "inline; filename=" + file.getTitle() + AbstractFileExtensions.ZIP_FILE_EXTENSION);

@@ -1,11 +1,11 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
 
 /**
  * Class specifying Abstract level as access level. Access levels contain instructions on how to
@@ -20,11 +20,11 @@ public class AccessLevel extends AbstractLevel {
   private String passkey;
 
   @Lob
-  @Column(name = "cloud_content", nullable = false)
+  @Column(name = "cloud_content", nullable = false, columnDefinition = "TEXT")
   private String cloudContent;
 
   @Lob
-  @Column(name = "local_content", nullable = false)
+  @Column(name = "local_content", nullable = false, columnDefinition = "TEXT")
   private String localContent;
 
   /**

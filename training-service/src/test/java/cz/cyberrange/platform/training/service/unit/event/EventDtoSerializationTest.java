@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.cyberrange.platform.training.api.dto.event.CommandEventDTO;
 import cz.cyberrange.platform.training.api.dto.event.TrainingRunStartedDTO;
 import cz.cyberrange.platform.training.opensearch.events.commands.model.TrainingCommand;
@@ -25,6 +22,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @DisplayName("Event id serialization")
 class EventDtoSerializationTest {

@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.accesslevel;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 /** A participant's submission attempting to complete the access level they are currently running */

@@ -1,29 +1,24 @@
 package cz.cyberrange.platform.training.rest.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
+import cz.cyberrange.platform.training.service.export.YamlExportFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.yaml.JacksonYamlHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 /**
- * Configures content negotiation from the {@code Accept} header, defaulting to JSON, and registers a
- * message converter for the {@code text/yaml} and {@code text/yml} media types
+ * Configures content negotiation from the {@code Accept} header, defaulting to JSON, and reads and
+ * writes YAML bodies under the {@code application/yaml}, {@code text/yaml} and {@code text/yml}
+ * media types
  */
 @Configuration
 public class WebConfigRestTraining implements WebMvcConfigurer {
 
-  /** Media type {@code text/yaml} */
-  private static final MediaType MEDIA_TYPE_YAML = MediaType.valueOf("text/yaml");
-
-  /** Media type {@code text/yml} */
-  private static final MediaType MEDIA_TYPE_YML = MediaType.valueOf("text/yml");
-
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired private YAMLMapper yamlMapper;
 
   /**
    * Resolves the response content type from the {@code Accept} header. Without one, JSON is
@@ -34,21 +29,16 @@ public class WebConfigRestTraining implements WebMvcConfigurer {
   @Override
   public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
     configurer
-        .favorPathExtension(false)
         .favorParameter(false)
         .ignoreAcceptHeader(false)
         .defaultContentType(MediaType.APPLICATION_JSON, MediaType.ALL);
   }
 
-  /**
-   * Appends a converter that serializes a response declared under the {@code text/yaml} or {@code
-   * text/yml} media type through the application's autowired {@link ObjectMapper}
-   */
+  /** Reads and writes YAML bodies through the application's YAML mapper */
   @Override
-  public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-    MappingJackson2HttpMessageConverter yamlConverter =
-        new MappingJackson2HttpMessageConverter(objectMapper);
-    yamlConverter.setSupportedMediaTypes(List.of(MEDIA_TYPE_YAML, MEDIA_TYPE_YML));
-    converters.add(yamlConverter);
+  public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+    JacksonYamlHttpMessageConverter yamlConverter = new JacksonYamlHttpMessageConverter(yamlMapper);
+    yamlConverter.setSupportedMediaTypes(YamlExportFormat.MEDIA_TYPES);
+    builder.withYamlConverter(yamlConverter);
   }
 }

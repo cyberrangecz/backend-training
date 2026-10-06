@@ -1,11 +1,11 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.DetectionEventType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * One finding of a cheating detection run, holding what every kind of finding has in common: the

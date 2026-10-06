@@ -1,14 +1,14 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.CheatingDetectionState;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * One run of the cheating detections over a training instance: who started it, when, how each of

@@ -170,12 +170,7 @@ public class LocationSimilarityService {
       if (hasSimilarIPToExistingGroup || submissions.size() == 1) {
         continue;
       }
-      groups.add(
-          new ArrayList<>() {
-            {
-              add(submission);
-            }
-          });
+      groups.add(new ArrayList<>(List.of(submission)));
     }
   }
 

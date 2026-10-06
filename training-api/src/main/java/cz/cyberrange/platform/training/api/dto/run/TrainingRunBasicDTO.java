@@ -1,12 +1,12 @@
 package cz.cyberrange.platform.training.api.dto.run;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.enums.TRState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 /** The shape of a training run returned to both organizers and trainees of that run */
 @Data

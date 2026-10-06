@@ -53,7 +53,7 @@ public class SandboxApiService {
           .bodyToMono(SandboxDefinitionInfo.class)
           .block();
     } catch (CustomWebClientException ex) {
-      if (ex.getStatusCode() == HttpStatus.CONFLICT) {
+      if (ex.getStatusCode().isSameCodeAs(HttpStatus.CONFLICT)) {
         throw new ForbiddenException(
             "There is no available sandbox definition for particular pool (ID: " + poolId + ").");
       }
@@ -114,7 +114,7 @@ public class SandboxApiService {
             .block();
       }
     } catch (CustomWebClientException ex) {
-      if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {
+      if (!ex.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
         throw new MicroserviceApiException(
             "Currently, it is not possible to unlock a pool (ID: " + poolId + ").", ex);
       }
@@ -140,7 +140,7 @@ public class SandboxApiService {
           .bodyToMono(SandboxInfo.class)
           .block();
     } catch (CustomWebClientException ex) {
-      if (ex.getStatusCode() == HttpStatus.CONFLICT) {
+      if (ex.getStatusCode().isSameCodeAs(HttpStatus.CONFLICT)) {
         throw new ForbiddenException(
             "There is no available sandbox, wait a minute and try again or ask organizer to allocate more sandboxes.");
       }

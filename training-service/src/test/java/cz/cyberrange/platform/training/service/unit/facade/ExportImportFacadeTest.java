@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
@@ -23,6 +22,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.service.export.JsonExportFormat;
 import cz.cyberrange.platform.training.service.facade.ExportImportFacade;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.*;
 import cz.cyberrange.platform.training.service.services.ExportImportService;
@@ -38,7 +38,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
     classes = {
@@ -63,15 +65,15 @@ public class ExportImportFacadeTest {
   @Autowired private LevelMapperImpl infoLevelMapper;
   @Autowired private TrainingDefinitionMapperImpl trainingDefinitionMapper;
 
-  @MockBean private ObjectMapper objectMapper;
-  @MockBean private TrainingDefinitionService trainingDefinitionService;
-  @MockBean private SandboxApiService sandboxApiService;
-  @MockBean private ExportImportService exportImportService;
-  @MockBean private UserService userService;
-  @MockBean private CommandEventsService commandEventsService;
-  @MockBean private TrainingEventsService trainingEventsService;
-  @MockBean private EventMapper eventMapper;
-  @MockBean private ScoreReportService scoreReportService;
+  @MockitoBean private JsonMapper objectMapper;
+  @MockitoBean private TrainingDefinitionService trainingDefinitionService;
+  @MockitoBean private SandboxApiService sandboxApiService;
+  @MockitoBean private ExportImportService exportImportService;
+  @MockitoBean private UserService userService;
+  @MockitoBean private CommandEventsService commandEventsService;
+  @MockitoBean private TrainingEventsService trainingEventsService;
+  @MockitoBean private EventMapper eventMapper;
+  @MockitoBean private ScoreReportService scoreReportService;
 
   private TrainingDefinition trainingDefinition;
   private TrainingDefinition trainingDefinitionImported;
@@ -142,7 +144,8 @@ public class ExportImportFacadeTest {
         exportImportMapper.mapToDTO(trainingDefinition);
     given(objectMapper.writeValueAsBytes(any(ExportTrainingDefinitionAndLevelsDTO.class)))
         .willReturn(convertObjectToJsonBytes(exportedTrainingDefinition));
-    FileToReturnDTO export = exportImportFacade.dbExport(trainingDefinition.getId());
+    FileToReturnDTO export =
+        exportImportFacade.dbExport(trainingDefinition.getId(), new JsonExportFormat(objectMapper));
 
     assertEquals(
         exportedTrainingDefinition.toString(),

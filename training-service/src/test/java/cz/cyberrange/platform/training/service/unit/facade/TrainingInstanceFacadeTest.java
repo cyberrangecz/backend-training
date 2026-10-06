@@ -51,11 +51,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(
     classes = {
@@ -78,17 +78,17 @@ public class TrainingInstanceFacadeTest {
 
   @Autowired private TrainingInstanceMapper trainingInstanceMapper;
 
-  @MockBean private TrainingInstanceService trainingInstanceService;
-  @MockBean private TrainingRunService trainingRunService;
-  @MockBean private CheatingDetectionService cheatingDetectionService;
-  @MockBean private TrainingDefinitionService trainingDefinitionService;
-  @MockBean private SecurityService securityService;
-  @MockBean private UserService userService;
-  @MockBean private SandboxApiService sandboxApiService;
-  @MockBean private CommandEventsService commandEventsService;
-  @MockBean private TrainingEventsService trainingEventsService;
-  @MockBean private EventMapper eventMapper;
-  @MockBean private TrainingEventAccessService trainingEventAccessService;
+  @MockitoBean private TrainingInstanceService trainingInstanceService;
+  @MockitoBean private TrainingRunService trainingRunService;
+  @MockitoBean private CheatingDetectionService cheatingDetectionService;
+  @MockitoBean private TrainingDefinitionService trainingDefinitionService;
+  @MockitoBean private SecurityService securityService;
+  @MockitoBean private UserService userService;
+  @MockitoBean private SandboxApiService sandboxApiService;
+  @MockitoBean private CommandEventsService commandEventsService;
+  @MockitoBean private TrainingEventsService trainingEventsService;
+  @MockitoBean private EventMapper eventMapper;
+  @MockitoBean private TrainingEventAccessService trainingEventAccessService;
 
   private TrainingInstance trainingInstance1, trainingInstance2;
   private TrainingInstanceCreateDTO trainingInstanceCreate;

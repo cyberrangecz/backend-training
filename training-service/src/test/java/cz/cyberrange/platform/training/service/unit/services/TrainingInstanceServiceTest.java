@@ -4,10 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
@@ -32,22 +28,27 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(classes = {TestDataFactory.class})
 public class TrainingInstanceServiceTest {
@@ -55,12 +56,12 @@ public class TrainingInstanceServiceTest {
   @Autowired TestDataFactory testDataFactory;
   private TrainingInstanceService trainingInstanceService;
 
-  @MockBean private TrainingInstanceRepository trainingInstanceRepository;
-  @MockBean private TrainingRunRepository trainingRunRepository;
-  @MockBean private UserRefRepository organizerRefRepository;
-  @MockBean private SecurityService securityService;
-  @MockBean private UserService userService;
-  @MockBean private TrainingDefinition trainingDefinition;
+  @MockitoBean private TrainingInstanceRepository trainingInstanceRepository;
+  @MockitoBean private TrainingRunRepository trainingRunRepository;
+  @MockitoBean private UserRefRepository organizerRefRepository;
+  @MockitoBean private SecurityService securityService;
+  @MockitoBean private UserService userService;
+  @MockitoBean private TrainingDefinition trainingDefinition;
   private TrainingInstance trainingInstance1, trainingInstance2;
   private TrainingRun trainingRun1, trainingRun2;
   private UserRef user;
@@ -389,11 +390,12 @@ public class TrainingInstanceServiceTest {
   }
 
   private static String convertObjectToJsonBytes(Object object) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
-    mapper.registerModule(new JavaTimeModule());
-    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    ObjectMapper mapper =
+        JsonMapper.builderWithJackson2Defaults()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build();
     return mapper.writeValueAsString(object);
   }
 

@@ -3,11 +3,11 @@ package cz.cyberrange.platform.training.api.validation;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import javax.validation.Constraint;
-import javax.validation.Payload;
 
 /**
  * Marks a {@link java.util.List} field whose elements, once sorted ascending by {@link

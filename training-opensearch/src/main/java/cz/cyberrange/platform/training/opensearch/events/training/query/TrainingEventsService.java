@@ -151,7 +151,7 @@ public class TrainingEventsService {
       boolQueryBuilder.must(mustMatchUser);
     }
 
-    Query filteredQuery = boolQueryBuilder.build()._toQuery();
+    Query filteredQuery = boolQueryBuilder.build().toQuery();
 
     SearchRequest searchRequest =
         SearchRequest.of(

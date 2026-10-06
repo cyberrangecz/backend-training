@@ -8,11 +8,11 @@ import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorExcepti
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.exceptions.TooManyRequestsException;
 import cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
@@ -21,6 +21,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -32,9 +33,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
-import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.UrlPathHelper;
 
@@ -42,9 +43,8 @@ import org.springframework.web.util.UrlPathHelper;
  * Global exception handler for training-rest controllers. Each handler method below converts one
  * caught exception type into an {@link ApiError} (or its {@link ApiEntityError} / {@link
  * ApiMicroserviceError} subtype) and returns it as a JSON response body, with the {@link
- * ApiError#getStatus()} value regardless of the {@code headers} and
- * {@code status} parameters supplied by the overridden {@link ResponseEntityExceptionHandler}
- * methods.
+ * ApiError#getStatus()} value regardless of the {@code headers} and {@code status} parameters
+ * supplied by the overridden {@link ResponseEntityExceptionHandler} methods.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @RestControllerAdvice
@@ -58,14 +58,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   protected ResponseEntity<Object> handleTypeMismatch(
       final TypeMismatchException ex,
       final HttpHeaders headers,
-      final HttpStatus status,
+      final HttpStatusCode status,
       final WebRequest request) {
     final ApiError apiError =
         ApiError.of(
             HttpStatus.BAD_REQUEST,
             getInitialException(ex).getLocalizedMessage(),
             getErrorMessage(ex),
-            request.getContextPath());
+            getRequestPath(request));
     return ApiErrorResponder.asJson(apiError);
   }
 
@@ -74,14 +74,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   protected ResponseEntity<Object> handleMissingServletRequestPart(
       final MissingServletRequestPartException ex,
       final HttpHeaders headers,
-      final HttpStatus status,
+      final HttpStatusCode status,
       final WebRequest request) {
     final ApiError apiError =
         ApiError.of(
             HttpStatus.BAD_REQUEST,
             getInitialException(ex).getLocalizedMessage(),
             getErrorMessage(ex),
-            request.getContextPath());
+            getRequestPath(request));
     return ApiErrorResponder.asJson(apiError);
   }
 
@@ -90,30 +90,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   protected ResponseEntity<Object> handleMissingServletRequestParameter(
       final MissingServletRequestParameterException ex,
       final HttpHeaders headers,
-      final HttpStatus status,
+      final HttpStatusCode status,
       final WebRequest request) {
     final ApiError apiError =
         ApiError.of(
             HttpStatus.BAD_REQUEST,
             getInitialException(ex).getLocalizedMessage(),
             getErrorMessage(ex),
-            request.getContextPath());
-    return ApiErrorResponder.asJson(apiError);
-  }
-
-  /** Always answers with {@link HttpStatus#NOT_FOUND}, ignoring the framework-derived status */
-  @Override
-  protected ResponseEntity<Object> handleNoHandlerFoundException(
-      final NoHandlerFoundException ex,
-      final HttpHeaders headers,
-      final HttpStatus status,
-      final WebRequest request) {
-    final ApiError apiError =
-        ApiError.of(
-            HttpStatus.NOT_FOUND,
-            getInitialException(ex).getLocalizedMessage(),
-            getErrorMessage(ex),
-            request.getContextPath());
+            getRequestPath(request));
     return ApiErrorResponder.asJson(apiError);
   }
 
@@ -126,7 +110,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
       final HttpRequestMethodNotSupportedException ex,
       final HttpHeaders headers,
-      final HttpStatus status,
+      final HttpStatusCode status,
       final WebRequest request) {
     final StringBuilder supportedHttpMethods = new StringBuilder();
     supportedHttpMethods.append(ex.getMethod());
@@ -139,7 +123,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
             HttpStatus.NOT_FOUND,
             getInitialException(ex).getLocalizedMessage(),
             supportedHttpMethods.toString(),
-            request.getContextPath());
+            getRequestPath(request));
     return ApiErrorResponder.asJson(apiError);
   }
 
@@ -151,7 +135,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
       final HttpMediaTypeNotSupportedException ex,
       final HttpHeaders headers,
-      final HttpStatus status,
+      final HttpStatusCode status,
       final WebRequest request) {
     final StringBuilder supportedMediaTypes = new StringBuilder();
     supportedMediaTypes.append(ex.getContentType());
@@ -163,7 +147,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
             HttpStatus.UNSUPPORTED_MEDIA_TYPE,
             getInitialException(ex).getLocalizedMessage(),
             supportedMediaTypes.toString(),
-            request.getContextPath());
+            getRequestPath(request));
     return ApiErrorResponder.asJson(apiError);
   }
 
@@ -175,7 +159,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
       final MethodArgumentNotValidException ex,
       final HttpHeaders headers,
-      final HttpStatus status,
+      final HttpStatusCode status,
       final WebRequest request) {
     final ApiError apiError =
         ApiError.of(
@@ -184,7 +168,7 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .collect(java.util.stream.Collectors.joining(", ")),
             getErrorMessage(ex),
-            request.getContextPath());
+            getRequestPath(request));
     return ApiErrorResponder.asJson(apiError);
   }
 
@@ -196,14 +180,14 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   protected ResponseEntity<Object> handleHttpMessageNotReadable(
       final HttpMessageNotReadableException ex,
       final HttpHeaders headers,
-      final HttpStatus status,
+      final HttpStatusCode status,
       final WebRequest request) {
     final ApiError apiError =
         ApiError.of(
             HttpStatus.BAD_REQUEST,
             ex.getMostSpecificCause().getMessage(),
             getErrorMessage(ex),
-            request.getContextPath());
+            getRequestPath(request));
     return ApiErrorResponder.asJson(apiError);
   }
 
@@ -211,19 +195,17 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
 
   /**
    * Always answers with {@link HttpStatus#UNAUTHORIZED}, using {@code ex}'s own message as the
-   * error description and the request's context path as {@link ApiError#getPath()}
+   * error description
    */
   @ExceptionHandler({InsufficientAuthenticationException.class})
   protected ResponseEntity<Object> handleAuthenticationException(
-      final InsufficientAuthenticationException ex,
-      final WebRequest request,
-      HttpServletRequest req) {
+      final InsufficientAuthenticationException ex, HttpServletRequest req) {
     final ApiError apiError =
         ApiError.of(
             HttpStatus.UNAUTHORIZED,
             ex.getMessage(),
             getErrorMessage(ex),
-            request.getContextPath());
+            URL_PATH_HELPER.getRequestUri(req));
     return ApiErrorResponder.asJson(apiError);
   }
 
@@ -449,6 +431,11 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
             getErrorMessage(ex),
             URL_PATH_HELPER.getRequestUri(req));
     return ApiErrorResponder.asJson(apiError);
+  }
+
+  /** Returns the URI the client requested, context path included, without the query string */
+  private String getRequestPath(WebRequest request) {
+    return URL_PATH_HELPER.getRequestUri(((ServletWebRequest) request).getRequest());
   }
 
   /** Walks {@code exception}'s cause chain and returns its deepest cause */

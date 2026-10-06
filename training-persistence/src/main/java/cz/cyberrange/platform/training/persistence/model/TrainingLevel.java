@@ -1,10 +1,10 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import jakarta.persistence.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
 
 /**
  * Class specifying Abstract level as training level. Training levels contain tasks for trainees to
@@ -22,7 +22,7 @@ public class TrainingLevel extends AbstractLevel {
   private String answerVariableName;
 
   @Lob
-  @Column(name = "content", nullable = false)
+  @Column(name = "content", nullable = false, columnDefinition = "TEXT")
   private String content;
 
   @Lob

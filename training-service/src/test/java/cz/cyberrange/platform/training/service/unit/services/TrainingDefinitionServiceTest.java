@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,11 +40,11 @@ import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(classes = {TestDataFactory.class, CloneMapperImpl.class})
 public class TrainingDefinitionServiceTest {
@@ -52,19 +53,19 @@ public class TrainingDefinitionServiceTest {
   @Autowired private CloneMapperImpl cloneMapper;
 
   private TrainingDefinitionService trainingDefinitionService;
-  @MockBean private TrainingDefinitionRepository trainingDefinitionRepository;
-  @MockBean private AbstractLevelRepository abstractLevelRepository;
-  @MockBean private TrainingLevelRepository trainingLevelRepository;
-  @MockBean private InfoLevelRepository infoLevelRepository;
-  @MockBean private AccessLevelRepository accessLevelRepository;
-  @MockBean private AssessmentLevelRepository assessmentLevelRepository;
-  @MockBean private TrainingInstanceRepository trainingInstanceRepository;
-  @MockBean private MitreTechniqueRepository mitreTechniqueRepository;
-  @MockBean private HintRepository hintRepository;
-  @MockBean private UserRefRepository userRefRepository;
-  @MockBean private SecurityService securityService;
-  @MockBean private UserService userService;
-  @MockBean private DefaultLevelsLoader defaultLevelsLoader;
+  @MockitoBean private TrainingDefinitionRepository trainingDefinitionRepository;
+  @MockitoBean private AbstractLevelRepository abstractLevelRepository;
+  @MockitoBean private TrainingLevelRepository trainingLevelRepository;
+  @MockitoBean private InfoLevelRepository infoLevelRepository;
+  @MockitoBean private AccessLevelRepository accessLevelRepository;
+  @MockitoBean private AssessmentLevelRepository assessmentLevelRepository;
+  @MockitoBean private TrainingInstanceRepository trainingInstanceRepository;
+  @MockitoBean private MitreTechniqueRepository mitreTechniqueRepository;
+  @MockitoBean private HintRepository hintRepository;
+  @MockitoBean private UserRefRepository userRefRepository;
+  @MockitoBean private SecurityService securityService;
+  @MockitoBean private UserService userService;
+  @MockitoBean private DefaultLevelsLoader defaultLevelsLoader;
 
   private ModelMapper modelMapper = new ModelMapper();
 
@@ -192,8 +193,23 @@ public class TrainingDefinitionServiceTest {
     gLCloned.setTrainingDefinition(null);
     gLCloned.setId(null);
 
-    then(infoLevelRepository).should().save(iLCloned);
-    then(trainingLevelRepository).should().save(gLCloned);
+    then(infoLevelRepository)
+        .should()
+        .save(
+            argThat(
+                (InfoLevel saved) ->
+                    saved.getId() == null
+                        && saved.getMaxScore() == iLCloned.getMaxScore()
+                        && Objects.equals(saved.getContent(), iLCloned.getContent())));
+    then(trainingLevelRepository)
+        .should()
+        .save(
+            argThat(
+                (TrainingLevel saved) ->
+                    saved.getId() == null
+                        && saved.getMaxScore() == gLCloned.getMaxScore()
+                        && Objects.equals(saved.getContent(), gLCloned.getContent())
+                        && Objects.equals(saved.getSolution(), gLCloned.getSolution())));
   }
 
   @Test

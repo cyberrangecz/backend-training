@@ -14,7 +14,7 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.EventMapper;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +72,7 @@ class EventMapperTest {
     assertEquals(event.getEventId(), dto.getEventId());
     assertEquals(event.getType(), dto.getType());
     assertEquals(
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneId.systemDefault()),
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(event.getTimestamp()), ZoneOffset.UTC),
         dto.getTimestamp());
     assertEquals(Duration.ofMillis(event.getTrainingTime()), dto.getTrainingTime());
     assertEquals(event.getSandboxId(), dto.getSandboxId());
@@ -482,8 +482,7 @@ class EventMapperTest {
     @DisplayName("should convert epoch millis to LocalDateTime")
     void shouldConvertEpochMillisToLocalDateTime() {
       long epoch = 1609459200000L;
-      LocalDateTime expected =
-          LocalDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.systemDefault());
+      LocalDateTime expected = LocalDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
 
       LocalDateTime result = sut.mapTimestamp(epoch);
 

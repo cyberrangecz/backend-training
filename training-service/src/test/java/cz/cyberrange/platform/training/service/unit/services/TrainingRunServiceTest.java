@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
@@ -75,7 +74,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -83,8 +81,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest(classes = {TestDataFactory.class})
 public class TrainingRunServiceTest {
@@ -92,20 +92,20 @@ public class TrainingRunServiceTest {
   private TrainingRunService trainingRunService;
   @Autowired private TestDataFactory testDataFactory;
 
-  @MockBean private SubmissionRepository submissionRepository;
-  @MockBean private TRAcquisitionLockRepository trAcquisitionLockRepository;
-  @MockBean private TrainingRunRepository trainingRunRepository;
-  @MockBean private AuditEventsService auditEventService;
-  @MockBean private AbstractLevelRepository abstractLevelRepository;
-  @MockBean private TrainingInstanceRepository trainingInstanceRepository;
-  @MockBean private UserRefRepository participantRefRepository;
-  @MockBean private QuestionAnswerRepository questionAnswerRepository;
-  @MockBean private HintRepository hintRepository;
-  @MockBean private SandboxApiService sandboxApiService;
-  @MockBean private SecurityService securityService;
-  @MockBean private AnswersStorageApiService answersStorageApiService;
-  @MockBean private CommandEventsService commandEventsService;
-  @MockBean private TrainingEventsService trainingEventsService;
+  @MockitoBean private SubmissionRepository submissionRepository;
+  @MockitoBean private TRAcquisitionLockRepository trAcquisitionLockRepository;
+  @MockitoBean private TrainingRunRepository trainingRunRepository;
+  @MockitoBean private AuditEventsService auditEventService;
+  @MockitoBean private AbstractLevelRepository abstractLevelRepository;
+  @MockitoBean private TrainingInstanceRepository trainingInstanceRepository;
+  @MockitoBean private UserRefRepository participantRefRepository;
+  @MockitoBean private QuestionAnswerRepository questionAnswerRepository;
+  @MockitoBean private HintRepository hintRepository;
+  @MockitoBean private SandboxApiService sandboxApiService;
+  @MockitoBean private SecurityService securityService;
+  @MockitoBean private AnswersStorageApiService answersStorageApiService;
+  @MockitoBean private CommandEventsService commandEventsService;
+  @MockitoBean private TrainingEventsService trainingEventsService;
 
   private TrainingRun trainingRun1, trainingRun2;
   private TrainingLevel trainingLevel, trainingLevel2;
@@ -807,7 +807,8 @@ public class TrainingRunServiceTest {
     ClientResponse clientResponse =
         ClientResponse.create(HttpStatus.OK)
             .body(convertObjectToJsonBytes(body))
-            .header(org.apache.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(
+                org.springframework.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
     return Mono.just(clientResponse);
   }

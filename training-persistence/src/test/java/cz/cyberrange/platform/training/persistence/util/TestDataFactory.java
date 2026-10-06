@@ -1,11 +1,6 @@
 package cz.cyberrange.platform.training.persistence.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
@@ -54,12 +49,17 @@ import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchi
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionChoice;
-import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 @Component
 public class TestDataFactory {
@@ -67,11 +67,13 @@ public class TestDataFactory {
   private SimpleModule simpleModule =
       new SimpleModule("SimpleModule").addSerializer(new LocalDateTimeUTCSerializer());
   private ObjectMapper mapper =
-      new ObjectMapper()
-          .registerModule(new JavaTimeModule())
-          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-          .registerModule(simpleModule)
-          .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+      JsonMapper.builderWithJackson2Defaults()
+          .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+          .addModule(simpleModule)
+          .changeDefaultPropertyInclusion(
+              inclusion -> inclusion.withValueInclusion(JsonInclude.Include.NON_NULL))
+          .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+          .build();
 
   private AssessmentLevel test =
       generateAssessmentLevel("Test", 50, 10L, 1, "List of instructions", AssessmentType.TEST);
@@ -1447,10 +1449,9 @@ public class TestDataFactory {
 
   private <T> T clone(Object object, Class<T> tClass) {
     try {
-      mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
       String json = mapper.writeValueAsString(object);
       return mapper.readValue(json, tClass);
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }

@@ -1,15 +1,14 @@
 package cz.cyberrange.platform.training.api.converters;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import java.io.IOException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
 /** Deserializes a JSON value of any shape into its literal JSON text */
-public class JsonRawValueDeserializer extends JsonDeserializer<String> {
+public class JsonRawValueDeserializer extends ValueDeserializer<String> {
 
   @Override
-  public String deserialize(JsonParser jp, DeserializationContext context) throws IOException {
+  public String deserialize(JsonParser jp, DeserializationContext context) {
     return jp.readValueAsTree().toString();
   }
 }

@@ -7,8 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
@@ -50,7 +48,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -61,10 +58,13 @@ import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
     classes = {
@@ -80,7 +80,7 @@ public class TrainingRunsRestControllerTest {
 
   private TrainingRunsRestController trainingRunsRestController;
 
-  @MockBean private TrainingRunFacade trainingRunFacade;
+  @MockitoBean private TrainingRunFacade trainingRunFacade;
 
   private MockMvc mockMvc;
   private AutoCloseable closeable;
@@ -156,8 +156,10 @@ public class TrainingRunsRestControllerTest {
 
     trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(page);
 
-    ObjectMapper snakeCaseMapper = new ObjectMapper();
-    snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+    JsonMapper snakeCaseMapper =
+        JsonMapper.builderWithJackson2Defaults()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build();
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade);
@@ -169,7 +171,7 @@ public class TrainingRunsRestControllerTest {
                     new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
                     Optional.empty()))
             .setMessageConverters(
-                new MappingJackson2HttpMessageConverter(snakeCaseMapper),
+                new JacksonJsonHttpMessageConverter(snakeCaseMapper),
                 new StringHttpMessageConverter())
             .setControllerAdvice(new CustomRestExceptionHandlerTraining())
             .build();
@@ -191,8 +193,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(trainingRunByIdDTO),
-        result.getContentAsString());
+        ObjectConverter.convertObjectToJsonBytes(trainingRunByIdDTO), result.getContentAsString());
   }
 
   @Test
@@ -292,8 +293,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(assessmentLevelDTO),
-        result.getContentAsString());
+        ObjectConverter.convertObjectToJsonBytes(assessmentLevelDTO), result.getContentAsString());
   }
 
   @Test
@@ -307,8 +307,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(trainingLevelDTO),
-        result.getContentAsString());
+        ObjectConverter.convertObjectToJsonBytes(trainingLevelDTO), result.getContentAsString());
   }
 
   @Test
@@ -322,8 +321,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(infoLevelDTO),
-        result.getContentAsString());
+        ObjectConverter.convertObjectToJsonBytes(infoLevelDTO), result.getContentAsString());
   }
 
   @Test
@@ -378,8 +376,7 @@ public class TrainingRunsRestControllerTest {
             .andReturn()
             .getResponse();
     Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(hintDTO),
-        result.getContentAsString());
+        ObjectConverter.convertObjectToJsonBytes(hintDTO), result.getContentAsString());
   }
 
   @Test
@@ -537,9 +534,7 @@ public class TrainingRunsRestControllerTest {
             .getResponse();
     Assertions.assertEquals(
         participantDTO1,
-        ObjectConverter.convertJsonBytesToObject(
-            result.getContentAsString(),
-            UserRefDTO.class));
+        ObjectConverter.convertJsonBytesToObject(result.getContentAsString(), UserRefDTO.class));
   }
 
   @Test

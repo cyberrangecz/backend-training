@@ -12,8 +12,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 @DataJpaTest
@@ -35,7 +35,7 @@ public class HintRepositoryTest {
   public void findById() throws Exception {
     long id = entityManager.persist(hint1).getId();
     Optional<Hint> hintOptional = hintRepository.findById(id);
-    assertThat(hintOptional.isPresent());
+    assertThat(hintOptional).isPresent();
     assertEquals(hint1, hintOptional.get());
   }
 

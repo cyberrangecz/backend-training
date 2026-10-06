@@ -1,8 +1,5 @@
 package cz.cyberrange.platform.training.service.facade;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.archive.QuestionAnswerArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.archive.QuestionAnswersDetailsDTO;
@@ -50,6 +47,7 @@ import cz.cyberrange.platform.training.persistence.model.question.QuestionAnswer
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalWO;
+import cz.cyberrange.platform.training.service.export.ExportFormat;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EventMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.ExportImportMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
@@ -59,7 +57,6 @@ import cz.cyberrange.platform.training.service.services.TrainingDefinitionServic
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
 import cz.cyberrange.platform.training.service.services.score.ScoreReportService;
-import cz.cyberrange.platform.training.service.utils.AbstractFileExtensions;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,11 +77,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 /**
- * Moves training content across the service boundary: a definition out as a JSON file and back in
- * as a new definition, an instance out as a zip archive of its runs, events, commands and answers,
- * and an instance's participant standings out as a score report
+ * Moves training content across the service boundary: a definition out as a JSON or YAML file and
+ * back in as a new definition, an instance out as a zip archive of its runs, events, commands and
+ * answers, and an instance's participant standings out as a score report
  */
 @Service
 @Transactional
@@ -139,11 +139,12 @@ public class ExportImportFacade {
 
   /**
    * Serializes the given training definition together with its levels, in level order, into a
-   * single JSON file. The file is titled after the definition, or left untitled when the definition
-   * carries no title.
+   * single file in {@code format}. The file is titled after the definition, or left untitled when
+   * the definition carries no title.
    *
    * @param trainingDefinitionId id of the definition to export
-   * @return the JSON file's bytes and title, {@link FileToReturnDTO}
+   * @param format the format the file is written in
+   * @return the file's bytes and title, {@link FileToReturnDTO}
    * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException when no
    *     definition carries that id
    * @throws InternalServerErrorException when the definition cannot be serialized
@@ -152,7 +153,7 @@ public class ExportImportFacade {
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
   @TransactionalRO
-  public FileToReturnDTO dbExport(Long trainingDefinitionId) {
+  public FileToReturnDTO dbExport(Long trainingDefinitionId, ExportFormat format) {
     TrainingDefinition td = exportImportService.findById(trainingDefinitionId);
     ExportTrainingDefinitionAndLevelsDTO dbExport = exportImportMapper.mapToDTO(td);
     if (dbExport != null) {
@@ -160,14 +161,14 @@ public class ExportImportFacade {
     }
     try {
       FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
-      fileToReturnDTO.setContent(objectMapper.writeValueAsBytes(dbExport));
+      fileToReturnDTO.setContent(format.writeDocument(dbExport));
       if (dbExport != null && dbExport.getTitle() != null) {
         fileToReturnDTO.setTitle(dbExport.getTitle());
       } else {
         fileToReturnDTO.setTitle("");
       }
       return fileToReturnDTO;
-    } catch (IOException ex) {
+    } catch (JacksonException ex) {
       throw new InternalServerErrorException(ex);
     }
   }
@@ -392,9 +393,10 @@ public class ExportImportFacade {
    * Assembles a zip archive of the given training instance, holding the instance itself, the
    * training definition it runs, one entry per training run with that run's audit events, console
    * commands and assessment answers broken out per level, and the sandbox definition behind its
-   * pool. The archive is titled after the instance.
+   * pool, each entry written in {@code format}. The archive is titled after the instance.
    *
    * @param trainingInstanceId id of the instance to archive
+   * @param format the format the archive's entries are written in
    * @return the zip archive's bytes and title, {@link FileToReturnDTO}
    * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException when no instance
    *     carries that id
@@ -404,7 +406,7 @@ public class ExportImportFacade {
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
   @TransactionalRO
-  public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId) {
+  public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId, ExportFormat format) {
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream(baos)) {
       TrainingInstance trainingInstance = exportImportService.findInstanceById(trainingInstanceId);
@@ -417,10 +419,10 @@ public class ExportImportFacade {
               .collect(Collectors.toSet());
       archivedInstance.setOrganizersRefIds(new HashSet<>(organizersRefIds));
 
-      writeTrainingInstanceGeneralInfo(zos, trainingInstance.getId(), archivedInstance);
-      writeTrainingDefinitionInfo(zos, trainingInstance);
-      writeTrainingRunsInfo(zos, trainingInstance);
-      writeSandboxDefinitionInfo(zos, trainingInstance);
+      writeTrainingInstanceGeneralInfo(zos, format, trainingInstance.getId(), archivedInstance);
+      writeTrainingDefinitionInfo(zos, format, trainingInstance);
+      writeTrainingRunsInfo(zos, format, trainingInstance);
+      writeSandboxDefinitionInfo(zos, format, trainingInstance);
 
       zos.closeEntry();
       zos.close();
@@ -435,23 +437,24 @@ public class ExportImportFacade {
   }
 
   /**
-   * Writes the archived instance as a single JSON entry named after the instance's id.
+   * Writes the archived instance as a single entry named after the instance's id.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param trainingInstanceId id of the instance, used to name the entry
    * @param archivedInstance the instance's archived shape
    * @throws IOException when the entry cannot be written
    */
   private void writeTrainingInstanceGeneralInfo(
-      ZipOutputStream zos, Long trainingInstanceId, TrainingInstanceArchiveDTO archivedInstance)
+      ZipOutputStream zos,
+      ExportFormat format,
+      Long trainingInstanceId,
+      TrainingInstanceArchiveDTO archivedInstance)
       throws IOException {
     ZipEntry instanceEntry =
-        new ZipEntry(
-            "training_instance-id"
-                + trainingInstanceId
-                + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        new ZipEntry("training_instance-id" + trainingInstanceId + format.getFileExtension());
     zos.putNextEntry(instanceEntry);
-    zos.write(objectMapper.writeValueAsBytes(archivedInstance));
+    zos.write(format.writeDocument(archivedInstance));
   }
 
   /**
@@ -462,10 +465,12 @@ public class ExportImportFacade {
    * accumulated across every run are written last, as one entry per assessment.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param trainingInstance the instance whose runs are archived
    * @throws IOException when an entry cannot be written
    */
-  private void writeTrainingRunsInfo(ZipOutputStream zos, TrainingInstance trainingInstance)
+  private void writeTrainingRunsInfo(
+      ZipOutputStream zos, ExportFormat format, TrainingInstance trainingInstance)
       throws IOException {
     Set<TrainingRun> runs = exportImportService.findRunsByInstanceId(trainingInstance.getId());
     Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails = new HashMap<>();
@@ -474,34 +479,30 @@ public class ExportImportFacade {
       archivedRun.setInstanceId(trainingInstance.getId());
       archivedRun.setParticipantRefId(run.getParticipantRef().getUserRefId());
       ZipEntry runEntry =
-          new ZipEntry(
-              RUNS_FOLDER
-                  + "/training_run-id"
-                  + run.getId()
-                  + AbstractFileExtensions.JSON_FILE_EXTENSION);
+          new ZipEntry(RUNS_FOLDER + "/training_run-id" + run.getId() + format.getFileExtension());
       zos.putNextEntry(runEntry);
-      zos.write(objectMapper.writeValueAsBytes(archivedRun));
+      zos.write(format.writeDocument(archivedRun));
 
-      writeQuestionsAnswers(zos, run, assessmentsDetails);
+      writeQuestionsAnswers(zos, format, run, assessmentsDetails);
       List<AbstractAuditPOJO> events =
           trainingEventsService.findAllEventsFromTrainingRun(run.getId());
       if (events.isEmpty()) {
         continue;
       }
       Map<Long, Long> levelStartTimestampMapping =
-          writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
-      writeEventsByLevels(zos, run, events);
+          writeEventsAndGetLevelStartTimestampMapping(zos, format, run, events);
+      writeEventsByLevels(zos, format, run, events);
 
       List<CommandEventDTO> consoleCommands = getConsoleCommands(run);
       String sandboxId =
           events.get(0).getSandboxId() == null
               ? run.getParticipantRef().getUserRefId().toString()
               : events.get(0).getSandboxId();
-      writeConsoleCommands(zos, sandboxId, consoleCommands);
+      writeConsoleCommands(zos, format, sandboxId, consoleCommands);
       writeConsoleCommandsDetails(
-          zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
+          zos, format, trainingInstance, run, sandboxId, levelStartTimestampMapping);
     }
-    writeAssessmentsDetails(zos, assessmentsDetails);
+    writeAssessmentsDetails(zos, format, assessmentsDetails);
   }
 
   /**
@@ -525,11 +526,14 @@ public class ExportImportFacade {
    * Writes one entry per assessment holding the answer tallies gathered for its questions.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param assessmentsDetails the tallies keyed by assessment level id, then by question id
    * @throws IOException when an entry cannot be written
    */
   private void writeAssessmentsDetails(
-      ZipOutputStream zos, Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails)
+      ZipOutputStream zos,
+      ExportFormat format,
+      Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails)
       throws IOException {
     for (Map.Entry<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentDetails :
         assessmentsDetails.entrySet()) {
@@ -539,38 +543,39 @@ public class ExportImportFacade {
                   + "/assessment-id-"
                   + assessmentDetails.getKey()
                   + "-details"
-                  + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                  + format.getFileExtension());
       zos.putNextEntry(assessmentDetailsEntry);
-      zos.write(objectMapper.writer().writeValueAsBytes(assessmentDetails.getValue().values()));
+      zos.write(format.writeDocument(assessmentDetails.getValue().values()));
     }
   }
 
   /**
-   * Writes the run's audit events into a single entry, one event per line, and picks out the moment
-   * each level was started as it goes.
+   * Writes the run's audit events into a single entry, one record per event, and picks out the
+   * moment each level was started as it goes.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param run the run whose events are written, used to name the entry
    * @param events the run's events, written in the order given
    * @return the start timestamp of each level that was started, in the order encountered
    * @throws IOException when the entry cannot be written
    */
   private Map<Long, Long> writeEventsAndGetLevelStartTimestampMapping(
-      ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
+      ZipOutputStream zos, ExportFormat format, TrainingRun run, List<AbstractAuditPOJO> events)
+      throws IOException {
     ZipEntry eventsEntry =
         new ZipEntry(
             EVENTS_FOLDER
                 + "/training_run-id"
                 + run.getId()
                 + "-events"
-                + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                + format.getFileExtension());
     zos.putNextEntry(eventsEntry);
     // Obtain start timestamp of each level, so it can be used later
     Map<Long, Long> levelStartTimestampMapping = new LinkedHashMap<>();
 
     for (AbstractAuditPOJO event : events) {
-      zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
-      zos.write(System.lineSeparator().getBytes());
+      zos.write(format.writeRecord(event));
       if (event.getType().equals(LevelStarted.class.getCanonicalName())) {
         levelStartTimestampMapping.put(event.getLevel(), event.getTimestamp());
       }
@@ -579,17 +584,19 @@ public class ExportImportFacade {
   }
 
   /**
-   * Writes the run's audit events into one entry per level, one event per line, opening a fresh
+   * Writes the run's audit events into one entry per level, one record per event, opening a fresh
    * entry wherever the level order changes from one event to the next. Entries are numbered one
    * past the level order they hold.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param run the run whose events are written, used to name the entries
    * @param events the run's events, split in the order given
    * @throws IOException when an entry cannot be written
    */
   private void writeEventsByLevels(
-      ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
+      ZipOutputStream zos, ExportFormat format, TrainingRun run, List<AbstractAuditPOJO> events)
+      throws IOException {
     long currentLevelOrder = events.get(0).getLevelOrder();
     ZipEntry eventsDetailEntry =
         new ZipEntry(
@@ -600,7 +607,7 @@ public class ExportImportFacade {
                 + "/level"
                 + (currentLevelOrder + 1)
                 + "-events"
-                + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                + format.getFileExtension());
     zos.putNextEntry(eventsDetailEntry);
     for (AbstractAuditPOJO event : events) {
       if (event.getLevelOrder() != currentLevelOrder) {
@@ -614,21 +621,21 @@ public class ExportImportFacade {
                     + "/level"
                     + (currentLevelOrder + 1)
                     + "-events"
-                    + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                    + format.getFileExtension());
         zos.putNextEntry(eventsDetailEntry);
       }
-      zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
-      zos.write(System.lineSeparator().getBytes());
+      zos.write(format.writeRecord(event));
     }
   }
 
   /**
-   * Writes one entry per assessment holding the run's answers to it, one answer per line. An answer
-   * to an extended matching question is rewritten into the readable text of the statement and the
-   * option it pairs before being written. Every answer is also folded into the tally kept for its
-   * question, which carries over between runs of the same assessment.
+   * Writes one entry per assessment holding the run's answers to it, one record per answer. An
+   * answer to an extended matching question is rewritten into the readable text of the statement
+   * and the option it pairs before being written. Every answer is also folded into the tally kept
+   * for its question, which carries over between runs of the same assessment.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param run the run whose answers are written, used to name the entries
    * @param assessmentsDetails the tallies to fold into, keyed by assessment level id, then by
    *     question id, extended in place
@@ -637,6 +644,7 @@ public class ExportImportFacade {
    */
   private void writeQuestionsAnswers(
       ZipOutputStream zos,
+      ExportFormat format,
       TrainingRun run,
       Map<Long, Map<Long, QuestionAnswersDetailsDTO>> assessmentsDetails)
       throws IOException {
@@ -653,7 +661,7 @@ public class ExportImportFacade {
                   + "/assessment-id-"
                   + questionsAnswersByAssessment.getKey()
                   + "-answers"
-                  + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                  + format.getFileExtension());
       zos.putNextEntry(eventsDetailEntry);
 
       Map<Long, QuestionAnswersDetailsDTO> questionAnswersDetails =
@@ -676,11 +684,8 @@ public class ExportImportFacade {
         }
         questionAnswersDetails.get(question.getId()).addAnswers(questionAnswer.getAnswers());
         zos.write(
-            objectMapper
-                .writer(new MinimalPrettyPrinter())
-                .writeValueAsBytes(
-                    new QuestionAnswerArchiveDTO(question.getText(), questionAnswer.getAnswers())));
-        zos.write(System.lineSeparator().getBytes());
+            format.writeRecord(
+                new QuestionAnswerArchiveDTO(question.getText(), questionAnswer.getAnswers())));
       }
       assessmentsDetails.putIfAbsent(questionsAnswersByAssessment.getKey(), questionAnswersDetails);
     }
@@ -703,28 +708,27 @@ public class ExportImportFacade {
   }
 
   /**
-   * Writes the given console commands into a single entry named after the sandbox, one command per
-   * line.
+   * Writes the given console commands into a single entry named after the sandbox, one record per
+   * command.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param sandboxId the sandbox the commands belong to, used to name the entry
    * @param consoleCommands the commands to write, in the order given
    * @throws IOException when the entry cannot be written
    */
   private void writeConsoleCommands(
-      ZipOutputStream zos, String sandboxId, List<CommandEventDTO> consoleCommands)
+      ZipOutputStream zos,
+      ExportFormat format,
+      String sandboxId,
+      List<CommandEventDTO> consoleCommands)
       throws IOException {
     ZipEntry consoleCommandsEntry =
         new ZipEntry(
-            LOGS_FOLDER
-                + "/sandbox-"
-                + sandboxId
-                + "-useractions"
-                + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            LOGS_FOLDER + "/sandbox-" + sandboxId + "-useractions" + format.getFileExtension());
     zos.putNextEntry(consoleCommandsEntry);
     for (CommandEventDTO command : consoleCommands) {
-      zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
-      zos.write(System.lineSeparator().getBytes());
+      zos.write(format.writeRecord(command));
     }
   }
 
@@ -734,6 +738,7 @@ public class ExportImportFacade {
    * end of time. Entries are numbered by the level's position in the mapping rather than by its id.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param instance the instance the run belongs to
    * @param run the run whose sandbox is queried
    * @param sandboxId the sandbox whose commands are written, used to name the entries
@@ -743,6 +748,7 @@ public class ExportImportFacade {
    */
   private void writeConsoleCommandsDetails(
       ZipOutputStream zos,
+      ExportFormat format,
       TrainingInstance instance,
       TrainingRun run,
       String sandboxId,
@@ -769,11 +775,10 @@ public class ExportImportFacade {
                   + "/level"
                   + (i + 1)
                   + "-useractions"
-                  + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                  + format.getFileExtension());
       zos.putNextEntry(consoleCommandsEntryDetails);
       for (CommandEventDTO command : consoleCommandsByLevel) {
-        zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
-        zos.write(System.lineSeparator().getBytes());
+        zos.write(format.writeRecord(command));
       }
     }
   }
@@ -797,16 +802,18 @@ public class ExportImportFacade {
   }
 
   /**
-   * Writes the training definition the instance runs, its levels included, as a single JSON entry
-   * named after the definition's id.
+   * Writes the training definition the instance runs, its levels included, as a single entry named
+   * after the definition's id.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param trainingInstance the instance whose definition is written
    * @throws IOException when the entry cannot be written
    * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException when the
    *     definition the instance names no longer exists
    */
-  private void writeTrainingDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance)
+  private void writeTrainingDefinitionInfo(
+      ZipOutputStream zos, ExportFormat format, TrainingInstance trainingInstance)
       throws IOException {
     Long trainingDefinitionId = trainingInstance.getTrainingDefinition().getId();
     ExportTrainingDefinitionAndLevelsDTO tD =
@@ -817,32 +824,32 @@ public class ExportImportFacade {
           new ZipEntry(
               "training_definition-id"
                   + trainingInstance.getTrainingDefinition().getId()
-                  + AbstractFileExtensions.JSON_FILE_EXTENSION);
+                  + format.getFileExtension());
       zos.putNextEntry(definitionEntry);
-      zos.write(objectMapper.writeValueAsBytes(tD));
+      zos.write(format.writeDocument(tD));
     }
   }
 
   /**
-   * Writes the sandbox definition behind the instance's pool as a single JSON entry named after
-   * that definition's id. Nothing is written when the instance has no pool assigned.
+   * Writes the sandbox definition behind the instance's pool as a single entry named after that
+   * definition's id. Nothing is written when the instance has no pool assigned.
    *
    * @param zos the archive being assembled
+   * @param format the format the entries are written in
    * @param trainingInstance the instance whose pool is resolved
    * @throws IOException when the entry cannot be written
    */
-  private void writeSandboxDefinitionInfo(ZipOutputStream zos, TrainingInstance trainingInstance)
+  private void writeSandboxDefinitionInfo(
+      ZipOutputStream zos, ExportFormat format, TrainingInstance trainingInstance)
       throws IOException {
     if (trainingInstance.getPoolId() != null) {
       SandboxDefinitionInfo sandboxDefinitionInfo =
           sandboxApiService.getSandboxDefinitionId(trainingInstance.getPoolId());
       ZipEntry sandboxDefinitionEntry =
           new ZipEntry(
-              "sandbox_definition-id"
-                  + sandboxDefinitionInfo.getId()
-                  + AbstractFileExtensions.JSON_FILE_EXTENSION);
+              "sandbox_definition-id" + sandboxDefinitionInfo.getId() + format.getFileExtension());
       zos.putNextEntry(sandboxDefinitionEntry);
-      zos.write(objectMapper.writeValueAsBytes(sandboxDefinitionInfo));
+      zos.write(format.writeDocument(sandboxDefinitionInfo));
     }
   }
 

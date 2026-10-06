@@ -2,17 +2,6 @@ package cz.cyberrange.platform.training.rest.utils.error;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonLocation;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +15,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.TokenStreamLocation;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategy;
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.InvalidTypeIdException;
+import tools.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.databind.introspect.ClassIntrospector;
 
 /**
  * Turns a failure to read a hand-written file submitted for import into a description addressed to
@@ -57,7 +60,7 @@ public class ImportedFileErrorDescriber {
   /**
    * Describes why the submitted file could not be turned into an object at all, covering an
    * unrecognized field, an unsupported level type, a value that does not fit its field, and text
-   * that is not JSON.
+   * that is neither JSON nor YAML.
    *
    * @param exception the failure raised while reading the request body
    * @return the description, its statements separated by line breaks
@@ -76,7 +79,7 @@ public class ImportedFileErrorDescriber {
     if (cause instanceof MismatchedInputException mismatchedInput) {
       return describeMalformedField(mismatchedInput);
     }
-    if (cause instanceof JsonParseException brokenSyntax) {
+    if (cause instanceof StreamReadException brokenSyntax) {
       return describeBrokenSyntax(brokenSyntax);
     }
     return joinLines(HEADLINE, exception.getMostSpecificCause().getMessage());
@@ -150,13 +153,13 @@ public class ImportedFileErrorDescriber {
             : describeField(exception.getPath()) + " must contain " + requiredShape);
   }
 
-  private String describeBrokenSyntax(JsonParseException exception) {
+  private String describeBrokenSyntax(StreamReadException exception) {
     return joinLines(
-        HEADLINE, "The file is not well-formed JSON", describeSyntaxFailure(exception));
+        HEADLINE, "The file is not well-formed JSON or YAML", describeSyntaxFailure(exception));
   }
 
-  private String describeSyntaxFailure(JsonParseException exception) {
-    JsonLocation location = exception.getLocation();
+  private String describeSyntaxFailure(StreamReadException exception) {
+    TokenStreamLocation location = exception.getLocation();
     String position =
         location == null || location.getLineNr() < 1
             ? "Syntax error"
@@ -186,7 +189,7 @@ public class ImportedFileErrorDescriber {
     return null;
   }
 
-  private String describeField(List<JsonMappingException.Reference> path) {
+  private String describeField(List<JacksonException.Reference> path) {
     String renderedPath = renderPath(path);
     return renderedPath.isEmpty() ? "The submitted content" : "Field \"" + renderedPath + "\"";
   }
@@ -214,10 +217,11 @@ public class ImportedFileErrorDescriber {
   }
 
   private String renderFileFieldName(String propertyName) {
-    return objectMapper.getPropertyNamingStrategy()
-            instanceof PropertyNamingStrategies.NamingBase namingStrategy
-        ? namingStrategy.translate(propertyName)
-        : propertyName;
+    DeserializationConfig config = objectMapper.deserializationConfig();
+    PropertyNamingStrategy namingStrategy = config.getPropertyNamingStrategy();
+    return namingStrategy == null
+        ? propertyName
+        : namingStrategy.nameForField(config, null, propertyName);
   }
 
   private String describeAcceptedFields(Class<?> containerClass) {
@@ -252,32 +256,34 @@ public class ImportedFileErrorDescriber {
   }
 
   private List<BeanPropertyDefinition> propertiesOf(Class<?> containerClass) {
+    JavaType containerType = objectMapper.constructType(containerClass);
+    ClassIntrospector introspector =
+        objectMapper.deserializationConfig().classIntrospectorInstance();
     BeanDescription description =
-        objectMapper
-            .getDeserializationConfig()
-            .introspect(objectMapper.constructType(containerClass));
+        introspector.introspectForDeserialization(
+            containerType, introspector.introspectClassAnnotations(containerType));
     return description.findProperties();
   }
 
   private String renderContainerPath(
-      List<JsonMappingException.Reference> path, String trailingFieldName) {
+      List<JacksonException.Reference> path, String trailingFieldName) {
     int end = path.size();
-    while (end > 0 && Objects.equals(path.get(end - 1).getFieldName(), trailingFieldName)) {
+    while (end > 0 && Objects.equals(path.get(end - 1).getPropertyName(), trailingFieldName)) {
       end--;
     }
     return renderPath(path.subList(0, end));
   }
 
-  private String renderPath(List<JsonMappingException.Reference> path) {
+  private String renderPath(List<JacksonException.Reference> path) {
     StringBuilder rendered = new StringBuilder();
-    for (JsonMappingException.Reference reference : path) {
-      if (reference.getFieldName() == null) {
+    for (JacksonException.Reference reference : path) {
+      if (reference.getPropertyName() == null) {
         rendered.append('[').append(reference.getIndex()).append(']');
       } else {
         if (rendered.length() > 0) {
           rendered.append('.');
         }
-        rendered.append(reference.getFieldName());
+        rendered.append(reference.getPropertyName());
       }
     }
     return rendered.toString();

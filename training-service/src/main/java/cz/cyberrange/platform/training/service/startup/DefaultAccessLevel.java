@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.service.startup;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
 /**
  * The title, both content variants and the passkey a newly created access level starts out with.

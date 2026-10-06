@@ -52,11 +52,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(
     classes = {
@@ -80,9 +80,9 @@ public class TrainingDefinitionFacadeTest {
   @Autowired private LevelMapperImpl levelMapper;
   @Autowired private HintMapperImpl hintMapper;
 
-  @MockBean private TrainingDefinitionService trainingDefinitionService;
-  @MockBean private SecurityService securityService;
-  @MockBean private UserService userService;
+  @MockitoBean private TrainingDefinitionService trainingDefinitionService;
+  @MockitoBean private SecurityService securityService;
+  @MockitoBean private UserService userService;
 
   private TrainingDefinition trainingDefinition1, trainingDefinition2;
   private TrainingDefinitionUpdateDTO trainingDefinitionUpdate;

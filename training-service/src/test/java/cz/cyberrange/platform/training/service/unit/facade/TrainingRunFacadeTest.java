@@ -36,10 +36,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(
     classes = {
@@ -64,10 +64,10 @@ public class TrainingRunFacadeTest {
 
   private TrainingRunFacade trainingRunFacade;
 
-  @MockBean private TrainingRunService trainingRunService;
-  @MockBean private SecurityService securityService;
-  @MockBean private UserService userService;
-  @MockBean private AnswersStorageApiService answersStorageApiService;
+  @MockitoBean private TrainingRunService trainingRunService;
+  @MockitoBean private SecurityService securityService;
+  @MockitoBean private UserService userService;
+  @MockitoBean private AnswersStorageApiService answersStorageApiService;
 
   private TrainingRun trainingRun1, trainingRun2;
   private Hint hint;

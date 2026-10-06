@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model;
 
-import java.util.Objects;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -92,19 +91,6 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "training_definition_id")
   private TrainingDefinition trainingDefinition;
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof AbstractLevel)) return false;
-    AbstractLevel that = (AbstractLevel) o;
-    return getMaxScore() == that.getMaxScore() && Objects.equals(getId(), that.getId());
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(getId(), getMaxScore());
-  }
 
   @Override
   public String toString() {

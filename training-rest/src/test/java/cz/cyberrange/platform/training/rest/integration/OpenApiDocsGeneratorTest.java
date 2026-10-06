@@ -6,6 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import cz.cyberrange.platform.training.rest.config.OpenApiConfiguration;
 import cz.cyberrange.platform.training.rest.config.WebConfigRestTraining;
 import cz.cyberrange.platform.training.service.config.ObjectMappersConfiguration;
+import cz.cyberrange.platform.training.service.export.ExportFormats;
+import cz.cyberrange.platform.training.service.export.JsonExportFormat;
+import cz.cyberrange.platform.training.service.export.YamlExportFormat;
 import cz.cyberrange.platform.training.service.facade.ExportImportFacade;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
@@ -23,12 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -43,13 +46,13 @@ class OpenApiDocsGeneratorTest {
 
   private static final String FILE_NAME = "training-rest-swagger-docs.yaml";
 
-  @MockBean private CheatingDetectionFacade cheatingDetectionFacade;
-  @MockBean private DetectionEventFacade detectionEventFacade;
-  @MockBean private CheatingDetectionExportFacade cheatingDetectionExportFacade;
-  @MockBean private ExportImportFacade exportImportFacade;
-  @MockBean private TrainingDefinitionFacade trainingDefinitionFacade;
-  @MockBean private TrainingInstanceFacade trainingInstanceFacade;
-  @MockBean private TrainingRunFacade trainingRunFacade;
+  @MockitoBean private CheatingDetectionFacade cheatingDetectionFacade;
+  @MockitoBean private DetectionEventFacade detectionEventFacade;
+  @MockitoBean private CheatingDetectionExportFacade cheatingDetectionExportFacade;
+  @MockitoBean private ExportImportFacade exportImportFacade;
+  @MockitoBean private TrainingDefinitionFacade trainingDefinitionFacade;
+  @MockitoBean private TrainingInstanceFacade trainingInstanceFacade;
+  @MockitoBean private TrainingRunFacade trainingRunFacade;
 
   @Autowired private MockMvc mvc;
 
@@ -75,6 +78,9 @@ class OpenApiDocsGeneratorTest {
   @EnableSpringDataWebSupport
   @Import({
     ObjectMappersConfiguration.class,
+    JsonExportFormat.class,
+    YamlExportFormat.class,
+    ExportFormats.class,
     WebConfigRestTraining.class,
     OpenApiConfiguration.class
   })

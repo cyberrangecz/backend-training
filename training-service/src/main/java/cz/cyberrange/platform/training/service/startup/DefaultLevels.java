@@ -1,6 +1,6 @@
 package cz.cyberrange.platform.training.service.startup;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * The whole of the configured default level content: one starting shape per level kind that has

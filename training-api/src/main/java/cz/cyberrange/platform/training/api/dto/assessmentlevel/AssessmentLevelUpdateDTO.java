@@ -6,10 +6,10 @@ import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.Question
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;

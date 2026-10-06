@@ -1,8 +1,8 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

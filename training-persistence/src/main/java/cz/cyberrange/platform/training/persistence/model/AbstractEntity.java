@@ -1,11 +1,11 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
 import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,5 +39,16 @@ public class AbstractEntity<PK extends Serializable> implements Serializable {
       return id != null && id.equals(other.id);
     }
     return false;
+  }
+
+  /**
+   * Returns one hash shared by every entity, so the hash never changes when the database assigns
+   * the identity column and stays equal for entities and their proxies that compare equal.
+   *
+   * @return the hash shared by every entity
+   */
+  @Override
+  public int hashCode() {
+    return AbstractEntity.class.hashCode();
   }
 }

@@ -8,9 +8,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
@@ -28,26 +25,26 @@ import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.rest.controllers.ExportImportRestController;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import javax.transaction.Transactional;
-import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -56,6 +53,9 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.cfg.EnumFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
     classes = {
@@ -68,7 +68,7 @@ import reactor.core.publisher.Mono;
 public class ExportImportIT {
 
   @Autowired private TestDataFactory testDataFactory;
-  @Autowired private ObjectMapper mapper;
+  @Autowired private JsonMapper mapper;
   @Autowired private ExportImportRestController exportImportRestController;
   @Autowired private TrainingDefinitionRepository trainingDefinitionRepository;
   @Autowired private InfoLevelRepository infoLevelRepository;
@@ -93,9 +93,11 @@ public class ExportImportIT {
 
   @BeforeEach
   public void init() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
-    objectMapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
+    JsonMapper objectMapper =
+        JsonMapper.builderWithJackson2Defaults()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .enable(EnumFeature.READ_ENUMS_USING_TO_STRING)
+            .build();
 
     this.mvc =
         MockMvcBuilders.standaloneSetup(exportImportRestController)
@@ -105,8 +107,7 @@ public class ExportImportIT {
                     new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
                     Optional.empty()))
             .setMessageConverters(
-                new MappingJackson2HttpMessageConverter(mapper),
-                new ByteArrayHttpMessageConverter())
+                new JacksonJsonHttpMessageConverter(mapper), new ByteArrayHttpMessageConverter())
             .setControllerAdvice(new CustomRestExceptionHandlerTraining())
             .build();
 
@@ -182,7 +183,7 @@ public class ExportImportIT {
         mvc.perform(
                 MockMvcRequestBuilders.get(
                     "/exports/training-definitions/{id}", trainingDefinition.getId()))
-            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse();

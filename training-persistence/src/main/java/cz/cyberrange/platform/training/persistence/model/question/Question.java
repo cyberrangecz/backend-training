@@ -2,11 +2,11 @@ package cz.cyberrange.platform.training.persistence.model.question;
 
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.enums.QuestionType;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 

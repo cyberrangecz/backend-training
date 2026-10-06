@@ -13,10 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import cz.cyberrange.platform.commons.security.enums.OIDCItems;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
@@ -65,6 +61,8 @@ import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandl
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapperImpl;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,9 +73,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,16 +83,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -113,6 +109,9 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
     classes = {
@@ -144,7 +143,7 @@ public class TrainingDefinitionsIT {
 
   @Autowired
   @Qualifier("objMapperRESTApi")
-  private ObjectMapper mapper;
+  private JsonMapper mapper;
 
   @Autowired
   @Qualifier("userManagementExchangeFunction")
@@ -187,7 +186,7 @@ public class TrainingDefinitionsIT {
                 new QuerydslPredicateArgumentResolver(
                     new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
                     Optional.empty()))
-            .setMessageConverters(new MappingJackson2HttpMessageConverter(mapper))
+            .setMessageConverters(new JacksonJsonHttpMessageConverter(mapper))
             .setControllerAdvice(new CustomRestExceptionHandlerTraining())
             .build();
 
@@ -248,7 +247,7 @@ public class TrainingDefinitionsIT {
     mitreTechniqueDTO1 = testDataFactory.getMitreTechniqueDTO1();
     mitreTechniqueDTO2 = testDataFactory.getMitreTechniqueDTO2();
 
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper = mapper.rebuild().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
   }
 
   private void createAssessmentLevelWithQuestions() {
@@ -1708,7 +1707,6 @@ public class TrainingDefinitionsIT {
 
   @Test
   public void createAssessmentLevel() throws Exception {
-    mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
     TrainingDefinition trainingDefinition =
         trainingDefinitionRepository.save(unreleasedTrainingDefinition);
     MockHttpServletResponse response =

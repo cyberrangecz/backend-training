@@ -2,17 +2,17 @@ package cz.cyberrange.platform.training.opensearch.events.training.logging;
 
 import static org.springframework.util.Assert.notNull;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.cyberrange.platform.training.opensearch.events.training.logging.exceptions.OpenSearchSerializeException;
 import cz.cyberrange.platform.training.opensearch.events.training.model.AbstractAuditPOJO;
 import lombok.SneakyThrows;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Emits training run audit events. An event is stamped with a time and its own type name, then
@@ -60,7 +60,7 @@ public class AuditService {
       pojoClass.setType(AbstractAuditPOJO.resolveEventType(pojoClass.getClass()));
 
       logger.info(objectMapper.writeValueAsString(pojoClass));
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       logger.error("Failed to serialize audit log entry to JSON", e);
       throw new OpenSearchSerializeException("Failed to serialize audit log entry to JSON", e);
     }

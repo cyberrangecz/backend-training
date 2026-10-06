@@ -1,10 +1,8 @@
 package cz.cyberrange.platform.training.service.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.cyberrange.platform.training.api.exceptions.CustomWebClientException;
 import cz.cyberrange.platform.training.api.exceptions.errors.JavaApiError;
 import cz.cyberrange.platform.training.api.exceptions.errors.PythonApiError;
-import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +18,8 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Supplies one HTTP client per external service this service talks to. Each client is pointed at
@@ -180,7 +180,7 @@ public class WebClientConfig {
     }
     try {
       return objectMapper.readValue(errorBody, PythonApiError.class);
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       return PythonApiError.of("Could not obtain error detail. Error body is: " + errorBody);
     }
   }
@@ -225,7 +225,7 @@ public class WebClientConfig {
     }
     try {
       return objectMapper.readValue(errorBody, JavaApiError.class);
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       return JavaApiError.of("Could not obtain error message. Error body is: " + errorBody);
     }
   }

@@ -2,7 +2,7 @@ package cz.cyberrange.platform.training.api.dto.technique;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 /**

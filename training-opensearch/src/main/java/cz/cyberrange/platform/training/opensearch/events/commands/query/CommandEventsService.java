@@ -1,7 +1,5 @@
 package cz.cyberrange.platform.training.opensearch.events.commands.query;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import cz.cyberrange.platform.training.opensearch.events.commands.model.TrainingCommand;
 import cz.cyberrange.platform.training.opensearch.events.training.logging.exceptions.OpenSearchQueryException;
 import java.io.IOException;
@@ -17,6 +15,8 @@ import org.opensearch.client.opensearch.core.search.Hit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Queries and deletes console command events stored in OpenSearch, scoped by sandbox id or pool id

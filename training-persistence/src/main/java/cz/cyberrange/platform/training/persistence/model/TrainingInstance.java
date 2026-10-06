@@ -1,12 +1,12 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import jakarta.persistence.*;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
 
 /**
  * Class represents Training instance. Training instances can be created based on definitions.

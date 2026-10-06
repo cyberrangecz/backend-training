@@ -1,11 +1,10 @@
 package cz.cyberrange.platform.training.api.converters;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
 /** Serializes a {@link LocalDateTime} to its ISO-8601 date-time string representation */
 public class LocalDateTimeSerializer extends StdSerializer<LocalDateTime> {
@@ -17,8 +16,7 @@ public class LocalDateTimeSerializer extends StdSerializer<LocalDateTime> {
   }
 
   @Override
-  public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider sp)
-      throws IOException {
+  public void serialize(LocalDateTime value, JsonGenerator gen, SerializationContext sp) {
     gen.writeString(value.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
   }
 }

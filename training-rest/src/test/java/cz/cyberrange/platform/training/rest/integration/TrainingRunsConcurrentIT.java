@@ -35,12 +35,12 @@ import cz.cyberrange.platform.training.rest.controllers.TrainingRunsRestControll
 import cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
 import cz.cyberrange.platform.training.service.services.AuditEventsService;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.transaction.Transactional;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,9 +48,8 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
@@ -60,6 +59,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.TestContextManager;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.reactive.function.client.ClientRequest;
@@ -101,7 +101,7 @@ public class TrainingRunsConcurrentIT {
   @Qualifier("userManagementExchangeFunction")
   private ExchangeFunction userManagementExchangeFunction;
 
-  @MockBean private AuditEventsService auditEventsService;
+  @MockitoBean private AuditEventsService auditEventsService;
 
   private TrainingLevel trainingLevel;
   private AssessmentLevel assessmentLevel;
@@ -218,7 +218,8 @@ public class TrainingRunsConcurrentIT {
     ClientResponse clientResponse =
         ClientResponse.create(HttpStatus.OK)
             .body(ObjectConverter.convertObjectToJsonBytes(body))
-            .header(org.apache.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(
+                org.springframework.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
     return Mono.just(clientResponse);
   }

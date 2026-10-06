@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.rest.utils.error;
 
 import cz.cyberrange.platform.training.rest.controllers.ExportImportRestController;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;

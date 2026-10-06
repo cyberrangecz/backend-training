@@ -11,8 +11,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import cz.cyberrange.platform.commons.security.enums.OIDCItems;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
@@ -46,6 +44,7 @@ import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapperImpl;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -56,16 +55,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import javax.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
 import org.springframework.data.querydsl.binding.QuerydslBindingsFactory;
@@ -73,13 +70,14 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -87,6 +85,9 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
     classes = {
@@ -110,11 +111,11 @@ public class TrainingInstancesIT {
   @Autowired private UserRefRepository userRefRepository;
   @Autowired private InfoLevelRepository infoLevelRepository;
 
-  @MockBean private TrainingEventsService trainingEventsService;
+  @MockitoBean private TrainingEventsService trainingEventsService;
 
   @Autowired
   @Qualifier("objMapperRESTApi")
-  private ObjectMapper mapper;
+  private JsonMapper mapper;
 
   @Autowired
   @Qualifier("userManagementExchangeFunction")
@@ -143,7 +144,7 @@ public class TrainingInstancesIT {
                 new QuerydslPredicateArgumentResolver(
                     new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
                     Optional.empty()))
-            .setMessageConverters(new MappingJackson2HttpMessageConverter(mapper))
+            .setMessageConverters(new JacksonJsonHttpMessageConverter(mapper))
             .setControllerAdvice(new CustomRestExceptionHandlerTraining())
             .build();
 
@@ -697,7 +698,8 @@ public class TrainingInstancesIT {
     ClientResponse clientResponse =
         ClientResponse.create(HttpStatus.OK)
             .body(convertObjectToJsonBytes(body))
-            .header(org.apache.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(
+                org.springframework.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
     return Mono.just(clientResponse);
   }

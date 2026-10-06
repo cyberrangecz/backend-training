@@ -1,10 +1,10 @@
 package cz.cyberrange.platform.training.api.dto.traininginstance;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Encapsulates information about Training Instance */
 @Data

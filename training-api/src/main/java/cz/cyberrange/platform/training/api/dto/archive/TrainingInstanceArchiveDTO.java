@@ -1,6 +1,5 @@
 package cz.cyberrange.platform.training.api.dto.archive;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
@@ -8,6 +7,7 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Snapshot of one finished training instance, written as a single JSON file into its archive */
 @Data
