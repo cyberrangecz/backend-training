@@ -1,6 +1,5 @@
 package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -8,6 +7,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Encapsulates information about Training Definition including its authoring and lifecycle data */
 @Data

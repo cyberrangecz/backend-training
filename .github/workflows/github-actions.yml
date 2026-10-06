@@ -23,6 +23,7 @@ jobs:
       OSS_INDEX_USER: ${{ secrets.OSS_INDEX_USER }}
       OSS_INDEX_TOKEN: ${{ secrets.OSS_INDEX_TOKEN }}
     with:
+      JAVA_VERSION: "25"
       MAVEN_CLI_OPTS: "-s etc/ci_settings.xml"
       IMAGE_NAME: "training"
       VERSION_PATH: "etc/ci_settings.xml"

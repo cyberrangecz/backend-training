@@ -1,13 +1,15 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /** Class represents Training definition. Training instances can be created based on definitions. */
 @Entity
@@ -65,9 +67,11 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   private String description;
 
   @Column(name = "prerequisites", nullable = true)
+  @JdbcTypeCode(SqlTypes.VARBINARY)
   private String[] prerequisites;
 
   @Column(name = "outcomes", nullable = true)
+  @JdbcTypeCode(SqlTypes.VARBINARY)
   private String[] outcomes;
 
   @Column(name = "state", length = 128, nullable = false)
@@ -336,7 +340,8 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(description, outcomes, prerequisites, state, title);
+    return Objects.hash(
+        description, Arrays.hashCode(outcomes), Arrays.hashCode(prerequisites), state, title);
   }
 
   @Override

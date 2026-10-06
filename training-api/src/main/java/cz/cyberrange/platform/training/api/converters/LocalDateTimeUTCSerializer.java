@@ -1,11 +1,10 @@
 package cz.cyberrange.platform.training.api.converters;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
 /**
  * Writes a {@link LocalDateTime} as a JSON string in ISO-8601 instant form with a trailing {@code
@@ -19,8 +18,7 @@ public class LocalDateTimeUTCSerializer extends StdSerializer<LocalDateTime> {
   }
 
   @Override
-  public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider provider)
-      throws IOException {
+  public void serialize(LocalDateTime value, JsonGenerator gen, SerializationContext provider) {
     gen.writeString(value.toInstant(ZoneOffset.UTC).toString());
   }
 }

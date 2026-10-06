@@ -103,7 +103,7 @@ public class TrainingScoreAggregationService {
 
     Map<Long, RunEventAggregate> aggregates = new HashMap<>();
     for (LongTermsBucket runBucket : runs.lterms().buckets().array()) {
-      aggregates.put(Long.parseLong(runBucket.key()), toAggregate(runBucket));
+      aggregates.put(runBucket.key().signed(), toAggregate(runBucket));
     }
     return aggregates;
   }
@@ -138,8 +138,7 @@ public class TrainingScoreAggregationService {
       latestEventOf(levelBucket)
           .ifPresent(
               event ->
-                  scoreByLevelId.put(
-                      Long.parseLong(levelBucket.key()), event.getActualScoreInLevel()));
+                  scoreByLevelId.put(levelBucket.key().signed(), event.getActualScoreInLevel()));
     }
     return scoreByLevelId;
   }
@@ -159,7 +158,7 @@ public class TrainingScoreAggregationService {
       Map<Long, Long> countByLevelId = new HashMap<>();
       for (LongTermsBucket levelBucket :
           typeBucket.aggregations().get(BY_LEVEL_AGGREGATION).lterms().buckets().array()) {
-        countByLevelId.put(Long.parseLong(levelBucket.key()), levelBucket.docCount());
+        countByLevelId.put(levelBucket.key().signed(), levelBucket.docCount());
       }
       countByEventType.put(typeBucket.key(), countByLevelId);
     }

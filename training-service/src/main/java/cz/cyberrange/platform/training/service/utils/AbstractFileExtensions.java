@@ -7,6 +7,8 @@ package cz.cyberrange.platform.training.service.utils;
 public abstract class AbstractFileExtensions {
   public static final String JSON_FILE_EXTENSION = ".json";
 
+  public static final String YAML_FILE_EXTENSION = ".yaml";
+
   public static final String ZIP_FILE_EXTENSION = ".zip";
 
   public static final String CSV_FILE_EXTENSION = ".csv";

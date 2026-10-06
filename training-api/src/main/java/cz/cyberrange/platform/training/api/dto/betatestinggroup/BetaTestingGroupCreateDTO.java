@@ -1,8 +1,8 @@
 package cz.cyberrange.platform.training.api.dto.betatestinggroup;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.util.Set;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 /**

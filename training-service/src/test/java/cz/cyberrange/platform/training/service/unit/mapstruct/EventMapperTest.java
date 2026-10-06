@@ -501,8 +501,7 @@ class EventMapperTest {
     @DisplayName("should convert epoch millis to LocalDateTime")
     void shouldConvertEpochMillisToLocalDateTime() {
       long epoch = 1609459200000L;
-      LocalDateTime expected =
-          LocalDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
+      LocalDateTime expected = LocalDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
 
       LocalDateTime result = sut.mapTimestamp(epoch);
 

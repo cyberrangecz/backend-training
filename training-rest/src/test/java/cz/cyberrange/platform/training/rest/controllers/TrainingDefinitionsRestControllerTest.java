@@ -8,9 +8,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
@@ -65,10 +62,13 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
     classes = {
@@ -117,8 +117,10 @@ public class TrainingDefinitionsRestControllerTest {
 
   @BeforeEach
   public void init() {
-    ObjectMapper snakeCaseMapper = new ObjectMapper();
-    snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+    JsonMapper snakeCaseMapper =
+        JsonMapper.builderWithJackson2Defaults()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build();
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingDefinitionsRestController =
@@ -130,7 +132,7 @@ public class TrainingDefinitionsRestControllerTest {
                 new QuerydslPredicateArgumentResolver(
                     new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
                     Optional.empty()))
-            .setMessageConverters(new MappingJackson2HttpMessageConverter(snakeCaseMapper))
+            .setMessageConverters(new JacksonJsonHttpMessageConverter(snakeCaseMapper))
             .setControllerAdvice(new CustomRestExceptionHandlerTraining())
             .build();
 
@@ -210,8 +212,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         trainingDefinitionDTO1,
         convertJsonBytesToObject(
-            result.getContentAsString(),
-            TrainingDefinitionWithLevelsDTO.class));
+            result.getContentAsString(), TrainingDefinitionWithLevelsDTO.class));
   }
 
   @Test
@@ -288,8 +289,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         trainingDefinitionDTO1,
         convertJsonBytesToObject(
-            result.getContentAsString(),
-            TrainingDefinitionWithLevelsDTO.class));
+            result.getContentAsString(), TrainingDefinitionWithLevelsDTO.class));
     then(trainingDefinitionFacade).should().create(any(TrainingDefinitionCreateDTO.class));
   }
 
@@ -667,8 +667,7 @@ public class TrainingDefinitionsRestControllerTest {
             .getResponse();
     assertEquals(
         abstractLevelDTO,
-        convertJsonBytesToObject(
-            result.getContentAsString(), TrainingLevelDTO.class));
+        convertJsonBytesToObject(result.getContentAsString(), TrainingLevelDTO.class));
   }
 
   @Test
@@ -709,8 +708,7 @@ public class TrainingDefinitionsRestControllerTest {
     then(trainingDefinitionFacade).should(never()).createInfoLevel(trainingDefinitionDTO1.getId());
     assertEquals(
         basicTrainingLevelInfoDTO,
-        convertJsonBytesToObject(
-            result.getContentAsString(), BasicLevelInfoDTO.class));
+        convertJsonBytesToObject(result.getContentAsString(), BasicLevelInfoDTO.class));
   }
 
   @Test
@@ -753,8 +751,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         designers,
         convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
 
@@ -800,8 +797,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         organizers,
         convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
 
@@ -847,8 +843,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         authors,
         convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
 

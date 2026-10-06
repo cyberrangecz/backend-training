@@ -1,10 +1,9 @@
 package cz.cyberrange.platform.training.api.converters;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import java.io.IOException;
 import java.time.LocalTime;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * Deserializes a JSON string into a {@link LocalTime} using {@link LocalTime#parse(CharSequence)}
@@ -16,7 +15,7 @@ public class LocalTimeDeserializer extends StdDeserializer<LocalTime> {
   }
 
   @Override
-  public LocalTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+  public LocalTime deserialize(JsonParser jp, DeserializationContext ctxt) {
     return LocalTime.parse(jp.readValueAs(String.class));
   }
 }

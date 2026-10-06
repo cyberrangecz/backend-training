@@ -1,19 +1,22 @@
 package cz.cyberrange.platform.training.service.startup;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
+import jakarta.annotation.PostConstruct;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
-import javax.annotation.PostConstruct;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Holds the level content a newly created level starts out with, read once as the component is
@@ -45,10 +48,14 @@ public class DefaultLevelsLoader {
    */
   @PostConstruct
   private void loadDefaultLevels() {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    mapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
-    mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+    ObjectMapper mapper =
+        JsonMapper.builderWithJackson2Defaults()
+            .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+            .enable(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build();
     try {
       InputStream inputStream =
           pathToDefaultLevels.isBlank()
@@ -61,7 +68,7 @@ public class DefaultLevelsLoader {
             "Could not load the default phases. Reason: "
                 + violations.stream().map(ConstraintViolation::getMessage).toList());
       }
-    } catch (IOException e) {
+    } catch (IOException | JacksonException e) {
       throw new InternalServerErrorException("Could not load file with the default levels.", e);
     }
   }

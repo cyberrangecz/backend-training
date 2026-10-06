@@ -1,6 +1,6 @@
 package cz.cyberrange.platform.training.service.startup;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * The title and content a newly created info level starts out with. Both must be present and

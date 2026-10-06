@@ -155,7 +155,7 @@ public class TrainingEventsService {
       boolQueryBuilder.must(mustMatchUser);
     }
 
-    return searchAllPages(instanceIndex, boolQueryBuilder.build()._toQuery());
+    return searchAllPages(instanceIndex, boolQueryBuilder.build().toQuery());
   }
 
   /**
@@ -172,7 +172,7 @@ public class TrainingEventsService {
       page = searchHits(pageRequest(index, query, lastSortValues));
       events.addAll(toEvents(page));
       if (!page.isEmpty()) {
-        lastSortValues = page.get(page.size() - 1).sortVals();
+        lastSortValues = page.get(page.size() - 1).sort();
       }
     } while (page.size() == PAGE_SIZE);
     return events;
@@ -196,7 +196,7 @@ public class TrainingEventsService {
                   sort -> sort.field(field -> field.field(DOCUMENT_ID_FIELD).order(SortOrder.Asc)))
               .query(query);
           if (!searchAfter.isEmpty()) {
-            request.searchAfterVals(searchAfter);
+            request.searchAfter(searchAfter);
           }
           return request;
         });

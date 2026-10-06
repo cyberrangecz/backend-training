@@ -1,12 +1,13 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Class represents Training run. Training runs can be created based on instances. Training runs are
@@ -144,7 +145,7 @@ public class TrainingRun extends AbstractEntity<Long> {
   private UserRef participantRef;
 
   @Lob
-  @Type(type = "org.hibernate.type.TextType")
+  @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
   @Column(name = "assessment_responses", nullable = true)
   private String assessmentResponses;
 

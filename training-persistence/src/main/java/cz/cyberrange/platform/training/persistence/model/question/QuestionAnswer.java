@@ -1,10 +1,10 @@
 package cz.cyberrange.platform.training.persistence.model.question;
 
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.*;
 import lombok.ToString;
 
 /**

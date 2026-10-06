@@ -5,6 +5,7 @@ import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
 import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
 import cz.cyberrange.platform.training.persistence.model.detection.CheatingDetection;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
+import cz.cyberrange.platform.training.service.export.ExportFormat;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.detection.CheatingDetectionMapper;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.detection.CheatingDetectionExportService;
@@ -47,6 +48,7 @@ public class CheatingDetectionExportFacade {
    * solve time, no commands, forbidden commands), plus the trainee participant groups it evaluated.
    *
    * @param cheatingDetectionId the id of the cheating detection to be exported
+   * @param format the format the archive's entries other than the participant groups are written in
    * @return the zip archive as a {@link FileToReturnDTO}
    * @throws InternalServerErrorException if writing an entry to the archive fails
    */
@@ -54,7 +56,8 @@ public class CheatingDetectionExportFacade {
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenCheatingDetection(#cheatingDetectionId)")
   @TransactionalRO
-  public FileToReturnDTO archiveCheatingDetectionResults(Long cheatingDetectionId) {
+  public FileToReturnDTO archiveCheatingDetectionResults(
+      Long cheatingDetectionId, ExportFormat format) {
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream(baos)) {
       CheatingDetection cheatingDetection =
@@ -63,15 +66,19 @@ public class CheatingDetectionExportFacade {
           cheatingDetectionMapper.mapToDTO(cheatingDetection);
 
       cheatingDetectionExportService.writeCheatingDetection(
-          zos, cheatingDetectionId, cheatingDetectionDTO);
-      cheatingDetectionExportService.writeAnswerSimilarityDetectionEvents(zos, cheatingDetectionId);
+          zos, format, cheatingDetectionId, cheatingDetectionDTO);
+      cheatingDetectionExportService.writeAnswerSimilarityDetectionEvents(
+          zos, format, cheatingDetectionId);
       cheatingDetectionExportService.writeLocationSimilarityDetectionEvents(
-          zos, cheatingDetectionId);
-      cheatingDetectionExportService.writeTimeProximityDetectionEvents(zos, cheatingDetectionId);
-      cheatingDetectionExportService.writeMinimalSolveTimeDetectionEvents(zos, cheatingDetectionId);
-      cheatingDetectionExportService.writeNoCommandsDetectionEvents(zos, cheatingDetectionId);
+          zos, format, cheatingDetectionId);
+      cheatingDetectionExportService.writeTimeProximityDetectionEvents(
+          zos, format, cheatingDetectionId);
+      cheatingDetectionExportService.writeMinimalSolveTimeDetectionEvents(
+          zos, format, cheatingDetectionId);
+      cheatingDetectionExportService.writeNoCommandsDetectionEvents(
+          zos, format, cheatingDetectionId);
       cheatingDetectionExportService.writeForbiddenCommandsDetectionEvents(
-          zos, cheatingDetectionId);
+          zos, format, cheatingDetectionId);
       cheatingDetectionExportService.writeTraineeParticipantGroups(zos, cheatingDetectionId);
 
       zos.closeEntry();

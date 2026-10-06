@@ -10,9 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceAssignPoolIdDTO;
@@ -45,7 +42,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -55,10 +51,14 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
     classes = {
@@ -76,7 +76,7 @@ public class TrainingInstancesRestControllerTest {
   @Autowired private TestDataFactory testDataFactory;
   @Autowired TrainingInstanceMapper trainingInstanceMapper;
 
-  @MockBean private TrainingInstanceFacade trainingInstanceFacade;
+  @MockitoBean private TrainingInstanceFacade trainingInstanceFacade;
 
   private MockMvc mockMvc;
   private AutoCloseable closeable;
@@ -97,8 +97,10 @@ public class TrainingInstancesRestControllerTest {
 
   @BeforeEach
   public void init() throws Exception {
-    ObjectMapper snakeCaseMapper = new ObjectMapper();
-    snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+    JsonMapper snakeCaseMapper =
+        JsonMapper.builderWithJackson2Defaults()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build();
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade);
@@ -109,7 +111,7 @@ public class TrainingInstancesRestControllerTest {
                 new QuerydslPredicateArgumentResolver(
                     new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
                     Optional.empty()))
-            .setMessageConverters(new MappingJackson2HttpMessageConverter(snakeCaseMapper))
+            .setMessageConverters(new JacksonJsonHttpMessageConverter(snakeCaseMapper))
             .setControllerAdvice(new CustomRestExceptionHandlerTraining())
             .build();
 
@@ -212,9 +214,7 @@ public class TrainingInstancesRestControllerTest {
             .andExpect(status().isOk())
             .andReturn()
             .getResponse();
-    assertEquals(
-        convertObjectToJsonBytes(trainingInstance1DTO),
-        result.getContentAsString());
+    assertEquals(convertObjectToJsonBytes(trainingInstance1DTO), result.getContentAsString());
   }
 
   @Test
@@ -375,8 +375,7 @@ public class TrainingInstancesRestControllerTest {
     assertEquals(
         expectedUsersRefDTOs.getContent(),
         convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
 
@@ -419,8 +418,7 @@ public class TrainingInstancesRestControllerTest {
     assertEquals(
         expectedUsersRefDTOs.getContent(),
         convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
 
