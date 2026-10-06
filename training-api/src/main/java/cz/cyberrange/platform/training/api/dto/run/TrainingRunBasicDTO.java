@@ -36,7 +36,7 @@ public class TrainingRunBasicDTO {
   @Schema(example = "1")
   protected Long trainingDefinitionId;
 
-  @Schema(example = "1")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   protected Long currentLevelId;
 
   @Schema(description = "Position of the run's current level, counting from zero.", example = "1")

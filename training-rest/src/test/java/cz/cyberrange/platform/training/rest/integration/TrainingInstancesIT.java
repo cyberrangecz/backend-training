@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import cz.cyberrange.platform.commons.security.enums.OIDCItems;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
@@ -366,7 +367,8 @@ public class TrainingInstancesIT {
     assertTrue(newInstance.isPresent());
 
     assertEquals(
-        newInstance.get().getAccessToken(), convertJsonBytesToString(result.getContentAsString()));
+        newInstance.get().getAccessToken(),
+        JsonPath.read(result.getContentAsString(), "$.access_token"));
   }
 
   @Test

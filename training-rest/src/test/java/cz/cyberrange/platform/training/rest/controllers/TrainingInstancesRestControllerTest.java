@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -239,16 +240,14 @@ public class TrainingInstancesRestControllerTest {
   public void updateTrainingInstances() throws Exception {
     given(trainingInstanceFacade.update(any(TrainingInstanceUpdateDTO.class)))
         .willReturn("new token");
-    MockHttpServletResponse result =
-        mockMvc
-            .perform(
-                put("/training-instances")
-                    .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
-    assertEquals("new token", convertJsonBytesToObject(result.getContentAsString()));
+    mockMvc
+        .perform(
+            put("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceUpdateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.access_token").value("new token"));
   }
 
   @Test

@@ -62,7 +62,7 @@ import lombok.ToString;
               + "JOIN FETCH tr.trainingInstance ti "
               + "JOIN FETCH s.level l "
               + "WHERE l.id = :levelId AND ti.id = :trainingInstanceId "
-              + "ORDER BY tr.id")
+              + "ORDER BY tr.id, s.date")
 })
 public class Submission extends AbstractEntity<Long> implements Serializable {
 

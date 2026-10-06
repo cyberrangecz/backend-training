@@ -101,18 +101,28 @@ public class AnswerSimilarityService {
   }
 
   /**
-   * Compares every incorrect submission of the cheating detection's training instance against every
-   * trainee run's stored variant answers, and persists an {@link AnswerSimilarityDetectionEvent}
-   * for each answer-similarity match found.
+   * Compares every incorrect submission of the cheating detection's training instance against the
+   * stored variant answers of every trainee run that has a sandbox, and persists an {@link
+   * AnswerSimilarityDetectionEvent} for each answer-similarity match found. Does nothing when no
+   * training level of the instance's training definition has variant answers, or when no run has a
+   * sandbox.
    *
    * @param cd the cheating detection whose training instance is scanned
    */
   void executeCheatingDetectionOfAnswerSimilarity(CheatingDetection cd) {
     Long trainingInstanceId = cd.getTrainingInstanceId();
-    Set<TrainingRun> runs = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId);
-    Map<String, List<VariantAnswer>> answers = new HashMap<>();
-    Map<Long, TrainingLevel> trainingLevelsById =
-        aggregateTrainingLevelsById(trainingInstanceId, runs, answers);
+    Map<Long, TrainingLevel> trainingLevelsById = findTrainingLevelsById(trainingInstanceId);
+    if (trainingLevelsById.values().stream().noneMatch(TrainingLevel::isVariantAnswers)) {
+      return;
+    }
+    Set<TrainingRun> runs =
+        trainingRunService.findAllByTrainingInstanceId(trainingInstanceId).stream()
+            .filter(run -> run.getSandboxInstanceRefId() != null)
+            .collect(Collectors.toSet());
+    if (runs.isEmpty()) {
+      return;
+    }
+    Map<String, List<VariantAnswer>> answers = fetchVariantAnswersBySandboxId(runs);
     for (Submission submission :
         submissionRepository.getIncorrectSubmissionsOfTrainingInstance(trainingInstanceId)) {
       evaluateAnswerSimilarityForSubmission(cd, runs, answers, trainingLevelsById, submission);
@@ -120,24 +130,30 @@ public class AnswerSimilarityService {
   }
 
   /**
-   * Fetches, for every run of the training instance, the run sandbox's full list of variant answers
-   * into {@code answers} keyed by sandbox id, and returns every training level of the instance's
-   * training definition keyed by level id
+   * Returns every training level of the training instance's training definition keyed by level id
    */
-  private Map<Long, TrainingLevel> aggregateTrainingLevelsById(
-      Long trainingInstanceId, Set<TrainingRun> runs, Map<String, List<VariantAnswer>> answers) {
-    runs.forEach(
-        run -> {
-          String sandboxId = run.getSandboxInstanceRefId();
-          answers.put(
-              sandboxId,
-              answersStorageApiService.getAnswersBySandboxId(sandboxId).getVariantAnswers());
-        });
-
+  private Map<Long, TrainingLevel> findTrainingLevelsById(Long trainingInstanceId) {
     Long trainingDefinitionId =
         trainingInstanceService.findById(trainingInstanceId).getTrainingDefinition().getId();
     return trainingLevelRepository.findAllByTrainingDefinitionId(trainingDefinitionId).stream()
         .collect(Collectors.toMap(TrainingLevel::getId, level -> level));
+  }
+
+  /**
+   * Fetches in one call the variant answers stored for the runs' sandboxes, keyed by sandbox id. A
+   * sandbox absent from answer storage maps to an empty list.
+   */
+  private Map<String, List<VariantAnswer>> fetchVariantAnswersBySandboxId(Set<TrainingRun> runs) {
+    Map<String, List<VariantAnswer>> answersBySandboxId = new HashMap<>();
+    runs.forEach(run -> answersBySandboxId.put(run.getSandboxInstanceRefId(), List.of()));
+    answersStorageApiService
+        .getAnswersBySandboxIds(List.copyOf(answersBySandboxId.keySet()))
+        .getContent()
+        .forEach(
+            sandboxAnswers ->
+                answersBySandboxId.put(
+                    sandboxAnswers.getSandboxRefId(), sandboxAnswers.getVariantAnswers()));
+    return answersBySandboxId;
   }
 
   /**
@@ -154,7 +170,8 @@ public class AnswerSimilarityService {
     Long currentId = submission.getLevel().getId();
     String sandboxId = submission.getTrainingRun().getSandboxInstanceRefId();
 
-    if (checkIfAnswerBelongsToDifferentLevel(answers.get(sandboxId), submission.getProvided())
+    if (checkIfAnswerBelongsToDifferentLevel(
+            answers.getOrDefault(sandboxId, List.of()), submission.getProvided())
         || !trainingLevelsById.containsKey(currentId)) {
       return;
     }

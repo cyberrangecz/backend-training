@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -594,14 +595,11 @@ public class TrainingRunsIT {
     trainingRun1.setTotalTrainingScore(10 + trainingLevel1.getMaxScore());
     trainingRunRepository.save(trainingRun1);
     assertFalse(trainingRun1.isSolutionTaken());
-    MockHttpServletResponse response =
-        mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
-    assertEquals(
-        ((TrainingLevel) trainingRun1.getCurrentLevel()).getSolution(),
-        convertJsonBytesToString(response.getContentAsString()));
+    mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.solution")
+                .value(((TrainingLevel) trainingRun1.getCurrentLevel()).getSolution()));
     assertTrue(trainingRun1.isSolutionTaken());
   }
 
@@ -612,14 +610,11 @@ public class TrainingRunsIT {
     trainingRun1.setSolutionTaken(true);
     trainingRunRepository.save(trainingRun1);
     assertTrue(trainingRun1.isSolutionTaken());
-    MockHttpServletResponse response =
-        mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
-    assertEquals(
-        ((TrainingLevel) trainingRun1.getCurrentLevel()).getSolution(),
-        convertJsonBytesToString(response.getContentAsString()));
+    mvc.perform(get("/training-runs/{runId}/solutions", trainingRun1.getId()))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.solution")
+                .value(((TrainingLevel) trainingRun1.getCurrentLevel()).getSolution()));
     assertTrue(trainingRun1.isSolutionTaken());
     assertEquals(11, trainingRun1.getTotalTrainingScore());
   }

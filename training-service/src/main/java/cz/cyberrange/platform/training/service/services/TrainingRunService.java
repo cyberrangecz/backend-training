@@ -836,7 +836,7 @@ public class TrainingRunService {
     }
     return trainingLevel
         .getSolution()
-        .replaceAll("\\$\\{ANSWER\\}", getTrainingLevelCorrectAnswer(trainingLevel, trainingRun));
+        .replace("${ANSWER}", getTrainingLevelCorrectAnswer(trainingLevel, trainingRun));
   }
 
   /**

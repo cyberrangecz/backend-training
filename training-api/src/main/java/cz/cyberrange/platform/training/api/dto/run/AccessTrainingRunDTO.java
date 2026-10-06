@@ -29,6 +29,7 @@ public class AccessTrainingRunDTO {
   private String sandboxInstanceRefId;
 
   /** The training run's current level, not necessarily the first level of the definition */
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   private AbstractLevelDTO abstractLevelDTO;
 
   private List<BasicLevelInfoDTO> infoAboutLevels;

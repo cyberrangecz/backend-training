@@ -3,14 +3,15 @@ package cz.cyberrange.platform.training.rest.utils.error;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UrlPathHelper;
 
 /**
  * Assembles the response an exception handler returns: an {@link ApiError} carrying the reported
- * status, the message addressed to the caller and the exception's own message, sent with fresh
- * headers and the status held by that body.
+ * status, the message addressed to the caller and the exception's own message, sent as JSON with
+ * the status held by that body.
  */
 @Component
 public class ApiErrorResponder {
@@ -38,7 +39,19 @@ public class ApiErrorResponder {
    */
   public ResponseEntity<Object> respond(
       HttpStatus status, String message, String error, String path) {
-    ApiError apiError = ApiError.of(status, message, error, path);
-    return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+    return asJson(ApiError.of(status, message, error, path));
+  }
+
+  /**
+   * Wraps an error body in a response sent as JSON whatever media type the request accepts, with
+   * the status held by that body.
+   *
+   * @param apiError the error body to send
+   * @return the response holding the body
+   */
+  public static ResponseEntity<Object> asJson(ApiError apiError) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    return new ResponseEntity<>(apiError, headers, apiError.getStatus());
   }
 }
