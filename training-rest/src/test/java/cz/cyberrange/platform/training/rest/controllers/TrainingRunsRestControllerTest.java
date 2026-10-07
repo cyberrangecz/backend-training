@@ -63,7 +63,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
@@ -156,10 +155,7 @@ public class TrainingRunsRestControllerTest {
 
     trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(page);
 
-    JsonMapper snakeCaseMapper =
-        JsonMapper.builderWithJackson2Defaults()
-            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-            .build();
+    JsonMapper snakeCaseMapper = ObjectConverter.restResponseMapper();
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingRunsRestController = new TrainingRunsRestController(trainingRunFacade);

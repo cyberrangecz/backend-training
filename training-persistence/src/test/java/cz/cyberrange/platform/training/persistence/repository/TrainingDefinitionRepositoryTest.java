@@ -9,16 +9,20 @@ import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 @DataJpaTest
 public class TrainingDefinitionRepositoryTest {
@@ -173,5 +177,24 @@ public class TrainingDefinitionRepositoryTest {
         trainingDefinitionRepository.findPlayedDefinitionIdsByUser(participantRef1.getUserRefId());
     assertEquals(
         Set.of(trainingDefinition1.getId(), trainingDefinition2.getId()), playedDefinitionIds);
+  }
+
+  @Test
+  @DisplayName("findAllByState, page sorted by id descending: returns definitions in that order")
+  void findAllByState_pageSortedByIdDescending_returnsDefinitionsInThatOrder() {
+    List<Long> releasedIdsDescending =
+        trainingDefinitionRepository
+            .findAllByState(TDState.RELEASED, PageRequest.of(0, 10, Sort.by(Direction.DESC, "id")))
+            .map(TrainingDefinition::getId)
+            .getContent();
+
+    assertEquals(
+        List.of(
+            trainingDefinitionWithBG4.getId(),
+            trainingDefinitionWithBG3.getId(),
+            trainingDefinitionWithBG2.getId(),
+            trainingDefinitionWithBG1.getId(),
+            trainingDefinition1.getId()),
+        releasedIdsDescending);
   }
 }

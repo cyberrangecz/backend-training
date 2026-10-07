@@ -77,9 +77,10 @@ public interface TrainingDefinitionRepository
    * Find all training definitions.
    *
    * @param state the state of training definition
-   * @param pageable the pageable
+   * @param pageable the page to return and its sort
    * @return page of all {@link TrainingDefinition}
    */
+  @Query("SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state")
   Page<TrainingDefinition> findAllByState(@Param("state") TDState state, Pageable pageable);
 
   /**
@@ -88,9 +89,14 @@ public interface TrainingDefinitionRepository
    *
    * @param userRefId the cross-service user reference id to match against the beta testing group's
    *     organizers
-   * @param pageable the pageable
+   * @param pageable the page to return and its sort
    * @return the page
    */
+  @Query(
+      "SELECT DISTINCT td FROM TrainingDefinition td "
+          + "LEFT JOIN td.betaTestingGroup bt "
+          + "LEFT JOIN bt.organizers org "
+          + "WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'")
   Page<TrainingDefinition> findAllForOrganizersUnreleased(
       @Param("userRefId") Long userRefId, Pageable pageable);
 
@@ -100,9 +106,16 @@ public interface TrainingDefinitionRepository
    *
    * @param userRefId the cross-service user reference id to match against the definition's authors
    *     and its beta testing group's organizers
-   * @param pageable the pageable
+   * @param pageable the page to return and its sort
    * @return the page
    */
+  @Query(
+      "SELECT DISTINCT td FROM TrainingDefinition td "
+          + "LEFT JOIN td.betaTestingGroup bt "
+          + "LEFT JOIN bt.organizers org "
+          + "LEFT JOIN td.authors aut "
+          + "WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) "
+          + "AND td.state = 'UNRELEASED'")
   Page<TrainingDefinition> findAllForDesignersAndOrganizersUnreleased(
       @Param("userRefId") Long userRefId, Pageable pageable);
 

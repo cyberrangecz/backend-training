@@ -703,10 +703,9 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Gets training runs by their ids. The sandbox instance reference id of each run is masked
-   * according to caller privilege: administrators and organizers of the runs see the plain sandbox
-   * id for every run; any other caller sees the plain id only for their own run and a hash of it
-   * for every other run.
+   * Gets training runs by their ids. Only a training administrator, the organizer of every listed
+   * run, or the participant of every listed run is allowed; any other caller, including a trainee
+   * listing one of their own runs together with another trainee's run, is refused.
    *
    * @param ids the ids of Training Runs to return.
    * @return List of requested Training Runs.
@@ -715,9 +714,8 @@ public class TrainingRunsRestController {
       operationId = "findTrainingRunsByIds",
       summary = "Find training runs by their ids",
       description =
-          "A training administrator, an organizer of the runs, or their participant may call it."
-              + " A caller who is neither administrator nor organizer sees the sandbox id of"
-              + " another trainee's run only as a hash.")
+          "A training administrator, the organizer of every listed run, or the participant of"
+              + " every listed run may call it.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The matching runs."),
     @ApiResponse(

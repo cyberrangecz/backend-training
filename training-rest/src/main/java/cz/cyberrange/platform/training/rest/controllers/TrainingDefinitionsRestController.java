@@ -101,7 +101,8 @@ public class TrainingDefinitionsRestController {
       summary = "Find one training definition with its levels",
       description =
           "A training administrator may read any definition. Anyone else has to be one of its"
-              + " designers, or an organizer of its beta testing group.")
+              + " designers, a member of its beta testing group, or an organizer of a training"
+              + " instance created from it.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The definition and its levels."),
     @ApiResponse(
@@ -166,7 +167,7 @@ public class TrainingDefinitionsRestController {
     @ApiResponse(responseCode = "200", description = "The matching definitions."),
     @ApiResponse(
         responseCode = "400",
-        description = "The state is not a recognized value.",
+        description = "The state is neither RELEASED nor UNRELEASED.",
         content = @Content(schema = @Schema(implementation = ApiError.class)))
   })
   @GetMapping(path = "/for-organizers", produces = MediaType.APPLICATION_JSON_VALUE)

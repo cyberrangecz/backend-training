@@ -1,5 +1,6 @@
 package cz.cyberrange.platform.training.persistence.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
@@ -119,9 +120,7 @@ public class AbstractLevelRepositoryTest {
         Arrays.asList(trainingLevel, infoLevel, assessmentLevel, infoLevel2, trainingLevel2);
     expectedAbstractLevels.stream().forEach(a -> entityManager.persist(a));
     List<AbstractLevel> resultAbstractLevels = abstractLevelRepository.findAll();
-    assertNotNull(resultAbstractLevels);
-    assertEquals(expectedAbstractLevels.size(), resultAbstractLevels.size());
-    assertEquals(expectedAbstractLevels, resultAbstractLevels);
+    assertThat(resultAbstractLevels).containsExactlyInAnyOrderElementsOf(expectedAbstractLevels);
   }
 
   @Test

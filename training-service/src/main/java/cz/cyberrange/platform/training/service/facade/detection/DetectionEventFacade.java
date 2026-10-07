@@ -93,6 +93,7 @@ public class DetectionEventFacade {
    * @param cheatingDetectionId the cheating detection ID
    * @param pageable the pageable
    * @return page of {@link AbstractDetectionEventDTO} matching the predicate
+   * @throws EntityNotFoundException when the cheating detection with the given id does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -111,6 +112,7 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    * @param pageable the pageable
    * @return page of {@link DetectionEventParticipantDTO} for the event
+   * @throws EntityNotFoundException when the detection event with the given id does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -118,6 +120,7 @@ public class DetectionEventFacade {
   @TransactionalWO
   public PageResultResource<DetectionEventParticipantDTO> findAllParticipantsOfDetectionEvent(
       Long eventId, Pageable pageable) {
+    getDetectionEvent(eventId);
     return detectionEventParticipantMapper.mapToPageResultResource(
         this.detectionEventService.findAllParticipantsOfEvent(eventId, pageable));
   }
@@ -128,6 +131,7 @@ public class DetectionEventFacade {
    * @param eventId the detection event ID
    * @param pageable the pageable
    * @return page of {@link DetectedForbiddenCommandDTO} for the event
+   * @throws EntityNotFoundException when the detection event with the given id does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -135,6 +139,7 @@ public class DetectionEventFacade {
   @TransactionalWO
   public PageResultResource<DetectedForbiddenCommandDTO> findAllForbiddenCommandsOfDetectionEvent(
       Long eventId, Pageable pageable) {
+    getDetectionEvent(eventId);
     return detectedForbiddenCommandMapper.mapToPageResultResource(
         this.detectionEventService.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable));
   }
@@ -144,12 +149,14 @@ public class DetectionEventFacade {
    *
    * @param eventId the detection event ID
    * @return every {@link DetectedForbiddenCommandDTO} for the event
+   * @throws EntityNotFoundException when the detection event with the given id does not exist
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public List<DetectedForbiddenCommandDTO> findAllForbiddenCommandsOfDetectionEvent(Long eventId) {
+    getDetectionEvent(eventId);
     return detectedForbiddenCommandMapper.mapToListDTO(
         this.detectionEventService.findAllForbiddenCommandsOfDetectionEvent(eventId));
   }
@@ -166,13 +173,22 @@ public class DetectionEventFacade {
           + "or @securityService.isOrganizerOfGivenDetectionEvent(#eventId)")
   @TransactionalWO
   public AbstractDetectionEventDTO findDetectionEventById(Long eventId) {
+    return detectionEventMapper.mapToDTO(getDetectionEvent(eventId));
+  }
+
+  /**
+   * Loads a detection event of any kind.
+   *
+   * @throws EntityNotFoundException when the detection event with the given id does not exist
+   */
+  private AbstractDetectionEvent getDetectionEvent(Long eventId) {
     AbstractDetectionEvent detectionEvent =
         this.detectionEventService.findDetectionEventById(eventId);
     if (detectionEvent == null) {
       throw new EntityNotFoundException(
           new EntityErrorDetail(AbstractDetectionEvent.class, "id", eventId.getClass(), eventId));
     }
-    return detectionEventMapper.mapToDTO(detectionEvent);
+    return detectionEvent;
   }
 
   /**

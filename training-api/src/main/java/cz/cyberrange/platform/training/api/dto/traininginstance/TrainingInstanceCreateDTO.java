@@ -48,7 +48,7 @@ public class TrainingInstanceCreateDTO {
    */
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
-  private long trainingDefinitionId;
+  private Long trainingDefinitionId;
 
   /**
    * Mutually exclusive with localEnvironment: rejected when localEnvironment is true, required when
@@ -109,11 +109,11 @@ public class TrainingInstanceCreateDTO {
     this.accessToken = accessToken;
   }
 
-  public long getTrainingDefinitionId() {
+  public Long getTrainingDefinitionId() {
     return trainingDefinitionId;
   }
 
-  public void setTrainingDefinitionId(long trainingDefinitionId) {
+  public void setTrainingDefinitionId(Long trainingDefinitionId) {
     this.trainingDefinitionId = trainingDefinitionId;
   }
 

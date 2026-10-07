@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeDeserializer;
+import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
@@ -36,7 +36,6 @@ import cz.cyberrange.platform.training.service.export.YamlExportFormat;
 import cz.cyberrange.platform.training.service.facade.ExportImportFacade;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
@@ -88,6 +87,7 @@ public class ExportImportRestControllerTest {
         JsonMapper.builderWithJackson2Defaults()
             .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
             .enable(EnumFeature.READ_ENUMS_USING_TO_STRING)
+            .addModule(new SimpleModule().addSerializer(new LocalDateTimeUTCSerializer()))
             .build();
 
     closeable = MockitoAnnotations.openMocks(this);
@@ -373,6 +373,7 @@ public class ExportImportRestControllerTest {
     JsonMapper localMapper =
         JsonMapper.builderWithJackson2Defaults()
             .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .addModule(new SimpleModule().addSerializer(new LocalDateTimeUTCSerializer()))
             .build();
     TrainingDefinitionsRestController otherController =
         new TrainingDefinitionsRestController(otherFacade);
@@ -432,9 +433,6 @@ public class ExportImportRestControllerTest {
     ObjectMapper mapper =
         JsonMapper.builderWithJackson2Defaults()
             .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-            .addModule(
-                new SimpleModule()
-                    .addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()))
             .build();
     return mapper.writeValueAsString(object);
   }

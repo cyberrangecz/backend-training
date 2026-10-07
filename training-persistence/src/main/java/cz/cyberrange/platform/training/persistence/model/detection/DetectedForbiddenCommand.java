@@ -25,11 +25,6 @@ import lombok.ToString;
 @Table(name = "detected_forbidden_command")
 @NamedQueries({
   @NamedQuery(
-      name = "DetectedForbiddenCommand.findAllByEventId",
-      query =
-          "SELECT dfc FROM DetectedForbiddenCommand dfc "
-              + "WHERE dfc.detectionEventId = :eventId"),
-  @NamedQuery(
       name = "DetectedForbiddenCommand.deleteAllByDetectionEventId",
       query = "DELETE FROM DetectedForbiddenCommand dfc WHERE dfc.detectionEventId = :eventId")
 })

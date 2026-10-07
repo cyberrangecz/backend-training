@@ -30,6 +30,13 @@ public interface TrainingRunRepository
         QuerydslPredicateExecutor<TrainingRun>,
         QuerydslBinderCustomizer<QTrainingRun> {
 
+  String FIND_ALL_BY_PARTICIPANT_USER_REF_ID =
+      "SELECT tr FROM TrainingRun tr "
+          + "INNER JOIN tr.participantRef pr "
+          + "INNER JOIN tr.trainingInstance ti "
+          + "INNER JOIN ti.trainingDefinition "
+          + "WHERE pr.userRefId = :userRefId";
+
   /**
    * That method is used to make the query dsl string values case insensitive and also it supports
    * partial matches in the database.
@@ -62,17 +69,16 @@ public interface TrainingRunRepository
   Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
   /**
-   * Finds all training runs of a training instance, ordered by start time. The backing query
-   * matches on {@code trainingInstance.id} and orders the result by {@code startTime} ascending;
-   * the {@code @EntityGraph} fetches each run's participant reference eagerly.
+   * Finds all training runs of a training instance, ordered by the page's sort. The backing query
+   * matches on {@code trainingInstance.id}; the {@code @EntityGraph} fetches each run's participant
+   * reference eagerly.
    *
    * @param trainingInstanceId the primary key of the training instance
-   * @param pageable the pageable
-   * @return the page of {@link TrainingRun}s of the {@link TrainingInstance}, ordered by start time
-   *     ascending, or an empty page if none exist
+   * @param pageable the page to return and its sort
+   * @return the page of {@link TrainingRun}s of the {@link TrainingInstance}, or an empty page if
+   *     none exist
    */
-  @Query(
-      "SELECT tr FROM TrainingRun tr WHERE tr.trainingInstance.id = :trainingInstanceId ORDER BY tr.startTime ASC")
+  @Query("SELECT tr FROM TrainingRun tr WHERE tr.trainingInstance.id = :trainingInstanceId")
   @EntityGraph(
       value = "TrainingRun.findAllParticipantRef",
       type = EntityGraph.EntityGraphType.FETCH)
@@ -106,23 +112,25 @@ public interface TrainingRunRepository
   Optional<TrainingRun> findById(Long id);
 
   /**
-   * Find all training runs accessed by participant by their user ref id.
+   * Find all training runs accessed by the participant holding the given user-and-group id. Matches
+   * on {@code participantRef.userRefId}, not on the participant row's primary key.
    *
-   * @param userRefId the participant ref id
-   * @param pageable the pageable
+   * @param userRefId the user-and-group id of the participant
+   * @param pageable the page to return and its sort
    * @return the page of all {@link TrainingRun}s accessed by participant
    */
+  @Query(FIND_ALL_BY_PARTICIPANT_USER_REF_ID)
   Page<TrainingRun> findAllByParticipantRefId(
       @Param("userRefId") Long userRefId, Pageable pageable);
 
   /**
    * Find all training runs accessed by the participant holding the given user-and-group id. Matches
-   * on {@code participantRef.userRefId} through the named query of the same name, not on the
-   * participant row's primary key.
+   * on {@code participantRef.userRefId}, not on the participant row's primary key.
    *
    * @param userRefId the user-and-group id of the participant
    * @return the list of all {@link TrainingRun}s accessed by participant
    */
+  @Query(FIND_ALL_BY_PARTICIPANT_USER_REF_ID)
   List<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId);
 
   /**
@@ -145,6 +153,12 @@ public interface TrainingRunRepository
    *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition} that are accessible
    *     to participant
    */
+  @Query(
+      "SELECT tr FROM TrainingRun tr "
+          + "INNER JOIN tr.participantRef pr "
+          + "INNER JOIN tr.trainingInstance ti "
+          + "INNER JOIN ti.trainingDefinition td "
+          + "WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId")
   Page<TrainingRun> findAllByTrainingDefinitionIdAndParticipantUserRefId(
       @Param("trainingDefinitionId") Long trainingDefinitionId,
       @Param("userRefId") Long userRefId,
@@ -158,6 +172,9 @@ public interface TrainingRunRepository
    * @return the page of all active {@link TrainingRun}s associated with given {@link
    *     TrainingInstance}
    */
+  @Query(
+      "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti "
+          + "WHERE ti.id = :trainingInstanceId AND tr.state <> 'ARCHIVED'")
   Page<TrainingRun> findAllActiveByTrainingInstanceId(
       @Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
@@ -169,6 +186,9 @@ public interface TrainingRunRepository
    * @return the page of all inactive {@link TrainingRun}s associated with given {@link
    *     TrainingInstance}
    */
+  @Query(
+      "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti "
+          + "WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'")
   Page<TrainingRun> findAllInactiveByTrainingInstanceId(
       @Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
@@ -180,6 +200,9 @@ public interface TrainingRunRepository
    * @return the page of all finished {@link TrainingRun}s associated with given {@link
    *     TrainingInstance}
    */
+  @Query(
+      "SELECT tr FROM TrainingRun tr INNER JOIN tr.trainingInstance ti "
+          + "WHERE ti.id = :trainingInstanceId AND tr.state = 'FINISHED'")
   Page<TrainingRun> findAllFinishedByTrainingInstanceId(
       @Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
@@ -191,6 +214,11 @@ public interface TrainingRunRepository
    * @return the page of all {@link TrainingRun}s associated with {@link
    *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition}
    */
+  @Query(
+      "SELECT tr FROM TrainingRun tr "
+          + "INNER JOIN tr.trainingInstance ti "
+          + "INNER JOIN ti.trainingDefinition td "
+          + "WHERE td.id = :trainingDefinitionId")
   Page<TrainingRun> findAllByTrainingDefinitionId(
       @Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
 

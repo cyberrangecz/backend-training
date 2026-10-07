@@ -1,6 +1,5 @@
 package cz.cyberrange.platform.training.rest.controllers.util;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeDeserializer;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCDeserializer;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.service.mapping.modelmapper.BeanMapping;
@@ -21,21 +20,23 @@ public class ObjectConverter {
   private static BeanMapping beanMapping = new BeanMappingImpl(new ModelMapper());
 
   public static String convertObjectToJsonBytes(Object object) throws IOException {
-    ObjectMapper mapper =
-        snakeCaseMapperBuilder()
-            .addModule(new SimpleModule().addSerializer(new LocalDateTimeUTCSerializer()))
-            .build();
-    return mapper.writeValueAsString(object);
+    return restResponseMapper().writeValueAsString(object);
+  }
+
+  /**
+   * Builds a mapper writing JSON the way the application writes REST responses, in snake case with
+   * every date-time as a UTC instant, without indentation.
+   *
+   * @return the mapper
+   */
+  public static JsonMapper restResponseMapper() {
+    return snakeCaseMapperBuilder()
+        .addModule(new SimpleModule().addSerializer(new LocalDateTimeUTCSerializer()))
+        .build();
   }
 
   public static String convertJsonBytesToObject(String object) throws IOException {
-    ObjectMapper mapper =
-        snakeCaseMapperBuilder()
-            .addModule(
-                new SimpleModule()
-                    .addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer()))
-            .build();
-    return mapper.readValue(object, String.class);
+    return snakeCaseMapperBuilder().build().readValue(object, String.class);
   }
 
   public static <T> T convertJsonBytesToObject(String object, TypeReference<T> tTypeReference)

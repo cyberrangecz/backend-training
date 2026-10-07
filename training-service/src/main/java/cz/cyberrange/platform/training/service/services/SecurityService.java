@@ -229,6 +229,26 @@ public class SecurityService {
   }
 
   /**
+   * Decides whether the logged in user belongs to the beta testing group of the given training
+   * definition.
+   *
+   * @param definitionId id of the training definition whose beta testers are examined
+   * @return true when the logged in user is one of its beta testers; false when the definition does
+   *     not exist or has no beta testing group
+   */
+  public boolean isBetaTesterOfGivenTrainingDefinition(Long definitionId) {
+    Long userRefId = getUserRefIdFromUserAndGroup();
+    return trainingDefinitionRepository
+        .findById(definitionId)
+        .map(TrainingDefinition::getBetaTestingGroup)
+        .map(
+            betaTestingGroup ->
+                betaTestingGroup.getOrganizers().stream()
+                    .anyMatch(organizer -> organizer.getUserRefId().equals(userRefId)))
+        .orElse(false);
+  }
+
+  /**
    * Decides whether the logged in user organizes any training instance created from the given
    * training definition.
    *

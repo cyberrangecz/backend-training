@@ -1,6 +1,5 @@
 package cz.cyberrange.platform.training.api.dto.run;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.hint.TakenHintDTO;
@@ -9,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Encapsulates information about Training Run, intended as a response to run accessing */
 @Data
@@ -37,8 +35,7 @@ public class AccessTrainingRunDTO {
   @Schema(example = "1")
   private Long instanceId;
 
-  @Schema(example = "2016-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2016-10-19T08:23:54.000Z")
   private LocalDateTime startTime;
 
   /**

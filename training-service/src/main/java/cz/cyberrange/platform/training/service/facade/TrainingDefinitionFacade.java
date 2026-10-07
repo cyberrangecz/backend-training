@@ -26,7 +26,6 @@ import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
-import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
@@ -113,7 +112,9 @@ public class TrainingDefinitionFacade {
 
   /**
    * Finds one training definition together with the full detail of every level it holds and with
-   * the flag telling whether it can be archived.
+   * the flag telling whether it can be archived. Open to an administrator, an author of the
+   * definition, a member of its beta testing group, and an organizer of any instance created from
+   * it.
    *
    * @param id id of the training definition to return
    * @return the {@link TrainingDefinitionWithLevelsDTO} of that definition, its levels in
@@ -123,7 +124,8 @@ public class TrainingDefinitionFacade {
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)"
-          + "or @securityService.isOrganizerForGivenTrainingDefinition(#id)")
+          + "or @securityService.isOrganizerForGivenTrainingDefinition(#id)"
+          + "or @securityService.isBetaTesterOfGivenTrainingDefinition(#id)")
   @TransactionalRO
   public TrainingDefinitionWithLevelsDTO findById(Long id) {
     TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
@@ -274,7 +276,7 @@ public class TrainingDefinitionFacade {
    * @param state whether released or unreleased definitions are wanted
    * @param pageable pageable parameter with information about pagination.
    * @return page of matching {@link TrainingDefinitionInfoDTO}
-   * @throws InternalServerErrorException when {@code state} is neither released nor unreleased
+   * @throws BadRequestException when {@code state} is neither released nor unreleased
    */
   @IsOrganizerOrAdmin
   @TransactionalRO
@@ -301,7 +303,7 @@ public class TrainingDefinitionFacade {
             trainingDefinitionService.findAllForOrganizersUnreleased(loggedInUserId, pageable));
       }
     }
-    throw new InternalServerErrorException(
+    throw new BadRequestException(
         "It is required to provide training definition state that is RELEASED or UNRELEASED");
   }
 
@@ -788,8 +790,8 @@ public class TrainingDefinitionFacade {
    * Switches the state of a training definition. Only {@link TDState#UNRELEASED} to {@link
    * TDState#RELEASED}, {@link TDState#RELEASED} to {@link TDState#ARCHIVED}, and {@link
    * TDState#RELEASED} back to {@link TDState#UNRELEASED} are allowed transitions; requesting the
-   * definition's current state is a no-op. Switching a released definition back to unreleased is
-   * refused while it has a training instance.
+   * state the definition already holds is a no-op. Switching a released definition back to
+   * unreleased is refused while it has a training instance.
    *
    * @param definitionId - id of training definition
    * @param state - the state to switch to

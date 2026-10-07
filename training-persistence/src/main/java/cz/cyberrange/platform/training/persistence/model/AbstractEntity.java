@@ -27,7 +27,7 @@ public class AbstractEntity<PK extends Serializable> implements Serializable {
   // Assigned by the database on insert; never supplied by the application.
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id", unique = true, nullable = false, insertable = false)
+  @Column(name = "id", unique = true, nullable = false)
   private PK id;
 
   @Override

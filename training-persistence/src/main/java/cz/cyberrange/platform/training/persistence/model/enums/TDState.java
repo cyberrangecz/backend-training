@@ -7,7 +7,6 @@ package cz.cyberrange.platform.training.persistence.model.enums;
  * refused outright.
  */
 public enum TDState {
-  PRIVATED,
   /** Available for instances to run */
   RELEASED,
   /** Retired from use; it may not be moved out of this state */

@@ -23,7 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Service;
 public class TrainingInstanceService {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrainingInstanceService.class);
+  private static final Sort DEFAULT_RUN_SORT = Sort.by("startTime");
 
   private TrainingInstanceRepository trainingInstanceRepository;
   private TrainingRunRepository trainingRunRepository;
@@ -155,15 +158,7 @@ public class TrainingInstanceService {
    */
   public TrainingInstance create(TrainingInstance trainingInstance) {
     trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken().trim()));
-    if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
-      throw new EntityConflictException(
-          new EntityErrorDetail(
-              TrainingInstance.class,
-              "id",
-              trainingInstance.getId().getClass(),
-              trainingInstance.getId(),
-              "End time must be later than start time."));
-    }
+    validateStartAndEndTime(trainingInstance);
     addLoggedInUserAsOrganizerToTrainingInstance(trainingInstance);
     return auditAndSave(trainingInstance);
   }
@@ -205,16 +200,22 @@ public class TrainingInstanceService {
     return auditAndSave(trainingInstanceToUpdate).getAccessToken();
   }
 
+  /**
+   * Rejects an instance whose start time is after its end time, naming the instance's id in the
+   * error when the instance already has one.
+   *
+   * @throws EntityConflictException when the start time is after the end time
+   */
   private void validateStartAndEndTime(TrainingInstance trainingInstance) {
-    if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
-      throw new EntityConflictException(
-          new EntityErrorDetail(
-              TrainingInstance.class,
-              "id",
-              trainingInstance.getId().getClass(),
-              trainingInstance.getId(),
-              "End time must be later than start time."));
+    if (!trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
+      return;
     }
+    String reason = "End time must be later than start time.";
+    Long id = trainingInstance.getId();
+    throw new EntityConflictException(
+        id == null
+            ? new EntityErrorDetail(TrainingInstance.class, reason)
+            : new EntityErrorDetail(TrainingInstance.class, "id", Long.class, id, reason));
   }
 
   /**
@@ -303,7 +304,7 @@ public class TrainingInstanceService {
     String newPass;
     do {
       int firstNumber = rand.nextInt(5);
-      String pin = firstNumber + RandomStringUtils.random(3, false, true);
+      String pin = firstNumber + RandomStringUtils.secure().nextNumeric(3);
       newPass = accessToken + "-" + pin;
     } while (trainingInstanceRepository.existsForToken(newPass));
     return newPass;
@@ -345,7 +346,8 @@ public class TrainingInstanceService {
    *
    * @param instanceId id of Training Instance whose Training Runs would be returned.
    * @param isActive if isActive attribute is True, only active runs are returned
-   * @param pageable pageable parameter with information about pagination.
+   * @param pageable pageable parameter with information about pagination and sort; with no sort and
+   *     no isActive filter, runs are ordered by start time
    * @return {@link TrainingRun}s of specific {@link TrainingInstance}
    */
   public Page<TrainingRun> findTrainingRunsByTrainingInstance(
@@ -353,7 +355,12 @@ public class TrainingInstanceService {
     // check if instance exists
     this.findById(instanceId);
     if (isActive == null) {
-      return trainingRunRepository.findAllByTrainingInstanceId(instanceId, pageable);
+      return trainingRunRepository.findAllByTrainingInstanceId(
+          instanceId,
+          PageRequest.of(
+              pageable.getPageNumber(),
+              pageable.getPageSize(),
+              pageable.getSortOr(DEFAULT_RUN_SORT)));
     } else if (isActive) {
       return trainingRunRepository.findAllActiveByTrainingInstanceId(instanceId, pageable);
     } else {

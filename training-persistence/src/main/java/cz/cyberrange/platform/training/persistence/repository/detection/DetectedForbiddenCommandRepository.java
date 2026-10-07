@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
@@ -17,21 +18,26 @@ public interface DetectedForbiddenCommandRepository
     extends JpaRepository<DetectedForbiddenCommand, Long>,
         QuerydslPredicateExecutor<DetectedForbiddenCommand> {
 
+  String FIND_ALL_BY_EVENT_ID =
+      "SELECT dfc FROM DetectedForbiddenCommand dfc WHERE dfc.detectionEventId = :eventId";
+
   /**
-   * Returns, as one page, the detected forbidden commands of one detection event, in no defined
-   * order.
+   * Returns, as one page, the detected forbidden commands of one detection event, ordered by the
+   * page's sort.
    *
    * @param eventId the detection event the returned commands were matched against
-   * @param pageable the page to return
+   * @param pageable the page to return and its sort
    */
+  @Query(FIND_ALL_BY_EVENT_ID)
   Page<DetectedForbiddenCommand> findAllByEventId(
-      @Param("eventId") Long eventId, @Param("pageable") Pageable pageable);
+      @Param("eventId") Long eventId, Pageable pageable);
 
   /**
    * Returns every detected forbidden command of one detection event, in no defined order.
    *
    * @param eventId the detection event the returned commands were matched against
    */
+  @Query(FIND_ALL_BY_EVENT_ID)
   List<DetectedForbiddenCommand> findAllByEventId(@Param("eventId") Long eventId);
 
   /**

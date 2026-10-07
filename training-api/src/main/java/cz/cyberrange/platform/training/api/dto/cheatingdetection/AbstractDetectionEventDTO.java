@@ -1,11 +1,9 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.DetectionEventType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * One finding of a cheating detection run, holding what every kind of finding has in common: the
@@ -52,9 +50,8 @@ public class AbstractDetectionEventDTO {
    * moment the trainee did the thing being flagged
    */
   @Schema(
-      example = "2022-01-01T05:55:23Z",
+      example = "2022-01-01T05:55:23.000Z",
       description = "When the detection run executed, not when the flagged thing happened.")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime detectedAt;
 
   @Schema(example = "3")

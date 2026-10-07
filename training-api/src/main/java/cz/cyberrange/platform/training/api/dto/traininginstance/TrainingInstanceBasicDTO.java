@@ -1,10 +1,8 @@
 package cz.cyberrange.platform.training.api.dto.traininginstance;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Contains generally safe, descriptive-only data accessible by both organizers and trainees */
 @Data
@@ -14,12 +12,10 @@ public class TrainingInstanceBasicDTO {
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   protected Long id;
 
-  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2016-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2016-10-19T08:23:54.000Z")
   protected LocalDateTime startTime;
 
-  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2017-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2017-10-19T08:23:54.000Z")
   protected LocalDateTime endTime;
 
   @Schema(example = "Concluded Instance")

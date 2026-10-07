@@ -31,11 +31,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -388,9 +390,11 @@ public class CheatingDetectionsRestController {
             cheatingDetectionId, exportFormats.byName(formatName));
     HttpHeaders header = new HttpHeaders();
     header.setContentType(ZipMediaType.APPLICATION_ZIP);
-    header.set(
-        "Content-Disposition",
-        "inline; filename=" + file.getTitle() + AbstractFileExtensions.ZIP_FILE_EXTENSION);
+    header.setContentDisposition(
+        ContentDisposition.inline()
+            .filename(
+                file.getTitle() + AbstractFileExtensions.ZIP_FILE_EXTENSION, StandardCharsets.UTF_8)
+            .build());
     header.setContentLength(file.getContent().length);
     return new ResponseEntity<>(file.getContent(), header, HttpStatus.OK);
   }

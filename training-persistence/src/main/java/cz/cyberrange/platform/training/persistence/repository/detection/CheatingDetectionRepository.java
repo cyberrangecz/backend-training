@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
@@ -14,12 +15,13 @@ public interface CheatingDetectionRepository
     extends JpaRepository<CheatingDetection, Long>, QuerydslPredicateExecutor<CheatingDetection> {
 
   /**
-   * Returns, as one page, the cheating detection sweeps of one training instance, ordered by their
-   * execute time.
+   * Returns, as one page, the cheating detection sweeps of one training instance, ordered by the
+   * page's sort.
    *
    * @param trainingInstanceId the training instance the returned sweeps belong to
-   * @param pageable the page to return
+   * @param pageable the page to return and its sort
    */
+  @Query("SELECT cd FROM CheatingDetection cd WHERE cd.trainingInstanceId = :trainingInstanceId")
   Page<CheatingDetection> findAllByTrainingInstanceId(
       @Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
@@ -28,6 +30,9 @@ public interface CheatingDetectionRepository
    *
    * @param trainingInstanceId the training instance the returned sweeps belong to
    */
+  @Query(
+      "SELECT cd FROM CheatingDetection cd WHERE cd.trainingInstanceId = :trainingInstanceId "
+          + "ORDER BY cd.executeTime")
   List<CheatingDetection> findAllByTrainingInstanceId(
       @Param("trainingInstanceId") Long trainingInstanceId);
 

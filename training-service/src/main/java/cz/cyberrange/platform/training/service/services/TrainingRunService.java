@@ -342,15 +342,20 @@ public class TrainingRunService {
     if (!abstractLevel.getTrainingDefinition().getId().equals(trainingRunDefinition.getId())) {
       throw new EntityConflictException(
           new EntityErrorDetail(
-              "Requested level (ID: "
-                  + levelId
-                  + ") is not part of the training run (ID: "
-                  + runId
-                  + ")."));
+              AbstractLevel.class,
+              "id",
+              levelId.getClass(),
+              levelId,
+              "Requested level is not part of the training run (ID: " + runId + ")."));
     }
     if (abstractLevel.getOrder() > trainingRun.getCurrentLevel().getOrder()) {
       throw new EntityConflictException(
-          new EntityErrorDetail("Requested level (ID: " + levelId + ") hasn't been visited yet"));
+          new EntityErrorDetail(
+              AbstractLevel.class,
+              "id",
+              levelId.getClass(),
+              levelId,
+              "Requested level hasn't been visited yet."));
     }
     return abstractLevel;
   }

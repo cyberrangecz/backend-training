@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -53,9 +54,13 @@ public interface AbstractLevelRepository
    * Find first level for particular training definition.
    *
    * @param trainingDefinitionId the training definition id
+   * @param pageable the page to return; its sort orders levels of equal order
    * @return {@link AbstractLevel}s associated with {@link
-   *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition}
+   *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition}, by level order
    */
+  @Query(
+      "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId "
+          + "ORDER BY l.order")
   List<AbstractLevel> findFirstLevelByTrainingDefinitionId(
       @Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
 

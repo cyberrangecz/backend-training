@@ -1,13 +1,11 @@
 package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Encapsulates information about Training Definition including its authoring and lifecycle data */
 @Data
@@ -42,8 +40,7 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
    */
   @Schema(
       description = "Set by the server to the time of the last change.",
-      example = "2017-10-19T10:23:54Z")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+      example = "2017-10-19T10:23:54.000Z")
   private LocalDateTime lastEdited;
 
   /**
@@ -60,7 +57,6 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
    */
   @Schema(
       description = "Set by the server when the definition is created.",
-      example = "2017-10-19T10:23:54Z")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+      example = "2017-10-19T10:23:54.000Z")
   private LocalDateTime createdAt;
 }

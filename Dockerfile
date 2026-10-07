@@ -1,7 +1,7 @@
 ARG PROJECT_ARTIFACT_ID=training
 
 ############ BUILD STAGE ############
-FROM maven:3.9.11-eclipse-temurin-25 AS build
+FROM maven:3.10.0-eclipse-temurin-25 AS build
 
 WORKDIR /app
 
@@ -31,6 +31,7 @@ ARG PROJECT_ARTIFACT_ID
 ENV PROJECT_ARTIFACT_ID=${PROJECT_ARTIFACT_ID}
 
 COPY etc/$PROJECT_ARTIFACT_ID.properties /app/etc/$PROJECT_ARTIFACT_ID.properties
+COPY etc/logback-spring.xml /app/etc/logback-spring.xml
 COPY entrypoint.sh /app/entrypoint.sh
 COPY --from=build /app/$PROJECT_ARTIFACT_ID.jar ./
 
