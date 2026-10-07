@@ -59,7 +59,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -81,7 +80,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TrainingRunFacade {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
-  private static final int TIME_TO_PROPAGATE_EVENTS = 5;
 
   @Value("${central.syslog.ip:127.0.0.1}")
   private String centralSyslogIp;
@@ -467,8 +465,7 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Finishes a training run, then blocks the calling thread for a fixed delay to let its audited
-   * events propagate before returning.
+   * Finishes a training run.
    *
    * @param trainingRunId id of Training Run to be finished.
    */
@@ -478,7 +475,6 @@ public class TrainingRunFacade {
   @TransactionalWO
   public void finishTrainingRun(Long trainingRunId) {
     trainingRunService.finishTrainingRun(trainingRunId);
-    waitToPropagateEvents();
   }
 
   /**
@@ -530,10 +526,10 @@ public class TrainingRunFacade {
   /**
    * Finds Training Runs by their ids.
    *
-   * <p>The {@code sandboxInstanceRefId} field is masked according to caller privilege:
-   * administrators and organizers of the runs see the plain sandbox UUID for every run; all other
-   * callers see a plain UUID only for their own run and the SHA-256 hash of the UUID for all other
-   * runs.
+   * <p>Only an administrator, the organizer of every listed run, or the participant of every listed
+   * run is admitted, so a trainee receives only their own runs, each with its plain sandbox UUID.
+   * For a caller who is neither administrator nor organizer, any run that is not the caller's own
+   * would carry the SHA-256 hash of its sandbox UUID instead.
    *
    * @param ids the ids of Training Runs to return.
    * @return List of requested {@link TrainingRunBasicDTO}.
@@ -893,13 +889,5 @@ public class TrainingRunFacade {
                   .getExtendedMatchingStatements()
                   .forEach(statementDTO -> statementDTO.setCorrectOptionOrder(null));
             });
-  }
-
-  private void waitToPropagateEvents() {
-    try {
-      TimeUnit.SECONDS.sleep(TIME_TO_PROPAGATE_EVENTS);
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-    }
   }
 }

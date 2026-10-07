@@ -24,12 +24,6 @@ import lombok.ToString;
 @Table(name = "cheating_detection")
 @NamedQueries({
   @NamedQuery(
-      name = "CheatingDetection.findAllByTrainingInstanceId",
-      query =
-          "SELECT cd FROM CheatingDetection cd "
-              + "WHERE cd.trainingInstanceId = :trainingInstanceId "
-              + "ORDER BY cd.executeTime"),
-  @NamedQuery(
       name = "CheatingDetection.findCheatingDetectionById",
       query = "SELECT cd FROM CheatingDetection cd " + "WHERE cd.id = :cheatingDetectionId"),
   @NamedQuery(

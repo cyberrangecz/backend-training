@@ -52,51 +52,6 @@ import org.hibernate.type.SqlTypes;
       name = "TrainingRun.existsAnyForTrainingInstance",
       query =
           "SELECT (COUNT(tr) > 0) FROM TrainingRun tr INNER JOIN tr.trainingInstance ti WHERE ti.id = :trainingInstanceId"),
-  // Named "ParticipantRefId" but, unlike a Spring Data derived method of that name, matches on
-  // pr.userRefId: takes the external, cross-service identifier of the participant, not the local
-  // UserRef primary key.
-  @NamedQuery(
-      name = "TrainingRun.findAllByParticipantRefId",
-      query =
-          "SELECT tr FROM TrainingRun tr "
-              + "INNER JOIN tr.participantRef pr "
-              + "INNER JOIN tr.trainingInstance ti "
-              + "INNER JOIN ti.trainingDefinition "
-              + "WHERE pr.userRefId = :userRefId"),
-  // Matches on userRefId: takes the external, cross-service identifier of the participant.
-  @NamedQuery(
-      name = "TrainingRun.findAllByTrainingDefinitionIdAndParticipantUserRefId",
-      query =
-          "SELECT tr FROM TrainingRun tr "
-              + "INNER JOIN tr.participantRef pr "
-              + "INNER JOIN tr.trainingInstance ti "
-              + "INNER JOIN ti.trainingDefinition td "
-              + "WHERE td.id = :trainingDefinitionId AND pr.userRefId = :userRefId"),
-  @NamedQuery(
-      name = "TrainingRun.findAllActiveByTrainingInstanceId",
-      query =
-          "SELECT tr FROM TrainingRun tr "
-              + "INNER JOIN tr.trainingInstance ti "
-              + "WHERE ti.id = :trainingInstanceId AND tr.state <> 'ARCHIVED'"),
-  @NamedQuery(
-      name = "TrainingRun.findAllInactiveByTrainingInstanceId",
-      query =
-          "SELECT tr FROM TrainingRun tr "
-              + "INNER JOIN tr.trainingInstance ti "
-              + "WHERE ti.id = :trainingInstanceId AND tr.state = 'ARCHIVED'"),
-  @NamedQuery(
-      name = "TrainingRun.findAllFinishedByTrainingInstanceId",
-      query =
-          "SELECT tr FROM TrainingRun tr "
-              + "INNER JOIN tr.trainingInstance ti "
-              + "WHERE ti.id = :trainingInstanceId AND tr.state = 'FINISHED'"),
-  @NamedQuery(
-      name = "TrainingRun.findAllByTrainingDefinitionId",
-      query =
-          "SELECT tr FROM TrainingRun tr "
-              + "INNER JOIN tr.trainingInstance ti "
-              + "INNER JOIN ti.trainingDefinition td "
-              + "WHERE td.id = :trainingDefinitionId"),
   @NamedQuery(
       name = "TrainingRun.findAllSandboxIdsByTrainingInstanceId",
       query =

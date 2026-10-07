@@ -51,6 +51,8 @@ public class CheatingDetectionExportFacade {
    * @param format the format the archive's entries other than the participant groups are written in
    * @return the zip archive as a {@link FileToReturnDTO}
    * @throws InternalServerErrorException if writing an entry to the archive fails
+   * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException if no cheating
+   *     detection with that id exists
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"

@@ -1,11 +1,9 @@
 package cz.cyberrange.platform.training.api.dto.run;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.Actions;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Encapsulates information about already accessed training run */
 @Data
@@ -18,12 +16,10 @@ public class AccessedTrainingRunDTO {
   @Schema(example = "Concluded Instance")
   private String title;
 
-  @Schema(example = "2016-10-19T10:23:54")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2016-10-19T10:23:54.000Z")
   private LocalDateTime trainingInstanceStartDate;
 
-  @Schema(example = "2017-10-19T10:23:54")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2017-10-19T10:23:54.000Z")
   private LocalDateTime trainingInstanceEndDate;
 
   /** One-based position of the current level, the stored zero-based level order plus one */

@@ -41,11 +41,11 @@ public abstract class AbstractEventDTO {
   private String type;
 
   /**
-   * For a console command, copied unchanged from an already-parsed {@code LocalDateTime}. For a
-   * training event, converted by {@code EventMapper} from the epoch-millisecond value the audit
-   * document stores, interpreted in the JVM's default time zone.
+   * Moment the event occurred, in UTC. For a console command, copied unchanged from an
+   * already-parsed {@code LocalDateTime}. For a training event, converted by {@code EventMapper}
+   * from the epoch-millisecond value the audit document stores.
    */
-  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2021-03-24T12:00:00")
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2021-03-24T12:00:00.000Z")
   private LocalDateTime timestamp;
 
   @Schema(example = "db5c9da0-e2d9-482a-a924-a12def8ac2ef")

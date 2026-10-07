@@ -2,6 +2,8 @@ package cz.cyberrange.platform.training.rest.utils.error;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -19,11 +21,11 @@ import org.springframework.http.HttpStatus;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
 
-  /** Epoch millisecond at which the handler that produced this error ran */
+  /** UTC moment at which the handler that produced this error ran */
   @Schema(
-      description = "When the error was produced, in milliseconds since the epoch",
-      example = "1789862400000")
-  private long timestamp;
+      description = "When the error was produced, as a UTC instant with millisecond precision",
+      example = "2026-10-06T11:34:04.071Z")
+  private LocalDateTime timestamp;
 
   /**
    * Status carried in the error body, which the handler also sets as the actual HTTP response
@@ -63,7 +65,7 @@ public class ApiError {
     this.status = httpStatus;
     this.message = message;
     this.path = path;
-    this.timestamp = System.currentTimeMillis();
+    this.timestamp = LocalDateTime.now(Clock.systemUTC());
   }
 
   /**
@@ -108,11 +110,11 @@ public class ApiError {
     return ApiError.of(httpStatus, message, error, "");
   }
 
-  public long getTimestamp() {
+  public LocalDateTime getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(long timestamp) {
+  public void setTimestamp(LocalDateTime timestamp) {
     this.timestamp = timestamp;
   }
 

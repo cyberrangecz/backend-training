@@ -28,26 +28,6 @@ import org.hibernate.type.SqlTypes;
       })
 })
 @NamedQueries({
-  @NamedQuery(
-      name = "TrainingDefinition.findAllByState",
-      query = "SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state"),
-  // Matches on userRefId: takes the external, cross-service identifier of the user.
-  @NamedQuery(
-      name = "TrainingDefinition.findAllForOrganizersUnreleased",
-      query =
-          "SELECT DISTINCT td FROM TrainingDefinition td "
-              + "LEFT JOIN td.betaTestingGroup bt "
-              + "LEFT JOIN bt.organizers org "
-              + "WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'"),
-  // Matches on userRefId: takes the external, cross-service identifier of the user.
-  @NamedQuery(
-      name = "TrainingDefinition.findAllForDesignersAndOrganizersUnreleased",
-      query =
-          "SELECT DISTINCT td FROM TrainingDefinition td "
-              + "LEFT JOIN td.betaTestingGroup bt "
-              + "LEFT JOIN bt.organizers org "
-              + "LEFT JOIN td.authors aut "
-              + "WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'"),
   // Matches on userRefId: takes the external, cross-service identifier of the user.
   @NamedQuery(
       name = "TrainingDefinition.findPlayedDefinitionIdsByUser",

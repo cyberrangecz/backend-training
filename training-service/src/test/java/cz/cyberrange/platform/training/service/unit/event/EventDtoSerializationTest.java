@@ -51,7 +51,7 @@ class EventDtoSerializationTest {
       JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(dto));
 
       assertTrue(json.has("event_id"));
-      assertEquals(DOCUMENT_ID, json.get("event_id").asText());
+      assertEquals(DOCUMENT_ID, json.get("event_id").asString());
       assertFalse(json.has("eventId"));
     }
 
@@ -64,7 +64,7 @@ class EventDtoSerializationTest {
       JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(dto));
 
       assertTrue(json.has("event_id"));
-      assertEquals(DOCUMENT_ID, json.get("event_id").asText());
+      assertEquals(DOCUMENT_ID, json.get("event_id").asString());
       assertFalse(json.has("eventId"));
     }
   }
@@ -230,12 +230,12 @@ class EventDtoSerializationTest {
       JsonNode answers =
           objectMapper.readTree(objectMapper.writeValueAsString(event)).get("answers");
 
-      assertEquals("FFQ", answers.get(0).get("type").asText());
-      assertEquals("MCQ", answers.get(1).get("type").asText());
+      assertEquals("FFQ", answers.get(0).get("type").asString());
+      assertEquals("MCQ", answers.get(1).get("type").asString());
     }
 
     private String discriminatorOf(EventAnswer answer) throws Exception {
-      return objectMapper.readTree(objectMapper.writeValueAsString(answer)).get("type").asText();
+      return objectMapper.readTree(objectMapper.writeValueAsString(answer)).get("type").asString();
     }
 
     private <T> AnswerSelection<T> selection(T value, Boolean correct) {

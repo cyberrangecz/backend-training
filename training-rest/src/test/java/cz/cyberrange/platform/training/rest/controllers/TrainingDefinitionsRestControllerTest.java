@@ -35,6 +35,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.enums.LevelType;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
@@ -67,7 +68,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
@@ -117,10 +117,7 @@ public class TrainingDefinitionsRestControllerTest {
 
   @BeforeEach
   public void init() {
-    JsonMapper snakeCaseMapper =
-        JsonMapper.builderWithJackson2Defaults()
-            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-            .build();
+    JsonMapper snakeCaseMapper = ObjectConverter.restResponseMapper();
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingDefinitionsRestController =
@@ -304,11 +301,11 @@ public class TrainingDefinitionsRestControllerTest {
                 post("/training-definitions")
                     .content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                     .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isUnprocessableEntity())
+            .andExpect(status().isUnprocessableContent())
             .andReturn()
             .getResponse();
     ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, error.getStatus());
+    assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, error.getStatus());
   }
 
   @Test
@@ -724,12 +721,12 @@ public class TrainingDefinitionsRestControllerTest {
                         trainingDefinitionDTO1.getId(),
                         LevelType.TRAINING)
                     .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isUnprocessableEntity())
+            .andExpect(status().isUnprocessableContent())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andReturn()
             .getResponse();
     ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, error.getStatus());
+    assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, error.getStatus());
     assertEquals("The requested data cannot be processed.", error.getMessage());
   }
 

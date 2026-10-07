@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Entity by the {@code @ResponseStatus} on this type.
  */
 @ResponseStatus(
-    value = HttpStatus.UNPROCESSABLE_ENTITY,
+    value = HttpStatus.UNPROCESSABLE_CONTENT,
     reason = "The requested data cannot be processed.")
 public class UnprocessableEntityException extends ExceptionWithEntity {
 

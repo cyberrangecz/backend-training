@@ -24,12 +24,6 @@ import lombok.ToString;
 @Table(name = "detection_event_participant")
 @NamedQueries({
   @NamedQuery(
-      name = "DetectionEventParticipant.findAllByEventId",
-      query =
-          "SELECT dep FROM DetectionEventParticipant dep "
-              + "WHERE dep.detectionEventId = :eventId "
-              + "ORDER BY dep.occurredAt"),
-  @NamedQuery(
       name = "DetectionEventParticipant.deleteAllParticipantsByCheatingDetectionId",
       query =
           "DELETE FROM DetectionEventParticipant dep WHERE dep.cheatingDetectionId = :cheatingDetectionId")

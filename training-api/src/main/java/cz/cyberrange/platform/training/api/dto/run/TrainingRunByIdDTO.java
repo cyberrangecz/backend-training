@@ -1,12 +1,10 @@
 package cz.cyberrange.platform.training.api.dto.run;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.enums.TRState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Encapsulates information about Training Run */
 @Data
@@ -16,12 +14,10 @@ public class TrainingRunByIdDTO {
   @Schema(example = "1")
   private Long id;
 
-  @Schema(example = "2016-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2016-10-19T08:23:54.000Z")
   private LocalDateTime startTime;
 
-  @Schema(example = "2022-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2022-10-19T08:23:54.000Z")
   private LocalDateTime endTime;
 
   /** Copied from the persisted run's own field, which no code in this service ever sets */

@@ -1,13 +1,11 @@
 package cz.cyberrange.platform.training.api.dto.traininginstance;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /** Encapsulates information about Training Instance */
 @Data
@@ -36,8 +34,7 @@ public class TrainingInstanceDTO extends TrainingInstanceBasicDTO {
   @Schema(example = "1")
   private Long poolId;
 
-  @Schema(example = "2017-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2017-10-19T08:23:54.000Z")
   private LocalDateTime lastEdited;
 
   @Schema(example = "John Doe")

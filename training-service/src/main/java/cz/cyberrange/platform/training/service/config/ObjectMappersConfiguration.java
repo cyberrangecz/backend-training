@@ -1,15 +1,19 @@
 package cz.cyberrange.platform.training.service.config;
 
+import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
+import java.time.LocalDateTime;
 import org.springframework.boot.jackson.autoconfigure.JsonFactoryBuilderCustomizer;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.core.json.JsonFactoryBuilder;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
 /**
@@ -53,8 +57,10 @@ public class ObjectMappersConfiguration {
   }
 
   /**
-   * Applies the Jackson 2 defaults, then keeps properties in their declared order, names them in
-   * snake case, and writes a date or time in its textual form rather than as a number.
+   * Applies the Jackson 2 defaults, then ignores properties the target type does not declare when
+   * reading, keeps properties in their declared order, names them in snake case, writes a date or
+   * time in its textual form rather than as a number, and writes every {@link LocalDateTime} as a
+   * UTC instant through {@link LocalDateTimeUTCSerializer}.
    *
    * @param builder the mapper builder to configure
    * @param <B> the concrete builder type
@@ -63,8 +69,12 @@ public class ObjectMappersConfiguration {
   private static <B extends MapperBuilder<?, B>> B applyMappingSettings(B builder) {
     return builder
         .configureForJackson2()
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
         .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-        .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS);
+        .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .addModule(
+            new SimpleModule("utc-local-date-time")
+                .addSerializer(LocalDateTime.class, new LocalDateTimeUTCSerializer()));
   }
 }

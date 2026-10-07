@@ -825,49 +825,50 @@ public class TrainingDefinitionService {
   public void switchState(
       Long definitionId, cz.cyberrange.platform.training.api.enums.TDState state) {
     TrainingDefinition trainingDefinition = findById(definitionId);
-    if (trainingDefinition.getState().name().equals(state.name())) {
+    TDState currentState = trainingDefinition.getState();
+    TDState requestedState = TDState.valueOf(state.name());
+    if (currentState == requestedState) {
       return;
     }
-    switch (trainingDefinition.getState()) {
-      case UNRELEASED:
-        if (state.equals(cz.cyberrange.platform.training.api.enums.TDState.RELEASED))
-          trainingDefinition.setState(TDState.RELEASED);
-        else
-          throw new EntityConflictException(
-              new EntityErrorDetail(
-                  TrainingDefinition.class,
-                  "id",
-                  definitionId.getClass(),
-                  definitionId,
-                  "Cannot switch from" + trainingDefinition.getState() + " to " + state));
-        break;
-      case RELEASED:
-        if (state.equals(cz.cyberrange.platform.training.api.enums.TDState.ARCHIVED))
-          trainingDefinition.setState(TDState.ARCHIVED);
-        else if (state.equals(cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED)) {
-          if (trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
-            throw new EntityConflictException(
-                new EntityErrorDetail(
-                    TrainingDefinition.class,
-                    "id",
-                    definitionId.getClass(),
-                    definitionId,
-                    "Cannot update training definition with already created training instance(s). "
-                        + "Remove training instance(s) before changing the state from released to unreleased training definition."));
-          }
-          trainingDefinition.setState((TDState.UNRELEASED));
-        }
-        break;
-      default:
+    if (currentState == TDState.UNRELEASED && requestedState == TDState.RELEASED) {
+      trainingDefinition.setState(TDState.RELEASED);
+    } else if (currentState == TDState.RELEASED && requestedState == TDState.ARCHIVED) {
+      trainingDefinition.setState(TDState.ARCHIVED);
+    } else if (currentState == TDState.RELEASED && requestedState == TDState.UNRELEASED) {
+      if (trainingInstanceRepository.existsAnyForTrainingDefinition(definitionId)) {
         throw new EntityConflictException(
             new EntityErrorDetail(
                 TrainingDefinition.class,
                 "id",
                 definitionId.getClass(),
                 definitionId,
-                "Cannot switch from " + trainingDefinition.getState() + " to " + state));
+                "Cannot update training definition with already created training instance(s). "
+                    + "Remove training instance(s) before changing the state from released to unreleased training definition."));
+      }
+      trainingDefinition.setState(TDState.UNRELEASED);
+    } else {
+      throw stateSwitchConflict(definitionId, currentState, requestedState);
     }
     auditAndSave(trainingDefinition);
+  }
+
+  /**
+   * Builds the conflict refusing a move of a training definition between two states.
+   *
+   * @param definitionId id of the definition the move was requested for
+   * @param currentState the state the definition is in
+   * @param requestedState the state the move was requested to
+   * @return the conflict naming both states
+   */
+  private static EntityConflictException stateSwitchConflict(
+      Long definitionId, TDState currentState, TDState requestedState) {
+    return new EntityConflictException(
+        new EntityErrorDetail(
+            TrainingDefinition.class,
+            "id",
+            definitionId.getClass(),
+            definitionId,
+            "Cannot switch from " + currentState + " to " + requestedState));
   }
 
   /**

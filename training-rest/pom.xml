@@ -44,21 +44,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc-test</artifactId>
             <scope>test</scope>
         </dependency>
         <!--COMPILE (DEFAULT SCOPE)-->
@@ -69,9 +58,23 @@
 
         <!--TEST-->
         <dependency>
-            <groupId>com.vmlens</groupId>
-            <artifactId>concurrent-junit</artifactId>
-            <version>${concurrent-junit.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -89,6 +92,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Failsafe: integration tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <forkCount>2</forkCount>
+                    <reuseForks>true</reuseForks>
+                </configuration>
             </plugin>
 
             <!-- Checkstyle: style & lint rules -->
@@ -126,7 +139,8 @@
 
     <profiles>
         <!--Generate OpenAPI documentation into doc-files, activated by -Dswagger.skip=false.
-            Runs only OpenApiDocsGeneratorTest, even when -DskipTests is given.-->
+            Runs only OpenApiDocumentGenerationIT, already in the package phase and even when
+            -DskipTests is given; needs Docker.-->
         <profile>
             <id>docs</id>
             <activation>
@@ -141,12 +155,27 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <skipTests>false</skipTests>
-                            <test>OpenApiDocsGeneratorTest</test>
-                            <systemPropertyVariables>
-                                <docs.output.directory>${project.basedir}/../doc-files</docs.output.directory>
-                            </systemPropertyVariables>
+                            <skip>true</skip>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <skipITs>false</skipITs>
+                            <test>OpenApiDocumentGenerationIT</test>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>generate-openapi-document</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

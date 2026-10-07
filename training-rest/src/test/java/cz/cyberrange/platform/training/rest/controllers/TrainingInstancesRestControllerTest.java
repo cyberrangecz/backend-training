@@ -24,6 +24,7 @@ import cz.cyberrange.platform.training.api.exceptions.errors.JavaApiError;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
@@ -57,7 +58,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
@@ -97,10 +97,7 @@ public class TrainingInstancesRestControllerTest {
 
   @BeforeEach
   public void init() throws Exception {
-    JsonMapper snakeCaseMapper =
-        JsonMapper.builderWithJackson2Defaults()
-            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-            .build();
+    JsonMapper snakeCaseMapper = ObjectConverter.restResponseMapper();
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade);

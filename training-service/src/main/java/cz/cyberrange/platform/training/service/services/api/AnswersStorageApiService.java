@@ -4,20 +4,28 @@ import cz.cyberrange.platform.training.api.exceptions.CustomWebClientException;
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.api.responses.SandboxAnswersInfo;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriBuilder;
 
 /**
  * Client for the answer-storage microservice, which holds the generated variable answers for
- * sandboxes. Each method issues one blocking HTTP call and rewraps a failing response, surfaced by
- * the underlying {@code WebClient} as a {@link CustomWebClientException}, into a {@link
+ * sandboxes. Each method issues blocking HTTP calls and rewraps a failing response, surfaced by the
+ * underlying {@code WebClient} as a {@link CustomWebClientException}, into a {@link
  * MicroserviceApiException} carrying a message naming the call that failed.
  */
 @Service
 public class AnswersStorageApiService {
+
+  private static final String SANDBOXES_PATH = "/sandboxes";
+  private static final int MAX_PAGE_SIZE = 2000;
+  private static final ParameterizedTypeReference<PageResultResource<SandboxAnswersInfo>>
+      SANDBOX_ANSWERS_PAGE_TYPE = new ParameterizedTypeReference<>() {};
 
   private final WebClient answersStorageWebClient;
 
@@ -145,27 +153,18 @@ public class AnswersStorageApiService {
   }
 
   /**
-   * Get all answers generated for the given cloud sandboxes.
+   * Get all answers generated for the given cloud sandboxes, reading every page answer storage
+   * holds for them.
    *
    * @param sandboxIds ids of the sandboxes.
+   * @return the answers of every matching sandbox
    * @throws MicroserviceApiException error with specific message when calling answers storage
    *     microservice.
    */
-  public PageResultResource<SandboxAnswersInfo> getAnswersBySandboxIds(List<String> sandboxIds) {
+  public List<SandboxAnswersInfo> getAnswersBySandboxIds(List<String> sandboxIds) {
     try {
-      return answersStorageWebClient
-          .get()
-          .uri(
-              uriBuilder ->
-                  uriBuilder
-                      .path("/sandboxes")
-                      .queryParam("sandboxRefId", sandboxIds)
-                      .queryParam("page", 0)
-                      .queryParam("size", Integer.MAX_VALUE)
-                      .build())
-          .retrieve()
-          .bodyToMono(new ParameterizedTypeReference<PageResultResource<SandboxAnswersInfo>>() {})
-          .block();
+      return getEverySandboxAnswersPage(
+          uriBuilder -> uriBuilder.queryParam("sandboxRefId", sandboxIds));
     } catch (CustomWebClientException ex) {
       throw new MicroserviceApiException(
           "Error when calling Answers Storage API to get correct answers for sandboxes (IDs: "
@@ -176,30 +175,21 @@ public class AnswersStorageApiService {
   }
 
   /**
-   * Get all answers generated for the local sandboxes by the users IDs and specific access token.
+   * Get all answers generated for the local sandboxes by the users IDs and specific access token,
+   * reading every page answer storage holds for them.
    *
    * @param accessToken token of the training instance
    * @param userIds ids of the users.
+   * @return the answers of every matching sandbox
    * @throws MicroserviceApiException error with specific message when calling answers storage
    *     microservice.
    */
-  public PageResultResource<SandboxAnswersInfo> getAnswersByAccessTokenAndUserIds(
+  public List<SandboxAnswersInfo> getAnswersByAccessTokenAndUserIds(
       String accessToken, List<Long> userIds) {
     try {
-      return answersStorageWebClient
-          .get()
-          .uri(
-              uriBuilder ->
-                  uriBuilder
-                      .path("/sandboxes")
-                      .queryParam("accessToken", accessToken)
-                      .queryParam("userId", userIds)
-                      .queryParam("page", 0)
-                      .queryParam("size", Integer.MAX_VALUE)
-                      .build())
-          .retrieve()
-          .bodyToMono(new ParameterizedTypeReference<PageResultResource<SandboxAnswersInfo>>() {})
-          .block();
+      return getEverySandboxAnswersPage(
+          uriBuilder ->
+              uriBuilder.queryParam("accessToken", accessToken).queryParam("userId", userIds));
     } catch (CustomWebClientException ex) {
       throw new MicroserviceApiException(
           "Error when calling Answers Storage API to get correct answers for local sandboxes (accessToken: "
@@ -209,5 +199,40 @@ public class AnswersStorageApiService {
               + ").",
           ex);
     }
+  }
+
+  /**
+   * Requests the sandbox answers matching the given filter page by page, each page as large as
+   * answer storage allows, until the last page has been read.
+   *
+   * @param filter adds the filtering query parameters to the request URI
+   * @return the answers of every page, in page order
+   * @throws CustomWebClientException when a page request fails
+   */
+  private List<SandboxAnswersInfo> getEverySandboxAnswersPage(UnaryOperator<UriBuilder> filter) {
+    List<SandboxAnswersInfo> answers = new ArrayList<>();
+    int pageNumber = 0;
+    int totalPages;
+    do {
+      int requestedPage = pageNumber;
+      PageResultResource<SandboxAnswersInfo> page =
+          answersStorageWebClient
+              .get()
+              .uri(
+                  uriBuilder ->
+                      filter
+                          .apply(uriBuilder.path(SANDBOXES_PATH))
+                          .queryParam("page", requestedPage)
+                          .queryParam("size", MAX_PAGE_SIZE)
+                          .build())
+              .retrieve()
+              .bodyToMono(SANDBOX_ANSWERS_PAGE_TYPE)
+              .blockOptional()
+              .orElseThrow();
+      answers.addAll(page.getContent());
+      totalPages = page.getPagination().getTotalPages();
+      pageNumber++;
+    } while (pageNumber < totalPages);
+    return answers;
   }
 }

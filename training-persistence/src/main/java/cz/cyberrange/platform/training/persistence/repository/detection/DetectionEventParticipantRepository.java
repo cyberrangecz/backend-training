@@ -19,14 +19,14 @@ public interface DetectionEventParticipantRepository
         QuerydslPredicateExecutor<DetectionEventParticipant> {
 
   /**
-   * Returns, as one page, the participants of one detection event, ordered by the moment their
-   * submission occurred.
+   * Returns, as one page, the participants of one detection event, ordered by the page's sort.
    *
    * @param eventId the detection event the returned participants are implicated in
-   * @param pageable the page to return
+   * @param pageable the page to return and its sort
    */
+  @Query("SELECT dep FROM DetectionEventParticipant dep WHERE dep.detectionEventId = :eventId")
   Page<DetectionEventParticipant> findAllByEventId(
-      @Param("eventId") Long eventId, @Param("pageable") Pageable pageable);
+      @Param("eventId") Long eventId, Pageable pageable);
 
   /**
    * Returns every participant of one detection event, ordered by the moment their submission
@@ -34,6 +34,9 @@ public interface DetectionEventParticipantRepository
    *
    * @param eventId the detection event the returned participants are implicated in
    */
+  @Query(
+      "SELECT dep FROM DetectionEventParticipant dep WHERE dep.detectionEventId = :eventId "
+          + "ORDER BY dep.occurredAt")
   List<DetectionEventParticipant> findAllByEventId(@Param("eventId") Long eventId);
 
   /**

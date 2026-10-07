@@ -7,7 +7,6 @@ package cz.cyberrange.platform.training.api.enums;
  * refused.
  */
 public enum TDState {
-  PRIVATED,
   RELEASED,
   ARCHIVED,
   UNRELEASED;

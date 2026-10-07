@@ -1464,8 +1464,6 @@ public class TestDataFactory {
         return cz.cyberrange.platform.training.api.enums.TDState.RELEASED;
       case ARCHIVED:
         return cz.cyberrange.platform.training.api.enums.TDState.ARCHIVED;
-      case PRIVATED:
-        return cz.cyberrange.platform.training.api.enums.TDState.PRIVATED;
     }
     return null;
   }

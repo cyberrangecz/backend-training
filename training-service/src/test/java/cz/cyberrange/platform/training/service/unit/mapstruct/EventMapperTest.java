@@ -230,8 +230,8 @@ class EventMapperTest {
       assertInstanceOf(TrainingRunFinishedDTO.class, result);
       assertCommonFields(event, result);
       TrainingRunFinishedDTO dto = (TrainingRunFinishedDTO) result;
-      assertEquals(event.getStartTime(), dto.getStartTime());
-      assertEquals(event.getEndTime(), dto.getEndTime());
+      assertEquals(LocalDateTime.of(1970, 1, 1, 0, 0, 1), dto.getStartTime());
+      assertEquals(LocalDateTime.of(1970, 1, 1, 0, 0, 2), dto.getEndTime());
     }
 
     @Test

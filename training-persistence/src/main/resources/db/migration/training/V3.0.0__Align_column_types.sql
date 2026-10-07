@@ -9,3 +9,7 @@ ALTER TABLE forbidden_command
 
 ALTER TABLE detected_forbidden_command
     ALTER COLUMN command_type TYPE int2 USING command_type::int2;
+
+UPDATE training_definition
+    SET state = 'UNRELEASED'
+    WHERE state = 'PRIVATED';

@@ -638,7 +638,7 @@ public class TrainingInstanceFacade {
   @TransactionalRO
   public List<AbstractEventDTO> getTrainingInstanceEvents(
       Long instanceId, String eventType, long sinceTimestampMs) {
-
+    trainingInstanceService.findById(instanceId);
     Long restrictToUserRefId =
         hasUnrestrictedEventAccess(instanceId)
             ? null

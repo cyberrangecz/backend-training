@@ -1,11 +1,9 @@
 package cz.cyberrange.platform.training.api.dto.archive;
 
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.TRState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.Data;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Snapshot of one participant's training run, written as a single JSON file into the training runs
@@ -25,12 +23,10 @@ public class TrainingRunArchiveDTO {
   @Schema(example = "1")
   private Long instanceId;
 
-  @Schema(example = "2016-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2016-10-19T08:23:54.000Z")
   private LocalDateTime startTime;
 
-  @Schema(example = "2022-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2022-10-19T08:23:54.000Z")
   private LocalDateTime endTime;
 
   private String eventLogReference;
