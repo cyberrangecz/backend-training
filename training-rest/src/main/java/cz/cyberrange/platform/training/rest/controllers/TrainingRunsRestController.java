@@ -12,6 +12,7 @@ import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.Question
 import cz.cyberrange.platform.training.api.dto.hint.HintDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.cyberrange.platform.training.api.dto.run.TraineeSandboxDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunBasicDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
@@ -221,7 +222,11 @@ public class TrainingRunsRestController {
       description =
           "Only a trainee or a training administrator may call it. A run of the caller already"
               + " under way is resumed instead of a second one being started. A new run is given a"
-              + " sandbox unless the instance uses a local environment.")
+              + " sandbox unless the instance uses a local environment. When trainees of the"
+              + " instance allocate their own sandboxes, the caller's sandbox is allocated here and"
+              + " the run is entered only once it is ready; until then the response carries no"
+              + " level, keeps allowAllocate false and lists the caller's sandboxes. A caller who"
+              + " has an active sandbox elsewhere must remove it first.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The run's current level and its context."),
     @ApiResponse(
@@ -256,6 +261,90 @@ public class TrainingRunsRestController {
           String accessToken) {
     AccessTrainingRunDTO accessTrainingRunDTO = trainingRunFacade.accessTrainingRun(accessToken);
     return ResponseEntity.ok(accessTrainingRunDTO);
+  }
+
+  /**
+   * Lists the sandboxes the logged in user allocated for themselves.
+   *
+   * @return the sandboxes of the logged in user
+   */
+  @Operation(
+      operationId = "getUserActiveSandboxes",
+      summary = "List the sandboxes the caller allocated for themselves",
+      description =
+          "Only a trainee or a training administrator may call it. Lists the caller's sandboxes in"
+              + " any state, including those being built or removed. Empty when the deployment"
+              + " does not let trainees allocate sandboxes.")
+  @ApiResponses(@ApiResponse(responseCode = "200", description = "The caller's sandboxes."))
+  @GetMapping(path = "/user-active-sandboxes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<TraineeSandboxDTO>> getUserActiveSandboxes() {
+    return ResponseEntity.ok(trainingRunFacade.findOwnSandboxes());
+  }
+
+  /**
+   * Asks the sandbox service to remove a sandbox the logged in user allocated for themselves.
+   *
+   * @param sandboxId the UUID of the sandbox
+   * @return the response entity
+   */
+  @Operation(
+      operationId = "requestTraineeSandboxCleanup",
+      summary = "Remove a sandbox the caller allocated",
+      description =
+          "Only a trainee or a training administrator may call it, for a sandbox they allocated"
+              + " for themselves. A running allocation is cancelled; a removal that failed is"
+              + " retried.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "The sandbox is being removed."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The first stage of the sandbox's allocation is running; retry later.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "403",
+        description = "The caller did not allocate such a sandbox.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
+  @PostMapping(path = "/user-sandboxes/{sandboxId}/cleanup")
+  public ResponseEntity<Void> requestTraineeSandboxCleanup(
+      @Parameter(description = "UUID of the sandbox.") @PathVariable("sandboxId")
+          String sandboxId) {
+    trainingRunFacade.removeOwnSandboxBySandboxId(sandboxId);
+    return ResponseEntity.noContent().build();
+  }
+
+  /**
+   * Asks the sandbox service to remove a sandbox the logged in user allocated for themselves,
+   * identified by its allocation unit, e.g. while the sandbox has no UUID yet.
+   *
+   * @param allocationUnitId the id of the sandbox's allocation unit
+   * @return the response entity
+   */
+  @Operation(
+      operationId = "requestTraineeSandboxCleanupByAllocationId",
+      summary = "Remove a sandbox the caller allocated, by its allocation unit",
+      description =
+          "Only a trainee or a training administrator may call it, for a sandbox they allocated"
+              + " for themselves. Works also while the sandbox has no UUID yet. A running"
+              + " allocation is cancelled; a removal that failed is retried.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "The sandbox is being removed."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The first stage of the sandbox's allocation is running; retry later.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "403",
+        description = "The caller did not allocate such a sandbox.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
+  @PostMapping(path = "/user-sandboxes/by-allocation/{allocationUnitId}/cleanup")
+  public ResponseEntity<Void> requestTraineeSandboxCleanupByAllocationId(
+      @Parameter(description = "Id of the sandbox's allocation unit.")
+          @PathVariable("allocationUnitId")
+          Integer allocationUnitId) {
+    trainingRunFacade.removeOwnSandbox(allocationUnitId);
+    return ResponseEntity.noContent().build();
   }
 
   /**
@@ -483,7 +572,11 @@ public class TrainingRunsRestController {
       summary = "Resume a training run",
       description =
           "A training administrator, or the run's own participant, may call it. On a training"
-              + " level, the response also carries the solution and hints already taken there.")
+              + " level, the response also carries the solution and hints already taken there."
+              + " When trainees of the instance allocate their own sandboxes and the run's sandbox"
+              + " is not ready, the response carries no level and lists the caller's sandboxes;"
+              + " allowAllocate is then true only when the run has no sandbox, which entering the"
+              + " instance's access token allocates.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The run's current level and its context."),
     @ApiResponse(

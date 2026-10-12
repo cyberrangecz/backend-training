@@ -213,6 +213,41 @@ public interface TrainingRunRepository
       @Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
 
   /**
+   * Finds the running training run of the given user for the instance with the given access token,
+   * whether or not a sandbox is assigned to it yet.
+   *
+   * @param accessToken the access token
+   * @param userRefId the cross-service user reference id of the participant
+   * @return the {@link TrainingRun} by user and access token
+   */
+  Optional<TrainingRun> findUnfinishedTrainingRunOfUser(
+      @Param("accessToken") String accessToken, @Param("userRefId") Long userRefId);
+
+  /**
+   * Finds the training runs that the given sandbox allocation units were allocated for, with their
+   * training instances.
+   *
+   * @param allocationIds the ids of the allocation units in the sandbox service
+   * @return the training runs, in no particular order
+   */
+  @Query(
+      "SELECT tr FROM TrainingRun tr JOIN FETCH tr.trainingInstance "
+          + "WHERE tr.sandboxInstanceAllocationId IN :allocationIds")
+  List<TrainingRun> findAllBySandboxInstanceAllocationIds(
+      @Param("allocationIds") Collection<Integer> allocationIds);
+
+  /**
+   * Checks whether a training run works, or worked before its sandbox was replaced or the run was
+   * archived, in the given sandbox.
+   *
+   * @param sandboxInstanceRefId the sandbox UUID to look for as the current sandbox
+   * @param previousSandboxInstanceRefId the sandbox UUID to look for as the previous sandbox
+   * @return true when such a run exists
+   */
+  boolean existsBySandboxInstanceRefIdOrPreviousSandboxInstanceRefId(
+      String sandboxInstanceRefId, String previousSandboxInstanceRefId);
+
+  /**
    * Exists any for training instance boolean.
    *
    * @param trainingInstanceId the training instance id

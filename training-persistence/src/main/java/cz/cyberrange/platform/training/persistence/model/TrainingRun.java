@@ -35,6 +35,16 @@ import org.hibernate.annotations.Type;
               + "JOIN FETCH tr.participantRef pr "
               + "JOIN FETCH tr.currentLevel cl "
               + "WHERE ti.accessToken = :accessToken AND pr.userRefId = :userRefId AND tr.sandboxInstanceRefId IS NOT NULL AND tr.state NOT LIKE 'FINISHED'"),
+  // Matches on userRefId: takes the external, cross-service identifier of the participant.
+  @NamedQuery(
+      name = "TrainingRun.findUnfinishedTrainingRunOfUser",
+      query =
+          "SELECT tr FROM TrainingRun tr "
+              + "JOIN FETCH tr.trainingInstance ti "
+              + "JOIN FETCH tr.participantRef pr "
+              + "JOIN FETCH tr.currentLevel cl "
+              + "WHERE ti.accessToken = :accessToken AND pr.userRefId = :userRefId "
+              + "AND tr.state = 'RUNNING'"),
   @NamedQuery(
       name = "TrainingRun.findByIdWithLevel",
       query =

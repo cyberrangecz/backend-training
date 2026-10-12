@@ -29,13 +29,47 @@ public class AccessTrainingRunDTO {
   private String sandboxInstanceRefId;
 
   /** The training run's current level, not necessarily the first level of the definition */
-  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(
+      description =
+          "The run's current level. Absent when the trainee stays on the run overview because the"
+              + " run's sandbox is not ready.")
   private AbstractLevelDTO abstractLevelDTO;
 
   private List<BasicLevelInfoDTO> infoAboutLevels;
 
   @Schema(example = "1")
   private Long instanceId;
+
+  @Schema(example = "Linux basics")
+  private String trainingInstanceTitle;
+
+  @Schema(
+      description =
+          "True when the instance is managed: trainees work only in sandboxes its organizer"
+              + " allocated.",
+      example = "false")
+  private boolean managed;
+
+  /**
+   * False when the trainee stays on the run overview because a sandbox they allocated is not ready
+   * yet, or blocks allocating another one. True also on a response without a level, meaning the run
+   * has no sandbox yet and entering the instance's access token allocates one.
+   */
+  @Schema(
+      description =
+          "False when the trainee stays on the run overview: a sandbox they allocated is still"
+              + " being built or removed, or blocks allocating another one. A response without a"
+              + " level where this is true means the run has no sandbox yet, and entering the"
+              + " access token allocates one.",
+      example = "true")
+  private boolean allowAllocate = true;
+
+  /** The sandboxes the trainee allocated, set only when the trainee stays on the run overview */
+  @Schema(
+      description =
+          "The sandboxes the caller allocated for themselves, set only when they stay on the run"
+              + " overview.")
+  private List<TraineeSandboxDTO> activeSandboxes;
 
   @Schema(example = "2016-10-19 10:23:54+02")
   @JsonSerialize(using = LocalDateTimeUTCSerializer.class)

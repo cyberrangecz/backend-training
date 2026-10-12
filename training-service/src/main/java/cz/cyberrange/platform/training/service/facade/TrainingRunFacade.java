@@ -13,6 +13,7 @@ import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.Question
 import cz.cyberrange.platform.training.api.dto.hint.HintDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.cyberrange.platform.training.api.dto.run.TraineeSandboxDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunBasicDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
@@ -20,7 +21,10 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPrevie
 import cz.cyberrange.platform.training.api.enums.Actions;
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
+import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
+import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.ForbiddenException;
+import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.api.responses.VariantAnswer;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
@@ -43,6 +47,8 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
 import cz.cyberrange.platform.training.service.services.SecurityService;
+import cz.cyberrange.platform.training.service.services.TraineeSandboxService;
+import cz.cyberrange.platform.training.service.services.TraineeSandboxService.SandboxReadiness;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.AnswersStorageApiService;
@@ -71,6 +77,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClientException;
 
 /**
  * Orchestrates a trainee's progress through a training run between the REST layer and the
@@ -93,6 +100,7 @@ public class TrainingRunFacade {
   private final TrainingRunMapper trainingRunMapper;
   private final LevelMapper levelMapper;
   private final HintMapper hintMapper;
+  private final TraineeSandboxService traineeSandboxService;
 
   @Autowired
   public TrainingRunFacade(
@@ -102,7 +110,8 @@ public class TrainingRunFacade {
       UserService userService,
       TrainingRunMapper trainingRunMapper,
       LevelMapper levelMapper,
-      HintMapper hintMapper) {
+      HintMapper hintMapper,
+      TraineeSandboxService traineeSandboxService) {
     this.trainingRunService = trainingRunService;
     this.answersStorageApiService = answersStorageApiService;
     this.securityService = securityService;
@@ -110,6 +119,7 @@ public class TrainingRunFacade {
     this.trainingRunMapper = trainingRunMapper;
     this.levelMapper = levelMapper;
     this.hintMapper = hintMapper;
+    this.traineeSandboxService = traineeSandboxService;
   }
 
   /**
@@ -216,6 +226,11 @@ public class TrainingRunFacade {
    * participant has already taken for it, if any, and every hint the participant has already taken
    * for that same level.
    *
+   * <p>When trainees of the run's instance allocate their own sandboxes, first brings the run's
+   * sandbox up to date with the sandbox service. Until it is ready, the response carries no level
+   * and keeps the trainee on the run overview; a run left with no sandbox gets one only through
+   * {@link #accessTrainingRun}.
+   *
    * @param trainingRunId id of Training Run to be resumed.
    * @return {@link AccessTrainingRunDTO} describing the run's current level
    */
@@ -224,6 +239,23 @@ public class TrainingRunFacade {
           + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   @TransactionalWO
   public AccessTrainingRunDTO resumeTrainingRun(Long trainingRunId) {
+    if (traineeSandboxService.isEnabled()) {
+      TrainingRun runToResume = trainingRunService.findById(trainingRunId);
+      if (traineeSandboxService.isEnabledFor(runToResume.getTrainingInstance())) {
+        traineeSandboxService.lockUser(runToResume.getParticipantRef().getUserRefId());
+        traineeSandboxService.reload(runToResume);
+        trainingRunService.checkTrainingRunResumable(runToResume);
+        SandboxReadiness readiness = traineeSandboxService.refreshSandbox(runToResume);
+        if (readiness == SandboxReadiness.FIRST_READY) {
+          trainingRunService.auditTrainingRunStarted(runToResume);
+          return convertToAccessTrainingRunDTO(runToResume);
+        }
+        if (readiness != SandboxReadiness.READY) {
+          return convertToRunOverviewDTO(
+              runToResume.getTrainingInstance(), trainingRunId, readiness == SandboxReadiness.NONE);
+        }
+      }
+    }
     TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
     AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
     if (trainingRun.getCurrentLevel() instanceof TrainingLevel) {
@@ -252,6 +284,10 @@ public class TrainingRunFacade {
    * sandbox, or auditing the run as started — the acquisition lock is released before the exception
    * is rethrown.
    *
+   * <p>When trainees of the instance allocate their own sandboxes, the run is entered only once its
+   * sandbox is ready; until then the response carries no level and keeps the user on the run
+   * overview, see {@link #accessTrainingRunWithOwnSandbox}.
+   *
    * @param accessToken of one training instance
    * @return {@link AccessTrainingRunDTO} describing the resumed or newly created run
    */
@@ -262,6 +298,9 @@ public class TrainingRunFacade {
         trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
     // checking if the user is not accessing to his existing training run (resume action)
     Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
+    if (traineeSandboxService.isEnabledFor(trainingInstance)) {
+      return accessTrainingRunWithOwnSandbox(trainingInstance, accessToken, participantRefId);
+    }
     Optional<TrainingRun> accessedTrainingRun =
         trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
     if (accessedTrainingRun.isPresent()) {
@@ -291,6 +330,101 @@ public class TrainingRunFacade {
     }
   }
 
+  /**
+   * Accesses a training instance whose trainees allocate their own sandboxes. Enters the user's
+   * running run of the instance once its sandbox is ready, starting the run when the sandbox is its
+   * first. Otherwise keeps the user on the run overview: creates the run when there is none, gives
+   * it a sandbox unless the user already has an active sandbox elsewhere, and lists the user's
+   * sandboxes. A user whose active sandbox keeps the instance from giving them one gets no run.
+   *
+   * @throws EntityConflictException when the instance has ended, which its access token is still
+   *     accepted for a short while
+   */
+  private AccessTrainingRunDTO accessTrainingRunWithOwnSandbox(
+      TrainingInstance trainingInstance, String accessToken, Long participantRefId) {
+    if (trainingInstance.getEndTime().isBefore(LocalDateTime.now(Clock.systemUTC()))) {
+      throw new EntityConflictException(
+          new EntityErrorDetail(
+              TrainingInstance.class,
+              "id",
+              Long.class,
+              trainingInstance.getId(),
+              "The training instance has ended, so no sandbox can be allocated for it."));
+    }
+    String userSub = securityService.getOidcSub();
+    traineeSandboxService.lockUser(participantRefId);
+    Optional<TrainingRun> existingRun =
+        trainingRunService.findUnfinishedTrainingRunOfUser(accessToken, participantRefId);
+    if (existingRun.isPresent()) {
+      return enterTrainingRunWithOwnSandbox(existingRun.get(), userSub);
+    }
+    if (!traineeSandboxService.canProvideSandbox(userSub, trainingInstance.getPoolId())) {
+      return convertToRunOverviewDTO(trainingInstance, null, false);
+    }
+    trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(
+        participantRefId, trainingInstance.getId(), accessToken);
+    try {
+      TrainingRun trainingRun =
+          trainingRunService.createTrainingRun(trainingInstance, participantRefId);
+      return enterTrainingRunWithOwnSandbox(trainingRun, userSub);
+    } catch (Exception e) {
+      trainingRunService.deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(
+          participantRefId, trainingInstance.getId());
+      throw e;
+    }
+  }
+
+  /**
+   * Enters a run of the logged in user once its sandbox is ready, giving the run a sandbox when it
+   * has none. Starts the run when the sandbox is its first, and keeps the user on the run overview
+   * while the sandbox is not ready.
+   */
+  private AccessTrainingRunDTO enterTrainingRunWithOwnSandbox(
+      TrainingRun trainingRun, String userSub) {
+    SandboxReadiness readiness = traineeSandboxService.prepareSandbox(trainingRun, userSub);
+    if (readiness == SandboxReadiness.FIRST_READY) {
+      trainingRunService.auditTrainingRunStarted(trainingRun);
+      return convertToAccessTrainingRunDTO(trainingRun);
+    }
+    if (readiness == SandboxReadiness.READY) {
+      return convertToAccessTrainingRunDTO(
+          trainingRunService.resumeTrainingRun(trainingRun.getId()));
+    }
+    return convertToRunOverviewDTO(trainingRun.getTrainingInstance(), trainingRun.getId(), false);
+  }
+
+  /**
+   * Builds a response that keeps the trainee on the run overview: no level, and the sandboxes the
+   * logged in user allocated for themselves.
+   */
+  private AccessTrainingRunDTO convertToRunOverviewDTO(
+      TrainingInstance trainingInstance, Long trainingRunId, boolean allowAllocate) {
+    AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
+    accessTrainingRunDTO.setTrainingRunID(trainingRunId);
+    accessTrainingRunDTO.setInstanceId(trainingInstance.getId());
+    accessTrainingRunDTO.setTrainingInstanceTitle(trainingInstance.getTitle());
+    accessTrainingRunDTO.setShowStepperBar(trainingInstance.isShowStepperBar());
+    accessTrainingRunDTO.setBackwardMode(trainingInstance.isBackwardMode());
+    accessTrainingRunDTO.setSandboxDefinitionId(trainingInstance.getSandboxDefinitionId());
+    accessTrainingRunDTO.setAllowAllocate(allowAllocate);
+    accessTrainingRunDTO.setActiveSandboxes(findOwnSandboxesForOverview());
+    return accessTrainingRunDTO;
+  }
+
+  /**
+   * Lists the logged in user's sandboxes for the run overview, or none when the sandbox service
+   * fails to list them. The list only informs the user; failing to build it must not roll back a
+   * sandbox the same request has just allocated.
+   */
+  private List<TraineeSandboxDTO> findOwnSandboxesForOverview() {
+    try {
+      return traineeSandboxService.findOwnSandboxes(securityService.getOidcSub());
+    } catch (MicroserviceApiException | WebClientException ex) {
+      LOG.warn("Could not list the sandboxes of the logged in user: {}", ex.getMessage());
+      return List.of();
+    }
+  }
+
   private AccessTrainingRunDTO convertToAccessTrainingRunDTO(TrainingRun trainingRun) {
     AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
     accessTrainingRunDTO.setTrainingRunID(trainingRun.getId());
@@ -300,6 +434,8 @@ public class TrainingRunFacade {
         getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
     accessTrainingRunDTO.setSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
     accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+    accessTrainingRunDTO.setTrainingInstanceTitle(trainingRun.getTrainingInstance().getTitle());
+    accessTrainingRunDTO.setManaged(trainingRun.getTrainingInstance().isManaged());
     accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());
     accessTrainingRunDTO.setLocalEnvironment(
         trainingRun.getTrainingInstance().isLocalEnvironment());
@@ -353,6 +489,43 @@ public class TrainingRunFacade {
       }
     }
     return infoAboutLevels;
+  }
+
+  /**
+   * Lists the sandboxes the logged in user allocated for themselves, in any state. Empty when the
+   * deployment does not let trainees allocate sandboxes.
+   *
+   * @return the sandboxes of the logged in user
+   */
+  @IsTraineeOrAdmin
+  @TransactionalRO
+  public List<TraineeSandboxDTO> findOwnSandboxes() {
+    if (!traineeSandboxService.isEnabled()) {
+      return List.of();
+    }
+    return traineeSandboxService.findOwnSandboxes(securityService.getOidcSub());
+  }
+
+  /**
+   * Asks the sandbox service to remove a sandbox the logged in user allocated for themselves.
+   *
+   * @param allocationUnitId the id of the sandbox's allocation unit
+   * @throws ForbiddenException when the user did not allocate such a sandbox
+   */
+  @IsTraineeOrAdmin
+  public void removeOwnSandbox(Integer allocationUnitId) {
+    traineeSandboxService.removeOwnSandbox(securityService.getOidcSub(), allocationUnitId);
+  }
+
+  /**
+   * Asks the sandbox service to remove a sandbox the logged in user allocated for themselves.
+   *
+   * @param sandboxId the UUID of the sandbox
+   * @throws ForbiddenException when the user did not allocate such a sandbox
+   */
+  @IsTraineeOrAdmin
+  public void removeOwnSandboxBySandboxId(String sandboxId) {
+    traineeSandboxService.removeOwnSandboxBySandboxId(securityService.getOidcSub(), sandboxId);
   }
 
   /**
@@ -468,7 +641,8 @@ public class TrainingRunFacade {
 
   /**
    * Finishes a training run, then blocks the calling thread for a fixed delay to let its audited
-   * events propagate before returning.
+   * events propagate before returning. When the trainee allocated the run's sandbox, asks for the
+   * sandbox to be removed.
    *
    * @param trainingRunId id of Training Run to be finished.
    */
@@ -477,7 +651,10 @@ public class TrainingRunFacade {
           + "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
   @TransactionalWO
   public void finishTrainingRun(Long trainingRunId) {
-    trainingRunService.finishTrainingRun(trainingRunId);
+    TrainingRun trainingRun = trainingRunService.finishTrainingRun(trainingRunId);
+    if (traineeSandboxService.isEnabledFor(trainingRun.getTrainingInstance())) {
+      traineeSandboxService.removeSandboxOfFinishedRun(trainingRun);
+    }
     waitToPropagateEvents();
   }
 

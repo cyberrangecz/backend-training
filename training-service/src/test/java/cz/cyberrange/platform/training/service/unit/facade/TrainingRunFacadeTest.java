@@ -8,7 +8,12 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
+import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
+import cz.cyberrange.platform.training.api.dto.run.TraineeSandboxDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunBasicDTO;
+import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
+import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
+import cz.cyberrange.platform.training.api.exceptions.errors.PythonApiError;
 import cz.cyberrange.platform.training.api.responses.SandboxAnswersInfo;
 import cz.cyberrange.platform.training.api.responses.VariantAnswer;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
@@ -25,9 +30,13 @@ import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.*;
 import cz.cyberrange.platform.training.service.services.SecurityService;
+import cz.cyberrange.platform.training.service.services.TraineeSandboxService;
+import cz.cyberrange.platform.training.service.services.TraineeSandboxService.SandboxReadiness;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.AnswersStorageApiService;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +49,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 
 @SpringBootTest(
     classes = {
@@ -68,6 +78,7 @@ public class TrainingRunFacadeTest {
   @MockBean private SecurityService securityService;
   @MockBean private UserService userService;
   @MockBean private AnswersStorageApiService answersStorageApiService;
+  @MockBean private TraineeSandboxService traineeSandboxService;
 
   private TrainingRun trainingRun1, trainingRun2;
   private Hint hint;
@@ -90,7 +101,8 @@ public class TrainingRunFacadeTest {
             userService,
             trainingRunMapper,
             levelMapper,
-            hintMapper);
+            hintMapper,
+            traineeSandboxService);
 
     participant = new UserRef();
     participant.setUserRefId(5L);
@@ -202,6 +214,201 @@ public class TrainingRunFacadeTest {
     given(trainingRunService.resumeTrainingRun(anyLong())).willReturn(trainingRun1);
     trainingRunFacade.accessTrainingRun("password");
     then(trainingRunService).should().resumeTrainingRun(anyLong());
+  }
+
+  @Test
+  public void accessTrainingRunAllocatesOwnSandbox() {
+    List<TraineeSandboxDTO> ownSandboxes = List.of(new TraineeSandboxDTO());
+    givenTraineeAllocation();
+    given(trainingRunService.findUnfinishedTrainingRunOfUser("password", 1L))
+        .willReturn(Optional.empty());
+    given(traineeSandboxService.canProvideSandbox("sub", trainingInstance.getPoolId()))
+        .willReturn(true);
+    given(trainingRunService.createTrainingRun(trainingInstance, 1L)).willReturn(trainingRun1);
+    given(traineeSandboxService.prepareSandbox(trainingRun1, "sub"))
+        .willReturn(SandboxReadiness.NOT_READY);
+    given(traineeSandboxService.findOwnSandboxes("sub")).willReturn(ownSandboxes);
+
+    AccessTrainingRunDTO result = trainingRunFacade.accessTrainingRun("password");
+
+    then(traineeSandboxService).should().lockUser(1L);
+    then(trainingRunService)
+        .should()
+        .trAcquisitionLockToPreventManyRequestsFromSameUser(
+            1L, trainingInstance.getId(), "password");
+    then(traineeSandboxService).should().prepareSandbox(trainingRun1, "sub");
+    then(trainingRunService).should(never()).auditTrainingRunStarted(any(TrainingRun.class));
+    assertEquals(trainingRun1.getId(), result.getTrainingRunID());
+    assertNull(result.getAbstractLevelDTO());
+    assertFalse(result.isAllowAllocate());
+    assertEquals(ownSandboxes, result.getActiveSandboxes());
+  }
+
+  @Test
+  public void accessTrainingRunKeepsAllocationWhenListingSandboxesFails() {
+    givenTraineeAllocation();
+    given(trainingRunService.findUnfinishedTrainingRunOfUser("password", 1L))
+        .willReturn(Optional.empty());
+    given(traineeSandboxService.canProvideSandbox("sub", trainingInstance.getPoolId()))
+        .willReturn(true);
+    given(trainingRunService.createTrainingRun(trainingInstance, 1L)).willReturn(trainingRun1);
+    given(traineeSandboxService.prepareSandbox(trainingRun1, "sub"))
+        .willReturn(SandboxReadiness.NOT_READY);
+    given(traineeSandboxService.findOwnSandboxes("sub"))
+        .willThrow(
+            new MicroserviceApiException(
+                HttpStatus.BAD_GATEWAY, PythonApiError.of("Sandbox service is down.")));
+
+    AccessTrainingRunDTO result = trainingRunFacade.accessTrainingRun("password");
+
+    then(traineeSandboxService).should().prepareSandbox(trainingRun1, "sub");
+    then(trainingRunService)
+        .should(never())
+        .deleteTrAcquisitionLockToPreventManyRequestsFromSameUser(anyLong(), anyLong());
+    assertTrue(result.getActiveSandboxes().isEmpty());
+  }
+
+  @Test
+  public void accessTrainingRunWithActiveSandboxElsewhere() {
+    givenTraineeAllocation();
+    given(trainingRunService.findUnfinishedTrainingRunOfUser("password", 1L))
+        .willReturn(Optional.empty());
+    given(traineeSandboxService.canProvideSandbox("sub", trainingInstance.getPoolId()))
+        .willReturn(false);
+
+    AccessTrainingRunDTO result = trainingRunFacade.accessTrainingRun("password");
+
+    then(trainingRunService).should(never()).createTrainingRun(any(), anyLong());
+    then(traineeSandboxService).should(never()).prepareSandbox(any(), anyString());
+    assertNull(result.getTrainingRunID());
+    assertFalse(result.isAllowAllocate());
+  }
+
+  @Test
+  public void accessTrainingRunWhileOwnSandboxIsBuilt() {
+    givenTraineeAllocation();
+    given(trainingRunService.findUnfinishedTrainingRunOfUser("password", 1L))
+        .willReturn(Optional.of(trainingRun1));
+    given(traineeSandboxService.prepareSandbox(trainingRun1, "sub"))
+        .willReturn(SandboxReadiness.NOT_READY);
+
+    AccessTrainingRunDTO result = trainingRunFacade.accessTrainingRun("password");
+
+    then(trainingRunService).should(never()).resumeTrainingRun(anyLong());
+    assertEquals(trainingRun1.getId(), result.getTrainingRunID());
+    assertNull(result.getAbstractLevelDTO());
+    assertFalse(result.isAllowAllocate());
+  }
+
+  @Test
+  public void accessTrainingRunStartsRunOnFirstOwnSandbox() {
+    givenTraineeAllocation();
+    given(trainingRunService.findUnfinishedTrainingRunOfUser("password", 1L))
+        .willReturn(Optional.of(trainingRun1));
+    given(traineeSandboxService.prepareSandbox(trainingRun1, "sub"))
+        .willReturn(SandboxReadiness.FIRST_READY);
+
+    AccessTrainingRunDTO result = trainingRunFacade.accessTrainingRun("password");
+
+    then(trainingRunService).should().auditTrainingRunStarted(trainingRun1);
+    then(trainingRunService).should(never()).resumeTrainingRun(anyLong());
+    assertNotNull(result.getAbstractLevelDTO());
+    assertTrue(result.isAllowAllocate());
+  }
+
+  @Test
+  public void accessTrainingRunResumesRunInReadyOwnSandbox() {
+    givenTraineeAllocation();
+    given(trainingRunService.findUnfinishedTrainingRunOfUser("password", 1L))
+        .willReturn(Optional.of(trainingRun1));
+    given(traineeSandboxService.prepareSandbox(trainingRun1, "sub"))
+        .willReturn(SandboxReadiness.READY);
+    given(trainingRunService.resumeTrainingRun(trainingRun1.getId())).willReturn(trainingRun1);
+
+    AccessTrainingRunDTO result = trainingRunFacade.accessTrainingRun("password");
+
+    then(trainingRunService).should().resumeTrainingRun(trainingRun1.getId());
+    then(trainingRunService).should(never()).auditTrainingRunStarted(any(TrainingRun.class));
+    assertNotNull(result.getAbstractLevelDTO());
+  }
+
+  @Test
+  public void accessTrainingRunAfterInstanceEnded() {
+    givenTraineeAllocation();
+    trainingInstance.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(1));
+
+    assertThrows(
+        EntityConflictException.class, () -> trainingRunFacade.accessTrainingRun("password"));
+
+    then(traineeSandboxService).should(never()).prepareSandbox(any(), anyString());
+  }
+
+  @Test
+  public void resumeTrainingRunWithoutOwnSandbox() {
+    givenResumeWithTraineeAllocation(SandboxReadiness.NONE);
+
+    AccessTrainingRunDTO result = trainingRunFacade.resumeTrainingRun(trainingRun1.getId());
+
+    then(traineeSandboxService).should().lockUser(participant.getUserRefId());
+    then(traineeSandboxService).should().reload(trainingRun1);
+    then(trainingRunService).should().checkTrainingRunResumable(trainingRun1);
+    then(trainingRunService).should(never()).resumeTrainingRun(anyLong());
+    assertNull(result.getAbstractLevelDTO());
+    assertTrue(result.isAllowAllocate());
+  }
+
+  @Test
+  public void resumeTrainingRunWhileOwnSandboxIsBuilt() {
+    givenResumeWithTraineeAllocation(SandboxReadiness.NOT_READY);
+
+    AccessTrainingRunDTO result = trainingRunFacade.resumeTrainingRun(trainingRun1.getId());
+
+    assertNull(result.getAbstractLevelDTO());
+    assertFalse(result.isAllowAllocate());
+  }
+
+  @Test
+  public void resumeTrainingRunStartsRunOnFirstOwnSandbox() {
+    givenResumeWithTraineeAllocation(SandboxReadiness.FIRST_READY);
+
+    AccessTrainingRunDTO result = trainingRunFacade.resumeTrainingRun(trainingRun1.getId());
+
+    then(trainingRunService).should().auditTrainingRunStarted(trainingRun1);
+    then(trainingRunService).should(never()).resumeTrainingRun(anyLong());
+    assertNotNull(result.getAbstractLevelDTO());
+  }
+
+  @Test
+  public void finishTrainingRunRemovesOwnSandbox() {
+    given(trainingRunService.finishTrainingRun(trainingRun1.getId())).willReturn(trainingRun1);
+    given(traineeSandboxService.isEnabledFor(trainingInstance)).willReturn(true);
+
+    trainingRunFacade.finishTrainingRun(trainingRun1.getId());
+
+    then(traineeSandboxService).should().removeSandboxOfFinishedRun(trainingRun1);
+  }
+
+  private void givenResumeWithTraineeAllocation(SandboxReadiness readiness) {
+    given(traineeSandboxService.isEnabled()).willReturn(true);
+    given(traineeSandboxService.isEnabledFor(trainingInstance)).willReturn(true);
+    given(trainingRunService.findById(trainingRun1.getId())).willReturn(trainingRun1);
+    given(traineeSandboxService.refreshSandbox(trainingRun1)).willReturn(readiness);
+  }
+
+  @Test
+  public void findOwnSandboxesWhenTraineeAllocationDisabled() {
+    assertTrue(trainingRunFacade.findOwnSandboxes().isEmpty());
+    then(traineeSandboxService).should(never()).findOwnSandboxes(anyString());
+  }
+
+  private void givenTraineeAllocation() {
+    given(trainingRunService.getTrainingInstanceForParticularAccessToken("password"))
+        .willReturn(trainingInstance);
+    given(securityService.getUserRefIdFromUserAndGroup()).willReturn(1L);
+    given(securityService.getOidcSub()).willReturn("sub");
+    given(traineeSandboxService.isEnabled()).willReturn(true);
+    given(traineeSandboxService.isEnabledFor(trainingInstance)).willReturn(true);
+    trainingInstance.setEndTime(LocalDateTime.now(Clock.systemUTC()).plusHours(1));
   }
 
   @Test

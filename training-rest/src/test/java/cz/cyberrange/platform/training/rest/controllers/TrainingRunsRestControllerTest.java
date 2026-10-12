@@ -17,6 +17,7 @@ import cz.cyberrange.platform.training.api.dto.hint.HintDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
+import cz.cyberrange.platform.training.api.dto.run.TraineeSandboxDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
@@ -25,7 +26,9 @@ import cz.cyberrange.platform.training.api.enums.TRState;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
+import cz.cyberrange.platform.training.api.exceptions.ForbiddenException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
+import cz.cyberrange.platform.training.api.responses.SandboxRequestInfo;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
@@ -257,6 +260,57 @@ public class TrainingRunsRestControllerTest {
         ObjectConverter.convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
     assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
     assertEquals("The requested entity could not be found", error.getMessage());
+  }
+
+  @Test
+  public void getUserActiveSandboxes() throws Exception {
+    SandboxRequestInfo allocationRequest = new SandboxRequestInfo();
+    allocationRequest.setId(3);
+    allocationRequest.setAllocationUnitId(7);
+    allocationRequest.setStages(List.of("FINISHED", "FINISHED", "FINISHED"));
+    TraineeSandboxDTO sandbox = new TraineeSandboxDTO();
+    sandbox.setId(7);
+    sandbox.setAllocationRequest(allocationRequest);
+    sandbox.setAllowRemove(true);
+    sandbox.setTrainingInstanceTitle("Linux basics");
+    given(trainingRunFacade.findOwnSandboxes()).willReturn(List.of(sandbox));
+
+    mockMvc
+        .perform(get("/training-runs/user-active-sandboxes"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value(7))
+        .andExpect(jsonPath("$[0].allow_remove").value(true))
+        .andExpect(jsonPath("$[0].training_instance_title").value("Linux basics"))
+        .andExpect(jsonPath("$[0].allocation_request.allocation_unit_id").value(7));
+  }
+
+  @Test
+  public void requestTraineeSandboxCleanup() throws Exception {
+    mockMvc
+        .perform(post("/training-runs/user-sandboxes/{sandboxId}/cleanup", "sandbox-uuid"))
+        .andExpect(status().isNoContent());
+
+    then(trainingRunFacade).should().removeOwnSandboxBySandboxId("sandbox-uuid");
+  }
+
+  @Test
+  public void requestTraineeSandboxCleanup_NotOwnSandbox() throws Exception {
+    willThrow(new ForbiddenException("Sandbox not found or you did not allocate it."))
+        .given(trainingRunFacade)
+        .removeOwnSandboxBySandboxId("sandbox-uuid");
+
+    mockMvc
+        .perform(post("/training-runs/user-sandboxes/{sandboxId}/cleanup", "sandbox-uuid"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  public void requestTraineeSandboxCleanupByAllocationId() throws Exception {
+    mockMvc
+        .perform(post("/training-runs/user-sandboxes/by-allocation/{allocationUnitId}/cleanup", 7))
+        .andExpect(status().isNoContent());
+
+    then(trainingRunFacade).should().removeOwnSandbox(7);
   }
 
   @Test

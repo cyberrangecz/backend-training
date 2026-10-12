@@ -438,6 +438,20 @@ public class TrainingRunService {
   }
 
   /**
+   * Finds the running training run of the given training instance access token whose participant
+   * carries the given cross-service user reference id, whether or not a sandbox is assigned to it
+   * yet. Loads the run's training instance, participant reference and current level eagerly.
+   *
+   * @param accessToken the training instance access token
+   * @param participantRefId the cross-service user reference id of the participant
+   * @return the matching {@link TrainingRun}, empty when none matches
+   */
+  public Optional<TrainingRun> findUnfinishedTrainingRunOfUser(
+      String accessToken, Long participantRefId) {
+    return trainingRunRepository.findUnfinishedTrainingRunOfUser(accessToken, participantRefId);
+  }
+
+  /**
    * Finds the training instance carrying the given access token whose start time is in the past and
    * whose end time is in the future, with its training definition loaded eagerly.
    *
@@ -594,6 +608,32 @@ public class TrainingRunService {
    */
   public TrainingRun resumeTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    checkTrainingRunResumable(trainingRun);
+    if (!trainingRun.getTrainingInstance().isLocalEnvironment()
+        && trainingRun.getSandboxInstanceRefId() == null) {
+      throw new EntityConflictException(
+          new EntityErrorDetail(
+              TrainingRun.class,
+              "id",
+              trainingRunId.getClass(),
+              trainingRunId,
+              "Sandbox of this training run was already deleted, you have to start new training."));
+    }
+    auditEventsService.auditTrainingRunResumedAction(trainingRun);
+    return trainingRun;
+  }
+
+  /**
+   * Checks that a training run may be resumed, whether or not it has a sandbox: it is neither
+   * finished nor archived, its training instance has not ended yet, and, unless the instance is
+   * local, a sandbox pool is allocated to the instance.
+   *
+   * @param trainingRun the training run, with its training instance
+   * @throws EntityConflictException when the run is finished or archived, its training instance has
+   *     already ended, or its training instance has no sandbox pool allocated
+   */
+  public void checkTrainingRunResumable(TrainingRun trainingRun) {
+    Long trainingRunId = trainingRun.getId();
     TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
     if (trainingRun.getState().equals(TRState.FINISHED)
         || trainingRun.getState().equals(TRState.ARCHIVED)) {
@@ -623,18 +663,6 @@ public class TrainingRunService {
               trainingRunId,
               "The pool assignment of the appropriate training instance has been probably canceled. Please contact the organizer."));
     }
-
-    if (!trainingInstance.isLocalEnvironment() && trainingRun.getSandboxInstanceRefId() == null) {
-      throw new EntityConflictException(
-          new EntityErrorDetail(
-              TrainingRun.class,
-              "id",
-              trainingRunId.getClass(),
-              trainingRunId,
-              "Sandbox of this training run was already deleted, you have to start new training."));
-    }
-    auditEventsService.auditTrainingRunResumedAction(trainingRun);
-    return trainingRun;
   }
 
   /**
