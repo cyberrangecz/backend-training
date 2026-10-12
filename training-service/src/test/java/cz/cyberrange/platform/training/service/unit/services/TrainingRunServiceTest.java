@@ -365,6 +365,27 @@ public class TrainingRunServiceTest {
   }
 
   @Test
+  public void getTrainingInstanceForParticularAccessTokenShortlyAfterItEnded() {
+    TrainingInstance endedInstance = testDataFactory.getOngoingInstance();
+    endedInstance.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(1));
+    given(
+            trainingInstanceRepository.findStartedByAccessTokenEndingAfter(
+                any(LocalDateTime.class), any(LocalDateTime.class), eq("pass-1234")))
+        .willReturn(Optional.of(endedInstance));
+
+    assertEquals(
+        endedInstance, trainingRunService.getTrainingInstanceForParticularAccessToken("pass-1234"));
+
+    ArgumentCaptor<LocalDateTime> startedBefore = ArgumentCaptor.forClass(LocalDateTime.class);
+    ArgumentCaptor<LocalDateTime> endingAfter = ArgumentCaptor.forClass(LocalDateTime.class);
+    then(trainingInstanceRepository)
+        .should()
+        .findStartedByAccessTokenEndingAfter(
+            startedBefore.capture(), endingAfter.capture(), eq("pass-1234"));
+    assertEquals(startedBefore.getValue().minusMinutes(2), endingAfter.getValue());
+  }
+
+  @Test
   public void moveToNextLevel() {
     List<AbstractLevel> levels = new ArrayList<>();
     levels.add(trainingLevel);
