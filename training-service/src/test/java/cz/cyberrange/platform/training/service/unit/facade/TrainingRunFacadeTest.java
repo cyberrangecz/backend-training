@@ -5,10 +5,12 @@ import static org.mockito.BDDMockito.*;
 
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
+import cz.cyberrange.platform.training.api.dto.QuestionCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TraineeSandboxDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunBasicDTO;
+import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.exceptions.errors.PythonApiError;
@@ -23,6 +25,11 @@ import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.model.enums.QuestionType;
+import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingOption;
+import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.cyberrange.platform.training.persistence.model.question.Question;
+import cz.cyberrange.platform.training.persistence.model.question.QuestionChoice;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
@@ -449,6 +456,29 @@ public class TrainingRunFacadeTest {
     sandboxAnswersInfo.setSandboxRefId(trainingRun1.getSandboxInstanceRefId());
     sandboxAnswersInfo.setVariantAnswers(new ArrayList<>(List.of(variantAnswer)));
 
+    QuestionChoice correctChoice = new QuestionChoice();
+    correctChoice.setText("22");
+    correctChoice.setCorrect(true);
+    QuestionChoice wrongChoice = new QuestionChoice();
+    wrongChoice.setText("23");
+    Question multipleChoice = new Question();
+    multipleChoice.setId(11L);
+    multipleChoice.setText("Which port does SSH listen on by default?");
+    multipleChoice.setQuestionType(QuestionType.MCQ);
+    multipleChoice.setChoices(new ArrayList<>(List.of(correctChoice, wrongChoice)));
+    ExtendedMatchingOption option = new ExtendedMatchingOption();
+    option.setText("22");
+    ExtendedMatchingStatement statement = new ExtendedMatchingStatement();
+    statement.setText("SSH");
+    statement.setExtendedMatchingOption(option);
+    Question extendedMatching = new Question();
+    extendedMatching.setId(12L);
+    extendedMatching.setText("Match services with their ports.");
+    extendedMatching.setQuestionType(QuestionType.EMI);
+    extendedMatching.setOrder(1);
+    extendedMatching.setExtendedMatchingStatements(new ArrayList<>(List.of(statement)));
+    assessmentLevel.setQuestions(new ArrayList<>(List.of(multipleChoice, extendedMatching)));
+
     List<AbstractLevel> levels =
         new ArrayList<>(
             List.of(trainingLevel, infoLevel, assessmentLevel, trainingLevelVariantAnswer));
@@ -459,13 +489,35 @@ public class TrainingRunFacadeTest {
     List<CorrectAnswerDTO> correctAnswers =
         trainingRunFacade.getCorrectAnswers(trainingRun1.getId());
 
-    assertEquals(2, correctAnswers.size());
+    assertEquals(3, correctAnswers.size());
     assertTrue(
         correctAnswers.containsAll(
             List.of(
                 getCorrectAnswerDTO(trainingLevel, null),
                 getCorrectAnswerDTO(
                     trainingLevelVariantAnswer, variantAnswer.getAnswerContent()))));
+    CorrectAnswerDTO assessmentAnswers = correctAnswers.get(1);
+    assertEquals(assessmentLevel.getId(), assessmentAnswers.getLevelId());
+    assertEquals(LevelType.ASSESSMENT_LEVEL, assessmentAnswers.getLevelType());
+    assertEquals(
+        List.of(List.of("22"), List.of("SSH -> 22")),
+        assessmentAnswers.getQuestionCorrectAnswers().stream()
+            .map(QuestionCorrectAnswerDTO::getCorrectAnswers)
+            .toList());
+  }
+
+  @Test
+  public void getCorrectAnswersLeavesOutQuestionnaires() {
+    AssessmentLevel questionnaire = testDataFactory.getQuestionnaire();
+    questionnaire.setId(7L);
+    given(trainingRunService.findByIdWithLevel(trainingRun1.getId())).willReturn(trainingRun1);
+    given(trainingRunService.getLevels(trainingDefinition.getId()))
+        .willReturn(new ArrayList<>(List.of(trainingLevel, questionnaire)));
+
+    List<CorrectAnswerDTO> correctAnswers =
+        trainingRunFacade.getCorrectAnswers(trainingRun1.getId());
+
+    assertEquals(List.of(getCorrectAnswerDTO(trainingLevel, null)), correctAnswers);
   }
 
   private CorrectAnswerDTO getCorrectAnswerDTO(
@@ -474,6 +526,7 @@ public class TrainingRunFacadeTest {
     answerDTO.setLevelId(trainingLevel.getId());
     answerDTO.setLevelTitle(trainingLevel.getTitle());
     answerDTO.setLevelOrder(trainingLevel.getOrder());
+    answerDTO.setLevelType(LevelType.TRAINING_LEVEL);
     answerDTO.setCorrectAnswer(
         correctVariantAnswer == null ? trainingLevel.getAnswer() : correctVariantAnswer);
     answerDTO.setVariableName(trainingLevel.getAnswerVariableName());

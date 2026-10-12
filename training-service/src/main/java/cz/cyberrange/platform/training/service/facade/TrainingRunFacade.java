@@ -5,6 +5,7 @@ import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
+import cz.cyberrange.platform.training.api.dto.QuestionCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -35,8 +36,12 @@ import cz.cyberrange.platform.training.persistence.model.SolutionInfo;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
+import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionAnswer;
+import cz.cyberrange.platform.training.persistence.model.question.QuestionChoice;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTrainee;
 import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
@@ -789,31 +794,42 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Gets the correct answer of every training level in the definition backing the given training
-   * run. For a level using variant answers, the correct answer is looked up per participant from
-   * the answer storage service, either by the instance's access token (local environment) or by the
-   * run's sandbox instance reference id.
+   * Gets the correct answers of every training level and every test assessment level in the
+   * definition backing the given training run. For a training level using variant answers, the
+   * correct answer is looked up per participant from the answer storage service, either by the
+   * instance's access token (local environment) or by the run's sandbox instance reference id.
+   * Questionnaires have no correct answers and are left out.
    *
    * @param trainingRunId id of the Training Run whose definition's correct answers are returned.
-   * @return the correct answer of every training level, ordered by level order.
+   * @return the correct answers of every training and test level, ordered by level order.
    */
-  @IsOrganizerOrAdmin
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
   @TransactionalWO
   public List<CorrectAnswerDTO> getCorrectAnswers(Long trainingRunId) {
     TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-    List<TrainingLevel> trainingLevels =
-        trainingRunService
-            .getLevels(trainingRun.getTrainingInstance().getTrainingDefinition().getId())
-            .stream()
-            .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class)
-            .map(abstractLevel -> (TrainingLevel) abstractLevel)
-            .toList();
-    boolean isVariantAnswers = trainingLevels.stream().anyMatch(TrainingLevel::isVariantAnswers);
+    List<AbstractLevel> levels =
+        trainingRunService.getLevels(
+            trainingRun.getTrainingInstance().getTrainingDefinition().getId());
+    boolean isVariantAnswers =
+        levels.stream()
+            .anyMatch(
+                level ->
+                    level instanceof TrainingLevel trainingLevel
+                        && trainingLevel.isVariantAnswers());
     Map<String, String> variantAnswers =
         isVariantAnswers ? getVariantAnswers(trainingRun) : new HashMap<>();
-    return trainingLevels.stream()
-        .map(trainingLevel -> mapToCorrectAnswerDTO(trainingLevel, variantAnswers))
-        .collect(Collectors.toList());
+    List<CorrectAnswerDTO> correctAnswers = new ArrayList<>();
+    for (AbstractLevel level : levels) {
+      if (level instanceof TrainingLevel trainingLevel) {
+        correctAnswers.add(mapToCorrectAnswerDTO(trainingLevel, variantAnswers));
+      } else if (level instanceof AssessmentLevel assessmentLevel
+          && assessmentLevel.getAssessmentType() == AssessmentType.TEST) {
+        correctAnswers.add(mapToCorrectAnswerDTO(assessmentLevel));
+      }
+    }
+    return correctAnswers;
   }
 
   private Map<String, String> getVariantAnswers(TrainingRun trainingRun) {
@@ -842,6 +858,7 @@ public class TrainingRunFacade {
     correctAnswerDTO.setLevelId(trainingLevel.getId());
     correctAnswerDTO.setLevelTitle(trainingLevel.getTitle());
     correctAnswerDTO.setLevelOrder(trainingLevel.getOrder());
+    correctAnswerDTO.setLevelType(LevelType.TRAINING_LEVEL);
     if (trainingLevel.isVariantAnswers()) {
       correctAnswerDTO.setCorrectAnswer(variantAnswers.get(trainingLevel.getAnswerVariableName()));
       correctAnswerDTO.setVariableName(trainingLevel.getAnswerVariableName());
@@ -849,6 +866,45 @@ public class TrainingRunFacade {
       correctAnswerDTO.setCorrectAnswer(trainingLevel.getAnswer());
     }
     return correctAnswerDTO;
+  }
+
+  private CorrectAnswerDTO mapToCorrectAnswerDTO(AssessmentLevel assessmentLevel) {
+    CorrectAnswerDTO correctAnswerDTO = new CorrectAnswerDTO();
+    correctAnswerDTO.setLevelId(assessmentLevel.getId());
+    correctAnswerDTO.setLevelTitle(assessmentLevel.getTitle());
+    correctAnswerDTO.setLevelOrder(assessmentLevel.getOrder());
+    correctAnswerDTO.setLevelType(LevelType.ASSESSMENT_LEVEL);
+    correctAnswerDTO.setQuestionCorrectAnswers(
+        assessmentLevel.getQuestions().stream().map(this::mapToQuestionCorrectAnswerDTO).toList());
+    return correctAnswerDTO;
+  }
+
+  private QuestionCorrectAnswerDTO mapToQuestionCorrectAnswerDTO(Question question) {
+    QuestionCorrectAnswerDTO questionCorrectAnswerDTO = new QuestionCorrectAnswerDTO();
+    questionCorrectAnswerDTO.setQuestionId(question.getId());
+    questionCorrectAnswerDTO.setQuestionText(question.getText());
+    questionCorrectAnswerDTO.setCorrectAnswers(
+        switch (question.getQuestionType()) {
+          case MCQ ->
+              question.getChoices().stream()
+                  .filter(QuestionChoice::isCorrect)
+                  .map(QuestionChoice::getText)
+                  .toList();
+          case FFQ -> question.getChoices().stream().map(QuestionChoice::getText).toList();
+          case EMI ->
+              question.getExtendedMatchingStatements().stream()
+                  .map(this::describeCorrectMatch)
+                  .toList();
+        });
+    return questionCorrectAnswerDTO;
+  }
+
+  private String describeCorrectMatch(ExtendedMatchingStatement statement) {
+    return statement.getText()
+        + " -> "
+        + (statement.getExtendedMatchingOption() == null
+            ? ""
+            : statement.getExtendedMatchingOption().getText());
   }
 
   private void addParticipantsToTrainingRunDTOs(List<TrainingRunDTO> trainingRunDTOS) {
