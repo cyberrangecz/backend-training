@@ -729,21 +729,25 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Gets the correct answer of every training level in the definition backing the given training
-   * run, ordered by level order. For a level using variant answers, the correct answer is looked up
-   * per participant from the answer storage service.
+   * Gets the correct answers of every training level and every test assessment level in the
+   * definition backing the given training run, ordered by level order. For a level using variant
+   * answers, the correct answer is looked up per participant from the answer storage service.
    *
    * @param runId of Training Run for which to get correct answers.
    * @return Requested correct answers of the training run.
    */
   @Operation(
       operationId = "getCorrectAnswers",
-      summary = "List the correct answers of the run's training levels",
+      summary = "List the correct answers of the run's training and test levels",
       description =
-          "A training organizer or a training administrator may call it. A level with variant"
-              + " answers is resolved for this run's participant from the answer storage service.")
+          "A training administrator, or an organizer of the run, may call it. A level with"
+              + " variant answers is resolved for this run's participant from the answer storage"
+              + " service. A test assessment level lists the correct answers of each of its"
+              + " questions; questionnaires are left out.")
   @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "One correct answer per training level."),
+    @ApiResponse(
+        responseCode = "200",
+        description = "The correct answers of each training and test level."),
     @ApiResponse(
         responseCode = "400",
         description = "The run id is not a number.",

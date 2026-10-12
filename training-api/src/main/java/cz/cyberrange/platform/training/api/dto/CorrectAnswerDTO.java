@@ -1,18 +1,21 @@
 package cz.cyberrange.platform.training.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import cz.cyberrange.platform.training.api.enums.LevelType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Data;
 
 /**
- * Reports one training level's identity and correct answer, built by hand in {@code
- * TrainingRunFacade} from a {@code TrainingLevel} entity and returned in bulk from the training
- * run's answers endpoint. A level with no variant answers leaves {@code variableName} unset, which
- * the class-level {@code @JsonInclude} then omits from the response entirely.
+ * Reports one level's identity and correct answers, built by hand in {@code TrainingRunFacade} from
+ * a {@code TrainingLevel} or a test {@code AssessmentLevel} entity and returned in bulk from the
+ * training run's answers endpoint. A training level carries {@code correctAnswer}, an assessment
+ * level {@code questionCorrectAnswers}; the class-level {@code @JsonInclude} omits whatever is
+ * unset, such as {@code variableName} of a level with no variant answers.
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "One training level's correct answer, resolved for the asking participant.")
+@Schema(description = "One level's correct answers, resolved for the asking participant.")
 public class CorrectAnswerDTO {
 
   @Schema(example = "1")
@@ -23,6 +26,9 @@ public class CorrectAnswerDTO {
 
   @Schema(description = "Zero-based position of the level within its definition.", example = "2")
   private Integer levelOrder;
+
+  @Schema(description = "TRAINING_LEVEL or ASSESSMENT_LEVEL.", example = "TRAINING_LEVEL")
+  private LevelType levelType;
 
   /**
    * Holds the level's static answer, or, for a level using variant answers, whatever value the
@@ -41,4 +47,8 @@ public class CorrectAnswerDTO {
       description = "The answer variable the level uses; absent for a fixed answer.",
       example = "username")
   private String variableName;
+
+  /** The correct answers of each question of an assessment level, in question order */
+  @Schema(description = "The correct answers of each question of an assessment level.")
+  private List<QuestionCorrectAnswerDTO> questionCorrectAnswers;
 }
