@@ -208,6 +208,9 @@ public class TrainingInstanceFacade {
               trainingInstance.getId(),
               "The training definition assigned to running training instance cannot be changed."));
     }
+    if (trainingInstanceUpdateDTO.getManaged() == null) {
+      updatedTrainingInstance.setManaged(trainingInstance.isManaged());
+    }
     checkLocalEnvironmentConfiguration(updatedTrainingInstance);
     updatedTrainingInstance.setTrainingDefinition(
         trainingDefinitionService.findById(trainingInstanceUpdateDTO.getTrainingDefinitionId()));

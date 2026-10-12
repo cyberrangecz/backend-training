@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceBasicDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapper;
@@ -139,6 +141,29 @@ class TrainingInstanceMapperTest {
     @DisplayName("should map null list to null")
     void shouldMapNullListToNull() {
       assertNull(sut.mapToBasicDtoList(null));
+    }
+  }
+
+  @Nested
+  @DisplayName("managed")
+  class Managed {
+
+    @Test
+    @DisplayName("should carry managed from a creation request to the entity")
+    void shouldMapManagedFromCreateDto() {
+      TrainingInstanceCreateDTO dto = new TrainingInstanceCreateDTO();
+      dto.setManaged(true);
+
+      assertTrue(sut.mapCreateToEntity(dto).isManaged());
+    }
+
+    @Test
+    @DisplayName("should carry managed from an update to the entity")
+    void shouldMapManagedFromUpdateDto() {
+      TrainingInstanceUpdateDTO dto = new TrainingInstanceUpdateDTO();
+      dto.setManaged(true);
+
+      assertTrue(sut.mapUpdateToEntity(dto).isManaged());
     }
   }
 }

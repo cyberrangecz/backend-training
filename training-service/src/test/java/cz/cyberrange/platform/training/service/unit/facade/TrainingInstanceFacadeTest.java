@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -266,6 +267,26 @@ public class TrainingInstanceFacadeTest {
     trainingInstanceUpdate.setPoolId(1L);
     trainingInstanceFacade.update(trainingInstanceUpdate);
     then(trainingInstanceService).should().update(any(TrainingInstance.class));
+  }
+
+  @Test
+  public void updateTrainingInstanceWithoutManagedKeepsIt() {
+    given(trainingInstanceService.findById(trainingInstanceUpdate.getId()))
+        .willReturn(trainingInstance1);
+    TrainingDefinition trainingDefinition = testDataFactory.getReleasedDefinition();
+    trainingDefinition.setId(1L);
+    given(trainingDefinitionService.findById(trainingInstanceUpdate.getTrainingDefinitionId()))
+        .willReturn(trainingDefinition);
+    trainingInstance1.setTrainingDefinition(trainingDefinition);
+    trainingInstance1.setManaged(true);
+    trainingInstanceUpdate.setPoolId(trainingInstance1.getPoolId());
+    trainingInstanceUpdate.setManaged(null);
+
+    trainingInstanceFacade.update(trainingInstanceUpdate);
+
+    ArgumentCaptor<TrainingInstance> updated = ArgumentCaptor.forClass(TrainingInstance.class);
+    then(trainingInstanceService).should().update(updated.capture());
+    assertTrue(updated.getValue().isManaged());
   }
 
   @Test

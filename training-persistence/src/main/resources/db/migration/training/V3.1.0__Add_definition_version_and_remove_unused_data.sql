@@ -43,3 +43,7 @@ CREATE INDEX abstract_detection_event_level_title_search_fold_idx
     ON abstract_detection_event USING gin (search_fold(level_title) gin_trgm_ops);
 CREATE INDEX abstract_detection_event_participants_search_fold_idx
     ON abstract_detection_event USING gin (search_fold(participants) gin_trgm_ops);
+
+-- Existing instances keep the sandboxes their organizers allocated; new ones default to not managed.
+ALTER TABLE training_instance ADD COLUMN managed boolean NOT NULL DEFAULT TRUE;
+ALTER TABLE training_instance ALTER COLUMN managed SET DEFAULT FALSE;
