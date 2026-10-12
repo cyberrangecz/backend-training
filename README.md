@@ -71,7 +71,7 @@ $ sudo docker build \
 
 The Dockerfile accepts the following build arguments:
 * PROJECT_ARTIFACT_ID=training - the name of the project artifact whose jar gets packaged and run.
-* MAVEN_CLI_OPTS - extra options passed to the Maven build (e.g. `-s etc/ci_settings.xml`).
+* MAVEN_CLI_OPTS=-s etc/ci_settings.xml - options passed to the Maven build. Keep `-s etc/ci_settings.xml` when overriding it: those settings define the version the build needs.
 
 Those arguments can be overwritten during the build of the image, by adding the following option for each argument: 
 ```bash
