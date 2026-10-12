@@ -11,6 +11,7 @@ import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstance
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
+import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapper;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for the basic-view mapping methods of {@link TrainingInstanceMapper}.
@@ -164,6 +166,17 @@ class TrainingInstanceMapperTest {
       dto.setManaged(true);
 
       assertTrue(sut.mapUpdateToEntity(dto).isManaged());
+    }
+
+    @Test
+    @DisplayName("should list managed with each instance")
+    void shouldMapManagedToFindAllViewDto() {
+      ReflectionTestUtils.setField(
+          sut, "trainingDefinitionMapper", Mappers.getMapper(TrainingDefinitionMapper.class));
+      TrainingInstance entity = new TrainingInstance();
+      entity.setManaged(true);
+
+      assertTrue(sut.mapToFindAllViewDTO(entity).isManaged());
     }
   }
 }
