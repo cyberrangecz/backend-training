@@ -72,6 +72,9 @@ public class TrainingRunService {
   private static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
   private static final String X_REAL_IP_HEADER = "x-real-ip";
 
+  /** How many minutes after its end an instance still accepts its access token */
+  static final int ACCESS_TOKEN_END_GRACE_MINUTES = 2;
+
   private final TrainingRunRepository trainingRunRepository;
   private final AbstractLevelRepository abstractLevelRepository;
   private final TrainingInstanceRepository trainingInstanceRepository;
@@ -447,7 +450,9 @@ public class TrainingRunService {
 
   /**
    * Finds the training instance carrying the given access token whose start time is in the past and
-   * whose end time is in the future, with its training definition loaded eagerly.
+   * whose end time is in the future, or at most {@value #ACCESS_TOKEN_END_GRACE_MINUTES} minutes in
+   * the past, with its training definition loaded eagerly. The grace period covers requests in
+   * flight when the instance ends, and clock skew.
    *
    * @param accessToken the training instance access token
    * @return the matching {@link TrainingInstance}
@@ -456,10 +461,11 @@ public class TrainingRunService {
    *     allocated
    */
   public TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
+    LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
     TrainingInstance trainingInstance =
         trainingInstanceRepository
-            .findByStartTimeAfterAndEndTimeBeforeAndAccessToken(
-                LocalDateTime.now(Clock.systemUTC()), accessToken)
+            .findStartedByAccessTokenEndingAfter(
+                now, now.minusMinutes(ACCESS_TOKEN_END_GRACE_MINUTES), accessToken)
             .orElseThrow(
                 () ->
                     new EntityNotFoundException(
