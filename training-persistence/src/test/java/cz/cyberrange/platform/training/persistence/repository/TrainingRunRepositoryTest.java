@@ -84,6 +84,52 @@ public class TrainingRunRepositoryTest {
   }
 
   @Test
+  public void findUnfinishedTrainingRunOfUserWithoutSandbox() {
+    trainingRun2.setSandboxInstanceRefId(null);
+    entityManager.persist(trainingRun1);
+    entityManager.persist(trainingRun2);
+    entityManager.persist(archivedRun);
+
+    Optional<TrainingRun> run =
+        trainingRunRepository.findUnfinishedTrainingRunOfUser(
+            trainingInstance.getAccessToken(), participantRef.getUserRefId());
+
+    assertTrue(run.isPresent());
+    assertEquals(trainingRun2, run.get());
+  }
+
+  @Test
+  public void findAllBySandboxInstanceAllocationIds() {
+    entityManager.persist(trainingRun1);
+    entityManager.persist(trainingRun2);
+    entityManager.persist(archivedRun);
+
+    List<TrainingRun> trainingRuns =
+        trainingRunRepository.findAllBySandboxInstanceAllocationIds(List.of(1, 3, 99));
+
+    assertEquals(2, trainingRuns.size());
+    assertTrue(trainingRuns.contains(trainingRun2));
+    assertTrue(trainingRuns.contains(archivedRun));
+  }
+
+  @Test
+  public void existsBySandboxInstanceRefIdOrPreviousSandboxInstanceRefId() {
+    archivedRun.setPreviousSandboxInstanceRefId("archived-sandbox");
+    entityManager.persist(trainingRun2);
+    entityManager.persist(archivedRun);
+
+    assertTrue(
+        trainingRunRepository.existsBySandboxInstanceRefIdOrPreviousSandboxInstanceRefId(
+            "1L", "1L"));
+    assertTrue(
+        trainingRunRepository.existsBySandboxInstanceRefIdOrPreviousSandboxInstanceRefId(
+            "archived-sandbox", "archived-sandbox"));
+    assertFalse(
+        trainingRunRepository.existsBySandboxInstanceRefIdOrPreviousSandboxInstanceRefId(
+            "unused-sandbox", "unused-sandbox"));
+  }
+
+  @Test
   public void findById() throws Exception {
     long expectedId = entityManager.persist(trainingRun1).getId();
     Optional<TrainingRun> optionalTR = trainingRunRepository.findById(expectedId);
