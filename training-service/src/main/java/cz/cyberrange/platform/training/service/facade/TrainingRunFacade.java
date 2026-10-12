@@ -73,6 +73,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -263,10 +264,9 @@ public class TrainingRunFacade {
     }
     TrainingRun trainingRun = trainingRunService.resumeTrainingRun(trainingRunId);
     AccessTrainingRunDTO accessTrainingRunDTO = convertToAccessTrainingRunDTO(trainingRun);
-    if (trainingRun.getCurrentLevel() instanceof TrainingLevel) {
+    if (Hibernate.unproxy(trainingRun.getCurrentLevel()) instanceof TrainingLevel trainingLevel) {
       if (trainingRun.isSolutionTaken()) {
-        accessTrainingRunDTO.setTakenSolution(
-            ((TrainingLevel) trainingRun.getCurrentLevel()).getSolution());
+        accessTrainingRunDTO.setTakenSolution(trainingLevel.getSolution());
       }
       trainingRun
           .getHintInfoList()
@@ -448,7 +448,7 @@ public class TrainingRunFacade {
     accessTrainingRunDTO.setSandboxDefinitionId(
         trainingRun.getTrainingInstance().getSandboxDefinitionId());
     accessTrainingRunDTO.setLevelAnswered(trainingRun.isLevelAnswered());
-    if (trainingRun.getCurrentLevel().getClass() == AccessLevel.class) {
+    if (Hibernate.unproxy(trainingRun.getCurrentLevel()) instanceof AccessLevel) {
       replacePlaceholders(
           (AccessLevelViewDTO) accessTrainingRunDTO.getAbstractLevelDTO(),
           trainingRun.getTrainingInstance().getAccessToken(),
@@ -989,32 +989,45 @@ public class TrainingRunFacade {
     }
   }
 
+  /**
+   * Maps a level to the DTO a trainee sees. Resolves a Hibernate proxy first: a proxy of {@link
+   * AbstractLevel} is an instance of none of its subclasses.
+   */
   private AbstractLevelDTO getAbstractLevelDTO(AbstractLevel abstractLevel) {
+    Object level = Hibernate.unproxy(abstractLevel);
     AbstractLevelDTO abstractLevelDTO;
-    if (abstractLevel instanceof AssessmentLevel assessmentLevel) {
+    if (level instanceof AssessmentLevel assessmentLevel) {
       abstractLevelDTO = levelMapper.mapToAssessmentLevelDTO(assessmentLevel);
       deleteInfoAboutCorrectnessFromQuestions((AssessmentLevelDTO) abstractLevelDTO);
-    } else if (abstractLevel instanceof TrainingLevel trainingLevel) {
+    } else if (level instanceof TrainingLevel trainingLevel) {
       abstractLevelDTO = levelMapper.mapToViewDTO(trainingLevel);
-    } else if (abstractLevel instanceof AccessLevel accessLevel) {
+    } else if (level instanceof AccessLevel accessLevel) {
       abstractLevelDTO = levelMapper.mapToViewDTO(accessLevel);
-    } else {
-      InfoLevel infoLevel = (InfoLevel) abstractLevel;
+    } else if (level instanceof InfoLevel infoLevel) {
       abstractLevelDTO = levelMapper.mapToInfoLevelDTO(infoLevel);
+    } else {
+      throw new IllegalStateException("Unknown level type: " + level.getClass().getName());
     }
     return abstractLevelDTO;
   }
 
+  /**
+   * Maps a visited level to the DTO previewing it, resolving a Hibernate proxy first like {@link
+   * #getAbstractLevelDTO}.
+   */
   private AbstractLevelDTO getAbstractLevelPreviewDTO(
       AbstractLevel abstractLevel, TrainingRun trainingRun) {
-    if (abstractLevel instanceof InfoLevel infoLevel) {
+    Object level = Hibernate.unproxy(abstractLevel);
+    if (level instanceof InfoLevel infoLevel) {
       return levelMapper.mapToInfoLevelDTO(infoLevel);
-    } else if (abstractLevel instanceof TrainingLevel trainingLevel) {
+    } else if (level instanceof TrainingLevel trainingLevel) {
       return mapToTrainingLevelPreviewDTO(trainingLevel, trainingRun);
-    } else if (abstractLevel instanceof AccessLevel accessLevel) {
+    } else if (level instanceof AccessLevel accessLevel) {
       return mapToAccessLevelViewDTO(accessLevel, trainingRun);
+    } else if (level instanceof AssessmentLevel assessmentLevel) {
+      return mapToAssessmentLevelPreviewDTO(assessmentLevel, trainingRun);
     } else {
-      return mapToAssessmentLevelPreviewDTO((AssessmentLevel) abstractLevel, trainingRun);
+      throw new IllegalStateException("Unknown level type: " + level.getClass().getName());
     }
   }
 

@@ -389,6 +389,23 @@ public class TrainingRunServiceTest {
   }
 
   @Test
+  public void moveToNextLevelFromInfoLevelNotMarkedAnswered() {
+    trainingRun1.setCurrentLevel(infoLevel);
+    trainingRun1.setLevelAnswered(false);
+    given(trainingRunRepository.findByIdWithLevel(any(Long.class)))
+        .willReturn(Optional.of(trainingRun1));
+    given(abstractLevelRepository.getCurrentMaxOrder(anyLong()))
+        .willReturn(infoLevel.getOrder() + 1);
+    given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(any(Long.class)))
+        .willReturn(new ArrayList<>(List.of(infoLevel, trainingLevel)));
+
+    AbstractLevel nextLevel =
+        trainingRunService.moveToNextLevel(trainingRun1.getId()).getCurrentLevel();
+
+    assertEquals(trainingLevel, nextLevel);
+  }
+
+  @Test
   public void getNextLevelTrainingRunNotFound() {
     given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
         .willReturn(Optional.empty());
@@ -781,6 +798,18 @@ public class TrainingRunServiceTest {
             trainingRun2.getParticipantRef().getUserRefId(),
             trainingRun2.getTrainingInstance().getId());
     assertEquals(trainingRun2.getState(), TRState.FINISHED);
+  }
+
+  @Test
+  public void testFinishTrainingRunOnInfoLevelNotMarkedAnswered() {
+    trainingRun2.setLevelAnswered(false);
+    given(trainingRunRepository.findByIdWithLevel(any(Long.class)))
+        .willReturn(Optional.of(trainingRun2));
+    given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
+
+    trainingRunService.finishTrainingRun(trainingRun2.getId());
+
+    assertEquals(TRState.FINISHED, trainingRun2.getState());
   }
 
   @Test

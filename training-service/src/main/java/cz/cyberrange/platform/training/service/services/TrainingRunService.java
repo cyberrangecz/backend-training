@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -281,7 +282,7 @@ public class TrainingRunService {
     int maxLevelOrder =
         abstractLevelRepository.getCurrentMaxOrder(
             trainingRun.getCurrentLevel().getTrainingDefinition().getId());
-    if (!trainingRun.isLevelAnswered()) {
+    if (!isCurrentLevelDone(trainingRun)) {
       throw new EntityConflictException(
           new EntityErrorDetail(
               TrainingRun.class,
@@ -972,7 +973,7 @@ public class TrainingRunService {
               trainingRunId,
               "Cannot finish training run because current level is not last."));
     }
-    if (!trainingRun.isLevelAnswered()) {
+    if (!isCurrentLevelDone(trainingRun)) {
       throw new EntityConflictException(
           new EntityErrorDetail(
               TrainingRun.class,
@@ -990,6 +991,16 @@ public class TrainingRunService {
     }
     auditEventsService.auditTrainingRunEndedAction(trainingRun);
     return trainingRun;
+  }
+
+  /**
+   * Decides whether the run's current level is done: answered, or an info level, which needs no
+   * answer. {@link TrainingRun#setCurrentLevel} marks an info level answered only when it is handed
+   * the level itself; a Hibernate proxy of the level leaves the flag unset.
+   */
+  private static boolean isCurrentLevelDone(TrainingRun trainingRun) {
+    return trainingRun.isLevelAnswered()
+        || Hibernate.unproxy(trainingRun.getCurrentLevel()) instanceof InfoLevel;
   }
 
   /**
