@@ -61,6 +61,10 @@ To build and run the project in docker it is necessary to prepare several config
   * `answers-storage.uri` &mdash; [backend-answers-storage](https://github.com/cyberrangecz/backend-answers-storage)
   * `opensearch.host` / `opensearch.port` &mdash; OpenSearch instance used for storing and querying training events
 
+* `single.sandbox.per.user.enabled` (default `false`) lets trainees allocate their own sandbox. A trainee entering an instance that is neither managed nor local then gets a sandbox of their own in the instance's pool, instead of one the organizer allocated, and stays on the run overview until it is ready. A trainee holds one active sandbox at a time and can remove it from the run overview.
+  * It needs sandbox-service 4.1.0 or later ([backend-sandbox-platform](https://github.com/cyberrangecz/backend-sandbox-platform)) with `authenticated_rest_api: true`. Its `cleanup_trainee_sandboxes` job removes the sandboxes trainees leave behind.
+  * Upgrading migrates every existing instance as managed, so it keeps the sandboxes its organizer allocates. An instance cannot change between managed and not managed once it has started.
+
 #### 2. Build Docker Image
 In the project root folder (folder with Dockerfile), run the following command:
 ```shell
@@ -71,7 +75,7 @@ $ sudo docker build \
 
 The Dockerfile accepts the following build arguments:
 * PROJECT_ARTIFACT_ID=training - the name of the project artifact whose jar gets packaged and run.
-* MAVEN_CLI_OPTS - extra options passed to the Maven build (e.g. `-s etc/ci_settings.xml`).
+* MAVEN_CLI_OPTS=-s etc/ci_settings.xml - options passed to the Maven build. Keep `-s etc/ci_settings.xml` when overriding it: those settings define the version the build needs.
 
 Those arguments can be overwritten during the build of the image, by adding the following option for each argument: 
 ```bash

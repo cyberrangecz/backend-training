@@ -57,4 +57,12 @@ public class TrainingInstanceDTO extends TrainingInstanceBasicDTO {
 
   @Schema(example = "true")
   private boolean backwardMode;
+
+  @Schema(
+      description =
+          "True when trainees work only in sandboxes the organizer allocated in the pool. When"
+              + " false and the deployment lets trainees allocate sandboxes, each trainee allocates"
+              + " their own.",
+      example = "false")
+  private boolean managed;
 }

@@ -136,6 +136,13 @@ public class TrainingInstance extends AbstractEntity<Long> {
   private boolean backwardMode;
 
   /**
+   * Whether trainees work only in sandboxes the organizer allocated in the pool. When false and
+   * trainee allocation is enabled for the deployment, each trainee allocates their own sandbox.
+   */
+  @Column(name = "managed", nullable = false)
+  private boolean managed;
+
+  /**
    * Gets unique identification number of Training instance.
    *
    * @return the id
@@ -408,6 +415,24 @@ public class TrainingInstance extends AbstractEntity<Long> {
     this.backwardMode = backwardMode;
   }
 
+  /**
+   * Gets whether trainees work only in sandboxes the organizer allocated in the pool.
+   *
+   * @return true if the instance is managed
+   */
+  public boolean isManaged() {
+    return managed;
+  }
+
+  /**
+   * Sets whether trainees work only in sandboxes the organizer allocated in the pool.
+   *
+   * @param managed true if the instance is managed
+   */
+  public void setManaged(boolean managed) {
+    this.managed = managed;
+  }
+
   /** Returns whether the current moment falls between the instance's start and end time */
   public boolean running() {
     LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
@@ -469,6 +494,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
         + ", backwardMode='"
         + backwardMode
         + '\''
+        + ", managed="
+        + managed
         + '}';
   }
 }

@@ -6,7 +6,8 @@ FROM maven:3.8.5-openjdk-17-slim AS build
 WORKDIR /app
 
 ARG PROJECT_ARTIFACT_ID
-ARG MAVEN_CLI_OPTS=EXTRA-OPTIONS
+# The settings define app-version, which the build needs.
+ARG MAVEN_CLI_OPTS="-s etc/ci_settings.xml"
 
 COPY pom.xml /app/pom.xml
 COPY etc/ci_settings.xml /app/etc/ci_settings.xml

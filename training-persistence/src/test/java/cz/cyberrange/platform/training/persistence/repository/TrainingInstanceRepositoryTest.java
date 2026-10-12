@@ -49,6 +49,28 @@ public class TrainingInstanceRepositoryTest {
   }
 
   @Test
+  public void findStartedByAccessTokenEndingAfter() {
+    LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
+    trainingInstance1.setEndTime(now.minusMinutes(1));
+    entityManager.persist(trainingInstance1);
+    String accessToken = trainingInstance1.getAccessToken();
+
+    assertTrue(
+        trainingInstanceRepository
+            .findStartedByAccessTokenEndingAfter(now, now.minusMinutes(2), accessToken)
+            .isPresent());
+    assertTrue(
+        trainingInstanceRepository
+            .findStartedByAccessTokenEndingAfter(now, now, accessToken)
+            .isEmpty());
+    assertTrue(
+        trainingInstanceRepository
+            .findStartedByAccessTokenEndingAfter(
+                now.minusHours(11), now.minusHours(12), accessToken)
+            .isEmpty());
+  }
+
+  @Test
   public void findByIdNotInTheDatabase() {
     Optional<TrainingInstance> optionalTrainingInstance = trainingInstanceRepository.findById(5L);
     assertFalse(optionalTrainingInstance.isPresent());

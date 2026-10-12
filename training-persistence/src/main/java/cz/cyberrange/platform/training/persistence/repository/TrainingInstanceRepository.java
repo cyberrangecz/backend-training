@@ -129,6 +129,25 @@ public interface TrainingInstanceRepository
       @Param("datetime") LocalDateTime datetime, @Param("accessToken") String accessToken);
 
   /**
+   * Finds the training instance with the given access token that started before the given moment
+   * and ends after the given end bound, loading its training definition eagerly. An end bound a
+   * little before the moment keeps finding the instance for a while after it ends.
+   *
+   * @param startedBefore the moment the instance must have started before
+   * @param endingAfter the moment the instance must end after
+   * @param accessToken the access token
+   * @return the matching {@link TrainingInstance}, empty when none matches
+   */
+  @Query(
+      "SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td "
+          + "WHERE ti.startTime < :startedBefore AND ti.endTime > :endingAfter "
+          + "AND ti.accessToken = :accessToken")
+  Optional<TrainingInstance> findStartedByAccessTokenEndingAfter(
+      @Param("startedBefore") LocalDateTime startedBefore,
+      @Param("endingAfter") LocalDateTime endingAfter,
+      @Param("accessToken") String accessToken);
+
+  /**
    * Checks whether any training instance is associated with the given training definition.
    * Established by the {@code TrainingInstance.existsAnyForTrainingDefinition} named query declared
    * on {@link TrainingInstance}; the id matched is the definition's own primary key.

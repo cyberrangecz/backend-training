@@ -266,6 +266,27 @@ public class TrainingInstanceServiceTest {
   }
 
   @Test
+  public void updateRunningTrainingInstanceManaged() {
+    TrainingInstance currentInstance = testDataFactory.getOngoingInstance();
+    currentInstance.setId(3L);
+    currentInstance.setManaged(true);
+    TrainingInstance instanceToUpdate = testDataFactory.getOngoingInstance();
+    instanceToUpdate.setId(3L);
+    instanceToUpdate.setAccessToken(
+        currentInstance
+            .getAccessToken()
+            .substring(0, currentInstance.getAccessToken().length() - 5));
+    instanceToUpdate.setManaged(false);
+    given(trainingInstanceRepository.findById(3L)).willReturn(Optional.of(currentInstance));
+    given(organizerRefRepository.createOrGet(anyLong())).willReturn(user);
+
+    assertThrows(
+        EntityConflictException.class, () -> trainingInstanceService.update(instanceToUpdate));
+
+    then(trainingInstanceRepository).should(never()).save(any(TrainingInstance.class));
+  }
+
+  @Test
   public void deleteTrainingInstance() {
     trainingInstanceService.delete(trainingInstance2);
     then(trainingInstanceRepository).should().delete(trainingInstance2);

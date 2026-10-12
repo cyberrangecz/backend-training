@@ -238,13 +238,14 @@ public class TrainingInstanceService {
   }
 
   /**
-   * Rejects a change to the start time, the access token, or the pool id of a training instance
-   * that is already running or finished. Every other field, including {@code localEnvironment},
-   * {@code sandboxDefinitionId}, {@code showStepperBar} and {@code backwardMode}, is left unchecked
-   * here and so remains free to change regardless of the instance's state, though the exception
-   * messages this method throws describe the update as restricted to title and end time.
+   * Rejects a change to the start time, the access token, the pool id or whether the instance is
+   * managed, for a training instance that is already running or finished. Every other field,
+   * including {@code localEnvironment}, {@code sandboxDefinitionId}, {@code showStepperBar} and
+   * {@code backwardMode}, is left unchecked here and so remains free to change regardless of the
+   * instance's state, though the exception messages this method throws describe the update as
+   * restricted to title and end time.
    *
-   * @throws EntityConflictException when any of the three checked fields differs from the current
+   * @throws EntityConflictException when any of the four checked fields differs from the current
    *     instance
    */
   private void checkChangedFieldsOfTrainingInstance(
@@ -275,6 +276,14 @@ public class TrainingInstanceService {
               Long.class,
               currentTrainingInstance.getId(),
               "The pool in the running or finished instance cannot be changed. Only title and end time can be updated."));
+    } else if (currentTrainingInstance.isManaged() != trainingInstanceToUpdate.isManaged()) {
+      throw new EntityConflictException(
+          new EntityErrorDetail(
+              TrainingInstance.class,
+              "id",
+              Long.class,
+              currentTrainingInstance.getId(),
+              "Whether the running or finished instance is managed cannot be changed. Only title and end time can be updated."));
     }
   }
 

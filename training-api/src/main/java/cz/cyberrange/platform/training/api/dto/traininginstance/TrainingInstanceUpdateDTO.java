@@ -79,4 +79,13 @@ public class TrainingInstanceUpdateDTO {
 
   @Schema(example = "true")
   private boolean backwardMode;
+
+  /** Null keeps the instance's current value, so clients that do not know the field keep it */
+  @Schema(
+      description =
+          "True when trainees work only in sandboxes the organizer allocated in the pool. When"
+              + " false and the deployment lets trainees allocate sandboxes, each trainee allocates"
+              + " their own. Absent keeps the current value.",
+      example = "false")
+  private Boolean managed;
 }
