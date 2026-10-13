@@ -22,7 +22,7 @@ public interface ForbiddenCommandsDetectionEventRepository
   ForbiddenCommandsDetectionEvent findForbiddenCommandsEventById(@Param("eventId") Long eventId);
 
   /**
-   * Returns the forbidden commands findings of one cheating detection sweep, in no defined order.
+   * Returns the forbidden commands findings of one cheating detection sweep, ordered by id.
    *
    * @param cheatingDetectionId the cheating detection the returned findings belong to
    */

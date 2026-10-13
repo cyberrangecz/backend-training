@@ -71,7 +71,7 @@ import java.util.Set;
   @NamedQuery(
       name = "TrainingInstance.findAllByTrainingDefinitionId",
       query =
-          "SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId"),
+          "SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId ORDER BY ti.id"),
   @NamedQuery(
       name = "TrainingInstance.findTrainingDefinitionIdsWithInstanceEndingAfter",
       query =
@@ -121,6 +121,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
       name = "training_instance_user_ref",
       joinColumns = @JoinColumn(name = "training_instance_id"),
       inverseJoinColumns = @JoinColumn(name = "user_ref_id"))
+  @OrderBy("id")
   private Set<UserRef> organizers = new HashSet<>();
 
   @Column(name = "local_environment", nullable = false)

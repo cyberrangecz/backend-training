@@ -26,13 +26,14 @@ public interface CheatingDetectionRepository
       @Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
   /**
-   * Returns every cheating detection sweep of one training instance, ordered by their execute time.
+   * Returns every cheating detection sweep of one training instance, ordered by their execute time,
+   * then by id.
    *
    * @param trainingInstanceId the training instance the returned sweeps belong to
    */
   @Query(
       "SELECT cd FROM CheatingDetection cd WHERE cd.trainingInstanceId = :trainingInstanceId "
-          + "ORDER BY cd.executeTime")
+          + "ORDER BY cd.executeTime, cd.id")
   List<CheatingDetection> findAllByTrainingInstanceId(
       @Param("trainingInstanceId") Long trainingInstanceId);
 

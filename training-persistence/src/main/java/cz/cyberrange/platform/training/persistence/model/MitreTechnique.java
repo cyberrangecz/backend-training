@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import lombok.Setter;
 public class MitreTechnique extends AbstractEntity<Long> {
 
   @ManyToMany(mappedBy = "mitreTechniques")
+  @OrderBy("id")
   private Set<TrainingLevel> trainingLevels = new HashSet<>();
 
   @Column(name = "technique_key", nullable = false, unique = true)

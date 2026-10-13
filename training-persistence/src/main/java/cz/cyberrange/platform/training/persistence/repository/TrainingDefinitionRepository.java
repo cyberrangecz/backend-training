@@ -158,7 +158,13 @@ public interface TrainingDefinitionRepository
           + "ORDER BY definition.title, definition.id, technique.techniqueKey")
   List<MitreTechniqueUsage> findMitreTechniqueUsagesByState(@Param("state") TDState state);
 
-  List<TrainingDefinition> findAllByIdIn(Collection<Long> ids);
+  /**
+   * Finds the training definitions whose primary key is one of the given ids, ordered by id.
+   *
+   * @param ids the training definition ids
+   * @return the matching {@link TrainingDefinition}s
+   */
+  List<TrainingDefinition> findAllByIdInOrderById(Collection<Long> ids);
 
   /** A single MITRE technique key used by a training definition */
   interface MitreTechniqueUsage {

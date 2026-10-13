@@ -287,7 +287,8 @@ public class SecurityService {
    */
   public boolean isOrganizerOfGivenTrainingInstances(List<Long> instanceIds) {
     Long userRefId = getUserRefIdFromUserAndGroup();
-    List<TrainingInstance> instances = trainingInstanceRepository.findAllByIdIn(instanceIds);
+    List<TrainingInstance> instances =
+        trainingInstanceRepository.findAllByIdInOrderById(instanceIds);
     if (instances.size() != instanceIds.size()) {
       return false;
     }
@@ -414,7 +415,7 @@ public class SecurityService {
             .collect(Collectors.toSet());
 
     Set<Long> organizes =
-        trainingInstanceRepository.findAllByOrganizersContains(userRef).stream()
+        trainingInstanceRepository.findAllByOrganizersContainsOrderById(userRef).stream()
             .map(TrainingInstance::getId)
             .collect(Collectors.toSet());
 
@@ -425,7 +426,7 @@ public class SecurityService {
             .map(id -> userService.getUserByUserRefId(id).getId())
             .collect(Collectors.toList());
     List<TrainingRun> runsByUserIds =
-        trainingRunRepository.findAllByParticipantRefIdIn(participantRefIds);
+        trainingRunRepository.findAllByParticipantRefIdInOrderById(participantRefIds);
     List<Set<Long>> userInstanceIds =
         userIds.stream()
             .map(
@@ -467,7 +468,7 @@ public class SecurityService {
     Long userRefId = getUserRefIdFromUserAndGroup();
 
     Set<Long> requestedDefinitionIds =
-        abstractLevelRepository.findAllByIdIn(levelIds).stream()
+        abstractLevelRepository.findAllByIdInOrderById(levelIds).stream()
             .map(level -> level.getTrainingDefinition().getId())
             .collect(Collectors.toSet());
 
@@ -489,7 +490,7 @@ public class SecurityService {
 
     Set<Long> availableHintIds =
         trainingLevelRepository
-            .findAllByTrainingDefinitionIdIn(participatedTrainingDefinitions)
+            .findAllByTrainingDefinitionIdInOrderById(participatedTrainingDefinitions)
             .stream()
             .flatMap(level -> level.getHints().stream().map(Hint::getId))
             .collect(Collectors.toSet());
@@ -512,7 +513,7 @@ public class SecurityService {
             .collect(Collectors.toSet());
 
     participatedDefinitions.addAll(
-        trainingInstanceRepository.findAllByOrganizersContains(userRef).stream()
+        trainingInstanceRepository.findAllByOrganizersContainsOrderById(userRef).stream()
             .map(instance -> instance.getTrainingDefinition().getId())
             .collect(Collectors.toSet()));
     return participatedDefinitions;

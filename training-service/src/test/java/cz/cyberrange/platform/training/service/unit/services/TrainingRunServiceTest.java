@@ -357,7 +357,7 @@ public class TrainingRunServiceTest {
 
   @Test
   public void findAllByTrainingInstanceId() {
-    given(trainingRunRepository.findAllByTrainingInstanceId(trainingInstance1.getId()))
+    given(trainingRunRepository.findAllByTrainingInstanceIdOrderById(trainingInstance1.getId()))
         .willReturn(Set.of(trainingRun1, trainingRun2));
     Set<TrainingRun> resultSet =
         trainingRunService.findAllByTrainingInstanceId(trainingRun1.getTrainingInstance().getId());

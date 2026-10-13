@@ -680,7 +680,7 @@ class CheatingDetectionsIT extends AbstractIntegrationTest {
         .andExpect(status().isOk());
 
     flushAndClear();
-    assertThat(trainingRunRepository.findAllByTrainingInstanceId(instance.getId()))
+    assertThat(trainingRunRepository.findAllByTrainingInstanceIdOrderById(instance.getId()))
         .isNotEmpty()
         .allSatisfy(run -> assertThat(run.isHasDetectionEvent()).isFalse());
   }

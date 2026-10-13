@@ -1851,8 +1851,7 @@ class TrainingRunsIT extends AbstractIntegrationTest {
   }
 
   @Test
-  @DisplayName(
-      "Finishing a run on its answered last level finishes it and frees its lock")
+  @DisplayName("Finishing a run on its answered last level finishes it and frees its lock")
   void finishTrainingRun_answeredLastLevel_finishesRun() throws Exception {
     TrainingRun run = runAt(assessmentLevel, true);
     seeder.lock(TRAINEE_USER_REF_ID, instance.getId());

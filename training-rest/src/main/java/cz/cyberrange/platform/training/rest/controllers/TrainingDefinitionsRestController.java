@@ -24,6 +24,8 @@ import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.enums.LevelType;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableProperties;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -135,6 +137,7 @@ public class TrainingDefinitionsRestController {
           "A training administrator sees every definition. Anyone else sees only the definitions"
               + " they author or beta test. Text filters match partially and ignore case.")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The matching definitions."))
+  @SortableProperties(SortableList.TRAINING_DEFINITION)
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<TrainingDefinitionDTO>> findAllTrainingDefinitions(
       @QuerydslPredicate(root = TrainingDefinition.class) Predicate predicate,
@@ -170,6 +173,7 @@ public class TrainingDefinitionsRestController {
         description = "The state is neither RELEASED nor UNRELEASED.",
         content = @Content(schema = @Schema(implementation = ApiError.class)))
   })
+  @SortableProperties(SortableList.TRAINING_DEFINITION)
   @GetMapping(path = "/for-organizers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<TrainingDefinitionInfoDTO>>
       findAllTrainingDefinitionsForOrganizers(
@@ -663,6 +667,7 @@ public class TrainingDefinitionsRestController {
    */
   @Operation(operationId = "getDesigners", summary = "List users holding the designer role")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The page of designers."))
+  @SortableProperties(SortableList.USER)
   @GetMapping(path = "/designers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<UserRefDTO>> getDesigners(
       @RequestParam(value = "givenName", required = false) String givenName,
@@ -687,6 +692,7 @@ public class TrainingDefinitionsRestController {
    */
   @Operation(operationId = "getOrganizers", summary = "List users holding the organizer role")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The page of organizers."))
+  @SortableProperties(SortableList.USER)
   @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<UserRefDTO>> getOrganizers(
       @RequestParam(value = "givenName", required = false) String givenName,
@@ -720,6 +726,7 @@ public class TrainingDefinitionsRestController {
         description = "No training definition with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.USER)
   @GetMapping(
       path = "{definitionId}/designers-not-in-training-definition",
       produces = MediaType.APPLICATION_JSON_VALUE)
@@ -753,6 +760,7 @@ public class TrainingDefinitionsRestController {
         description = "No training definition with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.USER)
   @GetMapping(path = "/{definitionId}/beta-testers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<UserRefDTO>> getBetaTesters(
       @PathVariable("definitionId") Long trainingDefinitionId, @ParameterObject Pageable pageable) {
@@ -780,6 +788,7 @@ public class TrainingDefinitionsRestController {
         description = "No training definition with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.USER)
   @GetMapping(path = "/{definitionId}/authors", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<UserRefDTO>> getAuthors(
       @PathVariable("definitionId") Long trainingDefinitionId,

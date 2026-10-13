@@ -110,7 +110,7 @@ public interface TrainingInstanceRepository
   @EntityGraph(
       value = "TrainingInstance.findByIdAuthorsOrganizers",
       type = EntityGraph.EntityGraphType.FETCH)
-  List<TrainingInstance> findAllByIdIn(@Param("ids") List<Long> ids);
+  List<TrainingInstance> findAllByIdInOrderById(@Param("ids") List<Long> ids);
 
   /**
    * Finds the training instance with the given access token whose window currently contains the
@@ -183,15 +183,14 @@ public interface TrainingInstanceRepository
       @Param("instanceId") Long instanceId, @Param("currentTime") LocalDateTime currentTime);
 
   /**
-   * Finds the training instances whose organizers include the given user. Derived from the method
-   * name, with no named query of this name on {@link TrainingInstance}; the {@code organizers} join
-   * table's {@code user_ref_id} column carries no explicit {@code referencedColumnName}, so JPA
-   * defaults it to the referenced entity's primary key. Membership is therefore decided by {@link
-   * UserRef#getId()}, not {@link UserRef#getUserRefId()}, despite the column name; the given {@code
-   * organizer} must already carry the correct primary key.
+   * Finds the training instances whose organizers include the given user, ordered by id. The {@code
+   * organizers} join table's {@code user_ref_id} column carries no explicit {@code
+   * referencedColumnName}, so JPA defaults it to the referenced entity's primary key. Membership is
+   * therefore decided by {@link UserRef#getId()}, not {@link UserRef#getUserRefId()}, despite the
+   * column name; the given {@code organizer} must already carry the correct primary key.
    *
    * @param organizer the user whose organized training instances are to be found
    * @return the list of {@link TrainingInstance}s whose organizers contain the given user
    */
-  List<TrainingInstance> findAllByOrganizersContains(UserRef organizer);
+  List<TrainingInstance> findAllByOrganizersContainsOrderById(UserRef organizer);
 }

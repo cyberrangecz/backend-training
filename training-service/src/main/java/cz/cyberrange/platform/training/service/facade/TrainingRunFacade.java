@@ -51,7 +51,6 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,7 +65,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +81,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TrainingRunFacade {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
+  private static final String RUN_INSTANCE_TITLE_PROPERTY = "trainingInstance.title";
 
   @Value("${central.syslog.ip:127.0.0.1}")
   private String centralSyslogIp;
@@ -205,8 +207,9 @@ public class TrainingRunFacade {
   public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(
       Predicate predicate, Pageable pageable, String sortByTitle) {
     Page<TrainingRun> trainingRuns =
-        trainingRunService.findAllByParticipantRefUserRefId(predicate, pageable);
-    return convertToAccessedRunDTO(trainingRuns, sortByTitle);
+        trainingRunService.findAllByParticipantRefUserRefId(
+            predicate, orderedByInstanceTitle(pageable, sortByTitle));
+    return convertToAccessedRunDTO(trainingRuns);
   }
 
   /**
@@ -697,29 +700,25 @@ public class TrainingRunFacade {
   }
 
   private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(
-      Page<TrainingRun> trainingRuns, String sortByTitle) {
+      Page<TrainingRun> trainingRuns) {
     List<AccessedTrainingRunDTO> accessedTrainingRunDTOS = new ArrayList<>();
     for (TrainingRun trainingRun : trainingRuns) {
       AccessedTrainingRunDTO accessedTrainingRunDTO = generateAccessedTrainingRunDTO(trainingRun);
       accessedTrainingRunDTOS.add(accessedTrainingRunDTO);
     }
     return new PageResultResource<>(
-        sortByTitle(accessedTrainingRunDTOS, sortByTitle),
-        trainingRunMapper.createPagination(trainingRuns));
+        accessedTrainingRunDTOS, trainingRunMapper.createPagination(trainingRuns));
   }
 
-  private List<AccessedTrainingRunDTO> sortByTitle(
-      List<AccessedTrainingRunDTO> runs, String sortByTitle) {
-    if (sortByTitle != null && !sortByTitle.isBlank()) {
-      if (!runs.isEmpty()) {
-        if (sortByTitle.equals("asc")) {
-          runs.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle));
-        } else if (sortByTitle.equals("desc")) {
-          runs.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle).reversed());
-        }
-      }
-    }
-    return runs;
+  private Pageable orderedByInstanceTitle(Pageable pageable, String sortByTitle) {
+    return Sort.Direction.fromOptionalString(sortByTitle)
+        .<Pageable>map(
+            direction ->
+                PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    Sort.by(direction, RUN_INSTANCE_TITLE_PROPERTY).and(pageable.getSort())))
+        .orElse(pageable);
   }
 
   private AccessedTrainingRunDTO generateAccessedTrainingRunDTO(TrainingRun trainingRun) {

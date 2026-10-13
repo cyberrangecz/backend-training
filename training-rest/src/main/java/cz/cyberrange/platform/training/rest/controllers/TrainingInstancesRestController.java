@@ -17,6 +17,8 @@ import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableProperties;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -143,6 +145,7 @@ public class TrainingInstancesRestController {
           "A training administrator sees every instance. Anyone else sees only the instances they"
               + " organize. Text filters match partially and ignore case.")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The matching instances."))
+  @SortableProperties(SortableList.TRAINING_INSTANCE)
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<TrainingInstanceFindAllResponseDTO>>
       findAllTrainingInstances(
@@ -372,6 +375,7 @@ public class TrainingInstancesRestController {
         description = "No training instance with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(value = SortableList.TRAINING_RUN, defaultProperty = "startTime")
   @GetMapping(path = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<TrainingRunDTO>> findAllTrainingRunsByTrainingInstanceId(
       @PathVariable("instanceId") Long instanceId,
@@ -410,6 +414,7 @@ public class TrainingInstancesRestController {
         description = "No training instance with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.USER)
   @GetMapping(path = "/{instanceId}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<UserRefDTO>> getOrganizersOfTrainingInstance(
       @PathVariable("instanceId") Long trainingInstanceId,
@@ -448,6 +453,7 @@ public class TrainingInstancesRestController {
         description = "No training instance with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.USER)
   @GetMapping(
       path = "{instanceId}/organizers-not-in-training-instance",
       produces = MediaType.APPLICATION_JSON_VALUE)

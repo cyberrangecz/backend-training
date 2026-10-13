@@ -99,7 +99,7 @@ public class LocationSimilarityService {
   void executeCheatingDetectionOfLocationSimilarity(CheatingDetection cd) {
     Long trainingInstanceId = cd.getTrainingInstanceId();
     trainingLevelRepository
-        .findAllByTrainingDefinitionId(
+        .findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(
             trainingInstanceService.findById(trainingInstanceId).getTrainingDefinition().getId())
         .stream()
         .map(

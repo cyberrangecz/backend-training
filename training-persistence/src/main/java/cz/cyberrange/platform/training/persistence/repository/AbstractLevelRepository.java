@@ -40,14 +40,15 @@ public interface AbstractLevelRepository
       @Param("trainingDefinitionIds") Collection<Long> trainingDefinitionIds);
 
   /**
-   * Find all levels by level ids, confined to one training definition.
+   * Find all levels by level ids, confined to one training definition, ordered by level order then
+   * id.
    *
    * @param levelIds the ids of the levels
    * @param trainingDefinitionId the training definition the levels have to belong to
    * @return list of {@link AbstractLevel}s carrying one of the given ids and belonging to that
    *     definition, a level of another definition being left out without notice
    */
-  List<AbstractLevel> findAllByIdIsInAndTrainingDefinitionId(
+  List<AbstractLevel> findAllByIdIsInAndTrainingDefinitionIdOrderByOrderAscIdAsc(
       List<Long> levelIds, Long trainingDefinitionId);
 
   /**
@@ -123,5 +124,11 @@ public interface AbstractLevelRepository
       @Param("fromOrder") Integer fromOrder,
       @Param("toOrder") Integer toOrder);
 
-  List<AbstractLevel> findAllByIdIn(Collection<Long> ids);
+  /**
+   * Find all levels by level ids, ordered by id.
+   *
+   * @param ids the ids of the levels
+   * @return list of {@link AbstractLevel}s carrying one of the given ids
+   */
+  List<AbstractLevel> findAllByIdInOrderById(Collection<Long> ids);
 }

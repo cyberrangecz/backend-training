@@ -1,5 +1,6 @@
 package cz.cyberrange.platform.training.persistence;
 
+import cz.cyberrange.platform.training.persistence.config.PageableIdTiebreakerJpaRepositoryFactoryBean;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -13,7 +14,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @SpringBootApplication
 @ComponentScan(basePackages = "cz.cyberrange.platform.training.persistence.util")
 @EntityScan(basePackages = "cz.cyberrange.platform.training.persistence.model")
-@EnableJpaRepositories(basePackages = "cz.cyberrange.platform.training.persistence.repository")
+@EnableJpaRepositories(
+    basePackages = "cz.cyberrange.platform.training.persistence.repository",
+    repositoryFactoryBeanClass = PageableIdTiebreakerJpaRepositoryFactoryBean.class)
 public class TestApplicationPersistence {
 
   /**

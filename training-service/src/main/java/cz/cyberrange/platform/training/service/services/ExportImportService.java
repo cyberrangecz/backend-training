@@ -126,7 +126,7 @@ public class ExportImportService {
             .map(MitreTechnique::getTechniqueKey)
             .collect(Collectors.toSet());
     Set<MitreTechnique> resultTechniques =
-        mitreTechniqueRepository.findAllByTechniqueKeyIn(techniqueKeys);
+        mitreTechniqueRepository.findAllByTechniqueKeyInOrderById(techniqueKeys);
     resultTechniques.addAll(importedLevel.getMitreTechniques());
 
     importedLevel.setMitreTechniques(new HashSet<>());
@@ -162,7 +162,7 @@ public class ExportImportService {
    * @return that instance's {@link TrainingRun}s, empty when it has none
    */
   public Set<TrainingRun> findRunsByInstanceId(Long trainingInstanceId) {
-    return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
+    return trainingRunRepository.findAllByTrainingInstanceIdOrderById(trainingInstanceId);
   }
 
   /**
@@ -174,7 +174,7 @@ public class ExportImportService {
    *     recorded none
    */
   public Map<Long, List<QuestionAnswer>> findQuestionsAnswersOfAssessment(Long trainingRunId) {
-    return questionAnswerRepository.getAllByTrainingRunId(trainingRunId).stream()
+    return questionAnswerRepository.getAllByTrainingRunIdOrderByQuestionId(trainingRunId).stream()
         .collect(
             Collectors.groupingBy(
                 questionAnswer -> questionAnswer.getQuestion().getAssessmentLevel().getId()));

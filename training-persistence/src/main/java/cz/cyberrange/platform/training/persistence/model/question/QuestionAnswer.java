@@ -23,7 +23,8 @@ import lombok.ToString;
               + "JOIN FETCH qa.question q "
               + "JOIN FETCH qa.trainingRun tr "
               + "JOIN FETCH tr.trainingInstance ti "
-              + "WHERE q.id = :questionId AND ti.id = :instanceId")
+              + "WHERE q.id = :questionId AND ti.id = :instanceId "
+              + "ORDER BY tr.id")
 })
 @ToString
 @Entity

@@ -85,6 +85,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
       orphanRemoval = true,
       fetch = FetchType.LAZY)
+  @OrderBy("id")
   private List<ForbiddenCommand> commands = new ArrayList<>();
 
   /**

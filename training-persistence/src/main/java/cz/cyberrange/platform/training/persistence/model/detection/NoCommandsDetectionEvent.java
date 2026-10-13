@@ -25,6 +25,6 @@ import lombok.ToString;
   @NamedQuery(
       name = "NoCommandsDetectionEvent.findAllByCheatingDetectionId",
       query =
-          "SELECT ncde FROM NoCommandsDetectionEvent ncde WHERE ncde.cheatingDetectionId = :cheatingDetectionId")
+          "SELECT ncde FROM NoCommandsDetectionEvent ncde WHERE ncde.cheatingDetectionId = :cheatingDetectionId ORDER BY ncde.id")
 })
 public class NoCommandsDetectionEvent extends AbstractDetectionEvent {}

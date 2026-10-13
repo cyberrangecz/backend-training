@@ -19,5 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
       "cz.cyberrange.platform.training.persistence.repository"
     })
 @EntityScan(basePackages = "cz.cyberrange.platform.training.persistence.model")
-@EnableJpaRepositories(basePackages = "cz.cyberrange.platform.training.persistence.repository")
+@EnableJpaRepositories(
+    basePackages = "cz.cyberrange.platform.training.persistence.repository",
+    repositoryFactoryBeanClass = PageableIdTiebreakerJpaRepositoryFactoryBean.class)
 public class PersistenceConfig {}

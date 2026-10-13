@@ -58,7 +58,7 @@ public class MitreTechniqueRepositoryTest {
     entityManager.persist(mitreTechnique3);
 
     Set<MitreTechnique> resultTechniques =
-        mitreTechniqueRepository.findAllByTechniqueKeyIn(
+        mitreTechniqueRepository.findAllByTechniqueKeyInOrderById(
             Set.of(
                 mitreTechnique1.getTechniqueKey(), mitreTechnique3.getTechniqueKey(), "NOT_KEY"));
     assertEquals(2, resultTechniques.size());

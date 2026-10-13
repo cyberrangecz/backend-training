@@ -30,23 +30,23 @@ public interface DetectionEventParticipantRepository
 
   /**
    * Returns every participant of one detection event, ordered by the moment their submission
-   * occurred.
+   * occurred, then by id.
    *
    * @param eventId the detection event the returned participants are implicated in
    */
   @Query(
       "SELECT dep FROM DetectionEventParticipant dep WHERE dep.detectionEventId = :eventId "
-          + "ORDER BY dep.occurredAt")
+          + "ORDER BY dep.occurredAt, dep.id")
   List<DetectionEventParticipant> findAllByEventId(@Param("eventId") Long eventId);
 
   /**
    * Returns every participant of one cheating detection sweep, across every one of its detection
-   * events, in no defined order.
+   * events, ordered by id.
    *
    * @param cheatingDetectionId the cheating detection the returned participants belong to
    */
   @Query(
-      "SELECT dep FROM DetectionEventParticipant dep WHERE dep.cheatingDetectionId = :cheatingDetectionId")
+      "SELECT dep FROM DetectionEventParticipant dep WHERE dep.cheatingDetectionId = :cheatingDetectionId ORDER BY dep.id")
   List<DetectionEventParticipant> findAllParticipantsOfCheatingDetection(
       @Param("cheatingDetectionId") Long cheatingDetectionId);
 

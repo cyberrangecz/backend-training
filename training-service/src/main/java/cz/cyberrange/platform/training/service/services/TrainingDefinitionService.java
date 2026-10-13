@@ -584,7 +584,7 @@ public class TrainingDefinitionService {
             .map(MitreTechnique::getTechniqueKey)
             .collect(Collectors.toSet());
     Set<MitreTechnique> resultTechniques =
-        mitreTechniqueRepository.findAllByTechniqueKeyIn(techniqueKeys);
+        mitreTechniqueRepository.findAllByTechniqueKeyInOrderById(techniqueKeys);
     resultTechniques.addAll(updatedLevel.getMitreTechniques());
 
     updatedLevel.setMitreTechniques(new HashSet<>());
@@ -1250,7 +1250,7 @@ public class TrainingDefinitionService {
    *     silently omitted, and the order of the returned entities is unspecified
    */
   public List<TrainingDefinition> findAllByIds(List<Long> ids) {
-    return trainingDefinitionRepository.findAllByIdIn(ids);
+    return trainingDefinitionRepository.findAllByIdInOrderById(ids);
   }
 
   /**
@@ -1261,7 +1261,7 @@ public class TrainingDefinitionService {
    *     omitted, and the order of the returned entities is unspecified
    */
   public List<AbstractLevel> findAllLevelsByIds(List<Long> ids) {
-    return abstractLevelRepository.findAllByIdIn(ids);
+    return abstractLevelRepository.findAllByIdInOrderById(ids);
   }
 
   /**
@@ -1272,6 +1272,6 @@ public class TrainingDefinitionService {
    *     the order of the returned entities is unspecified
    */
   public List<Hint> findAllHintsByIds(List<Long> ids) {
-    return hintRepository.findAllByIdIn(ids);
+    return hintRepository.findAllByIdInOrderById(ids);
   }
 }

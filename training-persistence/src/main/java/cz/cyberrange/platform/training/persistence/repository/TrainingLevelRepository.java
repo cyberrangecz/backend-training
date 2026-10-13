@@ -15,24 +15,22 @@ public interface TrainingLevelRepository
     extends JpaRepository<TrainingLevel, Long>, QuerydslPredicateExecutor<TrainingLevel> {
 
   /**
-   * Finds the training levels belonging to the given training definition. Derived from the method
-   * name, with no named query of this name on {@link TrainingLevel} or its {@code AbstractLevel}
-   * superclass; imposes no ordering. Returns an empty list when the definition has none.
+   * Finds the training levels belonging to the given training definition. Ordered by the level
+   * order, then by id. Returns an empty list when the definition has none.
    *
    * @param trainingDefinitionId the training definition id
    * @return the matching {@link TrainingLevel}s, associations left lazy
    */
-  List<TrainingLevel> findAllByTrainingDefinitionId(
+  List<TrainingLevel> findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(
       @Param("trainingDefinitionId") Long trainingDefinitionId);
 
   /**
-   * Finds the training levels belonging to any of the given training definitions. Derived from the
-   * method name, with no named query of this name on {@link TrainingLevel} or its {@code
-   * AbstractLevel} superclass; imposes no ordering. Returns an empty collection when none match.
+   * Finds the training levels belonging to any of the given training definitions. Ordered by id.
+   * Returns an empty collection when none match.
    *
    * @param participatedTrainingDefinitions the training definition ids
    * @return the matching {@link TrainingLevel}s, associations left lazy
    */
-  Collection<TrainingLevel> findAllByTrainingDefinitionIdIn(
+  Collection<TrainingLevel> findAllByTrainingDefinitionIdInOrderById(
       Set<Long> participatedTrainingDefinitions);
 }

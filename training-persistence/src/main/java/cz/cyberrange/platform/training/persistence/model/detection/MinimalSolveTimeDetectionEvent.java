@@ -29,7 +29,7 @@ import lombok.ToString;
   @NamedQuery(
       name = "MinimalSolveTimeDetectionEvent.findAllByCheatingDetectionId",
       query =
-          "SELECT mstde FROM MinimalSolveTimeDetectionEvent mstde WHERE mstde.cheatingDetectionId = :cheatingDetectionId")
+          "SELECT mstde FROM MinimalSolveTimeDetectionEvent mstde WHERE mstde.cheatingDetectionId = :cheatingDetectionId ORDER BY mstde.id")
 })
 public class MinimalSolveTimeDetectionEvent extends AbstractDetectionEvent {
 

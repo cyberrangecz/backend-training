@@ -346,25 +346,23 @@ public class TrainingInstanceService {
    *
    * @param instanceId id of Training Instance whose Training Runs would be returned.
    * @param isActive if isActive attribute is True, only active runs are returned
-   * @param pageable pageable parameter with information about pagination and sort; with no sort and
-   *     no isActive filter, runs are ordered by start time
+   * @param pageable pageable parameter with information about pagination and sort; with no sort
+   *     requested, runs are ordered by start time
    * @return {@link TrainingRun}s of specific {@link TrainingInstance}
    */
   public Page<TrainingRun> findTrainingRunsByTrainingInstance(
       Long instanceId, Boolean isActive, Pageable pageable) {
     // check if instance exists
     this.findById(instanceId);
+    Pageable sortedPageable =
+        PageRequest.of(
+            pageable.getPageNumber(), pageable.getPageSize(), pageable.getSortOr(DEFAULT_RUN_SORT));
     if (isActive == null) {
-      return trainingRunRepository.findAllByTrainingInstanceId(
-          instanceId,
-          PageRequest.of(
-              pageable.getPageNumber(),
-              pageable.getPageSize(),
-              pageable.getSortOr(DEFAULT_RUN_SORT)));
+      return trainingRunRepository.findAllByTrainingInstanceId(instanceId, sortedPageable);
     } else if (isActive) {
-      return trainingRunRepository.findAllActiveByTrainingInstanceId(instanceId, pageable);
+      return trainingRunRepository.findAllActiveByTrainingInstanceId(instanceId, sortedPageable);
     } else {
-      return trainingRunRepository.findAllInactiveByTrainingInstanceId(instanceId, pageable);
+      return trainingRunRepository.findAllInactiveByTrainingInstanceId(instanceId, sortedPageable);
     }
   }
 
@@ -431,7 +429,7 @@ public class TrainingInstanceService {
    * @param trainingInstanceId id of training instance.
    */
   public List<String> findAllSandboxesUsedByTrainingInstanceId(Long trainingInstanceId) {
-    return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId).stream()
+    return trainingRunRepository.findAllByTrainingInstanceIdOrderById(trainingInstanceId).stream()
         .map(
             trainingRun ->
                 trainingRun.getSandboxInstanceRefId() == null
@@ -446,7 +444,7 @@ public class TrainingInstanceService {
    * @param trainingInstanceId id of training instance.
    */
   public List<Long> findAllTraineesByTrainingInstance(Long trainingInstanceId) {
-    return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId).stream()
+    return trainingRunRepository.findAllByTrainingInstanceIdOrderById(trainingInstanceId).stream()
         .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
         .collect(Collectors.toList());
   }

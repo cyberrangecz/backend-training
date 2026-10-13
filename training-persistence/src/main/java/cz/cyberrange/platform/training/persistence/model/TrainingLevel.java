@@ -33,9 +33,11 @@ public class TrainingLevel extends AbstractLevel {
   private boolean solutionPenalized;
 
   @OneToMany(mappedBy = "trainingLevel", orphanRemoval = true)
+  @OrderBy("id")
   private Set<Attachment> attachments = new HashSet<>();
 
   @OneToMany(mappedBy = "trainingLevel", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("id")
   private Set<Hint> hints = new HashSet<>();
 
   @Column(name = "incorrect_answer_limit")
@@ -51,6 +53,7 @@ public class TrainingLevel extends AbstractLevel {
       name = "training_level_mitre_technique",
       joinColumns = {@JoinColumn(name = "training_level_id")},
       inverseJoinColumns = {@JoinColumn(name = "mitre_technique_id")})
+  @OrderBy("id")
   private Set<MitreTechnique> mitreTechniques = new HashSet<>();
 
   @ElementCollection(fetch = FetchType.EAGER)

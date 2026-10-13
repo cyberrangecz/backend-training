@@ -251,7 +251,7 @@ public class TrainingRunService {
    * @return the matching {@link TrainingRun}s, or an empty set if none exist
    */
   public Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId) {
-    return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
+    return trainingRunRepository.findAllByTrainingInstanceIdOrderById(trainingInstanceId);
   }
 
   /**
@@ -1367,6 +1367,6 @@ public class TrainingRunService {
    * @return the run's {@link QuestionAnswer}s, or an empty list if none exist
    */
   public List<QuestionAnswer> getQuestionAnswersByTrainingRunId(Long runId) {
-    return questionAnswerRepository.getAllByTrainingRunId(runId);
+    return questionAnswerRepository.getAllByTrainingRunIdOrderByQuestionId(runId);
   }
 }

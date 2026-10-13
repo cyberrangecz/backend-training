@@ -6,6 +6,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.Collections;
@@ -24,7 +25,7 @@ import java.util.Set;
   // Matches on userRefId: takes and returns the external, cross-service user identifiers.
   @NamedQuery(
       name = "UserRef.findUsers",
-      query = "SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId"),
+      query = "SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId ORDER BY ur.id"),
   // Matches on userRefId: takes an external user identifier, not the local primary key.
   @NamedQuery(
       name = "UserRef.findUserByUserRefId",
@@ -49,12 +50,15 @@ public class UserRef extends AbstractEntity<Long> {
   private Long userRefId;
 
   @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
+  @OrderBy("id")
   private Set<TrainingInstance> trainingInstances = new HashSet<>();
 
   @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
+  @OrderBy("id")
   private Set<TrainingDefinition> trainingDefinitions = new HashSet<>();
 
   @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
+  @OrderBy("id")
   private Set<BetaTestingGroup> betaTesters = new HashSet<>();
 
   public UserRef() {}

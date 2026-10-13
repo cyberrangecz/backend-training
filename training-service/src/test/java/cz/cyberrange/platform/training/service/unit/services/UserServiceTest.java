@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.service.unit.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -18,20 +19,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyNamingStrategies;
@@ -208,6 +218,70 @@ public class UserServiceTest {
     given(userRefRepository.createOrGet(userRef.getUserRefId())).willReturn(userRef1);
     userService.createOrGetUserRef(userRef.getUserRefId());
     then(userRefRepository).should().createOrGet(userRef.getUserRefId());
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("userListCalls")
+  public void userListCall_sortRequested_forwardsEachOrderAsSortParameter(
+      String callName, BiFunction<UserService, Pageable, PageResultResource<UserRefDTO>> call)
+      throws Exception {
+    givenEmptyUserPage();
+    Pageable sortedPageable =
+        PageRequest.of(
+            0, 5, Sort.by(Sort.Order.desc("givenName"), Sort.Order.asc("familyName").ignoreCase()));
+
+    call.apply(userService, sortedPageable);
+
+    assertEquals(
+        List.of("givenName,desc", "familyName,asc,ignorecase"),
+        forwardedQueryParameters().get("sort"));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("userListCalls")
+  public void userListCall_noSortRequested_forwardsNoSortParameter(
+      String callName, BiFunction<UserService, Pageable, PageResultResource<UserRefDTO>> call)
+      throws Exception {
+    givenEmptyUserPage();
+
+    call.apply(userService, PageRequest.of(0, 5));
+
+    assertNull(forwardedQueryParameters().get("sort"));
+  }
+
+  private static Stream<Arguments> userListCalls() {
+    return Stream.of(
+        Arguments.of(
+            "users by ids",
+            (BiFunction<UserService, Pageable, PageResultResource<UserRefDTO>>)
+                (service, pageable) ->
+                    service.getUsersRefDTOByGivenUserIds(List.of(10L), pageable, null, null)),
+        Arguments.of(
+            "users by role",
+            (BiFunction<UserService, Pageable, PageResultResource<UserRefDTO>>)
+                (service, pageable) ->
+                    service.getUsersByGivenRole(
+                        RoleType.ROLE_TRAINING_DESIGNER, pageable, null, null)),
+        Arguments.of(
+            "users by role without ids",
+            (BiFunction<UserService, Pageable, PageResultResource<UserRefDTO>>)
+                (service, pageable) ->
+                    service.getUsersByGivenRoleAndNotWithGivenIds(
+                        RoleType.ROLE_TRAINING_DESIGNER, Set.of(10L), pageable, null, null)));
+  }
+
+  private void givenEmptyUserPage() throws IOException {
+    given(exchangeFunction.exchange(any(ClientRequest.class)))
+        .willReturn(
+            buildMockResponse(
+                new PageResultResource<UserRefDTO>(
+                    List.of(), new PageResultResource.Pagination(0, 0, 5, 0, 0))));
+  }
+
+  private MultiValueMap<String, String> forwardedQueryParameters() {
+    ArgumentCaptor<ClientRequest> forwardedRequest = ArgumentCaptor.forClass(ClientRequest.class);
+    then(exchangeFunction).should().exchange(forwardedRequest.capture());
+    return UriComponentsBuilder.fromUri(forwardedRequest.getValue().url()).build().getQueryParams();
   }
 
   private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {

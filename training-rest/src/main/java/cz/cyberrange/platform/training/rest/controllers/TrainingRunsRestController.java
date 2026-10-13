@@ -20,6 +20,8 @@ import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableProperties;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -197,6 +199,7 @@ public class TrainingRunsRestController {
           "Only a training administrator may call it. Text filters match partially and ignore"
               + " case.")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The matching runs."))
+  @SortableProperties(SortableList.TRAINING_RUN)
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<TrainingRunDTO>> findAllTrainingRuns(
       @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
@@ -264,7 +267,7 @@ public class TrainingRunsRestController {
    * @param predicate specifies query to database.
    * @param pageable pageable parameter with information about pagination.
    * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending, or
-   *     omitted for no sort
+   *     omitted for no title order
    * @return all accessed Training Runs.
    */
   @Operation(
@@ -274,14 +277,15 @@ public class TrainingRunsRestController {
           "Only a trainee or a training administrator may call it. Text filters match partially and"
               + " ignore case.")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The caller's runs."))
+  @SortableProperties(SortableList.ACCESSIBLE_TRAINING_RUN)
   @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<AccessedTrainingRunDTO>> getAllAccessedTrainingRuns(
       @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
       @ParameterObject Pageable pageable,
       @Parameter(
               description =
-                  "asc or desc to order the returned page by title; any other value leaves the"
-                      + " order alone.",
+                  "asc or desc to order all runs by title before the sort parameter applies; any"
+                      + " other value leaves the order alone.",
               schema = @Schema(example = "asc"))
           @RequestParam(value = "sortByTitle", required = false)
           String sortByTitle) {

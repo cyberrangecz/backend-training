@@ -135,7 +135,9 @@ public class AnswerSimilarityService {
   private Map<Long, TrainingLevel> findTrainingLevelsById(Long trainingInstanceId) {
     Long trainingDefinitionId =
         trainingInstanceService.findById(trainingInstanceId).getTrainingDefinition().getId();
-    return trainingLevelRepository.findAllByTrainingDefinitionId(trainingDefinitionId).stream()
+    return trainingLevelRepository
+        .findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(trainingDefinitionId)
+        .stream()
         .collect(Collectors.toMap(TrainingLevel::getId, level -> level));
   }
 

@@ -33,11 +33,11 @@ public interface DetectedForbiddenCommandRepository
       @Param("eventId") Long eventId, Pageable pageable);
 
   /**
-   * Returns every detected forbidden command of one detection event, in no defined order.
+   * Returns every detected forbidden command of one detection event, ordered by id.
    *
    * @param eventId the detection event the returned commands were matched against
    */
-  @Query(FIND_ALL_BY_EVENT_ID)
+  @Query(FIND_ALL_BY_EVENT_ID + " ORDER BY dfc.id")
   List<DetectedForbiddenCommand> findAllByEventId(@Param("eventId") Long eventId);
 
   /**

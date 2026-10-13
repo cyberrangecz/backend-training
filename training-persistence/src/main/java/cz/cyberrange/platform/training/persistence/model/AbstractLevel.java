@@ -35,12 +35,12 @@ import lombok.Setter;
   @NamedQuery(
       name = "AbstractLevel.findAllLevelsByTrainingDefinitionId",
       query =
-          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order"),
+          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order, l.id"),
   @NamedQuery(
       name = "AbstractLevel.findAllLevelsByTrainingDefinitionIdIn",
       query =
           "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id IN :trainingDefinitionIds "
-              + "ORDER BY l.order"),
+              + "ORDER BY l.order, l.id"),
   @NamedQuery(
       name = "AbstractLevel.findLevelInDefinition",
       query =

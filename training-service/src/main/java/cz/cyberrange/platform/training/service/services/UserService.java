@@ -12,11 +12,13 @@ import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -269,7 +271,7 @@ public class UserService {
    *
    * @param givenName given name filter to append, skipped when null
    * @param familyName family name filter to append, skipped when null
-   * @param pageable the pagination to translate into query parameters
+   * @param pageable the pagination and sort to translate into query parameters
    * @param builder the request URI being built
    */
   private void setCommonParams(
@@ -282,5 +284,11 @@ public class UserService {
     }
     builder.queryParam("page", pageable.getPageNumber());
     builder.queryParam("size", pageable.getPageSize());
+    pageable.getSort().forEach(order -> builder.queryParam("sort", sortParameterValue(order)));
+  }
+
+  private static String sortParameterValue(Sort.Order order) {
+    String value = order.getProperty() + "," + order.getDirection().name().toLowerCase(Locale.ROOT);
+    return order.isIgnoreCase() ? value + ",ignorecase" : value;
   }
 }

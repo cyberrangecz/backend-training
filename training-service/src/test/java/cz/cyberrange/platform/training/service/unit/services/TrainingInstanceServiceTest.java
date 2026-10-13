@@ -28,16 +28,23 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -316,58 +323,42 @@ public class TrainingInstanceServiceTest {
   //        trainingInstanceService.unlockPool(trainingInstance1.getPoolId());
   //    }
 
-  @Test
-  public void findTrainingRunsByTrainingInstance() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<>(expected);
-
+  @ParameterizedTest(name = "isActive={0}, requested sort={1}")
+  @MethodSource("runFiltersWithRequestedAndAppliedSort")
+  public void findTrainingRunsByTrainingInstance_appliesRequestedSortOrStartTimeDefault(
+      Boolean isActive, Sort requestedSort, Sort appliedSort) {
+    Page<TrainingRun> page = new PageImpl<>(List.of(trainingRun1, trainingRun2));
+    AtomicReference<Pageable> queriedPageable = new AtomicReference<>();
+    Answer<Page<TrainingRun>> recordPageable =
+        invocation -> {
+          queriedPageable.set(invocation.getArgument(1));
+          return page;
+        };
     given(trainingInstanceRepository.findById(anyLong()))
         .willReturn(Optional.of(trainingInstance1));
     given(trainingRunRepository.findAllByTrainingInstanceId(anyLong(), any(Pageable.class)))
-        .willReturn(p);
-    Page<TrainingRun> pr =
-        trainingInstanceService.findTrainingRunsByTrainingInstance(
-            trainingInstance1.getId(), null, PageRequest.of(0, 2));
-    assertEquals(2, pr.getTotalElements());
-  }
-
-  @Test
-  public void findTrainingRunsByTrainingInstance_OnlyActive() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<>(expected);
-
-    given(trainingInstanceRepository.findById(anyLong()))
-        .willReturn(Optional.of(trainingInstance1));
+        .willAnswer(recordPageable);
     given(trainingRunRepository.findAllActiveByTrainingInstanceId(anyLong(), any(Pageable.class)))
-        .willReturn(p);
+        .willAnswer(recordPageable);
+    given(trainingRunRepository.findAllInactiveByTrainingInstanceId(anyLong(), any(Pageable.class)))
+        .willAnswer(recordPageable);
+
     Page<TrainingRun> pr =
         trainingInstanceService.findTrainingRunsByTrainingInstance(
-            trainingInstance1.getId(), true, PageRequest.of(0, 2));
+            trainingInstance1.getId(), isActive, PageRequest.of(0, 2, requestedSort));
+
     assertEquals(2, pr.getTotalElements());
+    assertEquals(appliedSort, queriedPageable.get().getSort());
   }
 
-  @Test
-  public void findTrainingRunsByTrainingInstance_OnlyInActive() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<>(expected);
-
-    given(trainingInstanceRepository.findById(anyLong()))
-        .willReturn(Optional.of(trainingInstance1));
-    given(trainingRunRepository.findAllInactiveByTrainingInstanceId(anyLong(), any(Pageable.class)))
-        .willReturn(p);
-    Page<TrainingRun> pr =
-        trainingInstanceService.findTrainingRunsByTrainingInstance(
-            trainingInstance1.getId(), false, PageRequest.of(0, 2));
-    assertEquals(2, pr.getTotalElements());
+  private static Stream<Arguments> runFiltersWithRequestedAndAppliedSort() {
+    Sort requestedSort = Sort.by(Sort.Direction.DESC, "endTime");
+    return Stream.of(null, true, false)
+        .flatMap(
+            isActive ->
+                Stream.of(
+                    Arguments.of(isActive, Sort.unsorted(), Sort.by("startTime")),
+                    Arguments.of(isActive, requestedSort, requestedSort)));
   }
 
   @Test

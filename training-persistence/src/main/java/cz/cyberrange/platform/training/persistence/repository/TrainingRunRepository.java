@@ -86,10 +86,8 @@ public interface TrainingRunRepository
       @Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
 
   /**
-   * Finds all training runs of a training instance, derived from the method name with no
-   * {@code @NamedQuery} override, so it matches on {@code trainingInstance.id}. The
-   * {@code @EntityGraph} fetches each run's participant reference eagerly; the result carries no
-   * guaranteed order.
+   * Finds all training runs of a training instance, matched on {@code trainingInstance.id} and
+   * ordered by id. The {@code @EntityGraph} fetches each run's participant reference eagerly.
    *
    * @param trainingInstanceId the primary key of the training instance
    * @return the set of {@link TrainingRun}s of the {@link TrainingInstance}, or an empty set if
@@ -98,7 +96,7 @@ public interface TrainingRunRepository
   @EntityGraph(
       value = "TrainingRun.findAllParticipantRef",
       type = EntityGraph.EntityGraphType.FETCH)
-  Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId);
+  Set<TrainingRun> findAllByTrainingInstanceIdOrderById(Long trainingInstanceId);
 
   /**
    * Find training run by id.
@@ -130,7 +128,7 @@ public interface TrainingRunRepository
    * @param userRefId the user-and-group id of the participant
    * @return the list of all {@link TrainingRun}s accessed by participant
    */
-  @Query(FIND_ALL_BY_PARTICIPANT_USER_REF_ID)
+  @Query(FIND_ALL_BY_PARTICIPANT_USER_REF_ID + " ORDER BY tr.id")
   List<TrainingRun> findAllByParticipantRefId(@Param("userRefId") Long userRefId);
 
   /**
@@ -249,13 +247,13 @@ public interface TrainingRunRepository
   boolean existsAnyForTrainingInstance(@Param("trainingInstanceId") Long trainingInstanceId);
 
   /**
-   * Find all training runs whose participant row has one of the given primary keys. Derived from
-   * the method name, so it matches on {@code participantRef.id} — the training service's own key,
-   * not the user-and-group id that {@link #findAllByParticipantRefId(Long)} takes despite the
-   * matching name. A caller holding user-and-group ids resolves them to participant rows first.
+   * Find all training runs whose participant row has one of the given primary keys. Matches on
+   * {@code participantRef.id} — the training service's own key, not the user-and-group id that
+   * {@link #findAllByParticipantRefId(Long)} takes despite the matching name. A caller holding
+   * user-and-group ids resolves them to participant rows first.
    *
    * @param participantRefIds the primary keys of the participant rows
    * @return the list of all {@link TrainingRun}s accessed by those participants
    */
-  List<TrainingRun> findAllByParticipantRefIdIn(List<Long> participantRefIds);
+  List<TrainingRun> findAllByParticipantRefIdInOrderById(List<Long> participantRefIds);
 }

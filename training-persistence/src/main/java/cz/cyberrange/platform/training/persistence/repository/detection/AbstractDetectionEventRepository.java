@@ -74,8 +74,8 @@ public interface AbstractDetectionEventRepository
       Predicate predicate);
 
   /**
-   * Returns every detection event of one cheating detection sweep, across every finding kind, in no
-   * defined order. Each returned instance is the concrete finding subtype the row belongs to.
+   * Returns every detection event of one cheating detection sweep, across every finding kind,
+   * ordered by id. Each returned instance is the concrete finding subtype the row belongs to.
    *
    * @param cheatingDetectionId the cheating detection the returned events belong to
    */

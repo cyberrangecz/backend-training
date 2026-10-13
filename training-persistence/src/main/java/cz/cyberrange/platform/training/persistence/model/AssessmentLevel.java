@@ -26,7 +26,7 @@ import lombok.Setter;
 public class AssessmentLevel extends AbstractLevel {
 
   /** Ordered by each question's position within the assessment */
-  @OrderBy("order asc")
+  @OrderBy("order asc, id asc")
   @OneToMany(
       mappedBy = "assessmentLevel",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},

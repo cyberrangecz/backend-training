@@ -29,7 +29,7 @@ import lombok.ToString;
   @NamedQuery(
       name = "TimeProximityDetectionEvent.findAllByCheatingDetectionId",
       query =
-          "SELECT tpde FROM TimeProximityDetectionEvent tpde WHERE tpde.cheatingDetectionId = :cheatingDetectionId")
+          "SELECT tpde FROM TimeProximityDetectionEvent tpde WHERE tpde.cheatingDetectionId = :cheatingDetectionId ORDER BY tpde.id")
 })
 public class TimeProximityDetectionEvent extends AbstractDetectionEvent {
 

@@ -29,7 +29,7 @@ import lombok.ToString;
   @NamedQuery(
       name = "LocationSimilarityDetectionEvent.findAllByCheatingDetectionId",
       query =
-          "SELECT lsde FROM LocationSimilarityDetectionEvent lsde WHERE lsde.cheatingDetectionId = :cheatingDetectionId")
+          "SELECT lsde FROM LocationSimilarityDetectionEvent lsde WHERE lsde.cheatingDetectionId = :cheatingDetectionId ORDER BY lsde.id")
 })
 public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
 

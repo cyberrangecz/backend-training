@@ -33,8 +33,7 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
   /**
    * Left-joins each candidate run to its participant reference, its training instance, and that
    * instance's training definition, then keeps only the runs whose participant reference has the
-   * given cross-service {@code userRefId}. Deduplicates the joined rows before applying the given
-   * predicate and paging.
+   * given cross-service {@code userRefId}. Applies the given predicate and paging.
    */
   @Override
   @Transactional
@@ -49,7 +48,6 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
     JPQLQuery<TrainingRun> query =
         new JPAQueryFactory(entityManager)
             .selectFrom(trainingRun)
-            .distinct()
             .leftJoin(trainingRun.participantRef, participantRef)
             .leftJoin(trainingRun.trainingInstance, trainingInstance)
             .leftJoin(trainingInstance.trainingDefinition, trainingDefinition)
@@ -74,6 +72,7 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
     return new JPAQueryFactory(entityManager)
         .selectFrom(trainingRun)
         .where(trainingRun.id.in(runIds).and(trainingRun.participantRef.userRefId.eq(userRefId)))
+        .orderBy(trainingRun.id.asc())
         .fetch();
   }
 
@@ -96,6 +95,7 @@ public class TrainingRunRepositoryImpl extends QuerydslRepositorySupport
         .innerJoin(trainingRun.trainingInstance, trainingInstance)
         .innerJoin(trainingInstance.organizers, organizer)
         .where(trainingRun.id.in(runIds).and(organizer.userRefId.eq(userRefId)))
+        .orderBy(trainingRun.id.asc())
         .fetch();
   }
 

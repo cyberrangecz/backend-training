@@ -110,7 +110,7 @@ public class NoCommandsService {
     Long trainingInstanceId = cd.getTrainingInstanceId();
     Map<Long, TrainingLevel> trainingLevelsById =
         trainingLevelRepository
-            .findAllByTrainingDefinitionId(
+            .findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(
                 trainingInstanceService
                     .findById(trainingInstanceId)
                     .getTrainingDefinition()

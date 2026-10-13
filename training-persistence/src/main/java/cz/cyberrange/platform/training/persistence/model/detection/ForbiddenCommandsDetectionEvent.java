@@ -29,7 +29,7 @@ import lombok.ToString;
   @NamedQuery(
       name = "ForbiddenCommandsDetectionEvent.findAllByCheatingDetectionId",
       query =
-          "SELECT fcde FROM ForbiddenCommandsDetectionEvent fcde WHERE fcde.cheatingDetectionId = :cheatingDetectionId")
+          "SELECT fcde FROM ForbiddenCommandsDetectionEvent fcde WHERE fcde.cheatingDetectionId = :cheatingDetectionId ORDER BY fcde.id")
 })
 public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 

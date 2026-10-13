@@ -17,6 +17,8 @@ import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetec
 import cz.cyberrange.platform.training.rest.utils.ZipMediaType;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableProperties;
 import cz.cyberrange.platform.training.service.export.ExportFormats;
 import cz.cyberrange.platform.training.service.facade.detection.CheatingDetectionExportFacade;
 import cz.cyberrange.platform.training.service.facade.detection.CheatingDetectionFacade;
@@ -225,6 +227,7 @@ public class CheatingDetectionsRestController {
         description = "No cheating detection with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.DETECTION_EVENT)
   @GetMapping(path = "/{cheatingDetectionId}/events", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<AbstractDetectionEventDTO>>
       findAllDetectionEventsOfCheatingDetection(
@@ -264,6 +267,9 @@ public class CheatingDetectionsRestController {
         description = "No detection event with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(
+      value = SortableList.DETECTION_EVENT_PARTICIPANT,
+      defaultProperty = "occurredAt")
   @GetMapping(path = "/participants", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<DetectionEventParticipantDTO>>
       findAllParticipantsOfDetectionEvent(
@@ -298,6 +304,7 @@ public class CheatingDetectionsRestController {
         description = "No detection event with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.FORBIDDEN_COMMAND)
   @GetMapping(path = "/forbidden-commands", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<DetectedForbiddenCommandDTO>>
       findAllForbiddenCommandsOfDetectionEvent(
@@ -640,6 +647,7 @@ public class CheatingDetectionsRestController {
         description = "The training instance id is not a number.",
         content = @Content(schema = @Schema(implementation = ApiError.class)))
   })
+  @SortableProperties(value = SortableList.CHEATING_DETECTION, defaultProperty = "executeTime")
   @GetMapping(
       path = "/{trainingInstanceId}/detections",
       produces = MediaType.APPLICATION_JSON_VALUE)

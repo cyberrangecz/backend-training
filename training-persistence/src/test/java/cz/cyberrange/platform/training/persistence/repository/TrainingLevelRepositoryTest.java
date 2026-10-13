@@ -81,7 +81,8 @@ public class TrainingLevelRepositoryTest {
     entityManager.persist(trainingLevel2);
     entityManager.persist(trainingLevel3);
     List<TrainingLevel> resultTrainingLevels =
-        trainingLevelRepository.findAllByTrainingDefinitionId(trainingDefinition1.getId());
+        trainingLevelRepository.findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(
+            trainingDefinition1.getId());
     assertTrue(
         resultTrainingLevels.stream().anyMatch(l -> l.getId().equals(trainingLevel1.getId())));
     assertTrue(

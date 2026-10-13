@@ -40,7 +40,7 @@ import lombok.ToString;
       name = "AbstractDetectionEvent.findAllByCheatingDetectionId",
       query =
           "SELECT de FROM AbstractDetectionEvent de "
-              + "WHERE de.cheatingDetectionId = :cheatingDetectionId"),
+              + "WHERE de.cheatingDetectionId = :cheatingDetectionId ORDER BY de.id"),
   @NamedQuery(
       name = "AbstractDetectionEvent.deleteDetectionEventsOfCheatingDetection",
       query =

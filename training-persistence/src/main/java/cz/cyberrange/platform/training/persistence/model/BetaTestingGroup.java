@@ -7,6 +7,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ public class BetaTestingGroup extends AbstractEntity<Long> {
       name = "beta_testing_group_user_ref",
       joinColumns = @JoinColumn(name = "beta_testing_group_id"),
       inverseJoinColumns = @JoinColumn(name = "user_ref_id"))
+  @OrderBy("id")
   private Set<UserRef> organizers = new HashSet<>();
 
   /** Associated Training Definition */

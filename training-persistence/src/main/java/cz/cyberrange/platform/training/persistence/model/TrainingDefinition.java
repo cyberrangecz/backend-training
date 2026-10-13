@@ -63,6 +63,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
       name = "training_definition_user_ref",
       joinColumns = @JoinColumn(name = "training_definition_id"),
       inverseJoinColumns = @JoinColumn(name = "user_ref_id"))
+  @OrderBy("id")
   private Set<UserRef> authors = new HashSet<>();
 
   @OneToOne(
