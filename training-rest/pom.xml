@@ -165,6 +165,9 @@
                             <skipTests>false</skipTests>
                             <skipITs>false</skipITs>
                             <test>OpenApiDocumentGenerationIT</test>
+                            <systemPropertyVariables>
+                                <docs.output.directory>${project.basedir}/../doc-files</docs.output.directory>
+                            </systemPropertyVariables>
                         </configuration>
                         <executions>
                             <execution>
