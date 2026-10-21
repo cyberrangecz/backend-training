@@ -97,7 +97,7 @@ public class TrainingRunRepositoryTest {
     expectedTrainingRuns.forEach(t -> entityManager.persist(t));
     List<TrainingRun> resultTrainingRuns = trainingRunRepository.findAll();
     assertNotNull(resultTrainingRuns);
-    assertEquals(expectedTrainingRuns, resultTrainingRuns);
+    assertTrue(resultTrainingRuns.containsAll(expectedTrainingRuns));
     assertEquals(expectedTrainingRuns.size(), resultTrainingRuns.size());
   }
 

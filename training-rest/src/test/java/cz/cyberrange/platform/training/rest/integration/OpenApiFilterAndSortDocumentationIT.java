@@ -55,8 +55,7 @@ class OpenApiFilterAndSortDocumentationIT extends AbstractIntegrationTest {
 
   private ResultActions servedDocument() throws Exception {
     return mockMvc
-        .perform(
-            get(contextPath + "/v3/api-docs").contextPath(contextPath).with(callerWithRoles()))
+        .perform(get(contextPath + "/v3/api-docs").contextPath(contextPath).with(callerWithRoles()))
         .andExpect(status().isOk());
   }
 }

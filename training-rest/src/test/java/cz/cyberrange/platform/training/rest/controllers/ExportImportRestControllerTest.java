@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.rest.controllers;
 
 import static cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -177,10 +178,27 @@ public class ExportImportRestControllerTest {
         .andExpect(status().isNotAcceptable());
   }
 
+  @Test
+  public void exportTrainingDefinitionEncodesNonAsciiTitleInFileName() throws Exception {
+    givenExportedDefinition("Školení");
+    mockMvc
+        .perform(get("/exports/training-definitions/{id}", 1L).accept(MediaType.ALL))
+        .andExpect(status().isOk())
+        .andExpect(
+            header()
+                .string(
+                    "Content-Disposition",
+                    containsString("filename*=UTF-8''%C5%A0kolen%C3%AD.json")));
+  }
+
   private void givenExportedDefinition() {
+    givenExportedDefinition("definition");
+  }
+
+  private void givenExportedDefinition(String title) {
     FileToReturnDTO file = new FileToReturnDTO();
     file.setContent(new byte[] {1});
-    file.setTitle("definition");
+    file.setTitle(title);
     given(exportImportFacade.dbExport(any(Long.class), any())).willReturn(file);
   }
 
