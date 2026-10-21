@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.traininginstance;
 
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCDeserializer;
+import cz.cyberrange.platform.training.api.validation.StartNotTooFarInPast;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -19,6 +20,7 @@ public class TrainingInstanceCreateDTO {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2020-11-20T10:28:02.727Z")
   @NotNull(message = "{trainingInstance.startTime.NotNull.message}")
+  @StartNotTooFarInPast
   @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
   private LocalDateTime startTime;
 
