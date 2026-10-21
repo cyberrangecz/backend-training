@@ -5,6 +5,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.StringPath;
 import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
 import cz.cyberrange.platform.training.persistence.model.detection.QAbstractDetectionEvent;
+import cz.cyberrange.platform.training.persistence.repository.FoldedSearchPredicate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +42,7 @@ public interface AbstractDetectionEventRepository
         .all(
             (StringPath path, Collection<? extends String> values) -> {
               BooleanBuilder predicate = new BooleanBuilder();
-              values.forEach(value -> predicate.and(path.containsIgnoreCase(value)));
+              values.forEach(value -> predicate.and(FoldedSearchPredicate.contains(path, value)));
               return Optional.ofNullable(predicate);
             });
   }

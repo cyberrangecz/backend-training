@@ -42,7 +42,7 @@
         <proprietary-repo-id>github</proprietary-repo-id>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <crczp-security-commons.version>3.0.0</crczp-security-commons.version>
+        <crczp-security-commons.version>3.1.0</crczp-security-commons.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <modelmapper.version>3.2.6</modelmapper.version>
         <wiremock.version>3.13.2</wiremock.version>

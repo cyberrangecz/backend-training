@@ -31,8 +31,8 @@ public interface TrainingInstanceRepository
         QuerydslBinderCustomizer<QTrainingInstance> {
 
   /**
-   * That method is used to make the query dsl string values case insensitive and also it supports
-   * partial matches in the database.
+   * That method is used to make the query dsl string values case and accent insensitive and also
+   * it supports partial matches in the database.
    *
    * @param querydslBindings
    * @param qTrainingInstance
@@ -44,7 +44,7 @@ public interface TrainingInstanceRepository
         .all(
             (StringPath path, Collection<? extends String> values) -> {
               BooleanBuilder predicate = new BooleanBuilder();
-              values.forEach(value -> predicate.and(path.containsIgnoreCase(value)));
+              values.forEach(value -> predicate.and(FoldedSearchPredicate.contains(path, value)));
               return Optional.ofNullable(predicate);
             });
   }
