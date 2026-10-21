@@ -10,17 +10,10 @@ import cz.cyberrange.platform.training.api.dto.event.CommandEventDTO;
 import cz.cyberrange.platform.training.api.dto.export.AbstractLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
-import cz.cyberrange.platform.training.api.dto.imports.AbstractLevelImportDTO;
-import cz.cyberrange.platform.training.api.dto.imports.AccessLevelImportDTO;
-import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
-import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
-import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
-import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
-import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
 import cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException;
 import cz.cyberrange.platform.training.api.responses.SandboxDefinitionInfo;
@@ -30,18 +23,12 @@ import cz.cyberrange.platform.training.opensearch.events.training.model.Abstract
 import cz.cyberrange.platform.training.opensearch.events.training.model.LevelStarted;
 import cz.cyberrange.platform.training.opensearch.events.training.query.TrainingEventsService;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
-import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
-import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
-import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
 import cz.cyberrange.platform.training.persistence.model.enums.QuestionType;
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
-import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingOption;
-import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionAnswer;
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrAdmin;
@@ -69,7 +56,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,11 +175,10 @@ public class ExportImportFacade {
   }
 
   /**
-   * Creates a new training definition from a submitted one and appends each of its levels in the
-   * order given. The new definition starts out unreleased and takes its estimated duration from the
-   * sum of its levels'. A submitted training level has its answer configuration validated, and a
-   * submitted assessment level of the test kind has its statements bound to their correct options
-   * and its maximum score set from its questions' points.
+   * Creates a new training definition from a submitted one together with its levels in the order
+   * given, through the same level writing as a definition created over the API. The new definition
+   * starts out unreleased and takes its estimated duration from the sum of its levels'. A blank
+   * answer or answer variable name of a training level counts as absent.
    *
    * @param importTrainingDefinitionDTO the definition to create, levels included
    * @return the created definition with its levels, {@link TrainingDefinitionWithLevelsDTO}
@@ -208,150 +193,18 @@ public class ExportImportFacade {
       ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
     TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
     newDefinition.setState(TDState.UNRELEASED);
-    newDefinition.setEstimatedDuration(computeEstimatedDuration(importTrainingDefinitionDTO));
+    List<AbstractLevel> levels =
+        importTrainingDefinitionDTO.getLevels().stream()
+            .map(levelMapper::mapImportToEntity)
+            .collect(Collectors.toList());
     TrainingDefinition newTrainingDefinition =
-        trainingDefinitionService.create(newDefinition, false);
-    List<AbstractLevelImportDTO> levels = importTrainingDefinitionDTO.getLevels();
-    List<AbstractLevel> createdLevels = new ArrayList<>();
-    for (AbstractLevelImportDTO level : levels) {
-      AbstractLevel newLevel;
-      if (level.getLevelType().equals(LevelType.TRAINING_LEVEL)) {
-        newLevel = levelMapper.mapImportToEntity((TrainingLevelImportDTO) level);
-        checkSumOfHintPenalties((TrainingLevel) newLevel);
-        setAnswerAndAnswerVariableNameToNullIfBlank((TrainingLevel) newLevel);
-        checkAnswerAndAnswerVariableName((TrainingLevel) newLevel);
-      } else if (level.getLevelType().equals(LevelType.INFO_LEVEL)) {
-        newLevel = levelMapper.mapImportToEntity((InfoLevelImportDTO) level);
-      } else if (level.getLevelType().equals(LevelType.ACCESS_LEVEL)) {
-        newLevel = levelMapper.mapImportToEntity((AccessLevelImportDTO) level);
-      } else {
-        newLevel = levelMapper.mapImportToEntity((AssessmentLevelImportDTO) level);
-        if (((AssessmentLevel) newLevel).getAssessmentType() == AssessmentType.TEST) {
-          this.checkAndSetCorrectOptionsOfStatements(
-              (AssessmentLevel) newLevel, (AssessmentLevelImportDTO) level);
-          newLevel.setMaxScore(computeAssessmentLevelMaxScore((AssessmentLevel) newLevel));
-        }
-      }
-      exportImportService.createLevel(newLevel, newTrainingDefinition);
-      createdLevels.add(newLevel);
-    }
+        trainingDefinitionService.create(newDefinition, levels);
     TrainingDefinitionWithLevelsDTO importedDefinition =
         trainingDefinitionMapper.mapToDTOWithLevels(
             newTrainingDefinition,
-            createdLevels.stream().map(levelMapper::mapToDTO).collect(Collectors.toList()));
-    importedDefinition.setCanBeArchived(
-        trainingDefinitionService.canBeArchived(importedDefinition.getId()));
+            levels.stream().map(levelMapper::mapToDTO).collect(Collectors.toList()));
+    importedDefinition.setCanBeArchived(true);
     return importedDefinition;
-  }
-
-  /**
-   * Reduces a blank static answer and a blank answer variable name on the level to null, so that
-   * the checks that follow treat an empty submission as an absent one.
-   *
-   * @param trainingLevel the level whose answer configuration is normalized in place
-   */
-  private void setAnswerAndAnswerVariableNameToNullIfBlank(TrainingLevel trainingLevel) {
-    if (StringUtils.isBlank(trainingLevel.getAnswer())) {
-      trainingLevel.setAnswer(
-          StringUtils.isBlank(trainingLevel.getAnswer()) ? null : trainingLevel.getAnswer());
-    }
-    if (StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
-      trainingLevel.setAnswerVariableName(null);
-    }
-  }
-
-  /**
-   * Requires the level to carry exactly the one form of correct answer its answer mode calls for: a
-   * variable name when its answers vary per trainee, a static answer otherwise.
-   *
-   * @param trainingLevel the level whose answer configuration is checked
-   * @throws BadRequestException when the form the mode calls for is missing, or the other one is
-   *     present as well
-   */
-  private void checkAnswerAndAnswerVariableName(TrainingLevel trainingLevel) {
-    if (trainingLevel.isVariantAnswers()) {
-      this.checkAnswerVariableName(trainingLevel);
-    } else {
-      this.checkAnswer(trainingLevel);
-    }
-  }
-
-  /**
-   * Requires the level to carry a static correct answer and no answer variable name.
-   *
-   * @param trainingLevel the level whose answer configuration is checked
-   * @throws BadRequestException when the static answer is absent or a variable name is present
-   */
-  private void checkAnswer(TrainingLevel trainingLevel) {
-    if (trainingLevel.getAnswerVariableName() != null) {
-      throw new BadRequestException("Field Correct Answer - Variable Name must be null.");
-    }
-    if (StringUtils.isBlank(trainingLevel.getAnswer())) {
-      throw new BadRequestException("Field Correct Answer - Static cannot be empty.");
-    }
-  }
-
-  /**
-   * Requires the level to carry an answer variable name and no static correct answer.
-   *
-   * @param trainingLevel the level whose answer configuration is checked
-   * @throws BadRequestException when the variable name is absent or a static answer is present
-   */
-  private void checkAnswerVariableName(TrainingLevel trainingLevel) {
-    if (trainingLevel.getAnswer() != null) {
-      throw new BadRequestException("Field Correct Answer - Static must be null.");
-    }
-    if (StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
-      throw new BadRequestException("Field Correct Answer - Variable name cannot be empty.");
-    }
-  }
-
-  /**
-   * Adds up the points carried by the assessment level's questions.
-   *
-   * @param assessmentLevel the level whose questions are added up
-   * @return the total points its questions award
-   */
-  private int computeAssessmentLevelMaxScore(AssessmentLevel assessmentLevel) {
-    return assessmentLevel.getQuestions().stream().mapToInt(Question::getPoints).sum();
-  }
-
-  /**
-   * Binds each extended matching statement of the level's extended matching questions to the option
-   * the submitted level names as correct for it, matching statements, options and questions by
-   * their order.
-   *
-   * @param assessmentLevel the level being built, whose statements are bound in place
-   * @param assessmentLevelImportDTO the submitted level naming the correct option per statement
-   * @throws BadRequestException when a statement names no correct option
-   */
-  private void checkAndSetCorrectOptionsOfStatements(
-      AssessmentLevel assessmentLevel, AssessmentLevelImportDTO assessmentLevelImportDTO) {
-    assessmentLevelImportDTO.getQuestions().stream()
-        .filter(
-            questionDTO ->
-                questionDTO.getQuestionType()
-                    == cz.cyberrange.platform.training.api.enums.QuestionType.EMI)
-        .forEach(
-            questionDTO ->
-                questionDTO
-                    .getExtendedMatchingStatements()
-                    .forEach(
-                        statementDTO -> {
-                          if (statementDTO.getCorrectOptionOrder() == null) {
-                            throw new BadRequestException(
-                                "You must set the correct option for the each statement in the assessment of the type TEST");
-                          }
-                          Question question =
-                              assessmentLevel.getQuestions().get(questionDTO.getOrder());
-                          ExtendedMatchingOption correctOption =
-                              question
-                                  .getExtendedMatchingOptions()
-                                  .get(statementDTO.getCorrectOptionOrder());
-                          ExtendedMatchingStatement statementToUpdate =
-                              question.getExtendedMatchingStatements().get(statementDTO.getOrder());
-                          statementToUpdate.setExtendedMatchingOption(correctOption);
-                        }));
   }
 
   /**
@@ -851,40 +704,5 @@ public class ExportImportFacade {
       zos.putNextEntry(sandboxDefinitionEntry);
       zos.write(format.writeDocument(sandboxDefinitionInfo));
     }
-  }
-
-  /**
-   * Requires the penalties of the level's hints to stay within the score the level awards.
-   *
-   * @param trainingLevel the level whose hints are added up
-   * @throws UnprocessableEntityException when the penalties together exceed the level's maximum
-   *     score
-   */
-  private void checkSumOfHintPenalties(TrainingLevel trainingLevel) {
-    int sumHintPenalties = 0;
-    for (Hint hint : trainingLevel.getHints()) {
-      sumHintPenalties += hint.getHintPenalty();
-    }
-    if (sumHintPenalties > trainingLevel.getMaxScore()) {
-      throw new UnprocessableEntityException(
-          new EntityErrorDetail(
-              TrainingLevel.class,
-              "title",
-              String.class,
-              trainingLevel.getTitle(),
-              "Sum of hints penalties cannot be greater than maximal score of the training level."));
-    }
-  }
-
-  /**
-   * Adds up the estimated durations of the submitted definition's levels.
-   *
-   * @param importedTrainingDefinition the definition whose levels are added up
-   * @return the total time its levels are estimated to take
-   */
-  private int computeEstimatedDuration(ImportTrainingDefinitionDTO importedTrainingDefinition) {
-    return importedTrainingDefinition.getLevels().stream()
-        .mapToInt(AbstractLevelImportDTO::getEstimatedDuration)
-        .sum();
   }
 }

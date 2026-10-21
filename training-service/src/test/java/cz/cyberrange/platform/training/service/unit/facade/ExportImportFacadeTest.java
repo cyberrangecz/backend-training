@@ -2,7 +2,10 @@ package cz.cyberrange.platform.training.service.unit.facade;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
@@ -15,12 +18,14 @@ import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.opensearch.events.commands.query.CommandEventsService;
 import cz.cyberrange.platform.training.opensearch.events.training.query.TrainingEventsService;
+import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.export.JsonExportFormat;
 import cz.cyberrange.platform.training.service.facade.ExportImportFacade;
@@ -32,9 +37,13 @@ import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
 import cz.cyberrange.platform.training.service.services.score.ScoreReportService;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,8 +58,6 @@ import tools.jackson.databind.json.JsonMapper;
       ExportImportMapperImpl.class,
       TrainingDefinitionMapperImpl.class,
       LevelMapperImpl.class,
-      UserRefMapperImpl.class,
-      BetaTestingGroupMapperImpl.class,
       HintMapperImpl.class,
       QuestionMapperImpl.class,
       AttachmentMapperImpl.class,
@@ -82,9 +89,13 @@ public class ExportImportFacadeTest {
   private InfoLevel infoLevel;
   private ImportTrainingDefinitionDTO importTrainingDefinitionDTO;
 
+  @Captor private ArgumentCaptor<TrainingDefinition> definitionCaptor;
+  @Captor private ArgumentCaptor<List<AbstractLevel>> levelsCaptor;
+  private AutoCloseable mocks;
+
   @BeforeEach
   public void init() {
-    MockitoAnnotations.openMocks(this);
+    mocks = MockitoAnnotations.openMocks(this);
     exportImportFacade =
         new ExportImportFacade(
             exportImportService,
@@ -133,6 +144,11 @@ public class ExportImportFacadeTest {
     trainingRun.setTrainingInstance(trainingInstance);
   }
 
+  @AfterEach
+  public void closeMocks() throws Exception {
+    mocks.close();
+  }
+
   @Test
   public void dbExport() throws Exception {
     given(exportImportService.findById(trainingDefinition.getId())).willReturn(trainingDefinition);
@@ -166,15 +182,25 @@ public class ExportImportFacadeTest {
 
   @Test
   public void dbImport() {
-    given(trainingDefinitionService.create(any(TrainingDefinition.class), any(Boolean.class)))
+    given(trainingDefinitionService.create(any(TrainingDefinition.class), anyList()))
         .willReturn(trainingDefinitionImported);
 
     TrainingDefinitionWithLevelsDTO trainingDefinitionWithLevelsDTO =
         exportImportFacade.dbImport(importTrainingDefinitionDTO);
+    assertEquals(0L, trainingDefinitionWithLevelsDTO.getInstanceCount());
+    assertTrue(trainingDefinitionWithLevelsDTO.isCanBeArchived());
+    then(trainingDefinitionService).should(never()).completeInstanceCounts(any());
     TrainingDefinitionWithLevelsDTO trainingDefinitionWithLevelsDTOImported =
         trainingDefinitionMapper.mapToDTOWithLevels(
             trainingDefinitionImported, trainingDefinitionWithLevelsDTO.getLevels());
 
+    then(trainingDefinitionService)
+        .should()
+        .create(definitionCaptor.capture(), levelsCaptor.capture());
+    assertEquals(TDState.UNRELEASED, definitionCaptor.getValue().getState());
+    assertEquals(
+        List.of(InfoLevel.class, TrainingLevel.class, AssessmentLevel.class),
+        levelsCaptor.getValue().stream().map(Object::getClass).collect(Collectors.toList()));
     deepEqualsTrainingDefinitionDTO(
         trainingDefinitionWithLevelsDTOImported, trainingDefinitionWithLevelsDTO);
     assertEquals(
@@ -192,7 +218,6 @@ public class ExportImportFacadeTest {
     assertEquals(t1.getState(), t2.getState());
     assertEquals(t1.getDescription(), t2.getDescription());
     assertEquals(t1.getTitle(), t2.getTitle());
-    assertEquals(t1.getBetaTestingGroupId(), t2.getBetaTestingGroupId());
     assertEquals(t1.getLevels(), t2.getLevels());
   }
 }

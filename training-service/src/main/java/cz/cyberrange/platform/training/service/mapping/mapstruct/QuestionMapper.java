@@ -13,11 +13,8 @@ import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchi
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionChoice;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
@@ -44,30 +41,6 @@ public interface QuestionMapper extends ParentMapper {
   Question mapToEntity(QuestionDTO dto);
 
   /**
-   * Resolves each mapped extended matching statement's correct option by indexing the target
-   * question's mapped options at the statement's {@code correctOptionOrder}, and sets it on the
-   * target statement found at the same statement's {@code order}. Nothing checks that either order
-   * value stays within the mapped lists' bounds.
-   *
-   * @param target the question whose statements and options have already been mapped
-   * @param questionDTO the source question carrying the correct option orders
-   */
-  @AfterMapping
-  default void setCorrectOption(@MappingTarget Question target, @Context QuestionDTO questionDTO) {
-    questionDTO
-        .getExtendedMatchingStatements()
-        .forEach(
-            statementDTO -> {
-              ExtendedMatchingOption correctOption =
-                  target.getExtendedMatchingOptions().get(statementDTO.getCorrectOptionOrder());
-              target
-                  .getExtendedMatchingStatements()
-                  .get(statementDTO.getOrder())
-                  .setExtendedMatchingOption(correctOption);
-            });
-  }
-
-  /**
    * Maps a question choice into a new entity, copying id, text, correct flag and order. The owning
    * question carries no matching source field and is left unset.
    *
@@ -78,8 +51,8 @@ public interface QuestionMapper extends ParentMapper {
 
   /**
    * Maps an extended matching statement into a new entity, copying id, text and order. The
-   * statement's chosen option is resolved separately by {@link #setCorrectOption}; the owning
-   * question carries no matching source field. Both are left unset here.
+   * statement's correct option and the owning question carry no matching source field and are left
+   * unset.
    *
    * @param dto the extended matching statement to map
    * @return the mapped extended matching statement entity

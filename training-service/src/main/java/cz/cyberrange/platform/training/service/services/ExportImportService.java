@@ -2,18 +2,14 @@ package cz.cyberrange.platform.training.service.services;
 
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
-import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
-import cz.cyberrange.platform.training.persistence.model.AccessLevel;
-import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.InfoLevel;
-import cz.cyberrange.platform.training.persistence.model.MitreTechnique;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
-import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionAnswer;
-import cz.cyberrange.platform.training.persistence.repository.*;
-import java.util.HashSet;
+import cz.cyberrange.platform.training.persistence.repository.QuestionAnswerRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingRunRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,55 +18,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Reads the training definitions, levels, instances, runs and assessment answers that make up an
- * export or an archive, and writes the levels of an imported definition back
+ * Reads the training definitions, instances, runs and assessment answers that make up an export or
+ * an archive.
  */
 @Service
 public class ExportImportService {
 
   private final TrainingDefinitionRepository trainingDefinitionRepository;
-  private final AbstractLevelRepository abstractLevelRepository;
-  private final AssessmentLevelRepository assessmentLevelRepository;
   private final QuestionAnswerRepository questionAnswerRepository;
-  private final InfoLevelRepository infoLevelRepository;
-  private final TrainingLevelRepository trainingLevelRepository;
-  private final MitreTechniqueRepository mitreTechniqueRepository;
-  private final AccessLevelRepository accessLevelRepository;
   private final TrainingInstanceRepository trainingInstanceRepository;
   private final TrainingRunRepository trainingRunRepository;
 
   /**
-   * Creates the service with the repositories for definitions, levels, instances, runs and
-   * assessment answers it reads and writes
+   * Creates the service with the repositories for definitions, instances, runs and assessment
+   * answers it reads.
+   *
+   * @param trainingDefinitionRepository repository of training definitions
+   * @param questionAnswerRepository repository of assessment answers
+   * @param trainingInstanceRepository repository of training instances
+   * @param trainingRunRepository repository of training runs
    */
   @Autowired
   public ExportImportService(
       TrainingDefinitionRepository trainingDefinitionRepository,
-      AbstractLevelRepository abstractLevelRepository,
-      AssessmentLevelRepository assessmentLevelRepository,
       QuestionAnswerRepository questionAnswerRepository,
-      InfoLevelRepository infoLevelRepository,
-      TrainingLevelRepository trainingLevelRepository,
-      MitreTechniqueRepository mitreTechniqueRepository,
-      AccessLevelRepository accessLevelRepository,
       TrainingInstanceRepository trainingInstanceRepository,
       TrainingRunRepository trainingRunRepository) {
     this.trainingDefinitionRepository = trainingDefinitionRepository;
-    this.abstractLevelRepository = abstractLevelRepository;
-    this.assessmentLevelRepository = assessmentLevelRepository;
     this.questionAnswerRepository = questionAnswerRepository;
-    this.trainingLevelRepository = trainingLevelRepository;
-    this.accessLevelRepository = accessLevelRepository;
-    this.mitreTechniqueRepository = mitreTechniqueRepository;
-    this.infoLevelRepository = infoLevelRepository;
     this.trainingInstanceRepository = trainingInstanceRepository;
     this.trainingRunRepository = trainingRunRepository;
   }
 
   /**
-   * Finds the training definition carrying the given id, its authors and its beta testing group's
-   * organizers loaded along with it. Levels are not reachable from the definition and are read
-   * through their own repository.
+   * Finds the training definition carrying the given id, its authors loaded along with it. Levels
+   * are not reachable from the definition and are read through their own repository.
    *
    * @param trainingDefinitionId id of the definition to look up
    * @return the {@link TrainingDefinition} carrying that id
@@ -87,50 +69,6 @@ public class ExportImportService {
                         "id",
                         trainingDefinitionId.getClass(),
                         trainingDefinitionId)));
-  }
-
-  /**
-   * Persists the given level as the last one of the given definition, ordering it one past the
-   * definition's current highest level order and saving it through the repository of its concrete
-   * level type. A training level additionally has its MITRE techniques reconciled against those
-   * already stored.
-   *
-   * @param level the {@link AbstractLevel} to persist
-   * @param definition the {@link TrainingDefinition} the level becomes part of
-   */
-  public void createLevel(AbstractLevel level, TrainingDefinition definition) {
-    level.setOrder(abstractLevelRepository.getCurrentMaxOrder(definition.getId()) + 1);
-    level.setTrainingDefinition(definition);
-    if (level instanceof AssessmentLevel) {
-      assessmentLevelRepository.save((AssessmentLevel) level);
-    } else if (level instanceof InfoLevel) {
-      infoLevelRepository.save((InfoLevel) level);
-    } else if (level instanceof AccessLevel) {
-      accessLevelRepository.save((AccessLevel) level);
-    } else {
-      setMitreTechniques((TrainingLevel) level);
-      trainingLevelRepository.save((TrainingLevel) level);
-    }
-  }
-
-  /**
-   * Replaces the level's MITRE techniques with the union of those already stored under the same
-   * technique keys and the level's own instances, so that a key the database already knows is
-   * reused instead of stored a second time, and registers the level on each technique it keeps.
-   *
-   * @param importedLevel the level whose techniques are reconciled in place
-   */
-  private void setMitreTechniques(TrainingLevel importedLevel) {
-    Set<String> techniqueKeys =
-        importedLevel.getMitreTechniques().stream()
-            .map(MitreTechnique::getTechniqueKey)
-            .collect(Collectors.toSet());
-    Set<MitreTechnique> resultTechniques =
-        mitreTechniqueRepository.findAllByTechniqueKeyInOrderById(techniqueKeys);
-    resultTechniques.addAll(importedLevel.getMitreTechniques());
-
-    importedLevel.setMitreTechniques(new HashSet<>());
-    resultTechniques.forEach(importedLevel::addMitreTechnique);
   }
 
   /**
