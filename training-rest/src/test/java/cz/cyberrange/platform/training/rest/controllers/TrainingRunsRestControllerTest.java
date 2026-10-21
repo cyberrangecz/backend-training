@@ -83,10 +83,9 @@ public class TrainingRunsRestControllerTest {
   @Autowired private TestDataFactory testDataFactory;
   @Autowired TrainingRunMapper trainingRunMapper;
 
-  private TrainingRun trainingRun1, trainingRun2;
+  private TrainingRun trainingRun1;
   private TrainingRunDTO trainingRun1DTO;
-  private Page page, pageAccessed;
-  private PageResultResource<TrainingRunDTO> trainingRunDTOPageResultResource;
+  private Page pageAccessed;
   private PageResultResource<AccessedTrainingRunDTO> accessedTrainingRunDTOPage;
   private AccessTrainingRunDTO accessTrainingRunDTO;
   private AssessmentLevelDTO assessmentLevelDTO;
@@ -114,9 +113,6 @@ public class TrainingRunsRestControllerTest {
 
     trainingRunByIdDTO = testDataFactory.getTrainingRunByIdDTO();
     trainingRunByIdDTO.setId(1L);
-
-    trainingRun2 = testDataFactory.getRunningRun();
-    trainingRun2.setId(2L);
 
     trainingRun1DTO = testDataFactory.getTrainingRunDTO();
     trainingRun1DTO.setId(1L);
@@ -147,9 +143,6 @@ public class TrainingRunsRestControllerTest {
     validAnswerDTO.setAnswer("answer");
 
     pageAccessed = new PageImpl<>(List.of(accessedTrainingRunDTO));
-    page = new PageImpl<>(List.of(trainingRun1, trainingRun2));
-
-    trainingRunDTOPageResultResource = trainingRunMapper.mapToPageResultResource(page);
 
     JsonMapper snakeCaseMapper = ObjectConverter.restResponseMapper();
 
@@ -201,23 +194,6 @@ public class TrainingRunsRestControllerTest {
         ObjectConverter.convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
     assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
     assertEquals("The requested entity could not be found", error.getMessage());
-  }
-
-  @Test
-  public void findAllTrainingRuns() throws Exception {
-    given(trainingRunFacade.findAll(any(Predicate.class), any(Pageable.class)))
-        .willReturn(trainingRunDTOPageResultResource);
-
-    MockHttpServletResponse result =
-        mockMvc
-            .perform(get("/training-runs"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andReturn()
-            .getResponse();
-    Assertions.assertEquals(
-        ObjectConverter.convertObjectToJsonBytes(trainingRunDTOPageResultResource),
-        result.getContentAsString());
   }
 
   @Test

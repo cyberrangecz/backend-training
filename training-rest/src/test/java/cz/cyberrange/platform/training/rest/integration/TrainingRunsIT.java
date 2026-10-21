@@ -238,7 +238,6 @@ class TrainingRunsIT extends AbstractIntegrationTest {
         Arguments.of(HttpMethod.DELETE, "/training-runs?trainingRunIds=1"),
         Arguments.of(HttpMethod.DELETE, "/training-runs/1"),
         Arguments.of(HttpMethod.GET, "/training-runs/1"),
-        Arguments.of(HttpMethod.GET, "/training-runs"),
         Arguments.of(HttpMethod.POST, "/training-runs?accessToken=token"),
         Arguments.of(HttpMethod.GET, "/training-runs/accessible"),
         Arguments.of(HttpMethod.GET, "/training-runs/1/next-levels"),
@@ -648,72 +647,6 @@ class TrainingRunsIT extends AbstractIntegrationTest {
         400,
         "BAD_REQUEST",
         "/training-runs/abc");
-  }
-
-  @Test
-  @DisplayName(
-      "Listing runs as administrator returns a page of every run with participants resolved")
-  void findAllTrainingRuns_administrator_returnsPageOfEveryRun() throws Exception {
-    TrainingRun firstRun = runAt(trainingLevel, false);
-    TrainingRun secondRun =
-        seeder.run(instance, otherTrainee, infoLevel, TRState.FINISHED, OTHER_SANDBOX_ID, true);
-    stubUser(TRAINEE_USER_REF_ID, "Trainee");
-    stubUser(OTHER_TRAINEE_USER_REF_ID, "Other");
-
-    call(ADMINISTRATOR_USER_REF_ID, ADMINISTRATOR, get("/training-runs"))
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.content", hasSize(2)))
-        .andExpect(
-            jsonPath("$.content[*].id")
-                .value(
-                    containsInAnyOrder(firstRun.getId().intValue(), secondRun.getId().intValue())))
-        .andExpect(
-            jsonPath("$.content[*].participant_ref.given_name")
-                .value(containsInAnyOrder("Trainee", "Other")))
-        .andExpect(jsonPath("$.pagination.total_elements").value(2))
-        .andExpect(jsonPath("$.pagination.number").value(0));
-  }
-
-  @Test
-  @DisplayName("Listing runs honours the requested page size")
-  void findAllTrainingRuns_pageSizeOne_returnsSinglePagedRun() throws Exception {
-    runAt(trainingLevel, false);
-    seeder.run(instance, otherTrainee, infoLevel, TRState.FINISHED, OTHER_SANDBOX_ID, true);
-    stubUser(TRAINEE_USER_REF_ID, "Trainee");
-    stubUser(OTHER_TRAINEE_USER_REF_ID, "Other");
-
-    call(ADMINISTRATOR_USER_REF_ID, ADMINISTRATOR, get("/training-runs").param("size", "1"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content", hasSize(1)))
-        .andExpect(jsonPath("$.pagination.total_pages").value(2))
-        .andExpect(jsonPath("$.pagination.total_elements").value(2));
-  }
-
-  @Test
-  @DisplayName("Listing runs matches text filters partially and ignoring case")
-  void findAllTrainingRuns_partialUppercaseSandboxFilter_returnsMatchingRun() throws Exception {
-    TrainingRun matchingRun = runAt(trainingLevel, false);
-    seeder.run(instance, otherTrainee, infoLevel, TRState.FINISHED, OTHER_SANDBOX_ID, true);
-    stubUser(TRAINEE_USER_REF_ID, "Trainee");
-
-    call(
-            ADMINISTRATOR_USER_REF_ID,
-            ADMINISTRATOR,
-            get("/training-runs").param("sandboxInstanceRefId", "1111-4111"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content", hasSize(1)))
-        .andExpect(jsonPath("$.content[0].id").value(matchingRun.getId()));
-  }
-
-  @Test
-  @DisplayName("Listing runs is forbidden for a caller without the administrator role")
-  void findAllTrainingRuns_organizerRole_returnsForbidden() throws Exception {
-    expectError(
-        call(ORGANIZER_USER_REF_ID, ORGANIZER, get("/training-runs")),
-        403,
-        "FORBIDDEN",
-        "/training-runs");
   }
 
   private void stubSandboxAvailable(String sandboxId, String accessToken) {

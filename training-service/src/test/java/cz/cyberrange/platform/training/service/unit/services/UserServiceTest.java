@@ -174,20 +174,6 @@ public class UserServiceTest {
   }
 
   @Test
-  public void getUsersByGivenRole() throws Exception {
-    pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
-    given(exchangeFunction.exchange(any(ClientRequest.class)))
-        .willReturn(
-            buildMockResponse(
-                new PageResultResource<UserRefDTO>(List.of(userRefDTO1, userRefDTO2), pagination)));
-
-    PageResultResource<UserRefDTO> userRefDTOPageResultResource =
-        userService.getUsersByGivenRole(RoleType.ROLE_TRAINING_DESIGNER, pageable, null, null);
-    assertTrue(
-        userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
-  }
-
-  @Test
   public void getUsersByGivenRoleAndNotWithGivenIds() throws Exception {
     pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
     given(exchangeFunction.exchange(any(ClientRequest.class)))

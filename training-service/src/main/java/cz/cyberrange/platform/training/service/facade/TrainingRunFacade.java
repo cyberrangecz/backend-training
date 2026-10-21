@@ -135,23 +135,6 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Find all Training Runs.
-   *
-   * @param predicate specifies query to the database.
-   * @param pageable pageable parameter with information about pagination.
-   * @return page of all {@link TrainingRunDTO}
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
-  @TransactionalRO
-  public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
-    PageResultResource<TrainingRunDTO> trainingRunDTOPageResultResource =
-        trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
-    addParticipantsToTrainingRunDTOs(trainingRunDTOPageResultResource.getContent());
-    return trainingRunDTOPageResultResource;
-  }
-
-  /**
    * Delete selected training runs.
    *
    * @param trainingRunIds training runs to delete

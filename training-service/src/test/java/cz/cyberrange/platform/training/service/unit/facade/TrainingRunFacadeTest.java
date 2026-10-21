@@ -3,8 +3,6 @@ package cz.cyberrange.platform.training.service.unit.facade;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
@@ -36,9 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(
@@ -139,20 +134,6 @@ public class TrainingRunFacadeTest {
     given(userService.getUserRefDTOByUserRefId(anyLong())).willReturn(participantRefDTO);
     trainingRunFacade.findById(trainingRun1.getId());
     then(trainingRunService).should().findById(trainingRun1.getId());
-  }
-
-  @Test
-  public void findAllTrainingRuns() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
-
-    PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
-    Predicate predicate = tR.isNotNull();
-
-    given(trainingRunService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
   }
 
   @Test

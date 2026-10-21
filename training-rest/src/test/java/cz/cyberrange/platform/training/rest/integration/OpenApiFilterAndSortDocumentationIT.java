@@ -60,8 +60,7 @@ class OpenApiFilterAndSortDocumentationIT extends AbstractIntegrationTest {
   private static Stream<Arguments> filteredPagedOperations() {
     return Stream.of(
         Arguments.of("/training-definitions", "createdAt,desc"),
-        Arguments.of("/training-instances", "title,asc"),
-        Arguments.of("/training-runs", "id,desc"));
+        Arguments.of("/training-instances", "title,asc"));
   }
 
   private ResultActions servedDocument() throws Exception {

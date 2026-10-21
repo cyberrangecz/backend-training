@@ -1,7 +1,6 @@
 package cz.cyberrange.platform.training.persistence.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.StringPath;
 import cz.cyberrange.platform.training.persistence.model.QTrainingRun;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
@@ -55,18 +54,6 @@ public interface TrainingRunRepository
               return Optional.ofNullable(predicate);
             });
   }
-
-  /**
-   * Find all training runs.
-   *
-   * @param predicate the predicate
-   * @param pageable the pageable
-   * @return page of all {@link TrainingRun}
-   */
-  @EntityGraph(
-      value = "TrainingRun.findAllParticipantRef",
-      type = EntityGraph.EntityGraphType.FETCH)
-  Page<TrainingRun> findAll(Predicate predicate, Pageable pageable);
 
   /**
    * Finds all training runs of a training instance, ordered by the page's sort. The backing query

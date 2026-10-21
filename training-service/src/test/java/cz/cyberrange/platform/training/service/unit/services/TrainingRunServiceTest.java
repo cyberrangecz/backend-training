@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.CustomWebClientException;
@@ -235,32 +234,6 @@ public class TrainingRunServiceTest {
   public void findByIdLevelNotFound() {
     given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.empty());
     assertThrows(EntityNotFoundException.class, () -> trainingRunService.findByIdWithLevel(100L));
-  }
-
-  @Test
-  public void findAll() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<>(expected);
-    PathBuilder<TrainingRun> t = new PathBuilder<>(TrainingRun.class, "trainingRun");
-    Predicate predicate = t.isNotNull();
-    given(trainingRunRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
-
-    Page<TrainingRun> pr = trainingRunService.findAll(predicate, PageRequest.of(0, 2));
-    assertEquals(2, pr.getTotalElements());
-  }
-
-  @Test
-  public void findAllEmpty() {
-    Page<TrainingRun> p = new PageImpl<>(new ArrayList<>());
-    PathBuilder<TrainingRun> t = new PathBuilder<>(TrainingRun.class, "trainingRun");
-    Predicate predicate = t.isNotNull();
-    given(trainingRunRepository.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
-
-    Page<TrainingRun> pr = trainingRunRepository.findAll(predicate, PageRequest.of(0, 2));
-    assertEquals(0, pr.getTotalElements());
   }
 
   @Test

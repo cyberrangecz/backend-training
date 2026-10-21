@@ -158,18 +158,6 @@ public class TrainingRunService {
   }
 
   /**
-   * Finds the training runs matching the given predicate, with each run's participant reference
-   * loaded eagerly.
-   *
-   * @param predicate the filter applied to the query
-   * @param pageable the requested page
-   * @return the matching page of {@link TrainingRun}s
-   */
-  public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
-    return trainingRunRepository.findAll(predicate, pageable);
-  }
-
-  /**
    * Deletes a training run, its question answers, its submissions and its acquisition lock.
    * Optionally deletes its recorded command and training event data from OpenSearch.
    *

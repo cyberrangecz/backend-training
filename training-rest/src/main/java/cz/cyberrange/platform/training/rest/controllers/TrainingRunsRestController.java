@@ -14,7 +14,6 @@ import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunBasicDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
-import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
@@ -181,31 +180,6 @@ public class TrainingRunsRestController {
   @GetMapping(path = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingRunByIdDTO> findTrainingRunById(@PathVariable("runId") Long runId) {
     TrainingRunByIdDTO trainingRunResource = trainingRunFacade.findById(runId);
-    return new ResponseEntity<>(trainingRunResource, HttpStatus.OK);
-  }
-
-  /**
-   * Gets a page of all training runs matching the given predicate, each with its participant
-   * reference resolved from the user management service.
-   *
-   * @param predicate specifies query to database.
-   * @param pageable pageable parameter with information about pagination.
-   * @return all Training Runs.
-   */
-  @Operation(
-      operationId = "findAllTrainingRuns",
-      summary = "List training runs matching a filter",
-      description =
-          "Only a training administrator may call it. Text filters match partially and ignore"
-              + " case.")
-  @ApiResponses(@ApiResponse(responseCode = "200", description = "The matching runs."))
-  @SortableProperties(SortableList.TRAINING_RUN)
-  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<PageResultResource<TrainingRunDTO>> findAllTrainingRuns(
-      @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
-      @ParameterObject Pageable pageable) {
-    PageResultResource<TrainingRunDTO> trainingRunResource =
-        trainingRunFacade.findAll(predicate, pageable);
     return new ResponseEntity<>(trainingRunResource, HttpStatus.OK);
   }
 

@@ -418,26 +418,6 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Asks the user-and-group service for one page of the users holding the given role.
-   *
-   * @param roleType the role its holders are requested for
-   * @param pageable pageable parameter with information about pagination.
-   * @param givenName restricts the result to users whose given name matches, no restriction when
-   *     null
-   * @param familyName restricts the result to users whose family name matches, no restriction when
-   *     null
-   * @return the requested page of users holding that role
-   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
-   *     to the user-and-group service fails
-   */
-  @IsDesignerOrAdmin
-  @TransactionalRO
-  public PageResultResource<UserRefDTO> getUsersWithGivenRole(
-      RoleType roleType, Pageable pageable, String givenName, String familyName) {
-    return userService.getUsersByGivenRole(roleType, pageable, givenName, familyName);
-  }
-
-  /**
    * Switches the state of a training definition. Only {@link TDState#UNRELEASED} to {@link
    * TDState#RELEASED}, {@link TDState#RELEASED} to {@link TDState#ARCHIVED}, and {@link
    * TDState#RELEASED} back to {@link TDState#UNRELEASED} are allowed transitions; requesting the

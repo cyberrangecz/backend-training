@@ -167,41 +167,6 @@ public class UserService {
   }
 
   /**
-   * Asks the user-and-group service for one page of the users holding the given role.
-   *
-   * @param roleType the role its holders are requested for
-   * @param pageable pageable parameter with information about pagination
-   * @param givenName restricts the result to users whose given name matches, no restriction when
-   *     null
-   * @param familyName restricts the result to users whose family name matches, no restriction when
-   *     null
-   * @return the requested page of users holding that role
-   * @throws MicroserviceApiException when the call to the user-and-group service fails
-   */
-  public PageResultResource<UserRefDTO> getUsersByGivenRole(
-      RoleType roleType, Pageable pageable, String givenName, String familyName) {
-    try {
-      return userManagementServiceWebClient
-          .get()
-          .uri(
-              uriBuilder -> {
-                uriBuilder.path("/roles/users").queryParam("roleType", roleType.name());
-                this.setCommonParams(givenName, familyName, pageable, uriBuilder);
-                return uriBuilder.build();
-              })
-          .retrieve()
-          .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
-          .block();
-    } catch (CustomWebClientException ex) {
-      throw new MicroserviceApiException(
-          "Error when calling user management service API to obtain users with role "
-              + roleType.name()
-              + ".",
-          ex);
-    }
-  }
-
-  /**
    * Asks the user-and-group service for one page of the users holding the given role, leaving out
    * the named ones.
    *
