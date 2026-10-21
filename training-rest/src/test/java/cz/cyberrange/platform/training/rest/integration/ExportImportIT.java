@@ -223,6 +223,18 @@ class ExportImportIT extends AbstractIntegrationTest {
         "SELECT COUNT(*) FROM " + table + " WHERE " + where, Long.class, arguments);
   }
 
+  private Long importedTrainingLevelId() {
+    return jdbcTemplate.queryForObject(
+        "SELECT id FROM abstract_level WHERE title = 'Solve me'", Long.class);
+  }
+
+  private List<String> attachmentContents(Long trainingLevelId) {
+    return jdbcTemplate.queryForList(
+        "SELECT content FROM attachment WHERE training_level_id = ? ORDER BY content",
+        String.class,
+        trainingLevelId);
+  }
+
   private static void expectError(ResultActions result, int status, String statusName, String path)
       throws Exception {
     result
@@ -463,6 +475,24 @@ class ExportImportIT extends AbstractIntegrationTest {
             count("training_definition", "title = 'Imported definition' AND state = 'UNRELEASED'"))
         .isEqualTo(1);
     assertThat(count("abstract_level", "title IN ('Read me', 'Solve me', 'Connect')")).isEqualTo(3);
+    assertThat(attachmentContents(importedTrainingLevelId())).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Importing a training level with attachments stores them on the imported level")
+  void importDefinition_trainingLevelWithAttachments_storesAttachmentsOnImportedLevel()
+      throws Exception {
+    String body =
+        IMPORT_JSON.replace(
+            "\"commands_required\": false,",
+            "\"commands_required\": false, \"attachments\":"
+                + " [{\"content\": \"Network diagram\"}, {\"content\": \"Lab manual\"}],");
+
+    importDefinition(DESIGNER_USER_REF_ID, DESIGNER, MediaType.APPLICATION_JSON, body)
+        .andExpect(status().isOk());
+
+    assertThat(attachmentContents(importedTrainingLevelId()))
+        .containsExactly("Lab manual", "Network diagram");
   }
 
   @Test

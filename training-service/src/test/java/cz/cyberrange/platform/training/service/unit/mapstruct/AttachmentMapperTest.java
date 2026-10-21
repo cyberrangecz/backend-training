@@ -8,7 +8,6 @@ import cz.cyberrange.platform.training.api.dto.export.AttachmentExportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AttachmentImportDTO;
 import cz.cyberrange.platform.training.persistence.model.Attachment;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.AttachmentMapper;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +27,6 @@ class AttachmentMapperTest {
 
   private static final Long ENTITY_ID = 42L;
   private static final String CONTENT = "https://example.com/file.pdf";
-  private static final LocalDateTime CREATION_TIME = LocalDateTime.of(2024, 1, 15, 10, 30);
 
   private AttachmentMapper sut;
 
@@ -43,7 +41,6 @@ class AttachmentMapperTest {
     entity = new Attachment();
     entity.setId(ENTITY_ID);
     entity.setContent(CONTENT);
-    entity.setCreationTime(CREATION_TIME);
 
     importDto = new AttachmentImportDTO();
     importDto.setContent(CONTENT);
