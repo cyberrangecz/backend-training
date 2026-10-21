@@ -96,13 +96,17 @@ class TrainingInstanceDataSeeder {
   }
 
   TrainingDefinition definition(String title) {
+    return definition(title, TDState.RELEASED, userRef(AUTHOR_USER_REF_ID_BASE + authorSequence++));
+  }
+
+  TrainingDefinition definition(String title, TDState state, UserRef... authors) {
     TrainingDefinition definition = new TrainingDefinition();
     definition.setTitle(title);
-    definition.setState(TDState.RELEASED);
+    definition.setState(state);
     definition.setLastEdited(now());
     definition.setLastEditedBy("Seed Author");
     definition.setCreatedAt(now());
-    definition.setAuthors(Set.of(userRef(AUTHOR_USER_REF_ID_BASE + authorSequence++)));
+    definition.setAuthors(Set.of(authors));
     return trainingDefinitionRepository.save(definition);
   }
 

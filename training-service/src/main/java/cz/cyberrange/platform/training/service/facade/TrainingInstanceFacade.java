@@ -168,14 +168,18 @@ public class TrainingInstanceFacade {
    * pool configuration are consistent, and that the sandbox definition or pool exposes every
    * variable name referenced by the training definition's levels. Locks the new pool when a pool is
    * assigned for the first time; unlocks and deletes a previously assigned pool's recorded console
-   * commands whenever that pool is replaced or removed.
+   * commands whenever that pool is replaced or removed. Reachable by an administrator, and by an
+   * organizer of the instance who keeps its training definition or assigns one that is not
+   * unreleased or that the organizer authors.
    *
    * @param trainingInstanceUpdateDTO to be updated
    * @return the access token in effect after the update, whether it changed or was kept
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceUpdateDTO.getId())")
+          + " or (@securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceUpdateDTO.getId())"
+          + " and @securityService.mayAssignTrainingDefinition(#trainingInstanceUpdateDTO.getId(),"
+          + " #trainingInstanceUpdateDTO.getTrainingDefinitionId()))")
   @TransactionalWO
   public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
     TrainingInstance updatedTrainingInstance =
@@ -258,18 +262,23 @@ public class TrainingInstanceFacade {
   }
 
   /**
-   * Creates new training instance.
+   * Creates new training instance. Reachable by an administrator, and by an organizer when the
+   * chosen training definition is not unreleased or the organizer authors it.
    *
    * @param trainingInstanceCreateDTO to be created
    * @return created {@link TrainingInstanceDTO}
    */
-  @IsOrganizerOrAdmin
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + " or (hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)"
+          + " and @securityService.isVisibleTrainingDefinition(#trainingInstanceCreateDTO.trainingDefinitionId))")
   @TransactionalWO
   public TrainingInstanceDTO create(TrainingInstanceCreateDTO trainingInstanceCreateDTO) {
     TrainingInstance trainingInstance =
         trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
     checkLocalEnvironmentConfiguration(trainingInstance);
     trainingInstance.setTrainingDefinition(
+   * @throws EntityNotFoundException when no training definition with the given id exists
         trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
     validateVariableNames(trainingInstance);
     trainingInstance.setId(null);

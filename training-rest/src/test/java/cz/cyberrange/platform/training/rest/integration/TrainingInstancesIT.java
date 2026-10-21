@@ -31,6 +31,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingRunRepository;
@@ -465,6 +466,47 @@ class TrainingInstancesIT extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName(
+      "createTrainingInstance from an unreleased definition the organizer does not author is forbidden")
+  void createTrainingInstance_unreleasedDefinitionOfAnotherAuthor_returnsForbidden()
+      throws Exception {
+    Map<String, Object> body = createBody();
+    body.put("training_definition_id", unreleasedDefinitionAuthoredBy(otherOrganizer).getId());
+
+    expectApiError(
+        perform(post(BASE_PATH), body, RoleTypeSecurity.ROLE_TRAINING_ORGANIZER), 403, "FORBIDDEN");
+    flushAndClear();
+    assertThat(trainingInstanceRepository.findAll())
+        .extracting(TrainingInstance::getTitle)
+        .doesNotContain("Created instance");
+  }
+
+  @Test
+  @DisplayName(
+      "createTrainingInstance from an unreleased definition the organizer authors succeeds")
+  void createTrainingInstance_unreleasedDefinitionOfCaller_returnsInstance() throws Exception {
+    Map<String, Object> body = createBody();
+    body.put("training_definition_id", unreleasedDefinitionAuthoredBy(organizer).getId());
+
+    perform(post(BASE_PATH), body, RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.title").value("Created instance"));
+  }
+
+  @Test
+  @DisplayName("createTrainingInstance as administrator from any unreleased definition succeeds")
+  void createTrainingInstance_unreleasedDefinitionAsAdministrator_returnsInstance()
+      throws Exception {
+    stubLoggedInUser(DEFAULT_USER_REF_ID);
+    Map<String, Object> body = createBody();
+    body.put("training_definition_id", unreleasedDefinitionAuthoredBy(otherOrganizer).getId());
+
+    perform(post(BASE_PATH), body, RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.title").value("Created instance"));
+  }
+
+  @Test
   @DisplayName("createTrainingInstance with a start time after the end time returns conflict")
   void createTrainingInstance_startAfterEnd_returnsConflict() throws Exception {
     Map<String, Object> body = createBody();
@@ -642,6 +684,41 @@ class TrainingInstancesIT extends AbstractIntegrationTest {
     body.put("training_definition_id", unknownId());
 
     expectEntityNotFound(perform(put(BASE_PATH), body, RoleTypeSecurity.ROLE_TRAINING_ORGANIZER));
+  }
+
+  @Test
+  @DisplayName(
+      "updateTrainingInstance assigning an unreleased definition the organizer does not author is forbidden")
+  void updateTrainingInstance_unreleasedDefinitionOfAnotherAuthor_returnsForbidden()
+      throws Exception {
+    Map<String, Object> body = updateBody(upcomingInstance, "upcoming");
+    body.put("training_definition_id", unreleasedDefinitionAuthoredBy(otherOrganizer).getId());
+
+    expectApiError(
+        perform(put(BASE_PATH), body, RoleTypeSecurity.ROLE_TRAINING_ORGANIZER), 403, "FORBIDDEN");
+  }
+
+  @Test
+  @DisplayName(
+      "updateTrainingInstance keeping an unreleased definition the organizer does not author succeeds")
+  void updateTrainingInstance_keepsUnreleasedDefinitionOfAnotherAuthor_returnsAccessToken()
+      throws Exception {
+    TrainingInstance instance =
+        seeder.instance(
+            unreleasedDefinitionAuthoredBy(otherOrganizer),
+            "Unreleased definition instance",
+            TrainingInstanceDataSeeder.now().plusDays(10),
+            TrainingInstanceDataSeeder.now().plusDays(11),
+            "unreleased-1234",
+            null,
+            organizer);
+
+    perform(
+            put(BASE_PATH),
+            updateBody(instance, "unreleased"),
+            RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.access_token").value("unreleased-1234"));
   }
 
   @Test
@@ -2069,6 +2146,10 @@ class TrainingInstancesIT extends AbstractIntegrationTest {
         accessToken,
         poolId,
         organizer);
+  }
+
+  private TrainingDefinition unreleasedDefinitionAuthoredBy(UserRef author) {
+    return seeder.definition("Unreleased definition", TDState.UNRELEASED, author);
   }
 
   private Map<String, Object> createBody() {
