@@ -20,6 +20,7 @@ import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
 import cz.cyberrange.platform.training.rest.utils.sort.SortableProperties;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
+import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -394,6 +395,7 @@ public class TrainingInstancesRestController {
    * @param trainingInstanceId id of training instance for which to get the organizers
    * @param givenName the given name
    * @param familyName the family name
+   * @param name text whose words must each match the given name or the family name
    * @param pageable pageable parameter with information about pagination.
    * @return organizers already assigned to the training instance, filtered by name.
    */
@@ -420,10 +422,16 @@ public class TrainingInstancesRestController {
       @PathVariable("instanceId") Long trainingInstanceId,
       @RequestParam(value = "givenName", required = false) String givenName,
       @RequestParam(value = "familyName", required = false) String familyName,
+      @Parameter(
+              description =
+                  "Restricts the result to users whose given name or family name matches every word of"
+                      + " the text.")
+          @RequestParam(value = "name", required = false)
+          String name,
       @ParameterObject Pageable pageable) {
     PageResultResource<UserRefDTO> designers =
         trainingInstanceFacade.getOrganizersOfTrainingInstance(
-            trainingInstanceId, pageable, givenName, familyName);
+            trainingInstanceId, pageable, new UserNameFilter(givenName, familyName, name));
     return ResponseEntity.ok(designers);
   }
 
@@ -433,6 +441,7 @@ public class TrainingInstancesRestController {
    * @param trainingInstanceId id ot the training instance
    * @param givenName the given name
    * @param familyName the family name
+   * @param name text whose words must each match the given name or the family name
    * @param pageable pageable parameter with information about pagination.
    * @return organizers not in the given training instance, filtered by name.
    */
@@ -461,10 +470,16 @@ public class TrainingInstancesRestController {
       @PathVariable("instanceId") Long trainingInstanceId,
       @RequestParam(value = "givenName", required = false) String givenName,
       @RequestParam(value = "familyName", required = false) String familyName,
+      @Parameter(
+              description =
+                  "Restricts the result to users whose given name or family name matches every word of"
+                      + " the text.")
+          @RequestParam(value = "name", required = false)
+          String name,
       @ParameterObject Pageable pageable) {
     PageResultResource<UserRefDTO> designers =
         trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(
-            trainingInstanceId, pageable, givenName, familyName);
+            trainingInstanceId, pageable, new UserNameFilter(givenName, familyName, name));
     return ResponseEntity.ok(designers);
   }
 

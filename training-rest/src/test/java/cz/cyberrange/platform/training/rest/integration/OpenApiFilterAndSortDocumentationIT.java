@@ -39,6 +39,17 @@ class OpenApiFilterAndSortDocumentationIT extends AbstractIntegrationTest {
                 .value(Matchers.hasItems("id,asc", sortValue)));
   }
 
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("userListingTemplates")
+  @DisplayName("a user listing operation documents an optional name query parameter")
+  void apiDocument_userListingOperation_documentsNameParameter(String path) throws Exception {
+    String nameParameter = "$.paths['" + path + "'].get.parameters[?(@.name == 'name')]";
+
+    servedDocument()
+        .andExpect(jsonPath(nameParameter + ".in").value("query"))
+        .andExpect(jsonPath(nameParameter + ".required").value(false));
+  }
+
   @Test
   @DisplayName("the document's server URL carries the context path")
   void apiDocument_serverUrl_carriesContextPath() throws Exception {

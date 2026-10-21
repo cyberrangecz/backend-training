@@ -39,6 +39,7 @@ import cz.cyberrange.platform.training.service.services.TrainingDefinitionServic
 import cz.cyberrange.platform.training.service.services.TrainingEventAccessService;
 import cz.cyberrange.platform.training.service.services.TrainingInstanceService;
 import cz.cyberrange.platform.training.service.services.TrainingRunService;
+import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
 import cz.cyberrange.platform.training.service.services.detection.CheatingDetectionService;
@@ -54,7 +55,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -267,6 +267,7 @@ public class TrainingInstanceFacade {
    *
    * @param trainingInstanceCreateDTO to be created
    * @return created {@link TrainingInstanceDTO}
+   * @throws EntityNotFoundException when no training definition with the given id exists
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
@@ -278,7 +279,6 @@ public class TrainingInstanceFacade {
         trainingInstanceMapper.mapCreateToEntity(trainingInstanceCreateDTO);
     checkLocalEnvironmentConfiguration(trainingInstance);
     trainingInstance.setTrainingDefinition(
-   * @throws EntityNotFoundException when no training definition with the given id exists
         trainingDefinitionService.findById(trainingInstanceCreateDTO.getTrainingDefinitionId()));
     validateVariableNames(trainingInstance);
     trainingInstance.setId(null);
@@ -294,7 +294,7 @@ public class TrainingInstanceFacade {
       TrainingInstance trainingInstance, Set<Long> userRefIdsOfOrganizers) {
     if (userRefIdsOfOrganizers.isEmpty()) return;
     List<UserRefDTO> organizers =
-        getAllUsersRefsByGivenUsersIds(new ArrayList<>(userRefIdsOfOrganizers));
+        userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(userRefIdsOfOrganizers));
     Set<Long> actualOrganizersIds =
         trainingInstance.getOrganizers().stream()
             .map(UserRef::getUserRefId)
@@ -306,20 +306,6 @@ public class TrainingInstanceFacade {
       UserRef userRef = userService.createOrGetUserRef(organizer.getUserRefId());
       trainingInstance.addOrganizer(userRef);
     }
-  }
-
-  private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
-    List<UserRefDTO> users = new ArrayList<>();
-    PageResultResource<UserRefDTO> usersPageResultResource;
-    int page = 0;
-    do {
-      usersPageResultResource =
-          userService.getUsersRefDTOByGivenUserIds(
-              participantsRefIds, PageRequest.of(page, 999), null, null);
-      users.addAll(usersPageResultResource.getContent());
-      page++;
-    } while (page < usersPageResultResource.getPagination().getTotalPages());
-    return users;
   }
 
   /**
@@ -525,8 +511,7 @@ public class TrainingInstanceFacade {
    *
    * @param trainingInstanceId id of the training instance for which to get the organizers
    * @param pageable pageable parameter with information about pagination.
-   * @param givenName optional parameter used for filtration
-   * @param familyName optional parameter used for filtration
+   * @param nameFilter restricts the result to organizers matching it by name
    * @return returns all organizers in given training instance.
    */
   @PreAuthorize(
@@ -534,13 +519,12 @@ public class TrainingInstanceFacade {
           + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
   @TransactionalRO
   public PageResultResource<UserRefDTO> getOrganizersOfTrainingInstance(
-      Long trainingInstanceId, Pageable pageable, String givenName, String familyName) {
+      Long trainingInstanceId, Pageable pageable, UserNameFilter nameFilter) {
     TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
     return userService.getUsersRefDTOByGivenUserIds(
         trainingInstance.getOrganizers().stream().map(UserRef::getUserRefId).toList(),
         pageable,
-        givenName,
-        familyName);
+        nameFilter);
   }
 
   /**
@@ -549,8 +533,7 @@ public class TrainingInstanceFacade {
    * @param trainingInstanceId id of the training instance which users should be excluded from the
    *     result list.
    * @param pageable pageable parameter with information about pagination.
-   * @param givenName optional parameter used for filtration
-   * @param familyName optional parameter used for filtration
+   * @param nameFilter restricts the result to organizers matching it by name
    * @return returns all organizers not in the given training instance.
    */
   @PreAuthorize(
@@ -558,14 +541,14 @@ public class TrainingInstanceFacade {
           + "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
   @TransactionalRO
   public PageResultResource<UserRefDTO> getOrganizersNotInGivenTrainingInstance(
-      Long trainingInstanceId, Pageable pageable, String givenName, String familyName) {
+      Long trainingInstanceId, Pageable pageable, UserNameFilter nameFilter) {
     TrainingInstance trainingInstance = trainingInstanceService.findById(trainingInstanceId);
     Set<Long> excludedOrganizers =
         trainingInstance.getOrganizers().stream()
             .map(UserRef::getUserRefId)
             .collect(Collectors.toSet());
     return userService.getUsersByGivenRoleAndNotWithGivenIds(
-        RoleType.ROLE_TRAINING_ORGANIZER, excludedOrganizers, pageable, givenName, familyName);
+        RoleType.ROLE_TRAINING_ORGANIZER, excludedOrganizers, pageable, nameFilter);
   }
 
   /**

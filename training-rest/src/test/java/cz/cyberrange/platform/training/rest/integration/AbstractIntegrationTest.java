@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import cz.cyberrange.platform.training.rest.config.SpringBootRun;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import java.util.Arrays;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -94,5 +95,19 @@ public abstract class AbstractIntegrationTest {
             Arrays.stream(roles)
                 .map(role -> new SimpleGrantedAuthority(role.name()))
                 .toArray(GrantedAuthority[]::new));
+  }
+
+  /**
+   * Lists the URI templates of every endpoint answering a page of users, each with at most one path
+   * variable.
+   *
+   * @return the templates, in no particular order
+   */
+  protected static Stream<String> userListingTemplates() {
+    return Stream.of(
+        "/training-definitions/{definitionId}/authors",
+        "/training-definitions/{definitionId}/designers-not-in-training-definition",
+        "/training-instances/{instanceId}/organizers",
+        "/training-instances/{instanceId}/organizers-not-in-training-instance");
   }
 }
