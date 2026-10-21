@@ -138,6 +138,21 @@ public interface TrainingInstanceRepository
   boolean existsAnyForTrainingDefinition(@Param("trainingDefinitionId") Long trainingDefinitionId);
 
   /**
+   * Counts, for each of the given training definitions that has any, the training instances created
+   * from it regardless of their start and end time. The {@code @Query} on this method is the source
+   * of the query text. A definition without instances has no row in the result.
+   *
+   * @param trainingDefinitionIds the training definition ids to restrict the lookup to
+   * @return one {@link DefinitionInstanceCount} per definition with at least one instance
+   */
+  @Query(
+      "SELECT ti.trainingDefinition.id AS definitionId, COUNT(ti) AS instanceCount "
+          + "FROM TrainingInstance ti WHERE ti.trainingDefinition.id IN :trainingDefinitionIds "
+          + "GROUP BY ti.trainingDefinition.id")
+  List<DefinitionInstanceCount> countGroupedByTrainingDefinition(
+      @Param("trainingDefinitionIds") Collection<Long> trainingDefinitionIds);
+
+  /**
    * Checks whether a training instance exists with the given access token. The {@code @Query} on
    * this method is the source of the query text.
    *
@@ -180,4 +195,22 @@ public interface TrainingInstanceRepository
    * @return the list of {@link TrainingInstance}s whose organizers contain the given user
    */
   List<TrainingInstance> findAllByOrganizersContainsOrderById(UserRef organizer);
+
+  /** The number of training instances created from one training definition */
+  interface DefinitionInstanceCount {
+
+    /**
+     * Gets the id of the training definition the instances were created from.
+     *
+     * @return the training definition id
+     */
+    Long getDefinitionId();
+
+    /**
+     * Gets the number of training instances created from the definition.
+     *
+     * @return the instance count
+     */
+    long getInstanceCount();
+  }
 }

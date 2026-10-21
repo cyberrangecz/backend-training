@@ -3,6 +3,7 @@ package cz.cyberrange.platform.training.persistence.model;
 import jakarta.persistence.*;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -37,8 +38,8 @@ public class TrainingLevel extends AbstractLevel {
   private Set<Attachment> attachments = new HashSet<>();
 
   @OneToMany(mappedBy = "trainingLevel", cascade = CascadeType.ALL, orphanRemoval = true)
-  @OrderBy("id")
-  private Set<Hint> hints = new HashSet<>();
+  @OrderBy("order ASC, id ASC")
+  private Set<Hint> hints = new LinkedHashSet<>();
 
   @Column(name = "incorrect_answer_limit")
   private int incorrectAnswerLimit;
@@ -198,7 +199,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets hints associated with training level.
+   * Gets hints associated with training level, in their order within the level.
    *
    * @return the hints
    */
@@ -300,6 +301,19 @@ public class TrainingLevel extends AbstractLevel {
   public void removeMitreTechnique(MitreTechnique mitreTechnique) {
     this.mitreTechniques.remove(mitreTechnique);
     mitreTechnique.removeTrainingLevel(this);
+  }
+
+  /**
+   * Removes every technique from this level's set and unregisters this level, matched by id, on
+   * each technique's own side of the association.
+   */
+  public void detachMitreTechniques() {
+    mitreTechniques.forEach(
+        technique ->
+            technique
+                .getTrainingLevels()
+                .removeIf(level -> Objects.equals(level.getId(), getId())));
+    mitreTechniques.clear();
   }
 
   /**

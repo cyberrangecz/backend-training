@@ -1,5 +1,6 @@
 package cz.cyberrange.platform.training.api.dto.imports;
 
+import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentQuestionsSource;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,7 +16,8 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Schema(description = "An assessment level to create, with the questions it asks")
-public class AssessmentLevelImportDTO extends AbstractLevelImportDTO {
+public class AssessmentLevelImportDTO extends AbstractLevelImportDTO
+    implements AssessmentQuestionsSource {
 
   /**
    * Has no effect unless {@link #assessmentType} is {@code TEST}, where each question's points are

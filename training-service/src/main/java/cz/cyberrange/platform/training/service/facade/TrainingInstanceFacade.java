@@ -126,7 +126,10 @@ public class TrainingInstanceFacade {
           + "or @securityService.isOrganizerOfGivenTrainingInstance(#id)")
   @TransactionalRO
   public TrainingInstanceDTO findById(Long id) {
-    return trainingInstanceMapper.mapToDTO(trainingInstanceService.findByIdIncludingDefinition(id));
+    TrainingInstanceDTO instance =
+        trainingInstanceMapper.mapToDTO(trainingInstanceService.findById(id));
+    trainingDefinitionService.completeInstanceCounts(List.of(instance.getTrainingDefinition()));
+    return instance;
   }
 
   /**
@@ -153,13 +156,18 @@ public class TrainingInstanceFacade {
   @TransactionalRO
   public PageResultResource<TrainingInstanceFindAllResponseDTO> findAll(
       Predicate predicate, Pageable pageable) {
-    if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
-      return trainingInstanceMapper.mapToPageResultResourceBasicView(
-          trainingInstanceService.findAll(predicate, pageable));
-    }
-    return trainingInstanceMapper.mapToPageResultResourceBasicView(
-        trainingInstanceService.findAll(
-            predicate, pageable, securityService.getUserRefIdFromUserAndGroup()));
+    Page<TrainingInstance> instances =
+        securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)
+            ? trainingInstanceService.findAll(predicate, pageable)
+            : trainingInstanceService.findAll(
+                predicate, pageable, securityService.getUserRefIdFromUserAndGroup());
+    PageResultResource<TrainingInstanceFindAllResponseDTO> resource =
+        trainingInstanceMapper.mapToPageResultResourceBasicView(instances);
+    trainingDefinitionService.completeInstanceCounts(
+        resource.getContent().stream()
+            .map(TrainingInstanceFindAllResponseDTO::getTrainingDefinition)
+            .collect(Collectors.toList()));
+    return resource;
   }
 
   /**
@@ -287,7 +295,9 @@ public class TrainingInstanceFacade {
       handlePoolIdModification(
           null, trainingInstance.getPoolId(), trainingInstance.getAccessToken());
     }
-    return trainingInstanceMapper.mapToDTO(createdTrainingInstance);
+    TrainingInstanceDTO instance = trainingInstanceMapper.mapToDTO(createdTrainingInstance);
+    trainingDefinitionService.completeInstanceCounts(List.of(instance.getTrainingDefinition()));
+    return instance;
   }
 
   private void addOrganizersToTrainingInstance(

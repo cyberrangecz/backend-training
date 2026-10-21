@@ -2,9 +2,12 @@ package cz.cyberrange.platform.training.service.unit.mapstruct;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.Attachment;
@@ -22,13 +25,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mapstruct.factory.Mappers;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link CloneMapper}.
@@ -92,14 +100,15 @@ class CloneMapperTest {
     }
 
     @Test
-    @DisplayName("should set betaTestingGroup to null")
-    void shouldSetBetaTestingGroupToNull() {
+    @DisplayName("should leave version at zero and creation time unset")
+    void shouldLeaveVersionAndCreationTimeUnset() {
       TrainingDefinition entity = createTrainingDefinition();
-      entity.setBetaTestingGroup(null);
+      ReflectionTestUtils.setField(entity, "version", 7L);
 
       TrainingDefinition result = sut.clone(entity);
 
-      assertNull(result.getBetaTestingGroup());
+      assertEquals(0L, result.getVersion());
+      assertNull(result.getCreatedAt());
     }
 
     @Test
@@ -118,6 +127,31 @@ class CloneMapperTest {
       assertEquals("prereq1", result.getPrerequisites()[0]);
       assertEquals("outcome1", result.getOutcomes()[0]);
     }
+  }
+
+  @Nested
+  @DisplayName("cloneLevel(AbstractLevel)")
+  class CloneLevel {
+
+    @ParameterizedTest
+    @MethodSource(
+        "cz.cyberrange.platform.training.service.unit.mapstruct.CloneMapperTest#levelsOfEveryType")
+    @DisplayName("should copy a level into a new level of the same type without its id")
+    void shouldCopyIntoSameType(AbstractLevel level) {
+      level.setId(ENTITY_ID);
+
+      AbstractLevel result = sut.cloneLevel(level);
+
+      assertNotSame(level, result);
+      assertEquals(level.getClass(), result.getClass());
+      assertEquals(ENTITY_TITLE, result.getTitle());
+      assertNull(result.getId());
+    }
+  }
+
+  static Stream<AbstractLevel> levelsOfEveryType() {
+    return Stream.of(
+        createInfoLevel(), createAccessLevel(), createTrainingLevel(), createAssessmentLevel());
   }
 
   @Nested
@@ -246,6 +280,41 @@ class CloneMapperTest {
     }
 
     @Test
+    @DisplayName("should link copied hints to the copy")
+    void shouldLinkCopiedHintsToCopy() {
+      TrainingLevel entity = createTrainingLevel();
+      Hint hint = createHint();
+      hint.setTrainingLevel(entity);
+      entity.setHints(new LinkedHashSet<>(Set.of(hint)));
+
+      TrainingLevel result = sut.clone(entity);
+
+      assertEquals(1, result.getHints().size());
+      Hint clonedHint = result.getHints().iterator().next();
+      assertNotSame(hint, clonedHint);
+      assertSame(result, clonedHint.getTrainingLevel());
+    }
+
+    @Test
+    @DisplayName("should copy attachments and link them to the copy")
+    void shouldLinkCopiedAttachmentsToCopy() {
+      TrainingLevel entity = createTrainingLevel();
+      Attachment attachment = createAttachment();
+      attachment.setId(ENTITY_ID);
+      attachment.setTrainingLevel(entity);
+      entity.addAttachment(attachment);
+
+      TrainingLevel result = sut.clone(entity);
+
+      assertEquals(1, result.getAttachments().size());
+      Attachment clonedAttachment = result.getAttachments().iterator().next();
+      assertNotSame(attachment, clonedAttachment);
+      assertNull(clonedAttachment.getId());
+      assertEquals(attachment.getContent(), clonedAttachment.getContent());
+      assertSame(result, clonedAttachment.getTrainingLevel());
+    }
+
+    @Test
     @DisplayName("should preserve content, solution, answer fields")
     void shouldPreserveNonIgnoredFields() {
       TrainingLevel entity = createTrainingLevel();
@@ -368,17 +437,13 @@ class CloneMapperTest {
     }
 
     @Test
-    @DisplayName("should preserve content, creationTime")
+    @DisplayName("should preserve content")
     void shouldPreserveNonIgnoredFields() {
-      LocalDateTime now = LocalDateTime.now();
       Attachment entity = createAttachment();
-      entity.setContent(ENTITY_CONTENT);
-      entity.setCreationTime(now);
 
       Attachment result = sut.clone(entity);
 
       assertEquals(ENTITY_CONTENT, result.getContent());
-      assertEquals(now, result.getCreationTime());
     }
   }
 
@@ -393,6 +458,7 @@ class CloneMapperTest {
       att1.setId(1L);
       Attachment att2 = createAttachment();
       att2.setId(2L);
+      att2.setContent("https://example.com/second.pdf");
       Set<Attachment> entities = new HashSet<>(Set.of(att1, att2));
 
       Set<Attachment> result = sut.cloneAttachments(entities);
@@ -511,6 +577,45 @@ class CloneMapperTest {
 
       assertNotNull(result.getExtendedMatchingOptions());
       assertTrue(result.getExtendedMatchingOptions().isEmpty());
+    }
+
+    @Test
+    @DisplayName("should link each copied statement to the copied option its source names")
+    void shouldLinkCopiedStatementsToCopiedOptions() {
+      ExtendedMatchingOption firstOption = createExtendedMatchingOption(0);
+      ExtendedMatchingOption secondOption = createExtendedMatchingOption(1);
+      ExtendedMatchingStatement linkedStatement = createExtendedMatchingStatement();
+      linkedStatement.setExtendedMatchingOption(secondOption);
+      ExtendedMatchingStatement unlinkedStatement = createExtendedMatchingStatement();
+      Question entity = createQuestion();
+      entity.setExtendedMatchingOptions(new ArrayList<>(List.of(firstOption, secondOption)));
+      entity.setExtendedMatchingStatements(
+          new ArrayList<>(List.of(linkedStatement, unlinkedStatement)));
+
+      Question result = sut.clone(entity);
+
+      ExtendedMatchingOption copiedSecondOption = result.getExtendedMatchingOptions().get(1);
+      assertNotSame(secondOption, copiedSecondOption);
+      assertSame(
+          copiedSecondOption,
+          result.getExtendedMatchingStatements().getFirst().getExtendedMatchingOption());
+      assertNull(result.getExtendedMatchingStatements().get(1).getExtendedMatchingOption());
+    }
+
+    @Test
+    @DisplayName("should link the copied choices, statements and options to the copy")
+    void shouldLinkCopiedItemsToCopy() {
+      Question entity = createQuestion();
+      entity.setChoices(new ArrayList<>(List.of(createQuestionChoice())));
+      entity.setExtendedMatchingStatements(
+          new ArrayList<>(List.of(createExtendedMatchingStatement())));
+      entity.setExtendedMatchingOptions(new ArrayList<>(List.of(createExtendedMatchingOption(0))));
+
+      Question result = sut.clone(entity);
+
+      assertSame(result, result.getChoices().getFirst().getQuestion());
+      assertSame(result, result.getExtendedMatchingStatements().getFirst().getQuestion());
+      assertSame(result, result.getExtendedMatchingOptions().getFirst().getQuestion());
     }
   }
 
@@ -686,7 +791,7 @@ class CloneMapperTest {
     @Test
     @DisplayName("should set id to null")
     void shouldSetIdToNull() {
-      ExtendedMatchingOption entity = createExtendedMatchingOption();
+      ExtendedMatchingOption entity = createExtendedMatchingOption(ENTITY_ORDER);
       entity.setId(ENTITY_ID);
 
       ExtendedMatchingOption result = sut.clone(entity);
@@ -697,7 +802,7 @@ class CloneMapperTest {
     @Test
     @DisplayName("should set question to null")
     void shouldSetQuestionToNull() {
-      ExtendedMatchingOption entity = createExtendedMatchingOption();
+      ExtendedMatchingOption entity = createExtendedMatchingOption(ENTITY_ORDER);
 
       ExtendedMatchingOption result = sut.clone(entity);
 
@@ -707,7 +812,7 @@ class CloneMapperTest {
     @Test
     @DisplayName("should preserve text and order")
     void shouldPreserveTextAndOrder() {
-      ExtendedMatchingOption entity = createExtendedMatchingOption();
+      ExtendedMatchingOption entity = createExtendedMatchingOption(ENTITY_ORDER);
       entity.setText(ENTITY_CONTENT);
       entity.setOrder(ENTITY_ORDER);
 
@@ -725,9 +830,9 @@ class CloneMapperTest {
     @Test
     @DisplayName("should clone all options in list")
     void shouldCloneAllOptionsInList() {
-      ExtendedMatchingOption opt1 = createExtendedMatchingOption();
+      ExtendedMatchingOption opt1 = createExtendedMatchingOption(ENTITY_ORDER);
       opt1.setId(1L);
-      ExtendedMatchingOption opt2 = createExtendedMatchingOption();
+      ExtendedMatchingOption opt2 = createExtendedMatchingOption(ENTITY_ORDER);
       opt2.setId(2L);
       List<ExtendedMatchingOption> entities = new ArrayList<>(List.of(opt1, opt2));
 
@@ -755,9 +860,7 @@ class CloneMapperTest {
     }
   }
 
-  // Helper factory methods to create test entities
-
-  private TrainingDefinition createTrainingDefinition() {
+  private static TrainingDefinition createTrainingDefinition() {
     TrainingDefinition entity = new TrainingDefinition();
     entity.setTitle(ENTITY_TITLE);
     entity.setState(TDState.RELEASED);
@@ -767,7 +870,7 @@ class CloneMapperTest {
     return entity;
   }
 
-  private InfoLevel createInfoLevel() {
+  private static InfoLevel createInfoLevel() {
     InfoLevel entity = new InfoLevel();
     entity.setTitle(ENTITY_TITLE);
     entity.setContent(ENTITY_CONTENT);
@@ -777,7 +880,7 @@ class CloneMapperTest {
     return entity;
   }
 
-  private AccessLevel createAccessLevel() {
+  private static AccessLevel createAccessLevel() {
     AccessLevel entity = new AccessLevel();
     entity.setTitle(ENTITY_TITLE);
     entity.setCloudContent(ENTITY_CONTENT);
@@ -788,7 +891,7 @@ class CloneMapperTest {
     return entity;
   }
 
-  private TrainingLevel createTrainingLevel() {
+  private static TrainingLevel createTrainingLevel() {
     TrainingLevel entity = new TrainingLevel();
     entity.setTitle(ENTITY_TITLE);
     entity.setContent(ENTITY_CONTENT);
@@ -799,7 +902,7 @@ class CloneMapperTest {
     return entity;
   }
 
-  private Hint createHint() {
+  private static Hint createHint() {
     Hint entity = new Hint();
     entity.setTitle(ENTITY_TITLE);
     entity.setContent(ENTITY_CONTENT);
@@ -808,14 +911,13 @@ class CloneMapperTest {
     return entity;
   }
 
-  private Attachment createAttachment() {
+  private static Attachment createAttachment() {
     Attachment entity = new Attachment();
     entity.setContent(ENTITY_CONTENT);
-    entity.setCreationTime(LocalDateTime.now());
     return entity;
   }
 
-  private AssessmentLevel createAssessmentLevel() {
+  private static AssessmentLevel createAssessmentLevel() {
     AssessmentLevel entity = new AssessmentLevel();
     entity.setTitle(ENTITY_TITLE);
     entity.setOrder(ENTITY_ORDER);
@@ -824,28 +926,28 @@ class CloneMapperTest {
     return entity;
   }
 
-  private Question createQuestion() {
+  private static Question createQuestion() {
     Question entity = new Question();
     entity.setOrder(ENTITY_ORDER);
     entity.setPenalty(ENTITY_PENALTY);
     return entity;
   }
 
-  private QuestionChoice createQuestionChoice() {
+  private static QuestionChoice createQuestionChoice() {
     QuestionChoice entity = new QuestionChoice();
     entity.setOrder(ENTITY_ORDER);
     return entity;
   }
 
-  private ExtendedMatchingStatement createExtendedMatchingStatement() {
+  private static ExtendedMatchingStatement createExtendedMatchingStatement() {
     ExtendedMatchingStatement entity = new ExtendedMatchingStatement();
     entity.setOrder(ENTITY_ORDER);
     return entity;
   }
 
-  private ExtendedMatchingOption createExtendedMatchingOption() {
+  private static ExtendedMatchingOption createExtendedMatchingOption(int order) {
     ExtendedMatchingOption entity = new ExtendedMatchingOption();
-    entity.setOrder(ENTITY_ORDER);
+    entity.setOrder(order);
     return entity;
   }
 }

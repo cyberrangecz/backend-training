@@ -1,12 +1,10 @@
 package cz.cyberrange.platform.training.rest.integration;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,7 +13,9 @@ import com.jayway.jsonpath.JsonPath;
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -53,8 +53,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
   private static final String DEFINITIONS = "/training-definitions";
   private static final String USERS_BY_IDS_PATH =
       IntegrationTestInfrastructure.USER_AND_GROUP_PATH + "/users/ids";
-  private static final String USERS_BY_ROLE_PATH =
-      IntegrationTestInfrastructure.USER_AND_GROUP_PATH + "/roles/users";
   private static final String USERS_BY_ROLE_EXCLUDING_PATH =
       IntegrationTestInfrastructure.USER_AND_GROUP_PATH + "/roles/users-not-with-ids";
 
@@ -197,7 +195,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     return new SeededDefinition(
         definitionId,
         seeder.infoLevel(definitionId, 0, 5),
-        seeder.trainingLevel(definitionId, 1, 7, "T1059"),
+        seeder.trainingLevel(definitionId, 1, 7, "TA0002.T1059"),
         seeder.accessLevel(definitionId, 2, 3),
         seeder.assessmentLevel(definitionId, 3, 4));
   }
@@ -244,10 +242,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     return value == null ? "null" : "\"" + value + "\"";
   }
 
-  private static List<Object> orderedLevelIds(DocumentContext body) {
-    return listAt(body, "$[*].id");
-  }
-
   private static List<Object> idsOf(Long... ids) {
     return Arrays.stream(ids).map(Long::intValue).collect(Collectors.toList());
   }
@@ -259,22 +253,11 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
         Arguments.of(HttpMethod.GET, DEFINITIONS + "/for-organizers?state=RELEASED"),
         Arguments.of(HttpMethod.GET, DEFINITIONS + "/played-mitre-techniques"),
         Arguments.of(HttpMethod.POST, DEFINITIONS),
-        Arguments.of(HttpMethod.PUT, DEFINITIONS),
+        Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1"),
         Arguments.of(HttpMethod.POST, DEFINITIONS + "/1?title=Copy"),
-        Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1/levels/1/swap-with/2"),
-        Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1/levels/1/move-to/0"),
         Arguments.of(HttpMethod.DELETE, DEFINITIONS + "/1"),
-        Arguments.of(HttpMethod.DELETE, DEFINITIONS + "/1/levels/1"),
-        Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1/training-levels"),
-        Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1/info-levels"),
-        Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1/assessment-levels"),
-        Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1/levels"),
         Arguments.of(HttpMethod.GET, DEFINITIONS + "/levels/1"),
-        Arguments.of(HttpMethod.POST, DEFINITIONS + "/1/levels/INFO"),
-        Arguments.of(HttpMethod.GET, DEFINITIONS + "/designers"),
-        Arguments.of(HttpMethod.GET, DEFINITIONS + "/organizers"),
         Arguments.of(HttpMethod.GET, DEFINITIONS + "/1/designers-not-in-training-definition"),
-        Arguments.of(HttpMethod.GET, DEFINITIONS + "/1/beta-testers"),
         Arguments.of(HttpMethod.GET, DEFINITIONS + "/1/authors"),
         Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1/authors"),
         Arguments.of(HttpMethod.PUT, DEFINITIONS + "/1/states/RELEASED"),
@@ -302,7 +285,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @DisplayName("an author receives the definition with its levels in presentation order")
     void findDefinition_callerIsAuthor_returnsDefinitionWithLevelsInOrder() {
       SeededDefinition seeded = seedFourLevelDefinition("Alpha", TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.betaTestingGroup(seeded.id(), ORGANIZER_REF_ID);
 
       DocumentContext body =
           respond(getAs(designer(), DEFINITIONS + "/{id}", seeded.id()), HttpStatus.OK);
@@ -312,7 +294,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       assertThat(body.<String>read("$.description")).isEqualTo("Description of Alpha");
       assertThat(body.<String>read("$.state")).isEqualTo("UNRELEASED");
       assertThat(body.<Number>read("$.estimated_duration")).isEqualTo(FOUR_LEVEL_DURATION);
-      assertThat(body.<Object>read("$.beta_testing_group_id")).isNotNull();
       assertThat(body.<String>read("$.created_at")).isEqualTo(SEEDED_DATE_TIME);
       assertThat(body.<String>read("$.last_edited")).isEqualTo(SEEDED_DATE_TIME);
       assertThat(body.<String>read("$.last_edited_by"))
@@ -330,7 +311,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       assertThat(body.<String>read("$.levels[0].content")).isEqualTo("Content of info level 0");
       assertThat(body.<String>read("$.levels[1].answer")).isEqualTo("answer-1");
       assertThat(listAt(body, "$.levels[1].mitre_techniques[*].technique_key"))
-          .containsExactly("T1059");
+          .containsExactly("TA0002.T1059");
       assertThat(body.<String>read("$.levels[2].passkey")).isEqualTo("passkey-2");
       assertThat(body.<String>read("$.levels[3].assessment_type")).isEqualTo("QUESTIONNAIRE");
     }
@@ -351,16 +332,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     void findDefinition_callerOrganizesInstance_returnsDefinition() {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.RELEASED, OTHER_DESIGNER_REF_ID);
       seeder.instance(seeded.id(), inTheFuture(), ORGANIZER_REF_ID);
-      stubCaller(ORGANIZER_REF_ID);
-
-      respond(getAs(organizer(), DEFINITIONS + "/{id}", seeded.id()), HttpStatus.OK);
-    }
-
-    @Test
-    @DisplayName("an organizer of the beta testing group receives the definition")
-    void findDefinition_callerIsBetaTesterWithoutInstance_returnsDefinition() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-      seeder.betaTestingGroup(seeded.id(), ORGANIZER_REF_ID);
       stubCaller(ORGANIZER_REF_ID);
 
       respond(getAs(organizer(), DEFINITIONS + "/{id}", seeded.id()), HttpStatus.OK);
@@ -404,8 +375,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @EnumSource(
         value = RoleTypeSecurity.class,
         names = {"ROLE_TRAINING_DESIGNER", "ROLE_TRAINING_ORGANIZER", "ROLE_TRAINING_TRAINEE"})
-    @DisplayName(
-        "a caller who neither authors, organizes an instance of, nor beta tests it is refused")
+    @DisplayName("a caller who neither authors it nor organizes an instance of it is refused")
     void findDefinition_callerHasNoRelationToDefinition_returnsForbidden(RoleTypeSecurity role) {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
 
@@ -420,8 +390,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
 
     private void seedThreeDefinitions() {
       seeder.definition("Alpha", TDState.UNRELEASED, CALLER_REF_ID);
-      Long betaTested = seeder.definition("Bravo", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
-      seeder.betaTestingGroup(betaTested, CALLER_REF_ID);
+      seeder.definition("Bravo", TDState.RELEASED, CALLER_REF_ID, OTHER_DESIGNER_REF_ID);
       seeder.definition("Charlie", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
     }
 
@@ -437,8 +406,8 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("a designer receives only the definitions they author or beta test")
-    void findAllDefinitions_callerIsDesigner_returnsAuthoredAndBetaTestedDefinitions() {
+    @DisplayName("a designer receives only the definitions they author")
+    void findAllDefinitions_callerIsDesigner_returnsAuthoredDefinitions() {
       seedThreeDefinitions();
 
       DocumentContext body = respond(getAs(designer(), DEFINITIONS), HttpStatus.OK);
@@ -451,7 +420,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @DisplayName("each listed definition carries its summary fields")
     void findAllDefinitions_definitionListed_carriesSummaryFields() {
       Long definitionId = seeder.definition("Alpha", TDState.RELEASED, CALLER_REF_ID);
-      seeder.betaTestingGroup(definitionId, ORGANIZER_REF_ID);
       seeder.infoLevel(definitionId, 0, 5);
 
       DocumentContext body = respond(getAs(designer(), DEFINITIONS), HttpStatus.OK);
@@ -460,7 +428,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       assertThat(body.<String>read("$.content[0].title")).isEqualTo("Alpha");
       assertThat(body.<String>read("$.content[0].state")).isEqualTo("RELEASED");
       assertThat(body.<Number>read("$.content[0].estimated_duration")).isEqualTo(5);
-      assertThat(body.<Object>read("$.content[0].beta_testing_group_id")).isNotNull();
       assertThat(body.<Boolean>read("$.content[0].can_be_archived")).isTrue();
       assertThat(body.<String>read("$.content[0].created_at")).isEqualTo(SEEDED_DATE_TIME);
       assertThat(body.<String>read("$.content[0].last_edited")).isEqualTo(SEEDED_DATE_TIME);
@@ -514,8 +481,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @BeforeEach
     void seedDefinitions() {
       seeder.definition("Released", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
-      Long betaTested = seeder.definition("BetaTested", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-      seeder.betaTestingGroup(betaTested, CALLER_REF_ID);
       seeder.definition("Authored", TDState.UNRELEASED, CALLER_REF_ID);
       seeder.definition("Foreign", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
     }
@@ -541,30 +506,28 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
               HttpStatus.OK);
 
       assertThat(listAt(body, "$.content[*].title"))
-          .containsExactlyInAnyOrder("BetaTested", "Authored", "Foreign");
+          .containsExactlyInAnyOrder("Authored", "Foreign");
     }
 
     @Test
-    @DisplayName("an organizer who does not design receives only the definitions they beta test")
-    void findAllForOrganizers_unreleasedStateAsOrganizer_returnsBetaTestedDefinitions() {
+    @DisplayName("an organizer who does not design receives no unreleased definition")
+    void findAllForOrganizers_unreleasedStateAsOrganizer_returnsNoDefinition() {
       DocumentContext body =
           respond(
               getAs(organizer(), DEFINITIONS + "/for-organizers?state=UNRELEASED"), HttpStatus.OK);
 
-      assertThat(listAt(body, "$.content[*].title")).containsExactly("BetaTested");
+      assertThat(listAt(body, "$.content[*].title")).isEmpty();
     }
 
     @Test
-    @DisplayName(
-        "a caller who designs and organizes receives the definitions they author or beta test")
-    void findAllForOrganizers_unreleasedStateAsDesignerAndOrganizer_returnsAuthoredAndBetaTested() {
+    @DisplayName("a caller who designs and organizes receives the definitions they author")
+    void findAllForOrganizers_unreleasedStateAsDesignerAndOrganizer_returnsAuthoredDefinitions() {
       DocumentContext body =
           respond(
               getAs(designerAndOrganizer(), DEFINITIONS + "/for-organizers?state=UNRELEASED"),
               HttpStatus.OK);
 
-      assertThat(listAt(body, "$.content[*].title"))
-          .containsExactlyInAnyOrder("BetaTested", "Authored");
+      assertThat(listAt(body, "$.content[*].title")).containsExactly("Authored");
     }
 
     @Test
@@ -608,11 +571,11 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @Test
     @DisplayName("released definitions using techniques are listed, flagged by the caller's runs")
     void findPlayedMitreTechniques_callerIsTrainee_returnsReleasedDefinitionsWithPlayedFlag() {
-      Long played = seedReleasedDefinitionWithTechniques("Played", "T1059", "T1003");
+      Long played = seedReleasedDefinitionWithTechniques("Played", "TA0002.T1059", "TA0006.T1003");
       Long playedInfoLevel = seeder.infoLevel(played, 1, 1);
       seeder.run(
           seeder.instance(played, inThePast(), ORGANIZER_REF_ID), playedInfoLevel, TRAINEE_REF_ID);
-      seedReleasedDefinitionWithTechniques("Unplayed", "T1110");
+      seedReleasedDefinitionWithTechniques("Unplayed", "TA0006.T1110");
       stubCaller(TRAINEE_REF_ID);
 
       DocumentContext body =
@@ -622,9 +585,9 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       assertThat(listAt(body, "$[?(@.title=='Played')].played")).containsExactly(true);
       assertThat(listAt(body, "$[?(@.title=='Unplayed')].played")).containsExactly(false);
       assertThat(listAt(body, "$[?(@.title=='Played')].mitre_techniques[*]"))
-          .containsExactlyInAnyOrder("T1059", "T1003");
+          .containsExactlyInAnyOrder("TA0002.T1059", "TA0006.T1003");
       assertThat(listAt(body, "$[?(@.title=='Unplayed')].mitre_techniques[*]"))
-          .containsExactly("T1110");
+          .containsExactly("TA0006.T1110");
       assertThat(listAt(body, "$[?(@.title=='Played')].id")).isEqualTo(idsOf(played));
     }
 
@@ -634,8 +597,8 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       Long withoutTechniques = seeder.definition("Plain", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
       seeder.infoLevel(withoutTechniques, 0, 1);
       Long draft = seeder.definition("Draft", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-      seeder.trainingLevel(draft, 0, 1, "T1059");
-      seedReleasedDefinitionWithTechniques("Listed", "T1059");
+      seeder.trainingLevel(draft, 0, 1, "TA0002.T1059");
+      seedReleasedDefinitionWithTechniques("Listed", "TA0002.T1059");
 
       DocumentContext body =
           respond(getAs(administrator(), DEFINITIONS + "/played-mitre-techniques"), HttpStatus.OK);
@@ -656,6 +619,162 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     }
   }
 
+  private static String trainingLevelPayload(
+      Long levelId,
+      int maxScore,
+      String answerJson,
+      String answerVariableNameJson,
+      boolean variantAnswers,
+      String hintsJson,
+      int estimatedDuration) {
+    return """
+        {"id": %d, "title": "Updated training level", "level_type": "TRAINING_LEVEL",
+         "max_score": %d, "answer": %s, "answer_variable_name": %s, "content": "Updated content",
+         "solution": "Updated solution", "solution_penalized": true, "incorrect_answer_limit": 3,
+         "estimated_duration": %d, "variant_answers": %b, "commands_required": true,
+         "hints": %s, "mitre_techniques": [{"technique_key": "TA0002.T1059"}]}
+        """
+        .formatted(
+            levelId,
+            maxScore,
+            answerJson,
+            answerVariableNameJson,
+            estimatedDuration,
+            variantAnswers,
+            hintsJson);
+  }
+
+  /** Builds a training level with a static answer. */
+  private static String trainingLevelPayload(
+      Long levelId, int maxScore, String hintsJson, int estimatedDuration) {
+    return trainingLevelPayload(
+        levelId, maxScore, quoted("a"), quoted(null), false, hintsJson, estimatedDuration);
+  }
+
+  /** Builds a training level with a static answer and no hints, 7 minutes long. */
+  private static String trainingLevelPayload(Long levelId) {
+    return trainingLevelPayload(levelId, 50, "[]", 7);
+  }
+
+  /** Builds a hint, carrying {@code "id": null} when no hint id is given. */
+  private static String hintJson(Long hintId, String title, int penalty, int order) {
+    return ("{\"id\": %d, \"title\": \"%s\", \"content\": \"Content of %s\","
+            + " \"hint_penalty\": %d, \"order\": %d}")
+        .formatted(hintId, title, title, penalty, order);
+  }
+
+  /** Builds an info level 5 minutes long. */
+  private static String infoLevelPayload(Long levelId, String content) {
+    return """
+        {"id": %d, "title": "Updated info level", "level_type": "INFO_LEVEL", "content": %s,
+         "estimated_duration": 5}
+        """
+        .formatted(levelId, quoted(content));
+  }
+
+  /** Builds an access level 3 minutes long. */
+  private static String accessLevelPayload(Long levelId) {
+    return """
+        {"id": %d, "title": "Updated access level", "level_type": "ACCESS_LEVEL",
+         "passkey": "new-passkey", "cloud_content": "New cloud content",
+         "local_content": "New local content", "estimated_duration": 3}
+        """
+        .formatted(levelId);
+  }
+
+  /**
+   * Builds an assessment level with one extended matching question worth 5 points and one multiple
+   * choice question worth 3 points.
+   *
+   * @param correctOptionOrderJson the JSON member naming the correct option of the statement, or an
+   *     empty text to leave it out
+   */
+  private static String assessmentLevelPayload(
+      Long levelId, String assessmentType, int estimatedDuration, String correctOptionOrderJson) {
+    return """
+        {"id": %d, "title": "Updated assessment level", "level_type": "ASSESSMENT_LEVEL",
+         "type": "%s", "instructions": "Updated instructions", "estimated_duration": %d,
+         "questions": [
+           {"question_type": "EMI", "text": "Match them", "points": 5, "penalty": 1, "order": 0,
+            "answer_required": true,
+            "extended_matching_options": [{"text": "First option", "order": 0},
+                                          {"text": "Second option", "order": 1}],
+            "extended_matching_statements": [{"text": "A statement", "order": 0%s}]},
+           {"question_type": "MCQ", "text": "Pick one", "points": 3, "penalty": 0, "order": 1,
+            "answer_required": false,
+            "choices": [{"text": "Right", "correct": true, "order": 0},
+                        {"text": "Wrong", "correct": false, "order": 1}]}]}
+        """
+        .formatted(levelId, assessmentType, estimatedDuration, correctOptionOrderJson);
+  }
+
+  private static String jsonArray(String... elements) {
+    return "[" + String.join(",", elements) + "]";
+  }
+
+  /**
+   * Lists the four seeded levels by their ids in their seeded order, with the durations they were
+   * seeded with, so the definition stays {@link #FOUR_LEVEL_DURATION} minutes long.
+   */
+  private static String seededLevels(SeededDefinition seeded) {
+    return jsonArray(
+        infoLevelPayload(seeded.infoLevelId(), "Fresh info"),
+        trainingLevelPayload(seeded.trainingLevelId()),
+        accessLevelPayload(seeded.accessLevelId()),
+        assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 4, ""));
+  }
+
+  private static String updateBody(long version, String levelsJson, String additionalFields) {
+    return """
+        {"title": "Renamed", "description": "New description",
+         "prerequisites": ["New prerequisite"], "outcomes": ["New outcome"],
+         "version": %d, "levels": %s%s}
+        """
+        .formatted(version, levelsJson, additionalFields);
+  }
+
+  private long versionOf(Long definitionId) {
+    return readDefinitionAsAdministrator(definitionId).<Number>read("$.version").longValue();
+  }
+
+  private MockMvcRequestBuilder putDefinition(
+      RequestPostProcessor caller, Long definitionId, String body) {
+    return withJson(putAs(caller, DEFINITIONS + "/{id}", definitionId), body);
+  }
+
+  /** Writes the given levels as the whole level list of a definition, at its current version. */
+  private MockMvcRequestBuilder putLevels(
+      RequestPostProcessor caller, Long definitionId, String... levels) {
+    return putDefinition(
+        caller, definitionId, updateBody(versionOf(definitionId), jsonArray(levels), ""));
+  }
+
+  /**
+   * Writes the seeded definition with its four levels and the given extra body members, at its
+   * current version.
+   */
+  private MockMvcRequestBuilder putSeeded(
+      RequestPostProcessor caller, SeededDefinition seeded, String additionalFields) {
+    return putDefinition(
+        caller,
+        seeded.id(),
+        updateBody(versionOf(seeded.id()), seededLevels(seeded), additionalFields));
+  }
+
+  private void expectLevelsGone(Long... levelIds) {
+    for (Long levelId : levelIds) {
+      expectError(
+          getAs(administrator(), DEFINITIONS + "/levels/{id}", levelId), HttpStatus.NOT_FOUND);
+    }
+  }
+
+  /** Asserts the definition still holds its four levels and the info level its seeded content. */
+  private void assertSeededLevelsUntouched(SeededDefinition seeded) {
+    assertThat(listAt(readDefinitionAsAdministrator(seeded.id()), "$.levels")).hasSize(4);
+    assertThat(readLevelAsAdministrator(seeded.infoLevelId()).<String>read("$.content"))
+        .isEqualTo("Content of info level 0");
+  }
+
   @Nested
   @DisplayName("POST /training-definitions")
   class CreateDefinition {
@@ -663,8 +782,15 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     private static final String MINIMAL_BODY =
         """
         {"title": "New definition", "description": "About it", "prerequisites": ["Linux basics"],
-         "outcomes": ["Reads logs"], "state": "UNRELEASED", "default_content": false}
+         "outcomes": ["Reads logs"], "state": "UNRELEASED"}
         """;
+
+    private static String bodyWithLevels(String levelsJson) {
+      return """
+          {"title": "With levels", "state": "UNRELEASED", "levels": %s}
+          """
+          .formatted(levelsJson);
+    }
 
     @Test
     @DisplayName("a designer creates a definition and becomes its author")
@@ -679,8 +805,8 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       assertThat(listAt(body, "$.outcomes")).containsExactly("Reads logs");
       assertThat(body.<String>read("$.state")).isEqualTo("UNRELEASED");
       assertThat(body.<Number>read("$.estimated_duration")).isEqualTo(0);
-      assertThat(body.<Object>read("$.beta_testing_group_id")).isNull();
       assertThat(listAt(body, "$.levels")).isEmpty();
+      assertThat(body.<Number>read("$.version").longValue()).isEqualTo(versionOf(createdId));
       assertThat(body.<String>read("$.created_at")).matches(DATE_TIME_PATTERN);
       assertThat(body.<String>read("$.last_edited")).matches(DATE_TIME_PATTERN);
       assertThat(body.<String>read("$.last_edited_by")).isEqualTo(CALLER_FULL_NAME);
@@ -698,38 +824,91 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("default content adds an info level followed by an access level")
-    void createDefinition_defaultContentRequested_returnsInfoLevelThenAccessLevel() {
-      String body =
-          """
-          {"title": "With content", "state": "UNRELEASED", "default_content": true}
-          """;
+    @DisplayName("the submitted levels are stored in order and their durations add up")
+    void createDefinition_levelsGiven_storesLevelsInOrderAndSumsDuration() {
+      String levels =
+          jsonArray(
+              infoLevelPayload(null, "First content"),
+              trainingLevelPayload(null),
+              accessLevelPayload(null),
+              assessmentLevelPayload(null, "TEST", 6, ", \"correct_option_order\": 1"));
 
       DocumentContext created =
-          respond(withJson(postAs(designer(), DEFINITIONS), body), HttpStatus.OK);
+          respond(withJson(postAs(designer(), DEFINITIONS), bodyWithLevels(levels)), HttpStatus.OK);
 
       assertThat(listAt(created, "$.levels[*].level_type"))
-          .containsExactly("INFO_LEVEL", "ACCESS_LEVEL");
-      assertThat(listAt(created, "$.levels[*].order")).containsExactly(0, 1);
+          .containsExactly("INFO_LEVEL", "TRAINING_LEVEL", "ACCESS_LEVEL", "ASSESSMENT_LEVEL");
+      assertThat(listAt(created, "$.levels[*].order")).containsExactly(0, 1, 2, 3);
+      assertThat(listAt(created, "$.levels[*].id")).hasSize(4).doesNotContainNull();
+      assertThat(created.<Number>read("$.estimated_duration")).isEqualTo(5 + 7 + 3 + 6);
+      assertThat(created.<String>read("$.levels[0].content")).isEqualTo("First content");
+      assertThat(
+              created.<Number>read(
+                  "$.levels[3].questions[0].extended_matching_statements[0].correct_option_order"))
+          .isEqualTo(1);
+      Long createdId = created.<Number>read("$.id").longValue();
+      assertThat(listAt(readDefinitionAsAdministrator(createdId), "$.levels[*].id"))
+          .isEqualTo(listAt(created, "$.levels[*].id"));
     }
 
     @Test
-    @DisplayName("a beta testing group is stored with the requested organizers")
-    void createDefinition_betaTestingGroupGiven_storesGroupOrganizers() {
-      String body =
-          """
-          {"title": "Beta tested", "state": "UNRELEASED",
-           "beta_testing_group": {"organizers_ref_ids": [%d]}}
-          """
-              .formatted(ORGANIZER_REF_ID);
-      stubUpstreamUsers(USERS_BY_IDS_PATH, ORGANIZER_REF_ID);
-
+    @DisplayName("the version a create returns is accepted by the next update")
+    void createDefinition_returnedVersion_isAcceptedByUpdate() {
       DocumentContext created =
-          respond(withJson(postAs(designer(), DEFINITIONS), body), HttpStatus.OK);
+          respond(
+              withJson(
+                  postAs(designer(), DEFINITIONS),
+                  bodyWithLevels(jsonArray(infoLevelPayload(null, "Content")))),
+              HttpStatus.OK);
+      Long createdId = created.<Number>read("$.id").longValue();
+      Long levelId = created.<Number>read("$.levels[0].id").longValue();
+      long version = created.<Number>read("$.version").longValue();
 
-      assertThat(created.<Object>read("$.beta_testing_group_id")).isNotNull();
-      assertThat(seeder.betaTesterUserRefIds(created.<Number>read("$.id").longValue()))
-          .containsExactly(ORGANIZER_REF_ID);
+      DocumentContext updated =
+          respond(
+              putDefinition(
+                  designer(),
+                  createdId,
+                  updateBody(version, jsonArray(infoLevelPayload(levelId, "Content")), "")),
+              HttpStatus.OK);
+
+      assertThat(updated.<String>read("$.title")).isEqualTo("Renamed");
+      assertThat(listAt(updated, "$.levels[*].id")).isEqualTo(idsOf(levelId));
+    }
+
+    @Test
+    @DisplayName("a level carrying an id is refused with status 400 and nothing is stored")
+    void createDefinition_levelCarriesId_returnsBadRequestAndStoresNothing() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+      long definitionsBefore = seeder.definitionCount();
+
+      expectError(
+          withJson(
+              postAs(designer(), DEFINITIONS),
+              bodyWithLevels(jsonArray(infoLevelPayload(seeded.infoLevelId(), "Copied")))),
+          HttpStatus.BAD_REQUEST);
+
+      assertThat(seeder.definitionCount()).isEqualTo(definitionsBefore);
+      assertThat(readLevelAsAdministrator(seeded.infoLevelId()).<String>read("$.content"))
+          .isEqualTo("Content of info level 0");
+    }
+
+    @Test
+    @DisplayName("a level failing a content check is refused with status 422 and nothing is stored")
+    void createDefinition_hintPenaltiesExceedMaximalScore_returnsUnprocessableAndStoresNothing() {
+      long definitionsBefore = seeder.definitionCount();
+      String hints = jsonArray(hintJson(null, "First", 6, 0), hintJson(null, "Second", 5, 1));
+
+      expectError(
+          withJson(
+              postAs(designer(), DEFINITIONS),
+              bodyWithLevels(
+                  jsonArray(
+                      infoLevelPayload(null, "Content"),
+                      trainingLevelPayload(null, 10, hints, 9)))),
+          HttpStatus.UNPROCESSABLE_CONTENT);
+
+      assertThat(seeder.definitionCount()).isEqualTo(definitionsBefore);
     }
 
     @ParameterizedTest(name = "{0}")
@@ -740,7 +919,9 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
           "empty title|{\"title\": \"\", \"state\": \"UNRELEASED\"}",
           "missing state|{\"title\": \"No state\"}",
           "unrecognized state|{\"title\": \"T\", \"state\": \"BOGUS\"}",
-          "beta testing group without organizers|{\"title\": \"T\", \"state\": \"UNRELEASED\", \"beta_testing_group\": {}}"
+          "null level list|{\"title\": \"T\", \"state\": \"UNRELEASED\", \"levels\": null}",
+          "null level|{\"title\": \"T\", \"state\": \"UNRELEASED\", \"levels\": [null]}",
+          "level without title|{\"title\": \"T\", \"state\": \"UNRELEASED\", \"levels\": [{\"level_type\": \"INFO_LEVEL\", \"content\": \"c\"}]}"
         })
     @DisplayName("a body failing validation is refused with status 400 and stores nothing")
     void createDefinition_invalidBody_returnsBadRequestAndStoresNothing(
@@ -765,34 +946,34 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
   }
 
   @Nested
-  @DisplayName("PUT /training-definitions")
+  @DisplayName("PUT /training-definitions/{definitionId}")
   class UpdateDefinition {
 
-    private String updateBody(Long definitionId, String additionalFields) {
-      return """
-          {"id": %d, "title": "Renamed", "description": "New description",
-           "prerequisites": ["New prerequisite"], "outcomes": ["New outcome"],
-           "state": "UNRELEASED", "show_stepper_bar": true%s}
-          """
-          .formatted(definitionId, additionalFields);
-    }
-
     @Test
-    @DisplayName("an author overwrites the definition fields")
-    void updateDefinition_callerIsAuthor_overwritesFields() {
+    @DisplayName("an author overwrites the definition and receives it with a new version")
+    void updateDefinition_callerIsAuthor_overwritesFieldsAndReturnsDefinition() {
       SeededDefinition seeded =
           seedFourLevelDefinition("Original", TDState.UNRELEASED, CALLER_REF_ID);
+      long versionBefore = versionOf(seeded.id());
 
-      expectEmptyResponse(
-          withJson(putAs(designer(), DEFINITIONS), updateBody(seeded.id(), "")),
-          HttpStatus.NO_CONTENT);
+      DocumentContext updated = respond(putSeeded(designer(), seeded, ""), HttpStatus.OK);
 
-      DocumentContext body = readDefinitionAsAdministrator(seeded.id());
-      assertThat(body.<String>read("$.title")).isEqualTo("Renamed");
-      assertThat(body.<String>read("$.description")).isEqualTo("New description");
-      assertThat(listAt(body, "$.prerequisites")).containsExactly("New prerequisite");
-      assertThat(listAt(body, "$.outcomes")).containsExactly("New outcome");
-      assertThat(listAt(body, "$.levels")).hasSize(4);
+      assertThat(updated.<String>read("$.title")).isEqualTo("Renamed");
+      assertThat(updated.<String>read("$.description")).isEqualTo("New description");
+      assertThat(listAt(updated, "$.prerequisites")).containsExactly("New prerequisite");
+      assertThat(listAt(updated, "$.outcomes")).containsExactly("New outcome");
+      assertThat(listAt(updated, "$.levels[*].id"))
+          .isEqualTo(
+              idsOf(
+                  seeded.infoLevelId(),
+                  seeded.trainingLevelId(),
+                  seeded.accessLevelId(),
+                  seeded.assessmentLevelId()));
+      assertThat(updated.<Number>read("$.version").longValue()).isGreaterThan(versionBefore);
+      DocumentContext stored = readDefinitionAsAdministrator(seeded.id());
+      assertThat(stored.<String>read("$.title")).isEqualTo("Renamed");
+      assertThat(stored.<Number>read("$.version").longValue())
+          .isEqualTo(updated.<Number>read("$.version").longValue());
     }
 
     @Test
@@ -800,27 +981,36 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     void updateDefinition_callerIsAdministratorWithoutAuthorship_overwritesFields() {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
 
-      expectEmptyResponse(
-          withJson(putAs(administrator(), DEFINITIONS), updateBody(seeded.id(), "")),
-          HttpStatus.NO_CONTENT);
+      respond(putSeeded(administrator(), seeded, ""), HttpStatus.OK);
 
       assertThat(readDefinitionAsAdministrator(seeded.id()).<String>read("$.title"))
           .isEqualTo("Renamed");
     }
 
     @Test
-    @DisplayName("the stored estimated duration is kept whatever the body carries")
-    void updateDefinition_bodyCarriesEstimatedDuration_keepsStoredDuration() {
+    @DisplayName("the estimated duration is the sum of the levels' durations, not the body's")
+    void updateDefinition_bodyCarriesEstimatedDuration_storesSumOfLevelDurations() {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
 
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), DEFINITIONS),
-              updateBody(seeded.id(), ", \"estimated_duration\": 999")),
-          HttpStatus.NO_CONTENT);
+      DocumentContext updated =
+          respond(putSeeded(designer(), seeded, ", \"estimated_duration\": 999"), HttpStatus.OK);
 
+      assertThat(updated.<Number>read("$.estimated_duration")).isEqualTo(FOUR_LEVEL_DURATION);
       assertThat(readDefinitionAsAdministrator(seeded.id()).<Number>read("$.estimated_duration"))
           .isEqualTo(FOUR_LEVEL_DURATION);
+    }
+
+    @Test
+    @DisplayName("the state is kept whatever the body carries")
+    void updateDefinition_bodyCarriesState_keepsStoredState() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      DocumentContext updated =
+          respond(putSeeded(designer(), seeded, ", \"state\": \"RELEASED\""), HttpStatus.OK);
+
+      assertThat(updated.<String>read("$.state")).isEqualTo("UNRELEASED");
+      assertThat(readDefinitionAsAdministrator(seeded.id()).<String>read("$.state"))
+          .isEqualTo("UNRELEASED");
     }
 
     @Test
@@ -828,9 +1018,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     void updateDefinition_callerNotYetAuthor_addsCallerAndKeepsExistingAuthors() {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
 
-      expectEmptyResponse(
-          withJson(putAs(administrator(), DEFINITIONS), updateBody(seeded.id(), "")),
-          HttpStatus.NO_CONTENT);
+      respond(putSeeded(administrator(), seeded, ""), HttpStatus.OK);
 
       assertThat(seeder.authorUserRefIds(seeded.id()))
           .containsExactlyInAnyOrder(OTHER_DESIGNER_REF_ID, CALLER_REF_ID);
@@ -843,9 +1031,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     void updateDefinition_validBody_recordsCallerAsLastEditor() {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
 
-      expectEmptyResponse(
-          withJson(putAs(designer(), DEFINITIONS), updateBody(seeded.id(), "")),
-          HttpStatus.NO_CONTENT);
+      respond(putSeeded(designer(), seeded, ""), HttpStatus.OK);
 
       DocumentContext body = readDefinitionAsAdministrator(seeded.id());
       assertThat(body.<String>read("$.last_edited_by")).isEqualTo(CALLER_FULL_NAME);
@@ -855,33 +1041,39 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("a body without the stored beta testing group is refused with status 409")
-    void updateDefinition_betaTestingGroupOmittedWhileStored_returnsConflict() {
+    @DisplayName("a version other than the stored one is refused with status 409")
+    void updateDefinition_staleVersion_returnsConflictAndChangesNothing() {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.betaTestingGroup(seeded.id(), ORGANIZER_REF_ID);
+      long storedVersion = versionOf(seeded.id());
 
-      expectError(
-          withJson(putAs(designer(), DEFINITIONS), updateBody(seeded.id(), "")),
-          HttpStatus.CONFLICT);
+      expectEntityError(
+          putDefinition(
+              designer(), seeded.id(), updateBody(storedVersion - 1, seededLevels(seeded), "")),
+          HttpStatus.CONFLICT,
+          "TrainingDefinition",
+          seeded.id());
 
-      assertThat(seeder.betaTesterUserRefIds(seeded.id())).containsExactly(ORGANIZER_REF_ID);
+      DocumentContext stored = readDefinitionAsAdministrator(seeded.id());
+      assertThat(stored.<String>read("$.title")).isEqualTo("Seeded definition");
+      assertThat(stored.<Number>read("$.version").longValue()).isEqualTo(storedVersion);
     }
 
     @Test
-    @DisplayName("a beta testing group with no organizers empties the stored group")
-    void updateDefinition_betaTestingGroupWithoutOrganizers_emptiesStoredGroup() {
+    @DisplayName("a second write made on the same version as the first is refused with status 409")
+    void updateDefinition_secondWriteOnSameVersion_returnsConflict() {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.betaTestingGroup(seeded.id(), ORGANIZER_REF_ID);
+      long readVersion = versionOf(seeded.id());
+      String body = updateBody(readVersion, seededLevels(seeded), "");
 
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), DEFINITIONS),
-              updateBody(seeded.id(), ", \"beta_testing_group\": {\"organizers_ref_ids\": []}")),
-          HttpStatus.NO_CONTENT);
+      respond(putDefinition(designer(), seeded.id(), body), HttpStatus.OK);
 
-      assertThat(seeder.betaTesterUserRefIds(seeded.id())).isEmpty();
-      assertThat(readDefinitionAsAdministrator(seeded.id()).<Object>read("$.beta_testing_group_id"))
-          .isNotNull();
+      expectEntityError(
+          putDefinition(designer(), seeded.id(), body.replace("Renamed", "Renamed again")),
+          HttpStatus.CONFLICT,
+          "TrainingDefinition",
+          seeded.id());
+      assertThat(readDefinitionAsAdministrator(seeded.id()).<String>read("$.title"))
+          .isEqualTo("Renamed");
     }
 
     @Test
@@ -890,7 +1082,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.RELEASED, CALLER_REF_ID);
 
       expectEntityError(
-          withJson(putAs(designer(), DEFINITIONS), updateBody(seeded.id(), "")),
+          putSeeded(designer(), seeded, ""),
           HttpStatus.CONFLICT,
           "TrainingDefinition",
           seeded.id());
@@ -898,22 +1090,24 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("a definition with a training instance is refused with status 409")
-    void updateDefinition_definitionHasInstance_returnsConflict() {
+    void updateDefinition_definitionHasInstance_returnsConflictAndChangesNoLevel() {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
       seeder.instance(seeded.id(), inTheFuture(), ORGANIZER_REF_ID);
 
       expectEntityError(
-          withJson(putAs(designer(), DEFINITIONS), updateBody(seeded.id(), "")),
+          putLevels(designer(), seeded.id(), infoLevelPayload(seeded.infoLevelId(), "Fresh info")),
           HttpStatus.CONFLICT,
           "TrainingDefinition",
           seeded.id());
+
+      assertSeededLevelsUntouched(seeded);
     }
 
     @Test
     @DisplayName("an unknown definition is answered with status 404")
     void updateDefinition_unknownDefinition_returnsNotFound() {
       expectEntityError(
-          withJson(putAs(administrator(), DEFINITIONS), updateBody(99_999L, "")),
+          putDefinition(administrator(), 99_999L, updateBody(0, "[]", "")),
           HttpStatus.NOT_FOUND,
           "TrainingDefinition",
           99_999L);
@@ -923,13 +1117,19 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @CsvSource(
         delimiter = '|',
         value = {
-          "missing id|{\"title\": \"T\", \"state\": \"UNRELEASED\", \"show_stepper_bar\": true}",
-          "missing title|{\"id\": 1, \"state\": \"UNRELEASED\", \"show_stepper_bar\": true}",
-          "missing state|{\"id\": 1, \"title\": \"T\", \"show_stepper_bar\": true}"
+          "missing title|{\"version\": 0, \"levels\": []}",
+          "empty title|{\"title\": \"\", \"version\": 0, \"levels\": []}",
+          "missing version|{\"title\": \"T\", \"levels\": []}",
+          "missing level list|{\"title\": \"T\", \"version\": 0}",
+          "null level|{\"title\": \"T\", \"version\": 0, \"levels\": [null]}"
         })
-    @DisplayName("a body failing validation is refused with status 400")
+    @DisplayName("a body failing validation is refused with status 400 and changes nothing")
     void updateDefinition_invalidBody_returnsBadRequest(String description, String body) {
-      expectError(withJson(putAs(administrator(), DEFINITIONS), body), HttpStatus.BAD_REQUEST);
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      expectError(putDefinition(administrator(), seeded.id(), body), HttpStatus.BAD_REQUEST);
+
+      assertThat(listAt(readDefinitionAsAdministrator(seeded.id()), "$.levels")).hasSize(4);
     }
 
     @ParameterizedTest(name = "{0}")
@@ -940,9 +1140,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     void updateDefinition_callerIsNotAuthor_returnsForbidden(RoleTypeSecurity role) {
       SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
 
-      expectError(
-          withJson(putAs(callerWithRoles(role), DEFINITIONS), updateBody(seeded.id(), "")),
-          HttpStatus.FORBIDDEN);
+      expectError(putSeeded(callerWithRoles(role), seeded, ""), HttpStatus.FORBIDDEN);
 
       assertThat(readDefinitionAsAdministrator(seeded.id()).<String>read("$.title"))
           .isEqualTo("Seeded definition");
@@ -950,8 +1148,493 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
   }
 
   @Nested
+  @DisplayName("PUT /training-definitions/{definitionId} with its level list")
+  class UpdateDefinitionLevels {
+
+    @Test
+    @DisplayName("one request creates, updates, deletes and reorders levels")
+    void updateLevels_mixedChanges_appliesAllInOneRequest() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      DocumentContext updated =
+          respond(
+              putLevels(
+                  designer(),
+                  seeded.id(),
+                  assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 4, ""),
+                  infoLevelPayload(null, "New info"),
+                  trainingLevelPayload(seeded.trainingLevelId())),
+              HttpStatus.OK);
+
+      List<Object> levelIds = listAt(updated, "$.levels[*].id");
+      assertThat(levelIds).hasSize(3);
+      assertThat(levelIds.get(0)).isEqualTo(seeded.assessmentLevelId().intValue());
+      assertThat(levelIds.get(1))
+          .isNotIn(seeded.infoLevelId().intValue(), seeded.accessLevelId().intValue());
+      assertThat(levelIds.get(2)).isEqualTo(seeded.trainingLevelId().intValue());
+      assertThat(listAt(updated, "$.levels[*].level_type"))
+          .containsExactly("ASSESSMENT_LEVEL", "INFO_LEVEL", "TRAINING_LEVEL");
+      assertThat(listAt(updated, "$.levels[*].order")).containsExactly(0, 1, 2);
+      assertThat(updated.<String>read("$.levels[1].content")).isEqualTo("New info");
+      assertThat(updated.<String>read("$.levels[2].title")).isEqualTo("Updated training level");
+      assertThat(updated.<Number>read("$.estimated_duration")).isEqualTo(4 + 5 + 7);
+      expectLevelsGone(seeded.infoLevelId(), seeded.accessLevelId());
+      assertThat(listAt(readDefinitionAsAdministrator(seeded.id()), "$.levels[*].id"))
+          .isEqualTo(levelIds);
+    }
+
+    @Test
+    @DisplayName("each level is overwritten according to its own type")
+    void updateLevels_levelsOfEveryType_overwritesEachAccordingToItsType() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      respond(putSeeded(designer(), seeded, ""), HttpStatus.OK);
+
+      DocumentContext body = readDefinitionAsAdministrator(seeded.id());
+      assertThat(body.<String>read("$.levels[0].content")).isEqualTo("Fresh info");
+      assertThat(body.<String>read("$.levels[1].title")).isEqualTo("Updated training level");
+      assertThat(body.<String>read("$.levels[1].content")).isEqualTo("Updated content");
+      assertThat(body.<String>read("$.levels[2].passkey")).isEqualTo("new-passkey");
+      assertThat(body.<String>read("$.levels[2].cloud_content")).isEqualTo("New cloud content");
+      assertThat(body.<String>read("$.levels[3].instructions")).isEqualTo("Updated instructions");
+      assertThat(listAt(body, "$.levels[*].order")).containsExactly(0, 1, 2, 3);
+    }
+
+    @Test
+    @DisplayName("an empty level list deletes every level")
+    void updateLevels_emptyList_deletesEveryLevel() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      DocumentContext updated = respond(putLevels(designer(), seeded.id()), HttpStatus.OK);
+
+      assertThat(listAt(updated, "$.levels")).isEmpty();
+      assertThat(updated.<Number>read("$.estimated_duration")).isEqualTo(0);
+      expectLevelsGone(seeded.trainingLevelId());
+    }
+
+    @Test
+    @DisplayName("a level of another definition is answered with status 404 and changes nothing")
+    void updateLevels_levelBelongsToOtherDefinition_returnsNotFoundAndChangesNothing() {
+      SeededDefinition seeded = seedFourLevelDefinition("Own", TDState.UNRELEASED, CALLER_REF_ID);
+      SeededDefinition other = seedFourLevelDefinition("Other", TDState.UNRELEASED, CALLER_REF_ID);
+
+      expectEntityError(
+          putLevels(
+              designer(),
+              seeded.id(),
+              infoLevelPayload(seeded.infoLevelId(), "Fresh info"),
+              infoLevelPayload(other.infoLevelId(), "Foreign info")),
+          HttpStatus.NOT_FOUND,
+          "AbstractLevel",
+          other.infoLevelId());
+
+      assertSeededLevelsUntouched(seeded);
+      assertThat(readLevelAsAdministrator(other.infoLevelId()).<String>read("$.content"))
+          .isEqualTo("Content of info level 0");
+    }
+
+    @Test
+    @DisplayName("an unknown level id is answered with status 404")
+    void updateLevels_unknownLevel_returnsNotFound() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      expectEntityError(
+          putLevels(designer(), seeded.id(), infoLevelPayload(99_999L, "Fresh info")),
+          HttpStatus.NOT_FOUND,
+          "AbstractLevel",
+          99_999L);
+    }
+
+    @Test
+    @DisplayName("a level listed twice is refused with status 400 and changes nothing")
+    void updateLevels_levelListedTwice_returnsBadRequestAndChangesNothing() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      expectError(
+          putLevels(
+              designer(),
+              seeded.id(),
+              infoLevelPayload(seeded.infoLevelId(), "Once"),
+              infoLevelPayload(seeded.infoLevelId(), "Twice")),
+          HttpStatus.BAD_REQUEST);
+
+      assertSeededLevelsUntouched(seeded);
+    }
+
+    @Test
+    @DisplayName("a level sent as another type is refused with status 400 and keeps its type")
+    void updateLevels_levelTypeChanged_returnsBadRequestAndKeepsLevel() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      expectError(
+          putLevels(
+              designer(), seeded.id(), infoLevelPayload(seeded.trainingLevelId(), "Now info")),
+          HttpStatus.BAD_REQUEST);
+
+      DocumentContext level = readLevelAsAdministrator(seeded.trainingLevelId());
+      assertThat(level.<String>read("$.level_type")).isEqualTo("TRAINING_LEVEL");
+      assertThat(level.<String>read("$.title")).isEqualTo("Training level 1");
+    }
+
+    @Test
+    @DisplayName("a training level takes the submitted values and the position it is listed at")
+    void updateLevels_trainingLevel_overwritesLevelAtListedPosition() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+      String trainingLevel =
+          trainingLevelPayload(
+              seeded.trainingLevelId(),
+              50,
+              quoted("secret"),
+              quoted(null),
+              false,
+              jsonArray(hintJson(null, "Hint", 10, 0)),
+              9);
+
+      respond(
+          putLevels(
+              designer(),
+              seeded.id(),
+              infoLevelPayload(seeded.infoLevelId(), "Fresh info"),
+              trainingLevel),
+          HttpStatus.OK);
+
+      DocumentContext level = readLevelAsAdministrator(seeded.trainingLevelId());
+      assertThat(level.<String>read("$.title")).isEqualTo("Updated training level");
+      assertThat(level.<Number>read("$.max_score")).isEqualTo(50);
+      assertThat(level.<String>read("$.answer")).isEqualTo("secret");
+      assertThat(level.<String>read("$.content")).isEqualTo("Updated content");
+      assertThat(level.<String>read("$.solution")).isEqualTo("Updated solution");
+      assertThat(level.<Boolean>read("$.solution_penalized")).isTrue();
+      assertThat(level.<Number>read("$.incorrect_answer_limit")).isEqualTo(3);
+      assertThat(level.<Number>read("$.estimated_duration")).isEqualTo(9);
+      assertThat(level.<Boolean>read("$.commands_required")).isTrue();
+      assertThat(level.<Number>read("$.order")).isEqualTo(1);
+      assertThat(listAt(level, "$.hints[*].title")).containsExactly("Hint");
+      assertThat(listAt(level, "$.hints[*].hint_penalty")).containsExactly(10);
+      assertThat(listAt(level, "$.mitre_techniques[*].technique_key"))
+          .containsExactly("TA0002.T1059");
+    }
+
+    @Test
+    @DisplayName("the hints of a training level are returned in their order")
+    void updateLevels_hintsSentOutOfOrder_returnsHintsByOrder() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+      String hints =
+          jsonArray(
+              hintJson(null, "Third", 1, 2),
+              hintJson(null, "First", 1, 0),
+              hintJson(null, "Second", 1, 1));
+
+      DocumentContext updated =
+          respond(
+              putLevels(
+                  designer(),
+                  seeded.id(),
+                  trainingLevelPayload(seeded.trainingLevelId(), 50, hints, 7)),
+              HttpStatus.OK);
+
+      assertThat(listAt(updated, "$.levels[0].hints[*].title"))
+          .containsExactly("First", "Second", "Third");
+      assertThat(listAt(updated, "$.levels[0].hints[*].order")).containsExactly(0, 1, 2);
+      assertThat(listAt(readLevelAsAdministrator(seeded.trainingLevelId()), "$.hints[*].title"))
+          .containsExactly("First", "Second", "Third");
+    }
+
+    @Test
+    @DisplayName("a hint keeps its id when sent under the level it belongs to")
+    void updateLevels_hintIdOfSameLevel_keepsHint() {
+      Long definitionId = seeder.definition("With hints", TDState.UNRELEASED, CALLER_REF_ID);
+      Long levelId = seeder.trainingLevelWithHints(definitionId, 0, "First", "Second");
+      List<Long> hintIds = seeder.hintIds(levelId);
+      String hints =
+          jsonArray(
+              hintJson(hintIds.get(0), "First", 5, 0),
+              hintJson(hintIds.get(1), "Second edited", 5, 1));
+
+      respond(
+          putLevels(designer(), definitionId, trainingLevelPayload(levelId, 50, hints, 1)),
+          HttpStatus.OK);
+
+      assertThat(seeder.hintIds(levelId)).isEqualTo(hintIds);
+      assertThat(listAt(readLevelAsAdministrator(levelId), "$.hints[*].title"))
+          .containsExactly("First", "Second edited");
+    }
+
+    @Test
+    @DisplayName("a hint id of another level is ignored and the hint is created anew")
+    void updateLevels_hintIdOfOtherLevel_createsNewHintAndKeepsForeignHint() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+      Long otherDefinitionId = seeder.definition("Other", TDState.UNRELEASED, CALLER_REF_ID);
+      Long otherLevelId = seeder.trainingLevelWithHints(otherDefinitionId, 0, "Foreign");
+      Long foreignHintId = seeder.hintIds(otherLevelId).get(0);
+      String hints = jsonArray(hintJson(foreignHintId, "Taken over", 5, 0));
+
+      respond(
+          putLevels(
+              designer(),
+              seeded.id(),
+              trainingLevelPayload(seeded.trainingLevelId(), 50, hints, 7)),
+          HttpStatus.OK);
+
+      List<Long> ownHintIds = seeder.hintIds(seeded.trainingLevelId());
+      assertThat(ownHintIds).hasSize(1).doesNotContain(foreignHintId);
+      assertThat(seeder.hintIds(otherLevelId)).containsExactly(foreignHintId);
+      assertThat(listAt(readLevelAsAdministrator(otherLevelId), "$.hints[*].title"))
+          .containsExactly("Foreign");
+    }
+
+    @Test
+    @DisplayName("hint penalties adding up to the maximal score are accepted")
+    void updateLevels_hintPenaltiesEqualMaximalScore_returnsOk() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+      String hints = jsonArray(hintJson(null, "First", 6, 0), hintJson(null, "Second", 4, 1));
+
+      respond(
+          putLevels(
+              designer(),
+              seeded.id(),
+              trainingLevelPayload(seeded.trainingLevelId(), 10, hints, 9)),
+          HttpStatus.OK);
+    }
+
+    @Test
+    @DisplayName("hint penalties adding up past the maximal score are refused with status 422")
+    void updateLevels_hintPenaltiesExceedMaximalScore_returnsUnprocessableContent() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+      String hints = jsonArray(hintJson(null, "First", 6, 0), hintJson(null, "Second", 5, 1));
+
+      expectError(
+          putLevels(
+              designer(),
+              seeded.id(),
+              trainingLevelPayload(seeded.trainingLevelId(), 10, hints, 9)),
+          HttpStatus.UNPROCESSABLE_CONTENT);
+
+      assertThat(readLevelAsAdministrator(seeded.trainingLevelId()).<String>read("$.title"))
+          .isEqualTo("Training level 1");
+      assertThat(listAt(readDefinitionAsAdministrator(seeded.id()), "$.levels")).hasSize(4);
+    }
+
+    @Test
+    @DisplayName("a level with variant answers stores the answer variable name and no answer")
+    void updateLevels_variantAnswersWithVariableName_overwritesLevel() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      respond(
+          putLevels(
+              designer(),
+              seeded.id(),
+              trainingLevelPayload(
+                  seeded.trainingLevelId(), 50, quoted(null), quoted("flag"), true, "[]", 9)),
+          HttpStatus.OK);
+
+      DocumentContext level = readLevelAsAdministrator(seeded.trainingLevelId());
+      assertThat(level.<Boolean>read("$.variant_answers")).isTrue();
+      assertThat(level.<String>read("$.answer_variable_name")).isEqualTo("flag");
+      assertThat(level.<Object>read("$.answer")).isNull();
+    }
+
+    private static Stream<Arguments> inconsistentAnswerFields() {
+      return Stream.of(
+          Arguments.of("variant answers with a static answer", true, quoted("a"), quoted("flag")),
+          Arguments.of("variant answers without a variable name", true, quoted(null), quoted(null)),
+          Arguments.of(
+              "variant answers with a blank variable name", true, quoted(null), quoted(" ")),
+          Arguments.of("static answer with a variable name", false, quoted("a"), quoted("flag")),
+          Arguments.of("static answer that is blank", false, quoted(" "), quoted(null)),
+          Arguments.of("static answer that is missing", false, quoted(null), quoted(null)));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("inconsistentAnswerFields")
+    @DisplayName(
+        "answer fields inconsistent with the variant answers choice are refused with status 400")
+    void updateLevels_answerFieldsInconsistent_returnsBadRequest(
+        String description, boolean variantAnswers, String answerJson, String variableNameJson) {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      expectError(
+          putLevels(
+              designer(),
+              seeded.id(),
+              trainingLevelPayload(
+                  seeded.trainingLevelId(),
+                  50,
+                  answerJson,
+                  variableNameJson,
+                  variantAnswers,
+                  "[]",
+                  9)),
+          HttpStatus.BAD_REQUEST);
+
+      assertThat(readLevelAsAdministrator(seeded.trainingLevelId()).<String>read("$.title"))
+          .isEqualTo("Training level 1");
+    }
+
+    private static Stream<Arguments> invalidTrainingLevelFields() {
+      return Stream.of(
+          Arguments.of("maximal score above 100", "\"max_score\": 50", "\"max_score\": 101"),
+          Arguments.of("maximal score below 0", "\"max_score\": 50", "\"max_score\": -1"),
+          Arguments.of(
+              "incorrect answer limit above 100",
+              "\"incorrect_answer_limit\": 3",
+              "\"incorrect_answer_limit\": 101"),
+          Arguments.of(
+              "incorrect answer limit below 0",
+              "\"incorrect_answer_limit\": 3",
+              "\"incorrect_answer_limit\": -1"),
+          Arguments.of(
+              "answer longer than 50 characters",
+              "\"answer\": \"a\"",
+              "\"answer\": \"" + "a".repeat(51) + "\""),
+          Arguments.of("empty content", "\"content\": \"Updated content\"", "\"content\": \"\""),
+          Arguments.of(
+              "empty solution", "\"solution\": \"Updated solution\"", "\"solution\": \"\""),
+          Arguments.of("empty title", "\"title\": \"Updated training level\"", "\"title\": \"\""),
+          Arguments.of("missing level type", "\"level_type\": \"TRAINING_LEVEL\",", ""),
+          Arguments.of(
+              "hint without title",
+              "\"hints\": []",
+              "\"hints\": [{\"title\": \"\", \"content\": \"c\", \"hint_penalty\": 1, \"order\": 0}]"),
+          Arguments.of(
+              "hint penalty above 100",
+              "\"hints\": []",
+              "\"hints\": [{\"title\": \"t\", \"content\": \"c\", \"hint_penalty\": 101, \"order\": 0}]"),
+          Arguments.of(
+              "hint without content",
+              "\"hints\": []",
+              "\"hints\": [{\"title\": \"t\", \"content\": \"\", \"hint_penalty\": 1, \"order\": 0}]"));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("invalidTrainingLevelFields")
+    @DisplayName("a level failing validation is refused with status 400")
+    void updateLevels_invalidTrainingLevelField_returnsBadRequest(
+        String description, String original, String replacement) {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+      String trainingLevel =
+          trainingLevelPayload(seeded.trainingLevelId()).replace(original, replacement);
+      assertThat(trainingLevel).doesNotContain(original);
+
+      expectError(putLevels(designer(), seeded.id(), trainingLevel), HttpStatus.BAD_REQUEST);
+
+      assertThat(listAt(readDefinitionAsAdministrator(seeded.id()), "$.levels")).hasSize(4);
+    }
+
+    @Test
+    @DisplayName("an info level takes the submitted title, content and duration")
+    void updateLevels_infoLevel_overwritesLevel() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      respond(
+          putLevels(designer(), seeded.id(), infoLevelPayload(seeded.infoLevelId(), "Fresh")),
+          HttpStatus.OK);
+
+      DocumentContext level = readLevelAsAdministrator(seeded.infoLevelId());
+      assertThat(level.<String>read("$.title")).isEqualTo("Updated info level");
+      assertThat(level.<String>read("$.content")).isEqualTo("Fresh");
+      assertThat(level.<Number>read("$.estimated_duration")).isEqualTo(5);
+      assertThat(level.<Number>read("$.order")).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("an info level with empty content is refused with status 400")
+    void updateLevels_infoLevelContentEmpty_returnsBadRequest() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      expectError(
+          putLevels(designer(), seeded.id(), infoLevelPayload(seeded.infoLevelId(), "")),
+          HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName(
+        "an assessment takes the submitted questions and its maximal score is the sum of points")
+    void updateLevels_questionnaire_storesQuestionsAndSumsPoints() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      respond(
+          putLevels(
+              designer(),
+              seeded.id(),
+              assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 6, "")),
+          HttpStatus.OK);
+
+      DocumentContext level = readLevelAsAdministrator(seeded.assessmentLevelId());
+      assertThat(level.<String>read("$.title")).isEqualTo("Updated assessment level");
+      assertThat(level.<String>read("$.instructions")).isEqualTo("Updated instructions");
+      assertThat(level.<String>read("$.assessment_type")).isEqualTo("QUESTIONNAIRE");
+      assertThat(level.<Number>read("$.max_score")).isEqualTo(8);
+      assertThat(level.<Number>read("$.order")).isEqualTo(0);
+      assertThat(listAt(level, "$.questions[*].question_type")).containsExactly("EMI", "MCQ");
+      assertThat(listAt(level, "$.questions[*].points")).containsExactly(5, 3);
+      assertThat(listAt(level, "$.questions[0].extended_matching_options[*].text"))
+          .containsExactly("First option", "Second option");
+      assertThat(listAt(level, "$.questions[1].choices[*].correct")).containsExactly(true, false);
+    }
+
+    @Test
+    @DisplayName("a test with the correct option of every statement is stored with that option")
+    void updateLevels_testWithCorrectOptions_storesCorrectOption() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      respond(
+          putLevels(
+              designer(),
+              seeded.id(),
+              assessmentLevelPayload(
+                  seeded.assessmentLevelId(), "TEST", 6, ", \"correct_option_order\": 1")),
+          HttpStatus.OK);
+
+      DocumentContext level = readLevelAsAdministrator(seeded.assessmentLevelId());
+      assertThat(level.<String>read("$.assessment_type")).isEqualTo("TEST");
+      assertThat(
+              level.<Number>read(
+                  "$.questions[0].extended_matching_statements[0].correct_option_order"))
+          .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a test with a statement lacking its correct option is refused with status 400")
+    void updateLevels_testStatementWithoutCorrectOption_returnsBadRequest() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+
+      expectError(
+          putLevels(
+              designer(),
+              seeded.id(),
+              assessmentLevelPayload(seeded.assessmentLevelId(), "TEST", 6, "")),
+          HttpStatus.BAD_REQUEST);
+
+      assertThat(readLevelAsAdministrator(seeded.assessmentLevelId()).<String>read("$.title"))
+          .isEqualTo("Assessment level 3");
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource(
+        delimiter = '|',
+        value = {
+          "missing assessment type|\"type\": \"QUESTIONNAIRE\",|''",
+          "missing instructions|\"instructions\": \"Updated instructions\",|''",
+          "question without text|\"text\": \"Pick one\"|\"text\": \"\""
+        })
+    @DisplayName("an assessment failing validation is refused with status 400")
+    void updateLevels_invalidAssessment_returnsBadRequest(
+        String description, String original, String replacement) {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
+      String assessment =
+          assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 6, "")
+              .replace(original, replacement);
+
+      expectError(putLevels(designer(), seeded.id(), assessment), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Nested
   @DisplayName("POST /training-definitions/{definitionId}")
   class CloneDefinition {
+
+    private static final String CLONE = DEFINITIONS + "/{id}?title=Copy";
 
     @Test
     @DisplayName(
@@ -959,20 +1642,15 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     void cloneDefinition_validRequest_returnsUnreleasedCopyWithAllLevels() {
       SeededDefinition source =
           seedFourLevelDefinition("Source", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
-      seeder.betaTestingGroup(source.id(), ORGANIZER_REF_ID);
       seeder.trainingLevelWithHints(source.id(), 4, "First hint", "Second hint");
 
-      DocumentContext copy =
-          respond(
-              postAs(administrator(), DEFINITIONS + "/{id}?title={title}", source.id(), "Copy"),
-              HttpStatus.OK);
+      DocumentContext copy = respond(postAs(administrator(), CLONE, source.id()), HttpStatus.OK);
 
       Long copyId = copy.<Number>read("$.id").longValue();
       assertThat(copyId).isNotEqualTo(source.id());
       assertThat(copy.<String>read("$.title")).isEqualTo("Copy");
       assertThat(copy.<String>read("$.description")).isEqualTo("Description of Source");
       assertThat(copy.<String>read("$.state")).isEqualTo("UNRELEASED");
-      assertThat(copy.<Object>read("$.beta_testing_group_id")).isNull();
       assertThat(copy.<Number>read("$.estimated_duration")).isEqualTo(FOUR_LEVEL_DURATION + 1);
       assertThat(seeder.authorUserRefIds(copyId)).containsExactly(CALLER_REF_ID);
       assertThat(copy.<String>read("$.last_edited_by")).isEqualTo(CALLER_FULL_NAME);
@@ -999,22 +1677,62 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("the copy is created at the time of copying, the original keeps its time")
+    void cloneDefinition_validRequest_setsCreationTimeOfCopy() {
+      SeededDefinition source =
+          seedFourLevelDefinition("Source", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
+      Instant beforeClone = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+
+      DocumentContext copy = respond(postAs(administrator(), CLONE, source.id()), HttpStatus.OK);
+
+      assertThat(copy.<String>read("$.created_at")).matches(DATE_TIME_PATTERN);
+      assertThat(Instant.parse(copy.<String>read("$.created_at"))).isAfterOrEqualTo(beforeClone);
+      assertThat(readDefinitionAsAdministrator(source.id()).<String>read("$.created_at"))
+          .isEqualTo(SEEDED_DATE_TIME);
+    }
+
+    @Test
     @DisplayName("the original definition is left as it was")
     void cloneDefinition_validRequest_leavesOriginalUnchanged() {
       SeededDefinition source =
           seedFourLevelDefinition("Source", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
-      seeder.betaTestingGroup(source.id(), ORGANIZER_REF_ID);
 
-      respond(
-          postAs(administrator(), DEFINITIONS + "/{id}?title={title}", source.id(), "Copy"),
-          HttpStatus.OK);
+      respond(postAs(administrator(), CLONE, source.id()), HttpStatus.OK);
 
       DocumentContext original = readDefinitionAsAdministrator(source.id());
       assertThat(original.<String>read("$.title")).isEqualTo("Source");
       assertThat(original.<String>read("$.state")).isEqualTo("RELEASED");
-      assertThat(original.<Object>read("$.beta_testing_group_id")).isNotNull();
       assertThat(listAt(original, "$.levels")).hasSize(4);
       assertThat(seeder.authorUserRefIds(source.id())).containsExactly(OTHER_DESIGNER_REF_ID);
+    }
+
+    @Test
+    @DisplayName("a level breaking the current level rules is copied as stored")
+    void cloneDefinition_levelBreaksCurrentRules_copiesLevelAsStored() {
+      SeededDefinition source =
+          seedFourLevelDefinition("Source", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
+      seeder.trainingLevelWithHintAboveMaxScore(source.id(), 4);
+
+      DocumentContext copy = respond(postAs(administrator(), CLONE, source.id()), HttpStatus.OK);
+
+      assertThat(copy.<Number>read("$.levels[4].max_score")).isEqualTo(1);
+      assertThat(listAt(copy, "$.levels[4].hints[*].hint_penalty")).containsExactly(5);
+      assertThat(listAt(copy, "$.levels[4].hints[*].title")).containsExactly("Costly hint");
+    }
+
+    @Test
+    @DisplayName("the attachments of a training level are copied onto the copied level")
+    void cloneDefinition_levelHasAttachment_copiesAttachmentOntoCopiedLevel() {
+      SeededDefinition source =
+          seedFourLevelDefinition("Source", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
+      Long sourceLevelId = seeder.trainingLevelWithAttachment(source.id(), 4, "Network diagram");
+
+      DocumentContext copy = respond(postAs(administrator(), CLONE, source.id()), HttpStatus.OK);
+
+      Long copiedLevelId = copy.<Number>read("$.levels[4].id").longValue();
+      assertThat(copiedLevelId).isNotEqualTo(sourceLevelId);
+      assertThat(seeder.attachmentContents(copiedLevelId)).containsExactly("Network diagram");
+      assertThat(seeder.attachmentContents(sourceLevelId)).containsExactly("Network diagram");
     }
 
     @Test
@@ -1023,9 +1741,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       SeededDefinition source =
           seedFourLevelDefinition("Source", TDState.UNRELEASED, CALLER_REF_ID);
 
-      respond(
-          postAs(designer(), DEFINITIONS + "/{id}?title={title}", source.id(), "Copy"),
-          HttpStatus.OK);
+      respond(postAs(designer(), CLONE, source.id()), HttpStatus.OK);
     }
 
     @Test
@@ -1040,7 +1756,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @DisplayName("an unknown definition is answered with status 404")
     void cloneDefinition_unknownDefinition_returnsNotFound() {
       expectEntityError(
-          postAs(administrator(), DEFINITIONS + "/{id}?title=Copy", 99_999L),
+          postAs(administrator(), CLONE, 99_999L),
           HttpStatus.NOT_FOUND,
           "TrainingDefinition",
           99_999L);
@@ -1055,290 +1771,9 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       SeededDefinition source = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
       long definitionsBefore = seeder.definitionCount();
 
-      expectError(
-          postAs(callerWithRoles(role), DEFINITIONS + "/{id}?title=Copy", source.id()),
-          HttpStatus.FORBIDDEN);
+      expectError(postAs(callerWithRoles(role), CLONE, source.id()), HttpStatus.FORBIDDEN);
 
       assertThat(seeder.definitionCount()).isEqualTo(definitionsBefore);
-    }
-  }
-
-  @Nested
-  @DisplayName(
-      "PUT /training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}")
-  class SwapLevels {
-
-    private static final String SWAP = DEFINITIONS + "/{definitionId}/levels/{from}/swap-with/{to}";
-
-    @Test
-    @DisplayName("two levels exchange positions and the levels are returned in their new order")
-    void swapLevels_twoLevels_exchangesPositionsAndReturnsNewOrder() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext body =
-          respond(
-              putAs(
-                  designer(), SWAP, seeded.id(), seeded.trainingLevelId(), seeded.accessLevelId()),
-              HttpStatus.OK);
-
-      assertThat(orderedLevelIds(body))
-          .isEqualTo(
-              idsOf(
-                  seeded.infoLevelId(),
-                  seeded.accessLevelId(),
-                  seeded.trainingLevelId(),
-                  seeded.assessmentLevelId()));
-      assertThat(listAt(body, "$[*].order")).containsExactly(0, 1, 2, 3);
-      assertThat(listAt(body, "$[*].level_type"))
-          .containsExactly("INFO_LEVEL", "ACCESS_LEVEL", "TRAINING_LEVEL", "ASSESSMENT_LEVEL");
-      assertThat(listAt(body, "$[*].title"))
-          .containsExactly(
-              "Info level 0", "Access level 2", "Training level 1", "Assessment level 3");
-      assertThat(listAt(readDefinitionAsAdministrator(seeded.id()), "$.levels[*].id"))
-          .isEqualTo(orderedLevelIds(body));
-    }
-
-    @Test
-    @DisplayName("an administrator who does not author the definition swaps its levels")
-    void swapLevels_callerIsAdministratorWithoutAuthorship_returnsNewOrder() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      respond(
-          putAs(
-              administrator(), SWAP, seeded.id(), seeded.infoLevelId(), seeded.assessmentLevelId()),
-          HttpStatus.OK);
-    }
-
-    @Test
-    @DisplayName("an unknown definition is answered with status 404")
-    void swapLevels_unknownDefinition_returnsNotFound() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          putAs(administrator(), SWAP, 99_999L, seeded.infoLevelId(), seeded.accessLevelId()),
-          HttpStatus.NOT_FOUND,
-          "TrainingDefinition",
-          99_999L);
-    }
-
-    @Test
-    @DisplayName("an unknown level is answered with status 404 and nothing moves")
-    void swapLevels_unknownLevel_returnsNotFound() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          putAs(administrator(), SWAP, seeded.id(), seeded.infoLevelId(), 99_999L),
-          HttpStatus.NOT_FOUND,
-          "AbstractLevel",
-          99_999L);
-
-      assertThat(listAt(readDefinitionAsAdministrator(seeded.id()), "$.levels[*].id"))
-          .isEqualTo(
-              idsOf(
-                  seeded.infoLevelId(),
-                  seeded.trainingLevelId(),
-                  seeded.accessLevelId(),
-                  seeded.assessmentLevelId()));
-    }
-
-    @Test
-    @DisplayName("a released definition is refused with status 409")
-    void swapLevels_definitionIsReleased_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.RELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          putAs(designer(), SWAP, seeded.id(), seeded.infoLevelId(), seeded.accessLevelId()),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @Test
-    @DisplayName("a definition with a training instance is refused with status 409")
-    void swapLevels_definitionHasInstance_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.instance(seeded.id(), inTheFuture(), ORGANIZER_REF_ID);
-
-      expectEntityError(
-          putAs(designer(), SWAP, seeded.id(), seeded.infoLevelId(), seeded.accessLevelId()),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(
-        value = RoleTypeSecurity.class,
-        names = {"ROLE_TRAINING_DESIGNER", "ROLE_TRAINING_ORGANIZER", "ROLE_TRAINING_TRAINEE"})
-    @DisplayName("a caller who does not author the definition is refused")
-    void swapLevels_callerIsNotAuthor_returnsForbidden(RoleTypeSecurity role) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      expectError(
-          putAs(
-              callerWithRoles(role),
-              SWAP,
-              seeded.id(),
-              seeded.infoLevelId(),
-              seeded.accessLevelId()),
-          HttpStatus.FORBIDDEN);
-    }
-  }
-
-  @Nested
-  @DisplayName(
-      "PUT /training-definitions/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}")
-  class MoveLevel {
-
-    private static final String MOVE =
-        DEFINITIONS + "/{definitionId}/levels/{level}/move-to/{position}";
-
-    private void assertLevelOrder(DocumentContext body, Long... expectedLevelIds) {
-      assertThat(orderedLevelIds(body)).isEqualTo(idsOf(expectedLevelIds));
-      assertThat(listAt(body, "$[*].order")).containsExactly(0, 1, 2, 3);
-    }
-
-    @Test
-    @DisplayName("a level moved toward the end shifts the levels in between one place back")
-    void moveLevel_toLaterPosition_shiftsLevelsInBetween() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext body =
-          respond(putAs(designer(), MOVE, seeded.id(), seeded.infoLevelId(), 2), HttpStatus.OK);
-
-      assertLevelOrder(
-          body,
-          seeded.trainingLevelId(),
-          seeded.accessLevelId(),
-          seeded.infoLevelId(),
-          seeded.assessmentLevelId());
-    }
-
-    @Test
-    @DisplayName("a level moved toward the start shifts the levels in between one place forward")
-    void moveLevel_toEarlierPosition_shiftsLevelsInBetween() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext body =
-          respond(
-              putAs(designer(), MOVE, seeded.id(), seeded.assessmentLevelId(), 1), HttpStatus.OK);
-
-      assertLevelOrder(
-          body,
-          seeded.infoLevelId(),
-          seeded.assessmentLevelId(),
-          seeded.trainingLevelId(),
-          seeded.accessLevelId());
-    }
-
-    @Test
-    @DisplayName("a position past the last level is pulled to the last position")
-    void moveLevel_positionBeyondLastLevel_movesToEnd() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext body =
-          respond(putAs(designer(), MOVE, seeded.id(), seeded.infoLevelId(), 99), HttpStatus.OK);
-
-      assertLevelOrder(
-          body,
-          seeded.trainingLevelId(),
-          seeded.accessLevelId(),
-          seeded.assessmentLevelId(),
-          seeded.infoLevelId());
-    }
-
-    @Test
-    @DisplayName("a negative position is pulled to the first position")
-    void moveLevel_negativePosition_movesToStart() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext body =
-          respond(putAs(designer(), MOVE, seeded.id(), seeded.accessLevelId(), -4), HttpStatus.OK);
-
-      assertLevelOrder(
-          body,
-          seeded.accessLevelId(),
-          seeded.infoLevelId(),
-          seeded.trainingLevelId(),
-          seeded.assessmentLevelId());
-    }
-
-    @Test
-    @DisplayName("moving a level to the position it holds changes nothing")
-    void moveLevel_toCurrentPosition_keepsOrder() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext body =
-          respond(putAs(designer(), MOVE, seeded.id(), seeded.trainingLevelId(), 1), HttpStatus.OK);
-
-      assertLevelOrder(
-          body,
-          seeded.infoLevelId(),
-          seeded.trainingLevelId(),
-          seeded.accessLevelId(),
-          seeded.assessmentLevelId());
-    }
-
-    @Test
-    @DisplayName("an unknown definition is answered with status 404")
-    void moveLevel_unknownDefinition_returnsNotFound() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          putAs(administrator(), MOVE, 99_999L, seeded.infoLevelId(), 1),
-          HttpStatus.NOT_FOUND,
-          "TrainingDefinition",
-          99_999L);
-    }
-
-    @Test
-    @DisplayName("an unknown level is answered with status 404")
-    void moveLevel_unknownLevel_returnsNotFound() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          putAs(administrator(), MOVE, seeded.id(), 99_999L, 1),
-          HttpStatus.NOT_FOUND,
-          "AbstractLevel",
-          99_999L);
-    }
-
-    @Test
-    @DisplayName("a released definition is refused with status 409")
-    void moveLevel_definitionIsReleased_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.RELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          putAs(designer(), MOVE, seeded.id(), seeded.infoLevelId(), 1),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @Test
-    @DisplayName("a definition with a training instance is refused with status 409")
-    void moveLevel_definitionHasInstance_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.instance(seeded.id(), inTheFuture(), ORGANIZER_REF_ID);
-
-      expectEntityError(
-          putAs(designer(), MOVE, seeded.id(), seeded.infoLevelId(), 1),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(
-        value = RoleTypeSecurity.class,
-        names = {"ROLE_TRAINING_DESIGNER", "ROLE_TRAINING_ORGANIZER", "ROLE_TRAINING_TRAINEE"})
-    @DisplayName("a caller who does not author the definition is refused")
-    void moveLevel_callerIsNotAuthor_returnsForbidden(RoleTypeSecurity role) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      expectError(
-          putAs(callerWithRoles(role), MOVE, seeded.id(), seeded.infoLevelId(), 1),
-          HttpStatus.FORBIDDEN);
     }
   }
 
@@ -1354,18 +1789,11 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       expectEmptyResponse(deleteAs(designer(), DEFINITIONS + "/{id}", seeded.id()), HttpStatus.OK);
 
       expectError(getAs(administrator(), DEFINITIONS + "/{id}", seeded.id()), HttpStatus.NOT_FOUND);
-      expectError(
-          getAs(administrator(), DEFINITIONS + "/levels/{id}", seeded.infoLevelId()),
-          HttpStatus.NOT_FOUND);
-      expectError(
-          getAs(administrator(), DEFINITIONS + "/levels/{id}", seeded.trainingLevelId()),
-          HttpStatus.NOT_FOUND);
-      expectError(
-          getAs(administrator(), DEFINITIONS + "/levels/{id}", seeded.accessLevelId()),
-          HttpStatus.NOT_FOUND);
-      expectError(
-          getAs(administrator(), DEFINITIONS + "/levels/{id}", seeded.assessmentLevelId()),
-          HttpStatus.NOT_FOUND);
+      expectLevelsGone(
+          seeded.infoLevelId(),
+          seeded.trainingLevelId(),
+          seeded.accessLevelId(),
+          seeded.assessmentLevelId());
     }
 
     @Test
@@ -1435,825 +1863,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
   }
 
   @Nested
-  @DisplayName("DELETE /training-definitions/{definitionId}/levels/{levelId}")
-  class DeleteLevel {
-
-    private static final String LEVEL = DEFINITIONS + "/{definitionId}/levels/{levelId}";
-
-    @Test
-    @DisplayName("the gap in the level order is closed and the remaining levels are returned")
-    void deleteLevel_middleLevel_closesOrderGapAndReturnsRemainingLevels() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext body =
-          respond(
-              deleteAs(designer(), LEVEL, seeded.id(), seeded.trainingLevelId()), HttpStatus.OK);
-
-      assertThat(orderedLevelIds(body))
-          .isEqualTo(
-              idsOf(seeded.infoLevelId(), seeded.accessLevelId(), seeded.assessmentLevelId()));
-      assertThat(listAt(body, "$[*].order")).containsExactly(0, 1, 2);
-      assertThat(listAt(body, "$[*].level_type"))
-          .containsExactly("INFO_LEVEL", "ACCESS_LEVEL", "ASSESSMENT_LEVEL");
-      expectError(
-          getAs(administrator(), DEFINITIONS + "/levels/{id}", seeded.trainingLevelId()),
-          HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    @DisplayName("the estimated duration drops by the duration of the removed level")
-    void deleteLevel_levelRemoved_reducesEstimatedDuration() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      respond(deleteAs(designer(), LEVEL, seeded.id(), seeded.trainingLevelId()), HttpStatus.OK);
-
-      assertThat(readDefinitionAsAdministrator(seeded.id()).<Number>read("$.estimated_duration"))
-          .isEqualTo(FOUR_LEVEL_DURATION - 7);
-    }
-
-    @Test
-    @DisplayName("an administrator who does not author the definition removes a level")
-    void deleteLevel_callerIsAdministratorWithoutAuthorship_returnsRemainingLevels() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      DocumentContext body =
-          respond(
-              deleteAs(administrator(), LEVEL, seeded.id(), seeded.infoLevelId()), HttpStatus.OK);
-
-      assertThat(listAt(body, "$[*].order")).containsExactly(0, 1, 2);
-    }
-
-    @Test
-    @DisplayName("an unknown definition is answered with status 404")
-    void deleteLevel_unknownDefinition_returnsNotFound() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          deleteAs(administrator(), LEVEL, 99_999L, seeded.infoLevelId()),
-          HttpStatus.NOT_FOUND,
-          "TrainingDefinition",
-          99_999L);
-    }
-
-    @Test
-    @DisplayName("an unknown level is answered with status 404")
-    void deleteLevel_unknownLevel_returnsNotFound() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          deleteAs(administrator(), LEVEL, seeded.id(), 99_999L),
-          HttpStatus.NOT_FOUND,
-          "AbstractLevel",
-          99_999L);
-    }
-
-    @Test
-    @DisplayName("a definition that is not unreleased is refused with status 409")
-    void deleteLevel_definitionIsReleased_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.RELEASED, CALLER_REF_ID);
-
-      expectError(
-          deleteAs(designer(), LEVEL, seeded.id(), seeded.infoLevelId()), HttpStatus.CONFLICT);
-
-      assertThat(listAt(readDefinitionAsAdministrator(seeded.id()), "$.levels[*].id")).hasSize(4);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(
-        value = RoleTypeSecurity.class,
-        names = {"ROLE_TRAINING_DESIGNER", "ROLE_TRAINING_ORGANIZER", "ROLE_TRAINING_TRAINEE"})
-    @DisplayName("a caller who does not author the definition is refused")
-    void deleteLevel_callerIsNotAuthor_returnsForbidden(RoleTypeSecurity role) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      expectError(
-          deleteAs(callerWithRoles(role), LEVEL, seeded.id(), seeded.infoLevelId()),
-          HttpStatus.FORBIDDEN);
-    }
-  }
-
-  private enum UpdatableLevel {
-    TRAINING("training-levels"),
-    INFO("info-levels"),
-    ASSESSMENT("assessment-levels");
-
-    private final String pathSegment;
-
-    UpdatableLevel(String pathSegment) {
-      this.pathSegment = pathSegment;
-    }
-
-    String path(Object definitionId) {
-      return DEFINITIONS + "/" + definitionId + "/" + pathSegment;
-    }
-  }
-
-  private static Long levelOf(UpdatableLevel kind, SeededDefinition seeded) {
-    return switch (kind) {
-      case TRAINING -> seeded.trainingLevelId();
-      case INFO -> seeded.infoLevelId();
-      case ASSESSMENT -> seeded.assessmentLevelId();
-    };
-  }
-
-  private static String validPayload(UpdatableLevel kind, Long levelId) {
-    return switch (kind) {
-      case TRAINING -> trainingLevelPayload(levelId, 50, quoted("a"), quoted(null), false, "[]", 9);
-      case INFO -> infoLevelPayload(levelId, "Updated content");
-      case ASSESSMENT -> assessmentLevelPayload(levelId, "QUESTIONNAIRE", 6, "");
-    };
-  }
-
-  private static String trainingLevelPayload(
-      Long levelId,
-      int maxScore,
-      String answerJson,
-      String answerVariableNameJson,
-      boolean variantAnswers,
-      String hintsJson,
-      int estimatedDuration) {
-    return """
-        {"id": %d, "title": "Updated training level", "level_type": "TRAINING_LEVEL",
-         "max_score": %d, "answer": %s, "answer_variable_name": %s, "content": "Updated content",
-         "solution": "Updated solution", "solution_penalized": true, "incorrect_answer_limit": 3,
-         "estimated_duration": %d, "variant_answers": %b, "commands_required": true,
-         "hints": %s, "mitre_techniques": [{"technique_key": "T1059"}]}
-        """
-        .formatted(
-            levelId,
-            maxScore,
-            answerJson,
-            answerVariableNameJson,
-            estimatedDuration,
-            variantAnswers,
-            hintsJson);
-  }
-
-  private static String hintJson(String title, int penalty, int order) {
-    return "{\"title\": \"%s\", \"content\": \"Content of %s\", \"hint_penalty\": %d, \"order\": %d}"
-        .formatted(title, title, penalty, order);
-  }
-
-  private static String infoLevelPayload(Long levelId, String content) {
-    return """
-        {"id": %d, "title": "Updated info level", "level_type": "INFO_LEVEL", "content": %s}
-        """
-        .formatted(levelId, quoted(content));
-  }
-
-  private static String accessLevelPayload(Long levelId) {
-    return """
-        {"id": %d, "title": "Updated access level", "level_type": "ACCESS_LEVEL",
-         "passkey": "new-passkey", "cloud_content": "New cloud content",
-         "local_content": "New local content"}
-        """
-        .formatted(levelId);
-  }
-
-  /**
-   * Builds an assessment level with one extended matching question worth 5 points and one multiple
-   * choice question worth 3 points.
-   *
-   * @param correctOptionOrderJson the JSON member naming the correct option of the statement, or an
-   *     empty text to leave it out
-   */
-  private static String assessmentLevelPayload(
-      Long levelId, String assessmentType, int estimatedDuration, String correctOptionOrderJson) {
-    return """
-        {"id": %d, "title": "Updated assessment level", "level_type": "ASSESSMENT_LEVEL",
-         "type": "%s", "instructions": "Updated instructions", "estimated_duration": %d,
-         "questions": [
-           {"question_type": "EMI", "text": "Match them", "points": 5, "penalty": 1, "order": 0,
-            "answer_required": true,
-            "extended_matching_options": [{"text": "First option", "order": 0},
-                                          {"text": "Second option", "order": 1}],
-            "extended_matching_statements": [{"text": "A statement", "order": 0%s}]},
-           {"question_type": "MCQ", "text": "Pick one", "points": 3, "penalty": 0, "order": 1,
-            "answer_required": false,
-            "choices": [{"text": "Right", "correct": true, "order": 0},
-                        {"text": "Wrong", "correct": false, "order": 1}]}]}
-        """
-        .formatted(levelId, assessmentType, estimatedDuration, correctOptionOrderJson);
-  }
-
-  private static Stream<Arguments> updatableLevelsWithNonAuthorRoles() {
-    return Stream.of(UpdatableLevel.values())
-        .flatMap(
-            kind ->
-                Stream.of(
-                        RoleTypeSecurity.ROLE_TRAINING_DESIGNER,
-                        RoleTypeSecurity.ROLE_TRAINING_ORGANIZER,
-                        RoleTypeSecurity.ROLE_TRAINING_TRAINEE)
-                    .map(role -> Arguments.of(kind, role)));
-  }
-
-  @Nested
-  @DisplayName("PUT /training-definitions/{definitionId}/{training,info,assessment}-levels")
-  class UpdateSingleLevelGuards {
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(UpdatableLevel.class)
-    @DisplayName("an unknown definition is answered with status 404")
-    void updateLevel_unknownDefinition_returnsNotFound(UpdatableLevel kind) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          withJson(
-              putAs(administrator(), kind.path(99_999L)),
-              validPayload(kind, levelOf(kind, seeded))),
-          HttpStatus.NOT_FOUND,
-          "TrainingDefinition",
-          99_999L);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(UpdatableLevel.class)
-    @DisplayName("an unknown level is answered with status 404")
-    void updateLevel_unknownLevel_returnsNotFound(UpdatableLevel kind) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectError(
-          withJson(putAs(designer(), kind.path(seeded.id())), validPayload(kind, 99_999L)),
-          HttpStatus.NOT_FOUND);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(UpdatableLevel.class)
-    @DisplayName("a level of another definition is answered with status 404 and stays unchanged")
-    void updateLevel_levelBelongsToOtherDefinition_returnsNotFound(UpdatableLevel kind) {
-      SeededDefinition seeded = seedFourLevelDefinition("Own", TDState.UNRELEASED, CALLER_REF_ID);
-      SeededDefinition other = seedFourLevelDefinition("Other", TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectError(
-          withJson(
-              putAs(designer(), kind.path(seeded.id())), validPayload(kind, levelOf(kind, other))),
-          HttpStatus.NOT_FOUND);
-
-      assertThat(readLevelAsAdministrator(levelOf(kind, other)).<String>read("$.title"))
-          .doesNotStartWith("Updated");
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(UpdatableLevel.class)
-    @DisplayName("a released definition is refused with status 409")
-    void updateLevel_definitionIsReleased_returnsConflict(UpdatableLevel kind) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.RELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          withJson(
-              putAs(designer(), kind.path(seeded.id())), validPayload(kind, levelOf(kind, seeded))),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(UpdatableLevel.class)
-    @DisplayName("a definition with a training instance is refused with status 409")
-    void updateLevel_definitionHasInstance_returnsConflict(UpdatableLevel kind) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.instance(seeded.id(), inTheFuture(), ORGANIZER_REF_ID);
-
-      expectEntityError(
-          withJson(
-              putAs(designer(), kind.path(seeded.id())), validPayload(kind, levelOf(kind, seeded))),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @ParameterizedTest(name = "{0} as {1}")
-    @MethodSource(
-        "cz.cyberrange.platform.training.rest.integration.TrainingDefinitionsIT#updatableLevelsWithNonAuthorRoles")
-    @DisplayName("a caller who does not author the definition is refused")
-    void updateLevel_callerIsNotAuthor_returnsForbidden(
-        UpdatableLevel kind, RoleTypeSecurity role) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      expectError(
-          withJson(
-              putAs(callerWithRoles(role), kind.path(seeded.id())),
-              validPayload(kind, levelOf(kind, seeded))),
-          HttpStatus.FORBIDDEN);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(UpdatableLevel.class)
-    @DisplayName("a body without the level type is refused with status 400")
-    void updateLevel_levelTypeMissing_returnsBadRequest(UpdatableLevel kind) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String body =
-          validPayload(kind, levelOf(kind, seeded))
-              .replaceFirst("\"level_type\": \"[A-Z_]+\",", "");
-
-      expectError(
-          withJson(putAs(designer(), kind.path(seeded.id())), body), HttpStatus.BAD_REQUEST);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(UpdatableLevel.class)
-    @DisplayName("a body with an empty title is refused with status 400")
-    void updateLevel_titleEmpty_returnsBadRequest(UpdatableLevel kind) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String body =
-          validPayload(kind, levelOf(kind, seeded))
-              .replaceFirst("\"title\": \"[^\"]*\"", "\"title\": \"\"");
-
-      expectError(
-          withJson(putAs(designer(), kind.path(seeded.id())), body), HttpStatus.BAD_REQUEST);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(UpdatableLevel.class)
-    @DisplayName("the edit is recorded on the definition with the caller's full name")
-    void updateLevel_validPayload_recordsCallerAsLastEditor(UpdatableLevel kind) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), kind.path(seeded.id())), validPayload(kind, levelOf(kind, seeded))),
-          HttpStatus.NO_CONTENT);
-
-      DocumentContext body = readDefinitionAsAdministrator(seeded.id());
-      assertThat(body.<String>read("$.last_edited_by")).isEqualTo(CALLER_FULL_NAME);
-      assertThat(body.<String>read("$.last_edited")).isNotEqualTo(SEEDED_DATE_TIME);
-    }
-  }
-
-  @Nested
-  @DisplayName("PUT /training-definitions/{definitionId}/training-levels")
-  class UpdateTrainingLevel {
-
-    @Test
-    @DisplayName("the level takes the submitted values and keeps its position")
-    void updateTrainingLevel_validPayload_overwritesLevelKeepingPosition() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String payload =
-          trainingLevelPayload(
-              seeded.trainingLevelId(),
-              50,
-              quoted("secret"),
-              quoted(null),
-              false,
-              "[" + hintJson("Hint", 10, 0) + "]",
-              9);
-
-      expectEmptyResponse(
-          withJson(putAs(designer(), UpdatableLevel.TRAINING.path(seeded.id())), payload),
-          HttpStatus.NO_CONTENT);
-
-      DocumentContext level = readLevelAsAdministrator(seeded.trainingLevelId());
-      assertThat(level.<String>read("$.title")).isEqualTo("Updated training level");
-      assertThat(level.<Number>read("$.max_score")).isEqualTo(50);
-      assertThat(level.<String>read("$.answer")).isEqualTo("secret");
-      assertThat(level.<String>read("$.content")).isEqualTo("Updated content");
-      assertThat(level.<String>read("$.solution")).isEqualTo("Updated solution");
-      assertThat(level.<Boolean>read("$.solution_penalized")).isTrue();
-      assertThat(level.<Number>read("$.incorrect_answer_limit")).isEqualTo(3);
-      assertThat(level.<Number>read("$.estimated_duration")).isEqualTo(9);
-      assertThat(level.<Boolean>read("$.commands_required")).isTrue();
-      assertThat(level.<Number>read("$.order")).isEqualTo(1);
-      assertThat(listAt(level, "$.hints[*].title")).containsExactly("Hint");
-      assertThat(listAt(level, "$.hints[*].hint_penalty")).containsExactly(10);
-      assertThat(listAt(level, "$.hints[*].order")).containsExactly(0);
-      assertThat(listAt(level, "$.mitre_techniques[*].technique_key")).containsExactly("T1059");
-    }
-
-    @Test
-    @DisplayName("the definition's estimated duration follows the change of the level's duration")
-    void updateTrainingLevel_durationChanged_adjustsDefinitionEstimatedDuration() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), UpdatableLevel.TRAINING.path(seeded.id())),
-              trainingLevelPayload(
-                  seeded.trainingLevelId(), 50, quoted("a"), quoted(null), false, "[]", 12)),
-          HttpStatus.NO_CONTENT);
-
-      assertThat(readDefinitionAsAdministrator(seeded.id()).<Number>read("$.estimated_duration"))
-          .isEqualTo(FOUR_LEVEL_DURATION - 7 + 12);
-    }
-
-    @Test
-    @DisplayName("hint penalties adding up to the maximal score are accepted")
-    void updateTrainingLevel_hintPenaltiesEqualMaximalScore_returnsNoContent() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String hints = "[" + hintJson("First", 6, 0) + "," + hintJson("Second", 4, 1) + "]";
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), UpdatableLevel.TRAINING.path(seeded.id())),
-              trainingLevelPayload(
-                  seeded.trainingLevelId(), 10, quoted("a"), quoted(null), false, hints, 9)),
-          HttpStatus.NO_CONTENT);
-    }
-
-    @Test
-    @DisplayName("hint penalties adding up past the maximal score are refused with status 422")
-    void updateTrainingLevel_hintPenaltiesExceedMaximalScore_returnsUnprocessableContent() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String hints = "[" + hintJson("First", 6, 0) + "," + hintJson("Second", 5, 1) + "]";
-
-      expectError(
-          withJson(
-              putAs(designer(), UpdatableLevel.TRAINING.path(seeded.id())),
-              trainingLevelPayload(
-                  seeded.trainingLevelId(), 10, quoted("a"), quoted(null), false, hints, 9)),
-          HttpStatus.UNPROCESSABLE_CONTENT);
-
-      assertThat(readLevelAsAdministrator(seeded.trainingLevelId()).<String>read("$.title"))
-          .isEqualTo("Training level 1");
-    }
-
-    @Test
-    @DisplayName("a level with variant answers stores the answer variable name and no answer")
-    void updateTrainingLevel_variantAnswersWithVariableName_overwritesLevel() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), UpdatableLevel.TRAINING.path(seeded.id())),
-              trainingLevelPayload(
-                  seeded.trainingLevelId(), 50, quoted(null), quoted("flag"), true, "[]", 9)),
-          HttpStatus.NO_CONTENT);
-
-      DocumentContext level = readLevelAsAdministrator(seeded.trainingLevelId());
-      assertThat(level.<Boolean>read("$.variant_answers")).isTrue();
-      assertThat(level.<String>read("$.answer_variable_name")).isEqualTo("flag");
-      assertThat(level.<Object>read("$.answer")).isNull();
-    }
-
-    private static Stream<Arguments> inconsistentAnswerFields() {
-      return Stream.of(
-          Arguments.of("variant answers with a static answer", true, quoted("a"), quoted("flag")),
-          Arguments.of("variant answers without a variable name", true, quoted(null), quoted(null)),
-          Arguments.of(
-              "variant answers with a blank variable name", true, quoted(null), quoted(" ")),
-          Arguments.of("static answer with a variable name", false, quoted("a"), quoted("flag")),
-          Arguments.of("static answer that is blank", false, quoted(" "), quoted(null)),
-          Arguments.of("static answer that is missing", false, quoted(null), quoted(null)));
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("inconsistentAnswerFields")
-    @DisplayName(
-        "answer fields inconsistent with the variant answers choice are refused with status 400")
-    void updateTrainingLevel_answerFieldsInconsistent_returnsBadRequest(
-        String description, boolean variantAnswers, String answerJson, String variableNameJson) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectError(
-          withJson(
-              putAs(designer(), UpdatableLevel.TRAINING.path(seeded.id())),
-              trainingLevelPayload(
-                  seeded.trainingLevelId(),
-                  50,
-                  answerJson,
-                  variableNameJson,
-                  variantAnswers,
-                  "[]",
-                  9)),
-          HttpStatus.BAD_REQUEST);
-
-      assertThat(readLevelAsAdministrator(seeded.trainingLevelId()).<String>read("$.title"))
-          .isEqualTo("Training level 1");
-    }
-
-    private static Stream<Arguments> invalidTrainingLevelFields() {
-      return Stream.of(
-          Arguments.of("maximal score above 100", "\"max_score\": 50", "\"max_score\": 101"),
-          Arguments.of("maximal score below 0", "\"max_score\": 50", "\"max_score\": -1"),
-          Arguments.of(
-              "incorrect answer limit above 100",
-              "\"incorrect_answer_limit\": 3",
-              "\"incorrect_answer_limit\": 101"),
-          Arguments.of(
-              "incorrect answer limit below 0",
-              "\"incorrect_answer_limit\": 3",
-              "\"incorrect_answer_limit\": -1"),
-          Arguments.of(
-              "answer longer than 50 characters",
-              "\"answer\": \"a\"",
-              "\"answer\": \"" + "a".repeat(51) + "\""),
-          Arguments.of("empty content", "\"content\": \"Updated content\"", "\"content\": \"\""),
-          Arguments.of(
-              "empty solution", "\"solution\": \"Updated solution\"", "\"solution\": \"\""),
-          Arguments.of(
-              "hint without title",
-              "\"hints\": []",
-              "\"hints\": [{\"title\": \"\", \"content\": \"c\", \"hint_penalty\": 1, \"order\": 0}]"),
-          Arguments.of(
-              "hint penalty above 100",
-              "\"hints\": []",
-              "\"hints\": [{\"title\": \"t\", \"content\": \"c\", \"hint_penalty\": 101, \"order\": 0}]"),
-          Arguments.of(
-              "hint without content",
-              "\"hints\": []",
-              "\"hints\": [{\"title\": \"t\", \"content\": \"\", \"hint_penalty\": 1, \"order\": 0}]"));
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("invalidTrainingLevelFields")
-    @DisplayName("a body failing validation is refused with status 400")
-    void updateTrainingLevel_invalidField_returnsBadRequest(
-        String description, String original, String replacement) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String body =
-          validPayload(UpdatableLevel.TRAINING, seeded.trainingLevelId())
-              .replace(original, replacement);
-      assertThat(body).contains(replacement);
-
-      expectError(
-          withJson(putAs(designer(), UpdatableLevel.TRAINING.path(seeded.id())), body),
-          HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @Nested
-  @DisplayName("PUT /training-definitions/{definitionId}/info-levels")
-  class UpdateInfoLevel {
-
-    @Test
-    @DisplayName("the level takes the submitted title and content and keeps its duration")
-    void updateInfoLevel_validPayload_overwritesLevelKeepingDuration() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), UpdatableLevel.INFO.path(seeded.id())),
-              infoLevelPayload(seeded.infoLevelId(), "Fresh content")),
-          HttpStatus.NO_CONTENT);
-
-      DocumentContext level = readLevelAsAdministrator(seeded.infoLevelId());
-      assertThat(level.<String>read("$.title")).isEqualTo("Updated info level");
-      assertThat(level.<String>read("$.content")).isEqualTo("Fresh content");
-      assertThat(level.<Number>read("$.estimated_duration")).isEqualTo(5);
-      assertThat(level.<Number>read("$.order")).isEqualTo(0);
-      assertThat(readDefinitionAsAdministrator(seeded.id()).<Number>read("$.estimated_duration"))
-          .isEqualTo(FOUR_LEVEL_DURATION);
-    }
-
-    @Test
-    @DisplayName("a body with empty content is refused with status 400")
-    void updateInfoLevel_contentEmpty_returnsBadRequest() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectError(
-          withJson(
-              putAs(designer(), UpdatableLevel.INFO.path(seeded.id())),
-              infoLevelPayload(seeded.infoLevelId(), "")),
-          HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @Nested
-  @DisplayName("PUT /training-definitions/{definitionId}/assessment-levels")
-  class UpdateAssessmentLevel {
-
-    @Test
-    @DisplayName(
-        "the level takes the submitted questions and its maximal score is the sum of their points")
-    void updateAssessmentLevel_questionnaire_storesQuestionsAndSumsPoints() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), UpdatableLevel.ASSESSMENT.path(seeded.id())),
-              assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 6, "")),
-          HttpStatus.NO_CONTENT);
-
-      DocumentContext level = readLevelAsAdministrator(seeded.assessmentLevelId());
-      assertThat(level.<String>read("$.title")).isEqualTo("Updated assessment level");
-      assertThat(level.<String>read("$.instructions")).isEqualTo("Updated instructions");
-      assertThat(level.<String>read("$.assessment_type")).isEqualTo("QUESTIONNAIRE");
-      assertThat(level.<Number>read("$.max_score")).isEqualTo(8);
-      assertThat(level.<Number>read("$.order")).isEqualTo(3);
-      assertThat(listAt(level, "$.questions[*].question_type")).containsExactly("EMI", "MCQ");
-      assertThat(listAt(level, "$.questions[*].points")).containsExactly(5, 3);
-      assertThat(listAt(level, "$.questions[0].extended_matching_options[*].text"))
-          .containsExactly("First option", "Second option");
-      assertThat(listAt(level, "$.questions[1].choices[*].correct")).containsExactly(true, false);
-    }
-
-    @Test
-    @DisplayName("the definition's estimated duration follows the change of the level's duration")
-    void updateAssessmentLevel_durationChanged_adjustsDefinitionEstimatedDuration() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), UpdatableLevel.ASSESSMENT.path(seeded.id())),
-              assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 10, "")),
-          HttpStatus.NO_CONTENT);
-
-      assertThat(readDefinitionAsAdministrator(seeded.id()).<Number>read("$.estimated_duration"))
-          .isEqualTo(FOUR_LEVEL_DURATION - 4 + 10);
-    }
-
-    @Test
-    @DisplayName("a test with the correct option of every statement is stored with that option")
-    void updateAssessmentLevel_testWithCorrectOptions_storesCorrectOption() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), UpdatableLevel.ASSESSMENT.path(seeded.id())),
-              assessmentLevelPayload(
-                  seeded.assessmentLevelId(), "TEST", 6, ", \"correct_option_order\": 1")),
-          HttpStatus.NO_CONTENT);
-
-      DocumentContext level = readLevelAsAdministrator(seeded.assessmentLevelId());
-      assertThat(level.<String>read("$.assessment_type")).isEqualTo("TEST");
-      assertThat(
-              level.<Number>read(
-                  "$.questions[0].extended_matching_statements[0].correct_option_order"))
-          .isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("a test with a statement lacking its correct option is refused with status 400")
-    void updateAssessmentLevel_testStatementWithoutCorrectOption_returnsBadRequest() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectError(
-          withJson(
-              putAs(designer(), UpdatableLevel.ASSESSMENT.path(seeded.id())),
-              assessmentLevelPayload(seeded.assessmentLevelId(), "TEST", 6, "")),
-          HttpStatus.BAD_REQUEST);
-
-      assertThat(readLevelAsAdministrator(seeded.assessmentLevelId()).<String>read("$.title"))
-          .isEqualTo("Assessment level 3");
-    }
-
-    @Test
-    @DisplayName("a questionnaire needs no correct option on its statements")
-    void updateAssessmentLevel_questionnaireStatementWithoutCorrectOption_returnsNoContent() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(
-              putAs(designer(), UpdatableLevel.ASSESSMENT.path(seeded.id())),
-              assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 6, "")),
-          HttpStatus.NO_CONTENT);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @CsvSource(
-        delimiter = '|',
-        value = {
-          "missing assessment type|\"type\": \"QUESTIONNAIRE\",|",
-          "missing instructions|\"instructions\": \"Updated instructions\",|",
-          "question without text|\"text\": \"Pick one\"|\"text\": \"\""
-        })
-    @DisplayName("a body failing validation is refused with status 400")
-    void updateAssessmentLevel_invalidBody_returnsBadRequest(
-        String description, String original, String replacement) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String body =
-          assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 6, "")
-              .replace(original, replacement == null ? "" : replacement);
-
-      expectError(
-          withJson(putAs(designer(), UpdatableLevel.ASSESSMENT.path(seeded.id())), body),
-          HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @Nested
-  @DisplayName("PUT /training-definitions/{definitionId}/levels")
-  class UpdateLevels {
-
-    private static final String LEVELS = DEFINITIONS + "/{definitionId}/levels";
-
-    private String mixedPayload(SeededDefinition seeded) {
-      return "["
-          + String.join(
-              ",",
-              infoLevelPayload(seeded.infoLevelId(), "Fresh info"),
-              validPayload(UpdatableLevel.TRAINING, seeded.trainingLevelId()),
-              accessLevelPayload(seeded.accessLevelId()),
-              assessmentLevelPayload(seeded.assessmentLevelId(), "QUESTIONNAIRE", 4, ""))
-          + "]";
-    }
-
-    @Test
-    @DisplayName("each level is overwritten according to its own type")
-    void updateLevels_levelsOfEveryType_overwritesEachAccordingToItsType() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEmptyResponse(
-          withJson(putAs(designer(), LEVELS, seeded.id()), mixedPayload(seeded)),
-          HttpStatus.NO_CONTENT);
-
-      DocumentContext body = readDefinitionAsAdministrator(seeded.id());
-      assertThat(body.<String>read("$.levels[0].content")).isEqualTo("Fresh info");
-      assertThat(body.<String>read("$.levels[1].title")).isEqualTo("Updated training level");
-      assertThat(body.<String>read("$.levels[1].content")).isEqualTo("Updated content");
-      assertThat(body.<String>read("$.levels[2].passkey")).isEqualTo("new-passkey");
-      assertThat(body.<String>read("$.levels[2].cloud_content")).isEqualTo("New cloud content");
-      assertThat(body.<String>read("$.levels[3].instructions")).isEqualTo("Updated instructions");
-      assertThat(listAt(body, "$.levels[*].order")).containsExactly(0, 1, 2, 3);
-      assertThat(body.<String>read("$.last_edited_by")).isEqualTo(CALLER_FULL_NAME);
-    }
-
-    @Test
-    @DisplayName("a level of another definition aborts the whole request and changes nothing")
-    void updateLevels_levelBelongsToOtherDefinition_returnsNotFoundAndChangesNothing() {
-      SeededDefinition seeded = seedFourLevelDefinition("Own", TDState.UNRELEASED, CALLER_REF_ID);
-      SeededDefinition other = seedFourLevelDefinition("Other", TDState.UNRELEASED, CALLER_REF_ID);
-      String payload =
-          "["
-              + infoLevelPayload(seeded.infoLevelId(), "Fresh info")
-              + ","
-              + infoLevelPayload(other.infoLevelId(), "Foreign info")
-              + "]";
-
-      expectError(withJson(putAs(designer(), LEVELS, seeded.id()), payload), HttpStatus.NOT_FOUND);
-
-      assertThat(readLevelAsAdministrator(seeded.infoLevelId()).<String>read("$.content"))
-          .isEqualTo("Content of info level 0");
-      assertThat(readLevelAsAdministrator(other.infoLevelId()).<String>read("$.content"))
-          .isEqualTo("Content of info level 0");
-    }
-
-    @Test
-    @DisplayName("an unknown definition is answered with status 404")
-    void updateLevels_unknownDefinition_returnsNotFound() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          withJson(putAs(administrator(), LEVELS, 99_999L), mixedPayload(seeded)),
-          HttpStatus.NOT_FOUND,
-          "TrainingDefinition",
-          99_999L);
-    }
-
-    @Test
-    @DisplayName("a released definition is refused with status 409")
-    void updateLevels_definitionIsReleased_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.RELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          withJson(putAs(designer(), LEVELS, seeded.id()), mixedPayload(seeded)),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @Test
-    @DisplayName("a definition with a training instance is refused with status 409")
-    void updateLevels_definitionHasInstance_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.instance(seeded.id(), inTheFuture(), ORGANIZER_REF_ID);
-
-      expectEntityError(
-          withJson(putAs(designer(), LEVELS, seeded.id()), mixedPayload(seeded)),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @Test
-    @DisplayName("a level failing validation is refused with status 400")
-    void updateLevels_levelWithEmptyTitle_returnsBadRequest() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String payload =
-          "["
-              + infoLevelPayload(seeded.infoLevelId(), "Fresh info")
-                  .replace("Updated info level", "")
-              + "]";
-
-      expectError(
-          withJson(putAs(designer(), LEVELS, seeded.id()), payload), HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    @DisplayName("a test statement lacking its correct option is refused with status 400")
-    void updateLevels_testStatementWithoutCorrectOption_returnsBadRequest() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      String payload =
-          "[" + assessmentLevelPayload(seeded.assessmentLevelId(), "TEST", 6, "") + "]";
-
-      expectError(
-          withJson(putAs(designer(), LEVELS, seeded.id()), payload), HttpStatus.BAD_REQUEST);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(
-        value = RoleTypeSecurity.class,
-        names = {"ROLE_TRAINING_DESIGNER", "ROLE_TRAINING_ORGANIZER", "ROLE_TRAINING_TRAINEE"})
-    @DisplayName("a caller who does not author the definition is refused")
-    void updateLevels_callerIsNotAuthor_returnsForbidden(RoleTypeSecurity role) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      expectError(
-          withJson(putAs(callerWithRoles(role), LEVELS, seeded.id()), mixedPayload(seeded)),
-          HttpStatus.FORBIDDEN);
-    }
-  }
-
-  @Nested
   @DisplayName("GET /training-definitions/levels/{levelId}")
   class FindLevel {
 
@@ -2262,7 +1871,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @Test
     @DisplayName("an info level is returned with its content")
     void findLevel_infoLevel_returnsInfoFields() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
 
       DocumentContext body = respond(getAs(designer(), LEVEL, seeded.infoLevelId()), HttpStatus.OK);
 
@@ -2276,7 +1885,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @Test
     @DisplayName("a training level is returned with its answer, solution and techniques")
     void findLevel_trainingLevel_returnsTrainingFields() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
 
       DocumentContext body =
           respond(getAs(designer(), LEVEL, seeded.trainingLevelId()), HttpStatus.OK);
@@ -2286,13 +1895,14 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       assertThat(body.<String>read("$.solution")).isEqualTo("Solution of training level 1");
       assertThat(body.<Number>read("$.max_score")).isEqualTo(100);
       assertThat(body.<Number>read("$.incorrect_answer_limit")).isEqualTo(10);
-      assertThat(listAt(body, "$.mitre_techniques[*].technique_key")).containsExactly("T1059");
+      assertThat(listAt(body, "$.mitre_techniques[*].technique_key"))
+          .containsExactly("TA0002.T1059");
     }
 
     @Test
     @DisplayName("an access level is returned with its passkey and contents")
     void findLevel_accessLevel_returnsAccessFields() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
 
       DocumentContext body =
           respond(getAs(designer(), LEVEL, seeded.accessLevelId()), HttpStatus.OK);
@@ -2306,7 +1916,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     @Test
     @DisplayName("an assessment level is returned with its instructions and type")
     void findLevel_assessmentLevel_returnsAssessmentFields() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
 
       DocumentContext body =
           respond(getAs(designer(), LEVEL, seeded.assessmentLevelId()), HttpStatus.OK);
@@ -2324,6 +1934,34 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
           getAs(administrator(), LEVEL, 99_999L), HttpStatus.NOT_FOUND, "AbstractLevel", 99_999L);
     }
 
+    @Test
+    @DisplayName(
+        "a level of an unreleased definition is refused to a designer who is not its author")
+    void findLevel_unreleasedDefinitionOfAnotherDesigner_returnsForbidden() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+
+      expectError(getAs(designer(), LEVEL, seeded.infoLevelId()), HttpStatus.FORBIDDEN);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @EnumSource(
+        value = TDState.class,
+        names = {"RELEASED", "ARCHIVED"})
+    @DisplayName("a level of a definition that is not unreleased is returned to any designer")
+    void findLevel_visibleDefinitionOfAnotherDesigner_returnsLevel(TDState state) {
+      SeededDefinition seeded = seedFourLevelDefinition(state, OTHER_DESIGNER_REF_ID);
+
+      respond(getAs(designer(), LEVEL, seeded.infoLevelId()), HttpStatus.OK);
+    }
+
+    @Test
+    @DisplayName("a level of an unreleased definition is returned to an administrator")
+    void findLevel_unreleasedDefinitionAsAdministrator_returnsLevel() {
+      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+
+      respond(getAs(administrator(), LEVEL, seeded.infoLevelId()), HttpStatus.OK);
+    }
+
     @ParameterizedTest(name = "{0}")
     @EnumSource(
         value = RoleTypeSecurity.class,
@@ -2334,209 +1972,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
 
       expectError(getAs(callerWithRoles(role), LEVEL, seeded.infoLevelId()), HttpStatus.FORBIDDEN);
     }
-  }
-
-  @Nested
-  @DisplayName("POST /training-definitions/{definitionId}/levels/{levelType}")
-  class CreateLevel {
-
-    private static final String CREATE = DEFINITIONS + "/{definitionId}/levels/{levelType}";
-
-    @ParameterizedTest(name = "{0}")
-    @CsvSource({
-      "INFO,INFO_LEVEL",
-      "TRAINING,TRAINING_LEVEL",
-      "ACCESS,ACCESS_LEVEL",
-      "ASSESSMENT,ASSESSMENT_LEVEL"
-    })
-    @DisplayName("a level of the requested type is appended last")
-    void createLevel_validType_returnsCreatedLevelAppendedLast(
-        String levelType, String expectedType) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext created =
-          respond(postAs(designer(), CREATE, seeded.id(), levelType), HttpStatus.CREATED);
-
-      Long createdId = created.<Number>read("$.id").longValue();
-      assertThat(created.<String>read("$.level_type")).isEqualTo(expectedType);
-      assertThat(created.<Number>read("$.order")).isEqualTo(4);
-      assertThat(created.<String>read("$.title")).isNotBlank();
-      DocumentContext definition = readDefinitionAsAdministrator(seeded.id());
-      assertThat(listAt(definition, "$.levels[*].level_type")).hasSize(5).endsWith(expectedType);
-      assertThat(definition.<Number>read("$.levels[4].id").longValue()).isEqualTo(createdId);
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @CsvSource({"INFO", "TRAINING", "ACCESS", "ASSESSMENT"})
-    @DisplayName("the estimated duration rises by the duration of the new level")
-    void createLevel_validType_raisesEstimatedDurationByLevelDuration(String levelType) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      Long createdId =
-          respond(postAs(designer(), CREATE, seeded.id(), levelType), HttpStatus.CREATED)
-              .<Number>read("$.id")
-              .longValue();
-
-      int levelDuration =
-          readLevelAsAdministrator(createdId).<Number>read("$.estimated_duration").intValue();
-      assertThat(readDefinitionAsAdministrator(seeded.id()).<Number>read("$.estimated_duration"))
-          .isEqualTo(FOUR_LEVEL_DURATION + levelDuration);
-    }
-
-    @Test
-    @DisplayName("an administrator who does not author the definition appends a level")
-    void createLevel_callerIsAdministratorWithoutAuthorship_returnsCreatedLevel() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      respond(postAs(administrator(), CREATE, seeded.id(), "INFO"), HttpStatus.CREATED);
-    }
-
-    @Test
-    @DisplayName("an unrecognized level type is refused with status 400")
-    void createLevel_unrecognizedType_returnsBadRequest() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-
-      expectError(postAs(designer(), CREATE, seeded.id(), "BOGUS"), HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    @DisplayName("an unknown definition is answered with status 404")
-    void createLevel_unknownDefinition_returnsNotFound() {
-      expectEntityError(
-          postAs(administrator(), CREATE, 99_999L, "INFO"),
-          HttpStatus.NOT_FOUND,
-          "TrainingDefinition",
-          99_999L);
-    }
-
-    @Test
-    @DisplayName("a released definition is refused with status 409")
-    void createLevel_definitionIsReleased_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.RELEASED, CALLER_REF_ID);
-
-      expectEntityError(
-          postAs(designer(), CREATE, seeded.id(), "INFO"),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @Test
-    @DisplayName("a definition with a training instance is refused with status 409")
-    void createLevel_definitionHasInstance_returnsConflict() {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.instance(seeded.id(), inTheFuture(), ORGANIZER_REF_ID);
-
-      expectEntityError(
-          postAs(designer(), CREATE, seeded.id(), "INFO"),
-          HttpStatus.CONFLICT,
-          "TrainingDefinition",
-          seeded.id());
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(
-        value = RoleTypeSecurity.class,
-        names = {"ROLE_TRAINING_DESIGNER", "ROLE_TRAINING_ORGANIZER", "ROLE_TRAINING_TRAINEE"})
-    @DisplayName("a caller who does not author the definition is refused")
-    void createLevel_callerIsNotAuthor_returnsForbidden(RoleTypeSecurity role) {
-      SeededDefinition seeded = seedFourLevelDefinition(TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      expectError(postAs(callerWithRoles(role), CREATE, seeded.id(), "INFO"), HttpStatus.FORBIDDEN);
-    }
-  }
-
-  @Nested
-  @DisplayName("GET /training-definitions/{designers,organizers}")
-  class ListRoleHolders {
-
-    @ParameterizedTest(name = "{0}")
-    @CsvSource({"designers,ROLE_TRAINING_DESIGNER", "organizers,ROLE_TRAINING_ORGANIZER"})
-    @DisplayName(
-        "the users the user-and-group service reports for the role are returned with the filters forwarded")
-    void getRoleHolders_filtersAndPageGiven_forwardsThemAndReturnsUpstreamPage(
-        String pathSegment, String roleType) {
-      stubUpstreamUsers(USERS_BY_ROLE_PATH, 701L, 702L);
-
-      DocumentContext body =
-          respond(
-              getAs(
-                  designer(),
-                  DEFINITIONS + "/{segment}?givenName=Ann&familyName=Lee&page=2&size=5",
-                  pathSegment),
-              HttpStatus.OK);
-
-      assertThat(listAt(body, "$.content[*].user_ref_id")).containsExactly(701, 702);
-      assertThat(body.<String>read("$.content[0].full_name")).isEqualTo("Full 701");
-      assertThat(body.<String>read("$.content[0].given_name")).isEqualTo("Given701");
-      assertThat(body.<String>read("$.content[0].family_name")).isEqualTo("Family701");
-      assertThat(body.<String>read("$.content[0].mail")).isEqualTo("user701@example.org");
-      assertThat(body.<String>read("$.content[0].sub")).isEqualTo("user701@example.org");
-      assertThat(body.<String>read("$.content[0].iss")).isEqualTo("http://issuer");
-      assertThat(body.<Number>read("$.pagination.total_elements")).isEqualTo(2);
-      externalServices.verify(
-          1,
-          getRequestedFor(urlPathEqualTo(USERS_BY_ROLE_PATH))
-              .withQueryParam("roleType", equalTo(roleType))
-              .withQueryParam("givenName", equalTo("Ann"))
-              .withQueryParam("familyName", equalTo("Lee"))
-              .withQueryParam("page", equalTo("2"))
-              .withQueryParam("size", equalTo("5")));
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @CsvSource({"designers,ROLE_TRAINING_DESIGNER", "organizers,ROLE_TRAINING_ORGANIZER"})
-    @DisplayName("name filters are left out of the upstream request when absent")
-    void getRoleHolders_noFilters_forwardsOnlyRoleAndPage(String pathSegment, String roleType) {
-      stubUpstreamUsers(USERS_BY_ROLE_PATH, 701L);
-
-      respond(getAs(administrator(), DEFINITIONS + "/{segment}", pathSegment), HttpStatus.OK);
-
-      externalServices.verify(
-          1,
-          getRequestedFor(urlPathEqualTo(USERS_BY_ROLE_PATH))
-              .withQueryParam("roleType", equalTo(roleType))
-              .withQueryParam("givenName", absent())
-              .withQueryParam("familyName", absent())
-              .withQueryParam("page", equalTo("0"))
-              .withQueryParam("size", equalTo("20")));
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @CsvSource({"designers", "organizers"})
-    @DisplayName(
-        "a failing user-and-group service is reported as an error carrying the upstream failure")
-    void getRoleHolders_upstreamFails_returnsErrorWithUpstreamDetail(String pathSegment) {
-      externalServices.stubFor(get(urlPathEqualTo(USERS_BY_ROLE_PATH)).willReturn(serverError()));
-
-      DocumentContext body =
-          respond(
-              getAs(designer(), DEFINITIONS + "/{segment}", pathSegment),
-              HttpStatus.INTERNAL_SERVER_ERROR);
-
-      assertThat(body.<Object>read("$.api_sub_error")).isNotNull();
-    }
-
-    @ParameterizedTest(name = "{0} {1}")
-    @MethodSource(
-        "cz.cyberrange.platform.training.rest.integration.TrainingDefinitionsIT#roleHolderEndpointsWithRefusedRoles")
-    @DisplayName("a caller who is neither designer nor administrator is refused")
-    void getRoleHolders_callerIsNeitherDesignerNorAdministrator_returnsForbidden(
-        String pathSegment, RoleTypeSecurity role) {
-      expectError(
-          getAs(callerWithRoles(role), DEFINITIONS + "/{segment}", pathSegment),
-          HttpStatus.FORBIDDEN);
-    }
-  }
-
-  private static Stream<Arguments> roleHolderEndpointsWithRefusedRoles() {
-    return Stream.of("designers", "organizers")
-        .flatMap(
-            pathSegment ->
-                Stream.of(
-                        RoleTypeSecurity.ROLE_TRAINING_ORGANIZER,
-                        RoleTypeSecurity.ROLE_TRAINING_TRAINEE)
-                    .map(role -> Arguments.of(pathSegment, role)));
   }
 
   @Nested
@@ -2590,12 +2025,38 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
           "ROLE_TRAINING_ORGANIZER",
           "ROLE_TRAINING_ADMINISTRATOR"
         })
-    @DisplayName("a designer, an organizer or an administrator may list them")
+    @DisplayName("a designer, an organizer or an administrator may list them for a released one")
     void getDesignersNotInDefinition_permittedRole_returnsPage(RoleTypeSecurity role) {
-      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+      Long definitionId = seeder.definition("Alpha", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
       stubUpstreamUsers(USERS_BY_ROLE_EXCLUDING_PATH, 801L);
 
       respond(getAs(callerWithRoles(role), DESIGNERS_NOT_IN, definitionId), HttpStatus.OK);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @EnumSource(
+        value = RoleTypeSecurity.class,
+        names = {"ROLE_TRAINING_DESIGNER", "ROLE_TRAINING_ORGANIZER"})
+    @DisplayName(
+        "a designer or an organizer who is not an author is refused for an unreleased one without"
+            + " asking the upstream service")
+    void getDesignersNotInDefinition_unreleasedDefinitionOfAnotherDesigner_returnsForbidden(
+        RoleTypeSecurity role) {
+      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+
+      expectError(
+          getAs(callerWithRoles(role), DESIGNERS_NOT_IN, definitionId), HttpStatus.FORBIDDEN);
+
+      externalServices.verify(0, getRequestedFor(urlPathEqualTo(USERS_BY_ROLE_EXCLUDING_PATH)));
+    }
+
+    @Test
+    @DisplayName("an administrator may list them for an unreleased one")
+    void getDesignersNotInDefinition_unreleasedDefinitionAsAdministrator_returnsPage() {
+      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+      stubUpstreamUsers(USERS_BY_ROLE_EXCLUDING_PATH, 801L);
+
+      respond(getAs(administrator(), DESIGNERS_NOT_IN, definitionId), HttpStatus.OK);
     }
 
     @Test
@@ -2617,105 +2078,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
 
       expectError(getAs(trainee(), DESIGNERS_NOT_IN, definitionId), HttpStatus.FORBIDDEN);
-    }
-  }
-
-  @Nested
-  @DisplayName("GET /training-definitions/{definitionId}/beta-testers")
-  class ListBetaTesters {
-
-    private static final String BETA_TESTERS = DEFINITIONS + "/{definitionId}/beta-testers";
-
-    @Test
-    @DisplayName("the organizers of the beta testing group are fetched from the upstream service")
-    void getBetaTesters_groupWithOrganizers_returnsUpstreamUsersOfGroup() {
-      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.betaTestingGroup(definitionId, ORGANIZER_REF_ID, TRAINEE_REF_ID);
-      stubUpstreamUsers(USERS_BY_IDS_PATH, ORGANIZER_REF_ID, TRAINEE_REF_ID);
-
-      DocumentContext body =
-          respond(getAs(designer(), BETA_TESTERS + "?page=1&size=5", definitionId), HttpStatus.OK);
-
-      assertThat(listAt(body, "$.content[*].user_ref_id"))
-          .containsExactlyInAnyOrder((int) ORGANIZER_REF_ID, (int) TRAINEE_REF_ID);
-      assertThat(body.<Number>read("$.pagination.total_elements")).isEqualTo(2);
-      externalServices.verify(
-          1,
-          getRequestedFor(urlPathEqualTo(USERS_BY_IDS_PATH))
-              .withQueryParam(
-                  "ids",
-                  matching(
-                      ORGANIZER_REF_ID
-                          + ","
-                          + TRAINEE_REF_ID
-                          + "|"
-                          + TRAINEE_REF_ID
-                          + ","
-                          + ORGANIZER_REF_ID))
-              .withQueryParam("page", equalTo("1"))
-              .withQueryParam("size", equalTo("5"))
-              .withQueryParam("givenName", absent())
-              .withQueryParam("familyName", absent()));
-    }
-
-    @Test
-    @DisplayName(
-        "a definition without a beta testing group yields an empty page without an upstream call")
-    void getBetaTesters_noGroup_returnsEmptyPageWithoutUpstreamCall() {
-      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, CALLER_REF_ID);
-
-      DocumentContext body = respond(getAs(designer(), BETA_TESTERS, definitionId), HttpStatus.OK);
-
-      assertThat(listAt(body, "$.content")).isEmpty();
-      assertThat(body.<Number>read("$.pagination.total_elements")).isEqualTo(0);
-      externalServices.verify(0, getRequestedFor(urlPathEqualTo(USERS_BY_IDS_PATH)));
-    }
-
-    @Test
-    @DisplayName(
-        "a beta testing group without organizers yields an empty page without an upstream call")
-    void getBetaTesters_emptyGroup_returnsEmptyPageWithoutUpstreamCall() {
-      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, CALLER_REF_ID);
-      seeder.betaTestingGroup(definitionId);
-
-      DocumentContext body = respond(getAs(designer(), BETA_TESTERS, definitionId), HttpStatus.OK);
-
-      assertThat(listAt(body, "$.content")).isEmpty();
-      assertThat(body.<Number>read("$.pagination.total_elements")).isEqualTo(0);
-      externalServices.verify(0, getRequestedFor(urlPathEqualTo(USERS_BY_IDS_PATH)));
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(
-        value = RoleTypeSecurity.class,
-        names = {
-          "ROLE_TRAINING_DESIGNER",
-          "ROLE_TRAINING_ORGANIZER",
-          "ROLE_TRAINING_ADMINISTRATOR"
-        })
-    @DisplayName("a designer, an organizer or an administrator may list them")
-    void getBetaTesters_permittedRole_returnsPage(RoleTypeSecurity role) {
-      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      respond(getAs(callerWithRoles(role), BETA_TESTERS, definitionId), HttpStatus.OK);
-    }
-
-    @Test
-    @DisplayName("an unknown definition is answered with status 404")
-    void getBetaTesters_unknownDefinition_returnsNotFound() {
-      expectEntityError(
-          getAs(designer(), BETA_TESTERS, 99_999L),
-          HttpStatus.NOT_FOUND,
-          "TrainingDefinition",
-          99_999L);
-    }
-
-    @Test
-    @DisplayName("a trainee is refused")
-    void getBetaTesters_callerIsTrainee_returnsForbidden() {
-      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
-
-      expectError(getAs(trainee(), BETA_TESTERS, definitionId), HttpStatus.FORBIDDEN);
     }
   }
 
@@ -2769,12 +2131,36 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
           "ROLE_TRAINING_ORGANIZER",
           "ROLE_TRAINING_ADMINISTRATOR"
         })
-    @DisplayName("a designer, an organizer or an administrator may list them")
+    @DisplayName("a designer, an organizer or an administrator may list them for a released one")
     void getAuthors_permittedRole_returnsPage(RoleTypeSecurity role) {
-      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+      Long definitionId = seeder.definition("Alpha", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
       stubUpstreamUsers(USERS_BY_IDS_PATH, OTHER_DESIGNER_REF_ID);
 
       respond(getAs(callerWithRoles(role), AUTHORS, definitionId), HttpStatus.OK);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @EnumSource(
+        value = RoleTypeSecurity.class,
+        names = {"ROLE_TRAINING_DESIGNER", "ROLE_TRAINING_ORGANIZER"})
+    @DisplayName(
+        "a designer or an organizer who is not an author is refused for an unreleased one without"
+            + " asking the upstream service")
+    void getAuthors_unreleasedDefinitionOfAnotherDesigner_returnsForbidden(RoleTypeSecurity role) {
+      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+
+      expectError(getAs(callerWithRoles(role), AUTHORS, definitionId), HttpStatus.FORBIDDEN);
+
+      externalServices.verify(0, getRequestedFor(urlPathEqualTo(USERS_BY_IDS_PATH)));
+    }
+
+    @Test
+    @DisplayName("an administrator may list them for an unreleased one")
+    void getAuthors_unreleasedDefinitionAsAdministrator_returnsPage() {
+      Long definitionId = seeder.definition("Alpha", TDState.UNRELEASED, OTHER_DESIGNER_REF_ID);
+      stubUpstreamUsers(USERS_BY_IDS_PATH, OTHER_DESIGNER_REF_ID);
+
+      respond(getAs(administrator(), AUTHORS, definitionId), HttpStatus.OK);
     }
 
     @Test

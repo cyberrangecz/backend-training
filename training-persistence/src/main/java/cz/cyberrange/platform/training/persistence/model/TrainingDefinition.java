@@ -70,6 +70,10 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
+  @Version
+  @Column(name = "version", nullable = false)
+  private long version;
+
   /**
    * Gets unique identification number of Training definition.
    *
@@ -283,6 +287,16 @@ public class TrainingDefinition extends AbstractEntity<Long> {
    */
   public void setCreatedAt(LocalDateTime createdAt) {
     this.createdAt = createdAt;
+  }
+
+  /**
+   * Gets the optimistic-lock version of the Training Definition, raised by one on every write of
+   * the definition.
+   *
+   * @return the current version
+   */
+  public long getVersion() {
+    return version;
   }
 
   @Override

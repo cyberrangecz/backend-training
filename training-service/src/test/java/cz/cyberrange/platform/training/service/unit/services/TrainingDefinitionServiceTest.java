@@ -1,102 +1,106 @@
 package cz.cyberrange.platform.training.service.unit.services;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
+import cz.cyberrange.platform.training.persistence.model.Attachment;
+import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
+import cz.cyberrange.platform.training.persistence.model.enums.QuestionType;
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
-import cz.cyberrange.platform.training.persistence.repository.*;
+import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingOption;
+import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
+import cz.cyberrange.platform.training.persistence.model.question.Question;
+import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
+import cz.cyberrange.platform.training.persistence.repository.AttachmentRepository;
+import cz.cyberrange.platform.training.persistence.repository.HintRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository.DefinitionInstanceCount;
+import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.CloneMapperImpl;
 import cz.cyberrange.platform.training.service.services.SecurityService;
+import cz.cyberrange.platform.training.service.services.TrainingDefinitionLevelsService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserService;
-import cz.cyberrange.platform.training.service.startup.DefaultInfoLevel;
-import cz.cyberrange.platform.training.service.startup.DefaultLevelsLoader;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import org.junit.jupiter.api.AfterEach;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 
-@SpringBootTest(classes = {TestDataFactory.class, CloneMapperImpl.class})
+@ExtendWith(MockitoExtension.class)
 public class TrainingDefinitionServiceTest {
 
-  @Autowired public TestDataFactory testDataFactory;
-  @Autowired private CloneMapperImpl cloneMapper;
+  private static final LocalDateTime SOURCE_CREATED_AT = LocalDateTime.of(2020, 1, 1, 8, 0);
+  private static final long STORED_VERSION = 4L;
+
+  private final TestDataFactory testDataFactory = new TestDataFactory();
+
+  @Mock private TrainingDefinitionRepository trainingDefinitionRepository;
+  @Mock private AbstractLevelRepository abstractLevelRepository;
+  @Mock private TrainingInstanceRepository trainingInstanceRepository;
+  @Mock private HintRepository hintRepository;
+  @Mock private AttachmentRepository attachmentRepository;
+  @Mock private UserRefRepository userRefRepository;
+  @Mock private SecurityService securityService;
+  @Mock private UserService userService;
+  @Mock private TrainingDefinitionLevelsService trainingDefinitionLevelsService;
+  @Captor private ArgumentCaptor<TrainingDefinition> definitionCaptor;
+  @Captor private ArgumentCaptor<AbstractLevel> levelCaptor;
+  @Captor private ArgumentCaptor<Iterable<Attachment>> attachmentsCaptor;
 
   private TrainingDefinitionService trainingDefinitionService;
-  @MockitoBean private TrainingDefinitionRepository trainingDefinitionRepository;
-  @MockitoBean private AbstractLevelRepository abstractLevelRepository;
-  @MockitoBean private TrainingLevelRepository trainingLevelRepository;
-  @MockitoBean private InfoLevelRepository infoLevelRepository;
-  @MockitoBean private AccessLevelRepository accessLevelRepository;
-  @MockitoBean private AssessmentLevelRepository assessmentLevelRepository;
-  @MockitoBean private TrainingInstanceRepository trainingInstanceRepository;
-  @MockitoBean private MitreTechniqueRepository mitreTechniqueRepository;
-  @MockitoBean private HintRepository hintRepository;
-  @MockitoBean private UserRefRepository userRefRepository;
-  @MockitoBean private SecurityService securityService;
-  @MockitoBean private UserService userService;
-  @MockitoBean private DefaultLevelsLoader defaultLevelsLoader;
-
-  private ModelMapper modelMapper = new ModelMapper();
-
-  private TrainingDefinition unreleasedDefinition, releasedDefinition;
+  private TrainingDefinition unreleasedDefinition;
+  private TrainingDefinition releasedDefinition;
   private AssessmentLevel assessmentLevel;
   private TrainingLevel trainingLevel;
   private InfoLevel infoLevel;
   private UserRefDTO userRefDTO;
 
-  private Pageable pageable;
-  private Predicate predicate;
-
   @BeforeEach
   public void init() {
-    MockitoAnnotations.openMocks(this);
     trainingDefinitionService =
         new TrainingDefinitionService(
             trainingDefinitionRepository,
             abstractLevelRepository,
-            infoLevelRepository,
-            trainingLevelRepository,
-            assessmentLevelRepository,
-            accessLevelRepository,
             trainingInstanceRepository,
-            mitreTechniqueRepository,
             hintRepository,
+            attachmentRepository,
             userRefRepository,
             securityService,
             userService,
-            defaultLevelsLoader,
-            cloneMapper);
+            trainingDefinitionLevelsService,
+            new CloneMapperImpl());
 
     infoLevel = testDataFactory.getInfoLevel1();
     infoLevel.setId(1L);
@@ -112,15 +116,12 @@ public class TrainingDefinitionServiceTest {
 
     unreleasedDefinition = testDataFactory.getUnreleasedDefinition();
     unreleasedDefinition.setId(1L);
+    ReflectionTestUtils.setField(unreleasedDefinition, "version", STORED_VERSION);
 
     releasedDefinition = testDataFactory.getReleasedDefinition();
     releasedDefinition.setId(2L);
 
     userRefDTO = testDataFactory.getUserRefDTO1();
-
-    pageable = PageRequest.of(0, 10);
-
-    given(userService.getUserRefFromUserAndGroup()).willReturn(userRefDTO);
   }
 
   @Test
@@ -144,234 +145,291 @@ public class TrainingDefinitionServiceTest {
     expected.add(unreleasedDefinition);
     expected.add(releasedDefinition);
 
-    Page p = new PageImpl<TrainingDefinition>(expected);
+    Page<TrainingDefinition> page = new PageImpl<>(expected);
     PathBuilder<TrainingDefinition> tD =
         new PathBuilder<TrainingDefinition>(TrainingDefinition.class, "trainingRun");
     Predicate predicate = tD.isNotNull();
 
     given(trainingDefinitionRepository.findAll(any(Predicate.class), any(Pageable.class)))
-        .willReturn(p);
+        .willReturn(page);
 
-    Page pr = trainingDefinitionService.findAll(predicate, PageRequest.of(0, 2));
-    assertEquals(2, pr.getTotalElements());
+    Page<TrainingDefinition> result =
+        trainingDefinitionService.findAll(predicate, PageRequest.of(0, 2));
+    assertEquals(2, result.getTotalElements());
   }
 
   @Test
-  public void cloneTrainingDefinition() {
-    given(userRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup()))
-        .willReturn(new UserRef());
+  public void cloneTrainingDefinitionCreatesUnreleasedCopyWithCopiedLevels() {
+    givenLoggedInAuthor();
     given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
         .willReturn(Optional.of(releasedDefinition));
-    given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(anyLong()))
+    given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(releasedDefinition.getId()))
         .willReturn(List.of(infoLevel, trainingLevel));
+    given(trainingDefinitionRepository.save(any(TrainingDefinition.class)))
+        .willAnswer(returnsFirstArg());
 
-    TrainingDefinition tDcloned = new TrainingDefinition();
-    String newTitle = "new Title";
-    modelMapper.map(releasedDefinition, tDcloned);
-    tDcloned.setId(null);
-    tDcloned.setBetaTestingGroup(null);
-    tDcloned.setTitle(newTitle);
-    tDcloned.setState(TDState.UNRELEASED);
-    tDcloned.setAuthors(new HashSet<>());
+    TrainingDefinition clone = trainingDefinitionService.clone(releasedDefinition.getId(), "Copy");
 
-    trainingDefinitionService.clone(releasedDefinition.getId(), newTitle);
-    then(trainingDefinitionRepository).should().findById(releasedDefinition.getId());
-    then(trainingDefinitionRepository).should().save(tDcloned);
-
-    infoLevel.setOrder(0);
-    infoLevel.setTrainingDefinition(releasedDefinition);
-    trainingLevel.setOrder(1);
-    trainingLevel.setTrainingDefinition(releasedDefinition);
-
-    InfoLevel iLCloned = new InfoLevel();
-    modelMapper.map(infoLevel, iLCloned);
-    iLCloned.setId(null);
-    iLCloned.setTrainingDefinition(null);
-
-    TrainingLevel gLCloned = new TrainingLevel();
-    modelMapper.map(trainingLevel, gLCloned);
-    gLCloned.setTrainingDefinition(null);
-    gLCloned.setId(null);
-
-    then(infoLevelRepository)
-        .should()
-        .save(
-            argThat(
-                (InfoLevel saved) ->
-                    saved.getId() == null
-                        && saved.getMaxScore() == iLCloned.getMaxScore()
-                        && Objects.equals(saved.getContent(), iLCloned.getContent())));
-    then(trainingLevelRepository)
-        .should()
-        .save(
-            argThat(
-                (TrainingLevel saved) ->
-                    saved.getId() == null
-                        && saved.getMaxScore() == gLCloned.getMaxScore()
-                        && Objects.equals(saved.getContent(), gLCloned.getContent())
-                        && Objects.equals(saved.getSolution(), gLCloned.getSolution())));
+    assertNotSame(releasedDefinition, clone);
+    assertNull(clone.getId());
+    assertEquals("Copy", clone.getTitle());
+    assertEquals(TDState.UNRELEASED, clone.getState());
+    assertEquals(releasedDefinition.getDescription(), clone.getDescription());
+    assertEquals(1, clone.getAuthors().size());
+    then(trainingDefinitionLevelsService).shouldHaveNoInteractions();
+    then(abstractLevelRepository).should(times(2)).save(levelCaptor.capture());
+    List<AbstractLevel> clonedLevels = levelCaptor.getAllValues();
+    InfoLevel clonedInfoLevel = assertInstanceOf(InfoLevel.class, clonedLevels.get(0));
+    assertNull(clonedInfoLevel.getId());
+    assertSame(clone, clonedInfoLevel.getTrainingDefinition());
+    assertEquals(infoLevel.getContent(), clonedInfoLevel.getContent());
+    TrainingLevel clonedTrainingLevel = assertInstanceOf(TrainingLevel.class, clonedLevels.get(1));
+    assertNull(clonedTrainingLevel.getId());
+    assertSame(clone, clonedTrainingLevel.getTrainingDefinition());
+    assertEquals(trainingLevel.getContent(), clonedTrainingLevel.getContent());
+    assertEquals(trainingLevel.getSolution(), clonedTrainingLevel.getSolution());
+    assertEquals(trainingLevel.getMaxScore(), clonedTrainingLevel.getMaxScore());
+    then(trainingDefinitionRepository).should().flush();
   }
 
   @Test
-  public void moveLevel() {
-    trainingLevel.setOrder(1);
-    trainingLevel.setTrainingDefinition(unreleasedDefinition);
-    given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(false);
-    given(abstractLevelRepository.findById(trainingLevel.getId()))
-        .willReturn(Optional.of(trainingLevel));
-
-    trainingDefinitionService.moveLevel(unreleasedDefinition.getId(), trainingLevel.getId(), 2);
-    assertEquals(2, trainingLevel.getOrder());
-  }
-
-  @Test
-  public void moveLevelWithBiggerOrderNumber() {
-    trainingLevel.setOrder(1);
-    trainingLevel.setTrainingDefinition(unreleasedDefinition);
-    given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(false);
-    given(abstractLevelRepository.findById(trainingLevel.getId()))
-        .willReturn(Optional.of(trainingLevel));
-
-    trainingDefinitionService.moveLevel(unreleasedDefinition.getId(), trainingLevel.getId(), 100);
-    assertEquals(2, trainingLevel.getOrder());
-  }
-
-  @Test
-  public void moveLevelWithNegativeOrderNumber() {
-    trainingLevel.setOrder(1);
-    trainingLevel.setTrainingDefinition(unreleasedDefinition);
-    given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(false);
-    given(abstractLevelRepository.findById(trainingLevel.getId()))
-        .willReturn(Optional.of(trainingLevel));
-
-    trainingDefinitionService.moveLevel(unreleasedDefinition.getId(), trainingLevel.getId(), -100);
-    assertEquals(0, trainingLevel.getOrder());
-  }
-
-  @Test
-  public void moveLevelFromReleasedDefinition() {
-    given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
+  public void cloneTrainingDefinitionCopiesLevelsBreakingCurrentRulesAsStored() {
+    givenLoggedInAuthor();
+    releasedDefinition.setEstimatedDuration(99L);
+    TrainingLevel legacyTrainingLevel = legacyTrainingLevel();
+    AssessmentLevel legacyTest = legacyTestWithStatementLackingCorrectOption();
     given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
         .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.moveLevel(releasedDefinition.getId(), 1L, 2));
+    given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(releasedDefinition.getId()))
+        .willReturn(List.of(legacyTrainingLevel, legacyTest));
+    given(trainingDefinitionRepository.save(any(TrainingDefinition.class)))
+        .willAnswer(returnsFirstArg());
+
+    TrainingDefinition clone = trainingDefinitionService.clone(releasedDefinition.getId(), "Copy");
+
+    assertEquals(99L, clone.getEstimatedDuration());
+    then(trainingDefinitionLevelsService).shouldHaveNoInteractions();
+    then(abstractLevelRepository).should(times(2)).save(levelCaptor.capture());
+    TrainingLevel clonedTrainingLevel =
+        assertInstanceOf(TrainingLevel.class, levelCaptor.getAllValues().get(0));
+    assertEquals(5, clonedTrainingLevel.getOrder());
+    assertEquals(1, clonedTrainingLevel.getMaxScore());
+    assertEquals("", clonedTrainingLevel.getAnswer());
+    Hint clonedHint = clonedTrainingLevel.getHints().iterator().next();
+    assertEquals(10, clonedHint.getHintPenalty());
+    assertSame(clonedTrainingLevel, clonedHint.getTrainingLevel());
+    AssessmentLevel clonedTest =
+        assertInstanceOf(AssessmentLevel.class, levelCaptor.getAllValues().get(1));
+    assertEquals(8, clonedTest.getOrder());
+    assertEquals(50, clonedTest.getMaxScore());
+    Question clonedQuestion = clonedTest.getQuestions().getFirst();
+    assertEquals(4, clonedQuestion.getOrder());
+    ExtendedMatchingStatement clonedStatement =
+        clonedQuestion.getExtendedMatchingStatements().getFirst();
+    assertNull(clonedStatement.getExtendedMatchingOption());
   }
 
   @Test
-  public void moveLevelFromDefinitionWithInstances() {
-    given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(2);
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(true);
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.moveLevel(unreleasedDefinition.getId(), 1L, 2));
-  }
-
-  @Test
-  public void updateTrainingDefinition() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(userRefRepository.createOrGet(securityService.getUserRefIdFromUserAndGroup()))
-        .willReturn(new UserRef());
-    trainingDefinitionService.update(unreleasedDefinition);
-    then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-    then(trainingDefinitionRepository).should().save(unreleasedDefinition);
-  }
-
-  @Test
-  public void updateTrainingReleasedDefinition() {
+  public void cloneTrainingDefinitionSavesCopiedAttachmentsLinkedToCopiedLevel() {
+    givenLoggedInAuthor();
+    Attachment attachment = new Attachment();
+    attachment.setId(21L);
+    attachment.setContent("Manual");
+    attachment.setTrainingLevel(trainingLevel);
+    trainingLevel.addAttachment(attachment);
     given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
         .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class, () -> trainingDefinitionService.update(releasedDefinition));
+    given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(releasedDefinition.getId()))
+        .willReturn(List.of(infoLevel, trainingLevel));
+    given(trainingDefinitionRepository.save(any(TrainingDefinition.class)))
+        .willAnswer(returnsFirstArg());
+
+    trainingDefinitionService.clone(releasedDefinition.getId(), "Copy");
+
+    then(abstractLevelRepository).should(times(2)).save(levelCaptor.capture());
+    TrainingLevel clonedTrainingLevel =
+        assertInstanceOf(TrainingLevel.class, levelCaptor.getAllValues().get(1));
+    then(attachmentRepository).should().saveAll(attachmentsCaptor.capture());
+    List<Attachment> savedAttachments = new ArrayList<>();
+    attachmentsCaptor.getValue().forEach(savedAttachments::add);
+    assertEquals(1, savedAttachments.size());
+    Attachment savedAttachment = savedAttachments.getFirst();
+    assertNotSame(attachment, savedAttachment);
+    assertNull(savedAttachment.getId());
+    assertEquals("Manual", savedAttachment.getContent());
+    assertSame(clonedTrainingLevel, savedAttachment.getTrainingLevel());
+    assertSame(trainingLevel, attachment.getTrainingLevel());
   }
 
   @Test
-  public void updateTrainingDefinitionWithCreatedInstances() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
+  public void cloneTrainingDefinitionSetsCurrentCreationTime() {
+    givenLoggedInAuthor();
+    releasedDefinition.setCreatedAt(SOURCE_CREATED_AT);
+    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
+        .willReturn(Optional.of(releasedDefinition));
+    given(trainingDefinitionRepository.save(any(TrainingDefinition.class)))
+        .willAnswer(returnsFirstArg());
+    LocalDateTime beforeClone = LocalDateTime.now(Clock.systemUTC());
+
+    trainingDefinitionService.clone(releasedDefinition.getId(), "new Title");
+
+    then(trainingDefinitionRepository).should().save(definitionCaptor.capture());
+    LocalDateTime cloneCreatedAt = definitionCaptor.getValue().getCreatedAt();
+    assertNotNull(cloneCreatedAt);
+    assertFalse(cloneCreatedAt.isBefore(beforeClone));
+    assertTrue(Duration.between(beforeClone, cloneCreatedAt).toMinutes() < 1);
+    assertEquals(SOURCE_CREATED_AT, releasedDefinition.getCreatedAt());
+  }
+
+  @Test
+  public void createTrainingDefinitionWritesLevels() {
+    givenLoggedInAuthor();
+    TrainingDefinition newDefinition = testDataFactory.getUnreleasedDefinition();
+    newDefinition.setCreatedAt(null);
+    List<AbstractLevel> levels = List.of(new InfoLevel(), new TrainingLevel());
+    given(trainingDefinitionRepository.save(newDefinition)).willReturn(newDefinition);
+
+    TrainingDefinition created = trainingDefinitionService.create(newDefinition, levels);
+
+    assertSame(newDefinition, created);
+    assertNotNull(created.getCreatedAt());
+    assertEquals(userRefDTO.getUserRefFullName(), created.getLastEditedBy());
+    then(userRefRepository).should().createOrGet(anyLong());
+    then(trainingDefinitionRepository).should(times(1)).save(newDefinition);
+    then(trainingDefinitionLevelsService).should().replaceLevels(newDefinition, levels);
+    then(trainingDefinitionRepository).should().flush();
+  }
+
+  @Test
+  public void createTrainingDefinitionWithoutLevels() {
+    givenLoggedInAuthor();
+    TrainingDefinition newDefinition = testDataFactory.getUnreleasedDefinition();
+    given(trainingDefinitionRepository.save(newDefinition)).willReturn(newDefinition);
+
+    trainingDefinitionService.create(newDefinition, List.of());
+
+    then(trainingDefinitionLevelsService).should().replaceLevels(newDefinition, List.of());
+  }
+
+  @Test
+  public void completeInstanceCountsSetsRealCountAndZeroForDefinitionWithoutInstances() {
+    TrainingDefinitionDTO definitionWithInstances = definitionResponse(1L);
+    TrainingDefinitionDTO definitionWithoutInstances = definitionResponse(2L);
+    TrainingDefinitionDTO sameDefinitionAgain = definitionResponse(1L);
+    given(trainingInstanceRepository.countGroupedByTrainingDefinition(Set.of(1L, 2L)))
+        .willReturn(List.of(instanceCount(1L, 3L)));
+
+    trainingDefinitionService.completeInstanceCounts(
+        List.of(definitionWithInstances, definitionWithoutInstances, sameDefinitionAgain));
+
+    assertEquals(3L, definitionWithInstances.getInstanceCount());
+    assertEquals(0L, definitionWithoutInstances.getInstanceCount());
+    assertEquals(3L, sameDefinitionAgain.getInstanceCount());
+    then(trainingInstanceRepository).should(times(1)).countGroupedByTrainingDefinition(any());
+  }
+
+  @Test
+  public void completeInstanceCountsWithoutHoldersQueriesNothing() {
+    trainingDefinitionService.completeInstanceCounts(List.of());
+
+    then(trainingInstanceRepository).shouldHaveNoInteractions();
+  }
+
+  @Test
+  public void updateReplacesContentAndLevelsAndSaves() {
+    givenLoggedInAuthor();
+    givenStoredDefinition(unreleasedDefinition);
+    given(trainingDefinitionRepository.save(unreleasedDefinition)).willReturn(unreleasedDefinition);
+    TrainingDefinition content = updateContent();
+    List<AbstractLevel> levels = List.of(infoLevel, new TrainingLevel());
+
+    TrainingDefinition updated =
+        trainingDefinitionService.update(
+            unreleasedDefinition.getId(), STORED_VERSION, content, levels);
+
+    assertSame(unreleasedDefinition, updated);
+    assertEquals(content.getTitle(), updated.getTitle());
+    assertEquals(content.getDescription(), updated.getDescription());
+    assertArrayEquals(content.getPrerequisites(), updated.getPrerequisites());
+    assertArrayEquals(content.getOutcomes(), updated.getOutcomes());
+    assertEquals(TDState.UNRELEASED, updated.getState());
+    assertEquals(userRefDTO.getUserRefFullName(), updated.getLastEditedBy());
+    assertNotNull(updated.getLastEdited());
+    then(userRefRepository).should().createOrGet(anyLong());
+    then(trainingDefinitionLevelsService).should().replaceLevels(unreleasedDefinition, levels);
+    then(trainingDefinitionRepository).should().flush();
+  }
+
+  @Test
+  public void updateWithStaleVersionIsRefused() {
+    givenStoredDefinition(unreleasedDefinition);
+
+    EntityConflictException exception =
+        assertThrows(
+            EntityConflictException.class,
+            () ->
+                trainingDefinitionService.update(
+                    unreleasedDefinition.getId(), STORED_VERSION - 1, updateContent(), List.of()));
+
+    assertTrue(exception.getEntityErrorDetail().getReason().contains("version " + STORED_VERSION));
+    then(trainingDefinitionLevelsService).shouldHaveNoInteractions();
+    then(trainingDefinitionRepository).should(never()).save(any());
+  }
+
+  @Test
+  public void updateReleasedDefinitionIsRefused() {
+    givenStoredDefinition(releasedDefinition);
+
+    assertThrows(
+        EntityConflictException.class,
+        () ->
+            trainingDefinitionService.update(
+                releasedDefinition.getId(),
+                releasedDefinition.getVersion(),
+                updateContent(),
+                List.of()));
+    then(trainingDefinitionLevelsService).shouldHaveNoInteractions();
+  }
+
+  @Test
+  public void updateDefinitionWithCreatedInstancesIsRefused() {
+    givenStoredDefinition(unreleasedDefinition);
     given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
         .willReturn(true);
+
     assertThrows(
         EntityConflictException.class,
-        () -> trainingDefinitionService.update(unreleasedDefinition));
+        () ->
+            trainingDefinitionService.update(
+                unreleasedDefinition.getId(), STORED_VERSION, updateContent(), List.of()));
+    then(trainingDefinitionLevelsService).shouldHaveNoInteractions();
   }
 
   @Test
-  public void swapLevels() {
-    given(trainingDefinitionRepository.findById(anyLong()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(false);
-    given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-    given(abstractLevelRepository.findById(trainingLevel.getId()))
-        .willReturn(Optional.of(trainingLevel));
-    infoLevel.setOrder(0);
-    trainingLevel.setOrder(1);
-    trainingDefinitionService.swapLevels(
-        unreleasedDefinition.getId(), infoLevel.getId(), trainingLevel.getId());
-    assertEquals(1, infoLevel.getOrder());
-    assertEquals(0, trainingLevel.getOrder());
-  }
-
-  @Test
-  public void swapLevelsInReleasedDefinition() {
-    given(trainingDefinitionRepository.findById(anyLong()))
-        .willReturn(Optional.of(releasedDefinition));
+  public void updateUnknownDefinitionIsNotFound() {
     assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.swapLevels(releasedDefinition.getId(), 1L, 2L));
-  }
-
-  @Test
-  public void swapLevelsInDefinitionWithInstances() {
-    given(trainingDefinitionRepository.findById(anyLong()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.swapLevels(unreleasedDefinition.getId(), 1L, 2L));
+        EntityNotFoundException.class,
+        () -> trainingDefinitionService.update(99L, 0L, updateContent(), List.of()));
   }
 
   @Test
   public void delete() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
+    givenStoredDefinition(unreleasedDefinition);
     given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(unreleasedDefinition.getId()))
         .willReturn(List.of(trainingLevel, assessmentLevel, infoLevel));
-    given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-    given(abstractLevelRepository.findById(trainingLevel.getId()))
-        .willReturn(Optional.of(trainingLevel));
-    given(abstractLevelRepository.findById(assessmentLevel.getId()))
-        .willReturn(Optional.of(assessmentLevel));
 
     trainingDefinitionService.delete(unreleasedDefinition.getId());
 
     then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
     then(trainingDefinitionRepository).should().delete(unreleasedDefinition);
-    then(assessmentLevelRepository).should().delete(assessmentLevel);
-    then(trainingLevelRepository).should().delete(trainingLevel);
-    then(infoLevelRepository).should().delete(infoLevel);
+    then(trainingDefinitionLevelsService).should().deleteLevel(assessmentLevel);
+    then(trainingDefinitionLevelsService).should().deleteLevel(trainingLevel);
+    then(trainingDefinitionLevelsService).should().deleteLevel(infoLevel);
   }
 
   @Test
   public void deleteWithCannotBeDeletedException() {
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
+    givenStoredDefinition(releasedDefinition);
     assertThrows(
         EntityConflictException.class,
         () -> trainingDefinitionService.delete(releasedDefinition.getId()));
@@ -379,354 +437,12 @@ public class TrainingDefinitionServiceTest {
 
   @Test
   public void deleteWithCreatedInstances() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
+    givenStoredDefinition(unreleasedDefinition);
     given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
         .willReturn(true);
     assertThrows(
         EntityConflictException.class,
         () -> trainingDefinitionService.delete(unreleasedDefinition.getId()));
-  }
-
-  @Test
-  public void deleteOneLevel() {
-    infoLevel.setOrder(0);
-    assessmentLevel.setOrder(1);
-    unreleasedDefinition.setEstimatedDuration(15);
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(abstractLevelRepository.findByIdIncludingDefinition(infoLevel.getId()))
-        .willReturn(Optional.of(infoLevel));
-    given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(unreleasedDefinition.getId()))
-        .willReturn(List.of(assessmentLevel));
-
-    trainingDefinitionService.deleteOneLevel(unreleasedDefinition.getId(), infoLevel.getId());
-    assertEquals(
-        LocalDateTime.now(Clock.systemUTC()).getSecond(),
-        unreleasedDefinition.getLastEdited().getSecond());
-    assertEquals(
-        15 - infoLevel.getEstimatedDuration(), unreleasedDefinition.getEstimatedDuration());
-    assertEquals(0, assessmentLevel.getOrder());
-
-    then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-    then(abstractLevelRepository).should().findByIdIncludingDefinition(any(Long.class));
-    then(infoLevelRepository).should().delete(infoLevel);
-  }
-
-  @Test
-  public void deleteOneLevelWithReleasedDefinition() {
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class,
-        () ->
-            trainingDefinitionService.deleteOneLevel(releasedDefinition.getId(), any(Long.class)));
-  }
-
-  @Test
-  public void updateAssessmentLevel() {
-    assessmentLevel.setTrainingDefinition(unreleasedDefinition);
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(assessmentLevelRepository.findById(any(Long.class)))
-        .willReturn(Optional.of(assessmentLevel));
-
-    trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), assessmentLevel);
-
-    then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-    then(assessmentLevelRepository).should().save(assessmentLevel);
-  }
-
-  @Test
-  public void updateAssessmentLevelWithReleasedDefinition() {
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class,
-        () ->
-            trainingDefinitionService.updateAssessmentLevel(
-                releasedDefinition.getId(), any(AssessmentLevel.class)));
-  }
-
-  @Test
-  public void updateAssessmentLevelWithLevelNotInDefinition() {
-    AssessmentLevel level = new AssessmentLevel();
-    level.setId(8L);
-    given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-    given(abstractLevelRepository.findById(trainingLevel.getId()))
-        .willReturn(Optional.of(trainingLevel));
-    given(abstractLevelRepository.findById(assessmentLevel.getId()))
-        .willReturn(Optional.of(assessmentLevel));
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    assertThrows(
-        EntityNotFoundException.class,
-        () -> trainingDefinitionService.updateAssessmentLevel(unreleasedDefinition.getId(), level));
-  }
-
-  @Test
-  public void updateAssessmentLevelWithCreatedInstances() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(true);
-    assertThrows(
-        EntityConflictException.class,
-        () ->
-            trainingDefinitionService.updateAssessmentLevel(
-                unreleasedDefinition.getId(), assessmentLevel));
-  }
-
-  @Test
-  public void updateTrainingLevel() {
-    trainingLevel.setTrainingDefinition(unreleasedDefinition);
-    given(trainingDefinitionRepository.findById(anyLong()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingLevelRepository.findById(anyLong())).willReturn(Optional.of(trainingLevel));
-    trainingDefinitionService.updateTrainingLevel(unreleasedDefinition.getId(), trainingLevel);
-
-    then(trainingDefinitionRepository).should().findById(anyLong());
-    then(trainingLevelRepository).should().save(trainingLevel);
-  }
-
-  @Test
-  public void updateTrainingLevelWithReleasedDefinition() {
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class,
-        () ->
-            trainingDefinitionService.updateTrainingLevel(
-                releasedDefinition.getId(), any(TrainingLevel.class)));
-  }
-
-  @Test
-  public void updateTrainingLevelWithLevelNotInDefinition() {
-    TrainingLevel level = new TrainingLevel();
-    level.setId(8L);
-    given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-    given(abstractLevelRepository.findById(trainingLevel.getId()))
-        .willReturn(Optional.of(trainingLevel));
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    assertThrows(
-        EntityNotFoundException.class,
-        () -> trainingDefinitionService.updateTrainingLevel(unreleasedDefinition.getId(), level));
-  }
-
-  @Test
-  public void updateTrainingLevelWithCreatedInstances() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(true);
-    assertThrows(
-        EntityConflictException.class,
-        () ->
-            trainingDefinitionService.updateTrainingLevel(
-                unreleasedDefinition.getId(), trainingLevel));
-  }
-
-  @Test
-  public void updateInfoLevel() {
-    infoLevel.setTrainingDefinition(unreleasedDefinition);
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(infoLevelRepository.findById(any(Long.class))).willReturn(Optional.of(infoLevel));
-
-    trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), infoLevel);
-
-    then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-    then(infoLevelRepository).should().save(infoLevel);
-  }
-
-  @Test
-  public void updateInfoLevelWithReleasedDefinition() {
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class,
-        () ->
-            trainingDefinitionService.updateInfoLevel(
-                releasedDefinition.getId(), any(InfoLevel.class)));
-  }
-
-  @Test
-  public void updateInfoLevelWithLevelNotInDefinition() {
-    InfoLevel level = new InfoLevel();
-    level.setId(8L);
-    given(abstractLevelRepository.findById(infoLevel.getId())).willReturn(Optional.of(infoLevel));
-    given(abstractLevelRepository.findById(trainingLevel.getId()))
-        .willReturn(Optional.of(trainingLevel));
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    assertThrows(
-        EntityNotFoundException.class,
-        () -> trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), level));
-  }
-
-  @Test
-  public void updateInfoLevelWithCreatedInstances() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(true);
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.updateInfoLevel(unreleasedDefinition.getId(), infoLevel));
-  }
-
-  @Test
-  public void createTrainingLevel() {
-    TrainingLevel newTrainingLevel = new TrainingLevel();
-    newTrainingLevel.setId(10L);
-    newTrainingLevel.setMaxScore(100);
-    newTrainingLevel.setTitle("Title of training level");
-    newTrainingLevel.setIncorrectAnswerLimit(100);
-    newTrainingLevel.setAnswer("Secret answer");
-    newTrainingLevel.setSolution("Solution of the training should be here");
-    newTrainingLevel.setSolutionPenalized(true);
-    newTrainingLevel.setEstimatedDuration(1);
-    newTrainingLevel.setOrder(10);
-    newTrainingLevel.setContent("The test entry should be here");
-
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingLevelRepository.save(any(TrainingLevel.class))).willReturn(newTrainingLevel);
-    TrainingLevel createdLevel =
-        trainingDefinitionService.createTrainingLevel(unreleasedDefinition.getId());
-
-    assertEquals(newTrainingLevel, createdLevel);
-
-    then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-  }
-
-  @Test
-  public void createTrainingLevelWithCannotBeUpdatedException() {
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.createTrainingLevel(releasedDefinition.getId()));
-  }
-
-  @Test
-  public void createTrainingLevelWithCreatedInstances() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(true);
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.createTrainingLevel(unreleasedDefinition.getId()));
-  }
-
-  @Test
-  public void createInfoLevel() {
-    InfoLevel newInfoLevel = new InfoLevel();
-    newInfoLevel.setId(11L);
-    newInfoLevel.setTitle("Title of info Level");
-    newInfoLevel.setMaxScore(20);
-    newInfoLevel.setContent("Content of info level should be here.");
-    newInfoLevel.setOrder(11);
-
-    DefaultInfoLevel defaultInfoLevel = new DefaultInfoLevel();
-    defaultInfoLevel.setTitle(newInfoLevel.getTitle());
-    defaultInfoLevel.setContent(newInfoLevel.getContent());
-
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(defaultLevelsLoader.getDefaultInfoLevel()).willReturn(defaultInfoLevel);
-    given(infoLevelRepository.save(any(InfoLevel.class))).willReturn(newInfoLevel);
-    InfoLevel createdLevel =
-        trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId());
-
-    assertNotNull(createdLevel);
-    assertEquals(newInfoLevel, createdLevel);
-    then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-  }
-
-  @Test
-  public void createInfoLevelWithCannotBeUpdatedException() {
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.createInfoLevel(releasedDefinition.getId()));
-  }
-
-  @Test
-  public void createInfoLevelWithCreatedInstances() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(true);
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.createInfoLevel(unreleasedDefinition.getId()));
-  }
-
-  @Test
-  public void createAssessmentLevel() {
-    AssessmentLevel newAssessmentLevel = new AssessmentLevel();
-    newAssessmentLevel.setId(12L);
-    newAssessmentLevel.setTitle("Title of assessment level");
-    newAssessmentLevel.setAssessmentType(AssessmentType.QUESTIONNAIRE);
-    newAssessmentLevel.setMaxScore(0);
-    newAssessmentLevel.setInstructions("Instructions should be here");
-    newAssessmentLevel.setQuestions(new ArrayList<>());
-    newAssessmentLevel.setOrder(12);
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(assessmentLevelRepository.save(any(AssessmentLevel.class)))
-        .willReturn(newAssessmentLevel);
-    AssessmentLevel createdLevel =
-        trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId());
-
-    assertNotNull(createdLevel);
-    assertEquals(newAssessmentLevel, createdLevel);
-    then(trainingDefinitionRepository).should().findById(unreleasedDefinition.getId());
-  }
-
-  @Test
-  public void createAssessmentLevelWithCannotBeUpdatedException() {
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.createAssessmentLevel(releasedDefinition.getId()));
-  }
-
-  @Test
-  public void createAssessmentLevelWithCreatedInstances() {
-    given(trainingDefinitionRepository.findById(unreleasedDefinition.getId()))
-        .willReturn(Optional.of(unreleasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(unreleasedDefinition.getId()))
-        .willReturn(true);
-    assertThrows(
-        EntityConflictException.class,
-        () -> trainingDefinitionService.createAssessmentLevel(unreleasedDefinition.getId()));
-  }
-
-  @Test
-  public void createTrainingDefinitionWithKnownUser() {
-    UserRef user = new UserRef();
-    given(trainingDefinitionRepository.save(unreleasedDefinition)).willReturn(unreleasedDefinition);
-    given(userRefRepository.createOrGet(anyLong())).willReturn(user);
-    TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition, false);
-    assertEquals(unreleasedDefinition, tD);
-    then(trainingDefinitionRepository).should(times(1)).save(unreleasedDefinition);
-  }
-
-  @Test
-  public void createTrainingDefinitionWithUnknownUser() {
-    UserRef user = new UserRef();
-    given(trainingDefinitionRepository.save(unreleasedDefinition)).willReturn(unreleasedDefinition);
-    given(userRefRepository.findUserByUserRefId(anyLong())).willReturn(Optional.empty());
-    given(userRefRepository.createOrGet(anyLong())).willReturn(user);
-    TrainingDefinition tD = trainingDefinitionService.create(unreleasedDefinition, false);
-    assertEquals(unreleasedDefinition, tD);
-    then(trainingDefinitionRepository).should(times(1)).save(unreleasedDefinition);
   }
 
   @Test
@@ -747,8 +463,8 @@ public class TrainingDefinitionServiceTest {
 
   @Test
   public void switchState_UNRELEASEDtoRELEASED() {
-    given(trainingDefinitionRepository.findById(anyLong()))
-        .willReturn(Optional.of(unreleasedDefinition));
+    givenLoggedInEditor();
+    givenStoredDefinition(unreleasedDefinition);
     trainingDefinitionService.switchState(
         unreleasedDefinition.getId(), cz.cyberrange.platform.training.api.enums.TDState.RELEASED);
     assertEquals(TDState.RELEASED, unreleasedDefinition.getState());
@@ -756,8 +472,8 @@ public class TrainingDefinitionServiceTest {
 
   @Test
   public void switchState_RELEASEDtoARCHIVED() {
-    given(trainingDefinitionRepository.findById(anyLong()))
-        .willReturn(Optional.of(releasedDefinition));
+    givenLoggedInEditor();
+    givenStoredDefinition(releasedDefinition);
     trainingDefinitionService.switchState(
         releasedDefinition.getId(), cz.cyberrange.platform.training.api.enums.TDState.ARCHIVED);
     assertEquals(TDState.ARCHIVED, releasedDefinition.getState());
@@ -765,9 +481,10 @@ public class TrainingDefinitionServiceTest {
 
   @Test
   public void switchState_RELEASEDtoUNRELEASED() {
-    given(trainingDefinitionRepository.findById(anyLong()))
-        .willReturn(Optional.of(releasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(false);
+    givenLoggedInEditor();
+    givenStoredDefinition(releasedDefinition);
+    given(trainingInstanceRepository.existsAnyForTrainingDefinition(releasedDefinition.getId()))
+        .willReturn(false);
     trainingDefinitionService.switchState(
         releasedDefinition.getId(), cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED);
     assertEquals(TDState.UNRELEASED, releasedDefinition.getState());
@@ -775,9 +492,9 @@ public class TrainingDefinitionServiceTest {
 
   @Test
   public void switchState_RELEASEDtoUNRELEASED_withCreatedInstances() {
-    given(trainingDefinitionRepository.findById(anyLong()))
-        .willReturn(Optional.of(releasedDefinition));
-    given(trainingInstanceRepository.existsAnyForTrainingDefinition(anyLong())).willReturn(true);
+    givenStoredDefinition(releasedDefinition);
+    given(trainingInstanceRepository.existsAnyForTrainingDefinition(releasedDefinition.getId()))
+        .willReturn(true);
     assertThrows(
         EntityConflictException.class,
         () ->
@@ -786,8 +503,86 @@ public class TrainingDefinitionServiceTest {
                 cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED));
   }
 
-  @AfterEach
-  public void after() {
-    reset(trainingDefinitionRepository);
+  private void givenStoredDefinition(TrainingDefinition definition) {
+    given(trainingDefinitionRepository.findById(definition.getId()))
+        .willReturn(Optional.of(definition));
+  }
+
+  private void givenLoggedInEditor() {
+    given(userService.getUserRefFromUserAndGroup()).willReturn(userRefDTO);
+  }
+
+  private void givenLoggedInAuthor() {
+    givenLoggedInEditor();
+    given(userRefRepository.createOrGet(anyLong())).willReturn(new UserRef());
+  }
+
+  private static TrainingLevel legacyTrainingLevel() {
+    Hint hint = new Hint();
+    hint.setTitle("Hint");
+    hint.setContent("Hint content");
+    hint.setHintPenalty(10);
+    hint.setOrder(0);
+    TrainingLevel level = new TrainingLevel();
+    level.setId(11L);
+    level.setTitle("Legacy training level");
+    level.setOrder(5);
+    level.setMaxScore(1);
+    level.setAnswer("");
+    level.setHints(new LinkedHashSet<>(List.of(hint)));
+    return level;
+  }
+
+  private static AssessmentLevel legacyTestWithStatementLackingCorrectOption() {
+    ExtendedMatchingOption option = new ExtendedMatchingOption();
+    option.setText("Option");
+    option.setOrder(0);
+    ExtendedMatchingStatement statement = new ExtendedMatchingStatement();
+    statement.setText("Statement");
+    statement.setOrder(0);
+    Question question = new Question();
+    question.setQuestionType(QuestionType.EMI);
+    question.setText("Match the statement");
+    question.setOrder(4);
+    question.setPoints(2);
+    question.setExtendedMatchingOptions(new ArrayList<>(List.of(option)));
+    question.setExtendedMatchingStatements(new ArrayList<>(List.of(statement)));
+    AssessmentLevel level = new AssessmentLevel();
+    level.setId(12L);
+    level.setTitle("Legacy test");
+    level.setOrder(8);
+    level.setMaxScore(50);
+    level.setAssessmentType(AssessmentType.TEST);
+    level.setQuestions(new ArrayList<>(List.of(question)));
+    return level;
+  }
+
+  private static TrainingDefinition updateContent() {
+    TrainingDefinition content = new TrainingDefinition();
+    content.setTitle("Updated title");
+    content.setDescription("Updated description");
+    content.setPrerequisites(new String[] {"Updated prerequisite"});
+    content.setOutcomes(new String[] {"Updated outcome"});
+    return content;
+  }
+
+  private static TrainingDefinitionDTO definitionResponse(Long definitionId) {
+    TrainingDefinitionDTO definition = new TrainingDefinitionDTO();
+    definition.setId(definitionId);
+    return definition;
+  }
+
+  private static DefinitionInstanceCount instanceCount(Long definitionId, long count) {
+    return new DefinitionInstanceCount() {
+      @Override
+      public Long getDefinitionId() {
+        return definitionId;
+      }
+
+      @Override
+      public long getInstanceCount() {
+        return count;
+      }
+    };
   }
 }

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
@@ -95,34 +94,6 @@ public interface AbstractLevelRepository
    *     definition has no levels
    */
   Integer getCurrentMaxOrder(@Param("trainingDefinitionId") Long trainingDefinitionId);
-
-  /**
-   * Adds 1 to the order of every level of the given training definition whose order lies between
-   * the given bounds, both inclusive.
-   *
-   * @param trainingDefinitionId the training definition whose levels are affected
-   * @param fromOrder lowest order value to increase
-   * @param toOrder highest order value to increase
-   */
-  @Modifying
-  void increaseOrderOfLevels(
-      @Param("trainingDefinitionId") Long trainingDefinitionId,
-      @Param("fromOrder") Integer fromOrder,
-      @Param("toOrder") Integer toOrder);
-
-  /**
-   * Subtracts 1 from the order of every level of the given training definition whose order lies
-   * between the given bounds, both inclusive.
-   *
-   * @param trainingDefinitionId the training definition whose levels are affected
-   * @param fromOrder lowest order value to decrease
-   * @param toOrder highest order value to decrease
-   */
-  @Modifying
-  void decreaseOrderOfLevels(
-      @Param("trainingDefinitionId") Long trainingDefinitionId,
-      @Param("fromOrder") Integer fromOrder,
-      @Param("toOrder") Integer toOrder);
 
   /**
    * Find all levels by level ids, ordered by id.

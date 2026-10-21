@@ -55,4 +55,10 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
       description = "Set by the server when the definition is created.",
       example = "2017-10-19T10:23:54.000Z")
   private LocalDateTime createdAt;
+
+  /** Raised by one on every write of the definition; an update must carry the current one */
+  @Schema(
+      description = "The current version of the definition, to send back with an update.",
+      example = "4")
+  private long version;
 }

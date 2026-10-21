@@ -3,7 +3,7 @@ package cz.cyberrange.platform.training.rest.integration;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.BetaTestingGroup;
+import cz.cyberrange.platform.training.persistence.model.Attachment;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.MitreTechnique;
@@ -16,6 +16,7 @@ import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
+import cz.cyberrange.platform.training.persistence.repository.AttachmentRepository;
 import cz.cyberrange.platform.training.persistence.repository.MitreTechniqueRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
@@ -46,6 +47,7 @@ final class TrainingDefinitionSeeder {
   private final JdbcTemplate jdbcTemplate;
   private final TrainingDefinitionRepository trainingDefinitionRepository;
   private final AbstractLevelRepository abstractLevelRepository;
+  private final AttachmentRepository attachmentRepository;
   private final UserRefRepository userRefRepository;
   private final MitreTechniqueRepository mitreTechniqueRepository;
   private final TrainingInstanceRepository trainingInstanceRepository;
@@ -56,6 +58,7 @@ final class TrainingDefinitionSeeder {
     this.jdbcTemplate = context.getBean(JdbcTemplate.class);
     this.trainingDefinitionRepository = context.getBean(TrainingDefinitionRepository.class);
     this.abstractLevelRepository = context.getBean(AbstractLevelRepository.class);
+    this.attachmentRepository = context.getBean(AttachmentRepository.class);
     this.userRefRepository = context.getBean(UserRefRepository.class);
     this.mitreTechniqueRepository = context.getBean(MitreTechniqueRepository.class);
     this.trainingInstanceRepository = context.getBean(TrainingInstanceRepository.class);
@@ -64,8 +67,7 @@ final class TrainingDefinitionSeeder {
 
   /** Removes every row the seeder and the application created. */
   void clear() {
-    jdbcTemplate.execute(
-        "TRUNCATE TABLE training_definition, user_ref, beta_testing_group, mitre_technique CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE training_definition, user_ref, mitre_technique CASCADE");
   }
 
   /**
@@ -91,25 +93,6 @@ final class TrainingDefinitionSeeder {
             definition.addAuthor(userRefRepository.createOrGet(authorUserRefId));
           }
           return trainingDefinitionRepository.save(definition).getId();
-        });
-  }
-
-  /**
-   * Gives a definition a beta testing group made of the given organizers.
-   *
-   * @param definitionId primary key of the definition
-   * @param organizerUserRefIds cross-service ids of the group's organizers
-   */
-  void betaTestingGroup(Long definitionId, long... organizerUserRefIds) {
-    transaction.executeWithoutResult(
-        status -> {
-          BetaTestingGroup group = new BetaTestingGroup();
-          for (long organizerUserRefId : organizerUserRefIds) {
-            group.addOrganizer(userRefRepository.createOrGet(organizerUserRefId));
-          }
-          TrainingDefinition definition = trainingDefinitionRepository.findById(definitionId).get();
-          definition.setBetaTestingGroup(group);
-          trainingDefinitionRepository.save(definition);
         });
   }
 
@@ -174,16 +157,36 @@ final class TrainingDefinitionSeeder {
           TrainingLevel level = newTrainingLevel(order);
           int hintOrder = 0;
           for (String hintTitle : hintTitles) {
-            Hint hint = new Hint();
-            hint.setTitle(hintTitle);
-            hint.setContent("Content of " + hintTitle);
-            hint.setHintPenalty(5);
-            hint.setOrder(hintOrder++);
-            hint.setTrainingLevel(level);
-            level.addHint(hint);
+            addHint(level, hintTitle, hintOrder++);
           }
           return saveLevel(level, definitionId, order, 1).getId();
         });
+  }
+
+  /**
+   * Stores a training level at the given position whose one hint costs more than the level's
+   * maximal score, a level the level writer refuses to store.
+   *
+   * @return primary key of the level
+   */
+  Long trainingLevelWithHintAboveMaxScore(Long definitionId, int order) {
+    return transaction.execute(
+        status -> {
+          TrainingLevel level = newTrainingLevel(order);
+          level.setMaxScore(1);
+          addHint(level, "Costly hint", 0);
+          return saveLevel(level, definitionId, order, 1).getId();
+        });
+  }
+
+  private void addHint(TrainingLevel level, String title, int order) {
+    Hint hint = new Hint();
+    hint.setTitle(title);
+    hint.setContent("Content of " + title);
+    hint.setHintPenalty(5);
+    hint.setOrder(order);
+    hint.setTrainingLevel(level);
+    level.addHint(hint);
   }
 
   /**
@@ -195,6 +198,35 @@ final class TrainingDefinitionSeeder {
     return jdbcTemplate.queryForList(
         "SELECT id FROM hint WHERE training_level_id = ? ORDER BY order_in_level",
         Long.class,
+        trainingLevelId);
+  }
+
+  /**
+   * Stores a training level at the given position carrying one attachment with the given content.
+   *
+   * @return primary key of the level
+   */
+  Long trainingLevelWithAttachment(Long definitionId, int order, String attachmentContent) {
+    return transaction.execute(
+        status -> {
+          TrainingLevel level = saveLevel(newTrainingLevel(order), definitionId, order, 1);
+          Attachment attachment = new Attachment();
+          attachment.setContent(attachmentContent);
+          attachment.setTrainingLevel(level);
+          attachmentRepository.save(attachment);
+          return level.getId();
+        });
+  }
+
+  /**
+   * Returns the contents of the attachments of a training level, ordered by their primary key.
+   *
+   * @param trainingLevelId primary key of the level
+   */
+  List<String> attachmentContents(Long trainingLevelId) {
+    return jdbcTemplate.queryForList(
+        "SELECT content FROM attachment WHERE training_level_id = ? ORDER BY id",
+        String.class,
         trainingLevelId);
   }
 
@@ -256,21 +288,6 @@ final class TrainingDefinitionSeeder {
         jdbcTemplate.queryForList(
             "SELECT u.user_ref_id FROM user_ref u JOIN training_definition_user_ref a"
                 + " ON a.user_ref_id = u.id WHERE a.training_definition_id = ?",
-            Long.class,
-            definitionId));
-  }
-
-  /**
-   * Returns the cross-service ids of the organizers in the beta testing group of a definition.
-   *
-   * @param definitionId primary key of the definition
-   */
-  Set<Long> betaTesterUserRefIds(Long definitionId) {
-    return new HashSet<>(
-        jdbcTemplate.queryForList(
-            "SELECT u.user_ref_id FROM user_ref u JOIN beta_testing_group_user_ref b"
-                + " ON b.user_ref_id = u.id JOIN training_definition d"
-                + " ON d.beta_testing_group_id = b.beta_testing_group_id WHERE d.id = ?",
             Long.class,
             definitionId));
   }

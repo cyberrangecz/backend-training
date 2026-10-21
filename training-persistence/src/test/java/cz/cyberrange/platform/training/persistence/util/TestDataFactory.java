@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.persistence.util;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -18,6 +17,7 @@ import cz.cyberrange.platform.training.api.dto.imports.HintImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
+import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
@@ -181,6 +181,8 @@ public class TestDataFactory {
   private InfoLevel infoLevel2 = generateInfoLevel("Info level 2", 9L, 6, "Content");
   private InfoLevelUpdateDTO infoLevelUpdateDTO =
       generateInfoLevelUpdateDTO("New Info Title", "New Info Content");
+  private InfoLevelCreateDTO infoLevelCreateDTO =
+      generateInfoLevelCreateDTO("New Info Title", "New Info Content");
   private InfoLevelImportDTO infoLevelImportDTO =
       generateInfoLevelImportDTO("Info level import", 5, "Info level import content");
   private InfoLevelDTO infoLevelDTO = generateInfoLevelDTO("Info DTO", 3, "DTO content");
@@ -204,10 +206,6 @@ public class TestDataFactory {
           "AbstractLevelDTO",
           8,
           8);
-  private BasicLevelInfoDTO basicTrainingLevelInfoDTO =
-      generateBasicLevelInfoDTO("Basic Training Level info", LevelType.TRAINING_LEVEL);
-  private BasicLevelInfoDTO basicInfoLevelInfoDTO =
-      generateBasicLevelInfoDTO("Basic Info Level info", LevelType.INFO_LEVEL);
 
   private MitreTechnique mitreTechnique1 = generateMitreTechnique("TA0004.T1548.002");
   private MitreTechnique mitreTechnique2 = generateMitreTechnique("TA0005.T2451.004");
@@ -276,9 +274,7 @@ public class TestDataFactory {
           "Training definition updaet DTO",
           "Update of definition",
           new String[] {"p6", "p7"},
-          new String[] {"o6", "o7"},
-          cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED,
-          7L);
+          new String[] {"o6", "o7"});
   private ImportTrainingDefinitionDTO importTrainingDefinitionDTO =
       generateImportTrainingDefinitionDTO(
           "Imported definition",
@@ -683,6 +679,10 @@ public class TestDataFactory {
     return clone(infoLevelUpdateDTO, InfoLevelUpdateDTO.class);
   }
 
+  public InfoLevelCreateDTO getInfoLevelCreateDTO() {
+    return clone(infoLevelCreateDTO, InfoLevelCreateDTO.class);
+  }
+
   public InfoLevelImportDTO getInfoLevelImportDTO() {
     return clone(infoLevelImportDTO, InfoLevelImportDTO.class);
   }
@@ -705,14 +705,6 @@ public class TestDataFactory {
 
   public AbstractLevelDTO getAbstractLevelDTO() {
     return clone(abstractLevelDTO, TrainingLevelDTO.class);
-  }
-
-  public BasicLevelInfoDTO getBasicTrainingLevelInfoDTO() {
-    return clone(basicTrainingLevelInfoDTO, BasicLevelInfoDTO.class);
-  }
-
-  public BasicLevelInfoDTO getBasicInfoLevelInfoDTO() {
-    return clone(basicInfoLevelInfoDTO, BasicLevelInfoDTO.class);
   }
 
   public TrainingInstanceDTO getTrainingInstanceDTO() {
@@ -1080,18 +1072,14 @@ public class TestDataFactory {
   }
 
   private TrainingDefinitionUpdateDTO generateTrainingDefinitionUpdateDTO(
-      String title,
-      String description,
-      String[] prerequisites,
-      String[] outcomes,
-      cz.cyberrange.platform.training.api.enums.TDState state,
-      Long SDRefId) {
+      String title, String description, String[] prerequisites, String[] outcomes) {
     TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
     trainingDefinitionUpdateDTO.setTitle(title);
     trainingDefinitionUpdateDTO.setDescription(description);
     trainingDefinitionUpdateDTO.setPrerequisites(prerequisites);
     trainingDefinitionUpdateDTO.setOutcomes(outcomes);
-    trainingDefinitionUpdateDTO.setState(state);
+    trainingDefinitionUpdateDTO.setVersion(0L);
+    trainingDefinitionUpdateDTO.setLevels(new ArrayList<>());
     return trainingDefinitionUpdateDTO;
   }
 
@@ -1154,6 +1142,13 @@ public class TestDataFactory {
     infoLevelUpdateDTO.setTitle(title);
     infoLevelUpdateDTO.setContent(content);
     return infoLevelUpdateDTO;
+  }
+
+  private InfoLevelCreateDTO generateInfoLevelCreateDTO(String title, String content) {
+    InfoLevelCreateDTO infoLevelCreateDTO = new InfoLevelCreateDTO();
+    infoLevelCreateDTO.setTitle(title);
+    infoLevelCreateDTO.setContent(content);
+    return infoLevelCreateDTO;
   }
 
   private InfoLevelImportDTO generateInfoLevelImportDTO(
@@ -1240,13 +1235,6 @@ public class TestDataFactory {
     trainingDefinitionWithLevelsDTO.setLastEdited(lastEdited);
     trainingDefinitionWithLevelsDTO.setCreatedAt(createdAt);
     return trainingDefinitionWithLevelsDTO;
-  }
-
-  private BasicLevelInfoDTO generateBasicLevelInfoDTO(String title, LevelType levelType) {
-    BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
-    basicLevelInfoDTO.setTitle(title);
-    basicLevelInfoDTO.setLevelType(levelType);
-    return basicLevelInfoDTO;
   }
 
   private TrainingInstanceDTO generateTrainingInstanceDTO(

@@ -1,44 +1,59 @@
 package cz.cyberrange.platform.training.service.mapping.mapstruct;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
+import cz.cyberrange.platform.training.api.dto.AbstractLevelCreateDTO;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
+import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelBasicDTO;
+import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelCreateDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelViewDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelBasicDTO;
+import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelCreateDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
+import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentQuestionsSource;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.preview.AssessmentLevelPreviewDTO;
+import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.QuestionDTO;
 import cz.cyberrange.platform.training.api.dto.export.AbstractLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.AccessLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.AssessmentLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.InfoLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.TrainingLevelExportDTO;
+import cz.cyberrange.platform.training.api.dto.imports.AbstractLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AccessLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelBasicDTO;
+import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelBasicDTO;
+import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelCreateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelPreviewDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelViewDTO;
 import cz.cyberrange.platform.training.api.enums.AssessmentType;
+import cz.cyberrange.platform.training.api.enums.QuestionType;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.ExpectedCommand;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
+import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingOption;
+import cz.cyberrange.platform.training.persistence.model.question.Question;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.SubclassExhaustiveStrategy;
@@ -65,15 +80,6 @@ public interface LevelMapper extends ParentMapper {
   // INFO LEVEL
 
   /**
-   * Maps an info level to a {@link BasicLevelInfoDTO} labelled with the info level type.
-   *
-   * @param infoLevel the info level to map
-   * @return the basic level information
-   */
-  @Mapping(target = "levelType", constant = "INFO_LEVEL")
-  BasicLevelInfoDTO mapTo(InfoLevel infoLevel);
-
-  /**
    * Maps an imported info level into a new entity, copying title, order, estimated duration,
    * minimal possible solve time, and content. Score, primary key, and training definition
    * association carry no matching source field and are left unset.
@@ -83,6 +89,20 @@ public interface LevelMapper extends ParentMapper {
    */
   InfoLevel mapImportToEntity(InfoLevelImportDTO dto);
 
+  /**
+   * Maps an info create payload into a new entity.
+   *
+   * @param dto the payload to map
+   * @return the mapped info level
+   */
+  InfoLevel mapCreateToEntity(InfoLevelCreateDTO dto);
+
+  /**
+   * Maps an info update payload into a new entity carrying the payload's id.
+   *
+   * @param dto the payload to map
+   * @return the mapped info level
+   */
   InfoLevel mapUpdateToEntity(InfoLevelUpdateDTO dto);
 
   @Mapping(target = "levelType", constant = "INFO_LEVEL")
@@ -104,10 +124,20 @@ public interface LevelMapper extends ParentMapper {
   // ASSESSMENT LEVEL
 
   /**
-   * Maps an assessment level update into a new entity, converting its {@code type} field into the
-   * entity's assessment type.
+   * Maps an assessment level create payload into a new entity, converting its {@code type} field
+   * into the entity's assessment type.
    *
-   * @param dto the assessment level update to map
+   * @param dto the payload to map
+   * @return the mapped assessment level
+   */
+  @Mapping(source = "type", target = "assessmentType")
+  AssessmentLevel mapCreateToEntity(AssessmentLevelCreateDTO dto);
+
+  /**
+   * Maps an assessment level update payload into a new entity carrying the payload's id, converting
+   * its {@code type} field into the entity's assessment type.
+   *
+   * @param dto the payload to map
    * @return the mapped assessment level
    */
   @Mapping(source = "type", target = "assessmentType")
@@ -124,14 +154,60 @@ public interface LevelMapper extends ParentMapper {
   AssessmentLevel mapImportToEntity(AssessmentLevelImportDTO dto);
 
   /**
-   * Maps an assessment level to a {@link BasicLevelInfoDTO} labelled with the assessment level
-   * type.
+   * Binds the statements of a mapped TEST assessment level to the options their question payloads
+   * name as correct, pairing the payload questions with the level's questions in ascending question
+   * order. A level of another assessment type is left as mapped.
    *
-   * @param assessmentLevel the assessment level to map
-   * @return the basic level information
+   * @param assessmentLevel the mapped assessment level, bound in place
+   * @param source the payload the level was mapped from
    */
-  @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
-  BasicLevelInfoDTO mapTo(AssessmentLevel assessmentLevel);
+  @AfterMapping
+  default void bindCorrectOptions(
+      @MappingTarget AssessmentLevel assessmentLevel, AssessmentQuestionsSource source) {
+    if (assessmentLevel.getAssessmentType()
+            != cz.cyberrange.platform.training.persistence.model.enums.AssessmentType.TEST
+        || source.getQuestions() == null) {
+      return;
+    }
+    List<QuestionDTO> questionDTOs =
+        source.getQuestions().stream()
+            .sorted(Comparator.comparingInt(QuestionDTO::getOrder))
+            .toList();
+    for (int questionIndex = 0; questionIndex < questionDTOs.size(); questionIndex++) {
+      if (questionDTOs.get(questionIndex).getQuestionType() == QuestionType.EMI) {
+        bindCorrectOptions(
+            assessmentLevel.getQuestions().get(questionIndex), questionDTOs.get(questionIndex));
+      }
+    }
+  }
+
+  /**
+   * Sets on each extended matching statement of the question the option its payload names as
+   * correct, taking the statement and the option at the list position of the payload's statement
+   * and option index. A statement naming no correct option, or an index outside the question's
+   * options, is left unbound.
+   *
+   * @param question the mapped question, bound in place
+   * @param questionDTO the payload the question was mapped from
+   */
+  private void bindCorrectOptions(Question question, QuestionDTO questionDTO) {
+    List<ExtendedMatchingOption> options = question.getExtendedMatchingOptions();
+    for (int statementIndex = 0;
+        statementIndex < questionDTO.getExtendedMatchingStatements().size();
+        statementIndex++) {
+      Integer correctOptionIndex =
+          questionDTO.getExtendedMatchingStatements().get(statementIndex).getCorrectOptionOrder();
+      if (correctOptionIndex == null
+          || correctOptionIndex < 0
+          || correctOptionIndex >= options.size()) {
+        continue;
+      }
+      question
+          .getExtendedMatchingStatements()
+          .get(statementIndex)
+          .setExtendedMatchingOption(options.get(correctOptionIndex));
+    }
+  }
 
   @Mapping(target = "levelType", constant = "ASSESSMENT_LEVEL")
   AssessmentLevelDTO mapToAssessmentLevelDTO(AssessmentLevel entity);
@@ -161,21 +237,36 @@ public interface LevelMapper extends ParentMapper {
   // TRAINING LEVEL
 
   /**
-   * Maps a training level update into a new entity, converting a blank answer or a blank answer
-   * variable name into {@code null}.
+   * Maps a training level create payload into a new entity.
    *
-   * @param dto the training level update to map
+   * @param dto the payload to map
    * @return the mapped training level
    */
-  @Mapping(
-      target = "answer",
-      expression =
-          "java(org.apache.commons.lang3.StringUtils.isBlank(dto.getAnswer()) ? null : dto.getAnswer())")
-  @Mapping(
-      target = "answerVariableName",
-      expression =
-          "java(org.apache.commons.lang3.StringUtils.isBlank(dto.getAnswerVariableName()) ? null : dto.getAnswerVariableName())")
+  TrainingLevel mapCreateToEntity(TrainingLevelCreateDTO dto);
+
+  /**
+   * Maps a training level update payload into a new entity carrying the payload's id.
+   *
+   * @param dto the payload to map
+   * @return the mapped training level
+   */
   TrainingLevel mapUpdateToEntity(TrainingLevelUpdateDTO dto);
+
+  /**
+   * Reduces a blank answer and a blank answer variable name of a mapped training level to {@code
+   * null}, so that an empty submission reads as an absent one.
+   *
+   * @param trainingLevel the mapped training level, normalized in place
+   */
+  @AfterMapping
+  default void clearBlankAnswers(@MappingTarget TrainingLevel trainingLevel) {
+    if (StringUtils.isBlank(trainingLevel.getAnswer())) {
+      trainingLevel.setAnswer(null);
+    }
+    if (StringUtils.isBlank(trainingLevel.getAnswerVariableName())) {
+      trainingLevel.setAnswerVariableName(null);
+    }
+  }
 
   /**
    * Maps an imported training level into a new entity, copying title, order, estimated duration,
@@ -188,15 +279,6 @@ public interface LevelMapper extends ParentMapper {
    * @return the mapped training level entity
    */
   TrainingLevel mapImportToEntity(TrainingLevelImportDTO dto);
-
-  /**
-   * Maps a training level to a {@link BasicLevelInfoDTO} labelled with the training level type.
-   *
-   * @param trainingLevel the training level to map
-   * @return the basic level information
-   */
-  @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
-  BasicLevelInfoDTO mapTo(TrainingLevel trainingLevel);
 
   @Mapping(target = "levelType", constant = "TRAINING_LEVEL")
   TrainingLevelDTO mapToTrainingLevelDTO(TrainingLevel entity);
@@ -244,6 +326,20 @@ public interface LevelMapper extends ParentMapper {
 
   // ACCESS LEVEL
 
+  /**
+   * Maps an access create payload into a new entity.
+   *
+   * @param dto the payload to map
+   * @return the mapped access level
+   */
+  AccessLevel mapCreateToEntity(AccessLevelCreateDTO dto);
+
+  /**
+   * Maps an access update payload into a new entity carrying the payload's id.
+   *
+   * @param dto the payload to map
+   * @return the mapped access level
+   */
   AccessLevel mapUpdateToEntity(AccessLevelUpdateDTO dto);
 
   /**
@@ -255,15 +351,6 @@ public interface LevelMapper extends ParentMapper {
    * @return the mapped access level entity
    */
   AccessLevel mapImportToEntity(AccessLevelImportDTO dto);
-
-  /**
-   * Maps an access level to a {@link BasicLevelInfoDTO} labelled with the access level type.
-   *
-   * @param trainingLevel the access level to map
-   * @return the basic level information
-   */
-  @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
-  BasicLevelInfoDTO mapTo(AccessLevel trainingLevel);
 
   @Mapping(target = "levelType", constant = "ACCESS_LEVEL")
   AccessLevelDTO mapToAccessLevelDTO(AccessLevel entity);
@@ -324,17 +411,43 @@ public interface LevelMapper extends ParentMapper {
   AbstractLevelExportDTO mapToExportDTO(AbstractLevel entity);
 
   /**
-   * Maps a level entity to a {@link BasicLevelInfoDTO} carrying the level type of its concrete
-   * type.
+   * Maps a level create payload to a new entity of the level type matching the payload's concrete
+   * type, through the mapping of that type.
    *
-   * @param entity the level entity to map
-   * @return the level info DTO with the level type of the entity's concrete type
+   * @param dto the level create payload to map
+   * @return the entity of the level type corresponding to the payload's concrete type
    */
-  @SubclassMapping(source = TrainingLevel.class, target = BasicLevelInfoDTO.class)
-  @SubclassMapping(source = InfoLevel.class, target = BasicLevelInfoDTO.class)
-  @SubclassMapping(source = AssessmentLevel.class, target = BasicLevelInfoDTO.class)
-  @SubclassMapping(source = AccessLevel.class, target = BasicLevelInfoDTO.class)
-  BasicLevelInfoDTO mapToBasicLevelInfoDTO(AbstractLevel entity);
+  @SubclassMapping(source = TrainingLevelCreateDTO.class, target = TrainingLevel.class)
+  @SubclassMapping(source = InfoLevelCreateDTO.class, target = InfoLevel.class)
+  @SubclassMapping(source = AssessmentLevelCreateDTO.class, target = AssessmentLevel.class)
+  @SubclassMapping(source = AccessLevelCreateDTO.class, target = AccessLevel.class)
+  AbstractLevel mapCreateToEntity(AbstractLevelCreateDTO dto);
+
+  /**
+   * Maps an imported level to a new entity of the level type matching the import's concrete type,
+   * through the mapping of that type.
+   *
+   * @param dto the imported level to map
+   * @return the entity of the level type corresponding to the import's concrete type
+   */
+  @SubclassMapping(source = TrainingLevelImportDTO.class, target = TrainingLevel.class)
+  @SubclassMapping(source = InfoLevelImportDTO.class, target = InfoLevel.class)
+  @SubclassMapping(source = AssessmentLevelImportDTO.class, target = AssessmentLevel.class)
+  @SubclassMapping(source = AccessLevelImportDTO.class, target = AccessLevel.class)
+  AbstractLevel mapImportToEntity(AbstractLevelImportDTO dto);
+
+  /**
+   * Maps a level update to a new entity of the level type matching the update's concrete type,
+   * through the mapping of that type.
+   *
+   * @param dto the level update to map
+   * @return the entity of the level type corresponding to the update's concrete type
+   */
+  @SubclassMapping(source = TrainingLevelUpdateDTO.class, target = TrainingLevel.class)
+  @SubclassMapping(source = InfoLevelUpdateDTO.class, target = InfoLevel.class)
+  @SubclassMapping(source = AssessmentLevelUpdateDTO.class, target = AssessmentLevel.class)
+  @SubclassMapping(source = AccessLevelUpdateDTO.class, target = AccessLevel.class)
+  AbstractLevel mapUpdateToEntity(AbstractLevelUpdateDTO dto);
 
   /**
    * Maps level entities to their basic DTOs, preserving the order of the input.

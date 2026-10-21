@@ -3,12 +3,8 @@ package cz.cyberrange.platform.training.rest.controllers;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
-import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintBasicDTO;
-import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -16,17 +12,15 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
-import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
-import cz.cyberrange.platform.training.persistence.model.enums.LevelType;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
 import cz.cyberrange.platform.training.rest.utils.sort.SortableProperties;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
+import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,7 +36,6 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -103,8 +96,7 @@ public class TrainingDefinitionsRestController {
       summary = "Find one training definition with its levels",
       description =
           "A training administrator may read any definition. Anyone else has to be one of its"
-              + " designers, a member of its beta testing group, or an organizer of a training"
-              + " instance created from it.")
+              + " designers, or an organizer of a training instance created from it.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The definition and its levels."),
     @ApiResponse(
@@ -122,8 +114,7 @@ public class TrainingDefinitionsRestController {
 
   /**
    * Returns a page of training definitions. A training administrator receives every definition
-   * matching the predicate, while any other caller receives only those they author or organize the
-   * beta testing group of.
+   * matching the predicate, while any other caller receives only those they author.
    *
    * @param predicate restricts which definitions are considered, string comparisons matching
    *     partially and ignoring case
@@ -135,7 +126,7 @@ public class TrainingDefinitionsRestController {
       summary = "List training definitions matching a filter",
       description =
           "A training administrator sees every definition. Anyone else sees only the definitions"
-              + " they author or beta test. Text filters match partially and ignore case.")
+              + " they author. Text filters match partially and ignore case.")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The matching definitions."))
   @SortableProperties(SortableList.TRAINING_DEFINITION)
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -151,9 +142,8 @@ public class TrainingDefinitionsRestController {
   /**
    * Returns a page of the training definitions in the given state that the caller may organize.
    * Released definitions are returned to every caller. Unreleased ones are returned in full to a
-   * training administrator, narrowed to those the caller either authors or beta tests when the
-   * caller holds both the designer and the organizer role, and narrowed to those the caller beta
-   * tests otherwise, authorship granting no visibility in that last case.
+   * training administrator, narrowed to those the caller authors when the caller holds the designer
+   * role, and none otherwise.
    *
    * @param state the state the definitions have to be in, which has to be released or unreleased
    * @param pageable pageable parameter with information about pagination
@@ -164,8 +154,8 @@ public class TrainingDefinitionsRestController {
       summary = "List training definitions available to organizers",
       description =
           "Released definitions are visible to every caller. A training administrator also sees"
-              + " every unreleased definition. Anyone else sees unreleased definitions they beta"
-              + " test, and those they author when they also design.")
+              + " every unreleased definition. A designer sees the unreleased definitions they"
+              + " author, and an organizer who is no designer sees none.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The matching definitions."),
     @ApiResponse(
@@ -204,24 +194,32 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Stores a new training definition, listing the calling user among its authors. When the payload
-   * asks for default content, the definition is created with a starting set of levels.
+   * Stores a new training definition together with its levels in the order given, listing the
+   * calling user among its authors.
    *
-   * @param trainingDefinitionCreateDTO the training definition to store
-   * @return the stored {@link TrainingDefinitionWithLevelsDTO}
+   * @param trainingDefinitionCreateDTO the training definition to store, its levels included
+   * @return the stored {@link TrainingDefinitionWithLevelsDTO}, carrying the ids of every created
+   *     entity
    */
   @Operation(
       operationId = "createTrainingDefinition",
-      summary = "Create a training definition",
+      summary = "Create a training definition with its levels",
       description =
-          "The calling user is added as an author. Asking for default content also creates a first"
-              + " info level and a first access level.")
+          "The calling user is added as an author. Levels are stored in the order given and carry"
+              + " no ids; the response holds the ids the server gave them, in the same order. The"
+              + " estimated duration is the sum of the levels' estimated durations.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The created definition and its levels."),
     @ApiResponse(
         responseCode = "400",
-        description = "The request body failed validation.",
-        content = @Content(schema = @Schema(implementation = ApiError.class)))
+        description =
+            "The request body failed validation, a level carries an id, or a level's content is"
+                + " inconsistent.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "422",
+        description = "The hint penalties of a training level exceed its maximal score.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PostMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -234,43 +232,61 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Overwrites a training definition that is unreleased and has no training instance yet, listing
-   * the calling user among its authors and keeping the estimated duration already stored rather
-   * than the submitted one. A payload that omits the beta testing group while the stored definition
-   * has one is refused, since the group can only have its organizers emptied and not be removed.
+   * Replaces the content and the whole level list of a training definition that is unreleased and
+   * has no training instance yet, in one transaction, listing the calling user among its authors.
    *
-   * @param trainingDefinitionUpdateDTO the training definition to overwrite, identified by the id
-   *     it carries
-   * @return an empty response carrying no content
+   * @param definitionId id of the training definition to update
+   * @param trainingDefinitionUpdateDTO the new content and every level the definition keeps, with
+   *     the version the change was made on
+   * @return the updated {@link TrainingDefinitionWithLevelsDTO}, carrying its new version and the
+   *     ids of every created entity
    */
   @Operation(
       operationId = "updateTrainingDefinition",
-      summary = "Update a training definition",
+      summary = "Update a training definition with all its levels",
       description =
-          "The calling user is added as an author. The stored estimated duration is kept, whatever"
-              + " the request sends. A beta testing group can be emptied but not removed.")
+          "Levels are kept in the order given. A level without an id is created, a level with"
+              + " the id of one of the definition's levels replaces it, and a stored level left"
+              + " out is deleted. New levels, hints, questions, choices and matching items carry"
+              + " no ids; a hint, question, choice or matching item keeps its id only when it"
+              + " belongs to the level or question it is sent under, any other is created with a"
+              + " new id. The response holds every id in the order sent. The request must carry"
+              + " the version last read; the state is not changed.")
   @ApiResponses({
-    @ApiResponse(responseCode = "204", description = "The definition was updated."),
+    @ApiResponse(
+        responseCode = "200",
+        description = "The updated definition, its levels and its new version."),
     @ApiResponse(
         responseCode = "400",
-        description = "The request body failed validation.",
+        description =
+            "The request body failed validation, a level id appears twice, a level would change"
+                + " its type, or a level's content is inconsistent.",
         content = @Content(schema = @Schema(implementation = ApiError.class))),
     @ApiResponse(
         responseCode = "404",
-        description = "No training definition with this id.",
+        description = "No training definition with this id, or a level id not of this definition.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
-        description = "The definition is not unreleased, or already has a training instance.",
+        description =
+            "The definition is not unreleased, already has a training instance, is at another"
+                + " version than the one sent, or was changed by another request at the same"
+                + " time.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "422",
+        description = "The hint penalties of a training level exceed its maximal score.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(
+      path = "/{definitionId}",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateTrainingDefinition(
+  public ResponseEntity<TrainingDefinitionWithLevelsDTO> updateTrainingDefinition(
+      @PathVariable("definitionId") Long definitionId,
       @RequestBody @Valid TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
-    trainingDefinitionFacade.update(trainingDefinitionUpdateDTO);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(
+        trainingDefinitionFacade.update(definitionId, trainingDefinitionUpdateDTO));
   }
 
   /**
@@ -310,75 +326,6 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Exchanges the positions of two levels of a training definition that is neither released nor
-   * archived, and returns the definition's levels in their resulting order.
-   *
-   * @param definitionId id of the training definition holding both levels
-   * @param levelIdFrom id of one level to exchange
-   * @param levelIdTo id of the other level to exchange
-   * @return the basic information of every level of the definition, in presentation order
-   */
-  @Operation(operationId = "swapLevels", summary = "Swap the positions of two levels")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "The levels in their new order."),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No such definition, or no such level.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
-    @ApiResponse(
-        responseCode = "409",
-        description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @PutMapping(
-      path = "/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<BasicLevelInfoDTO>> swapLevels(
-      @PathVariable("definitionId") Long definitionId,
-      @PathVariable("levelIdFrom") Long levelIdFrom,
-      @PathVariable("levelIdTo") Long levelIdTo) {
-    return ResponseEntity.ok(
-        trainingDefinitionFacade.swapLevels(definitionId, levelIdFrom, levelIdTo));
-  }
-
-  /**
-   * Moves one level of a training definition that is unreleased and has no training instance yet to
-   * the given position, shifting the levels in between, and returns the definition's levels in
-   * their resulting order. A position outside the definition's range is pulled to the nearest end
-   * rather than refused.
-   *
-   * @param definitionId id of the training definition holding the level
-   * @param levelIdToBeMoved id of the level to move
-   * @param newPosition position to move the level to
-   * @return the basic information of every level of the definition, in presentation order
-   */
-  @Operation(
-      operationId = "moveLevel",
-      summary = "Move a level to another position",
-      description = "A position outside the definition's range is pulled to the nearest end.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "The levels in their new order."),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No such definition, or no such level.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
-    @ApiResponse(
-        responseCode = "409",
-        description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @PutMapping(
-      path = "/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<BasicLevelInfoDTO>> moveLevel(
-      @PathVariable("definitionId") Long definitionId,
-      @PathVariable("levelIdToBeMoved") Long levelIdToBeMoved,
-      @PathVariable("newPosition") Integer newPosition) {
-    return ResponseEntity.ok(
-        trainingDefinitionFacade.moveLevel(definitionId, levelIdToBeMoved, newPosition));
-  }
-
-  /**
    * Removes a training definition along with all of its levels. A released definition, or one that
    * already has a training instance, is refused rather than removed.
    *
@@ -407,182 +354,6 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Removes one level from an unreleased training definition, closing the gap in the level order
-   * and reducing the definition's estimated duration by the removed level's own, then returns the
-   * levels that remain.
-   *
-   * @param definitionId id of the training definition holding the level
-   * @param levelId id of the level to remove
-   * @return the basic information of every remaining level of the definition, in presentation order
-   */
-  @Operation(
-      operationId = "deleteOneLevel",
-      summary = "Delete one level of a training definition",
-      description = "The definition's estimated duration drops by the level's own.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "The remaining levels, in order."),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No such definition, or no such level.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
-    @ApiResponse(
-        responseCode = "409",
-        description = "The definition is not unreleased.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @DeleteMapping(
-      path = "/{definitionId}/levels/{levelId}",
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<BasicLevelInfoDTO>> deleteOneLevel(
-      @PathVariable("definitionId") Long definitionId, @PathVariable("levelId") Long levelId) {
-    return ResponseEntity.ok(trainingDefinitionFacade.deleteOneLevel(definitionId, levelId));
-  }
-
-  /**
-   * Overwrites one training level of a training definition that is unreleased and has no training
-   * instance yet, and records the edit on the definition.
-   *
-   * @param definitionId id of the training definition the level has to belong to
-   * @param trainingLevelUpdateDTO the training level to overwrite, identified by the id it carries
-   * @return an empty response carrying no content
-   */
-  @Operation(operationId = "updateTrainingLevel", summary = "Update a training level")
-  @ApiResponses({
-    @ApiResponse(responseCode = "204", description = "The level was updated."),
-    @ApiResponse(
-        responseCode = "400",
-        description = "The request body failed validation.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No such definition, or the level does not belong to it.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
-    @ApiResponse(
-        responseCode = "409",
-        description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @PutMapping(path = "/{definitionId}/training-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateTrainingLevel(
-      @PathVariable("definitionId") Long definitionId,
-      @RequestBody @Valid TrainingLevelUpdateDTO trainingLevelUpdateDTO) {
-    trainingDefinitionFacade.updateTrainingLevel(definitionId, trainingLevelUpdateDTO);
-    return ResponseEntity.noContent().build();
-  }
-
-  /**
-   * Overwrites one info level of a training definition that is unreleased and has no training
-   * instance yet, and records the edit on the definition.
-   *
-   * @param definitionId id of the training definition the level has to belong to
-   * @param infoLevelUpdateDTO the info level to overwrite, identified by the id it carries
-   * @return an empty response carrying no content
-   */
-  @Operation(operationId = "updateInfoLevel", summary = "Update an info level")
-  @ApiResponses({
-    @ApiResponse(responseCode = "204", description = "The level was updated."),
-    @ApiResponse(
-        responseCode = "400",
-        description = "The request body failed validation.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No such definition, or the level does not belong to it.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
-    @ApiResponse(
-        responseCode = "409",
-        description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @PutMapping(path = "/{definitionId}/info-levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateInfoLevel(
-      @PathVariable("definitionId") Long definitionId,
-      @RequestBody @Valid InfoLevelUpdateDTO infoLevelUpdateDTO) {
-    trainingDefinitionFacade.updateInfoLevel(definitionId, infoLevelUpdateDTO);
-    return ResponseEntity.noContent().build();
-  }
-
-  /**
-   * Overwrites one assessment level of a training definition that is unreleased and has no training
-   * instance yet, and records the edit on the definition. For a level scored as a test, the correct
-   * option of every extended matching statement is resolved and checked before the level is stored.
-   *
-   * @param definitionId id of the training definition the level has to belong to
-   * @param assessmentLevelUpdateDTO the assessment level to overwrite, identified by the id it
-   *     carries
-   * @return an empty response carrying no content
-   */
-  @Operation(
-      operationId = "updateAssessmentLevel",
-      summary = "Update an assessment level",
-      description =
-          "An assessment scored as a test has to name the correct option of every extended matching"
-              + " statement.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "204", description = "The level was updated."),
-    @ApiResponse(
-        responseCode = "400",
-        description = "The request body failed validation, or a correct option is missing.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No such definition, or the level does not belong to it.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
-    @ApiResponse(
-        responseCode = "409",
-        description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @PutMapping(
-      path = "/{definitionId}/assessment-levels",
-      consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateAssessmentLevel(
-      @PathVariable("definitionId") Long definitionId,
-      @RequestBody @Valid AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
-    trainingDefinitionFacade.updateAssessmentLevel(definitionId, assessmentLevelUpdateDTO);
-    return ResponseEntity.noContent().build();
-  }
-
-  /**
-   * Overwrites several levels of a training definition that is unreleased and has no training
-   * instance yet in one request, each level handled according to its own type, and records the edit
-   * on the definition. A submitted level that does not belong to the definition aborts the whole
-   * request.
-   *
-   * @param definitionId id of the training definition every submitted level has to belong to
-   * @param levelUpdateDTOS the levels to overwrite, each identified by the id it carries
-   * @return an empty response carrying no content
-   */
-  @Operation(
-      operationId = "updateLevels",
-      summary = "Update several levels at once",
-      description =
-          "Each level is updated according to its own type. One level that does not belong to the"
-              + " definition aborts the whole request, leaving every level unchanged.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "204", description = "The levels were updated."),
-    @ApiResponse(
-        responseCode = "400",
-        description = "The request body failed validation, or a correct option is missing.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No such definition, or a level does not belong to it.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
-    @ApiResponse(
-        responseCode = "409",
-        description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @PutMapping(path = "/{definitionId}/levels", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateLevels(
-      @PathVariable("definitionId") Long definitionId,
-      @RequestBody @Valid List<AbstractLevelUpdateDTO> levelUpdateDTOS) {
-    trainingDefinitionFacade.updateLevels(definitionId, levelUpdateDTOS);
-    return ResponseEntity.noContent().build();
-  }
-
-  /**
    * Returns one level in the full detail of whichever level type it turns out to be.
    *
    * @param levelId id of the level to return
@@ -608,103 +379,6 @@ public class TrainingDefinitionsRestController {
   }
 
   /**
-   * Appends a new level of the given type, filled with placeholder content, to the end of a
-   * training definition that is unreleased and has no training instance yet, raising the
-   * definition's estimated duration by the new level's own.
-   *
-   * @param definitionId id of the training definition to append the level to
-   * @param levelType which kind of level to append
-   * @return the basic information of the new level
-   */
-  @Operation(
-      operationId = "createLevel",
-      summary = "Add a level to a training definition",
-      description =
-          "The level is appended last and filled with placeholder content. The definition's"
-              + " estimated duration rises by the new level's own.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "201", description = "The created level."),
-    @ApiResponse(
-        responseCode = "400",
-        description = "The level type is not a recognized value.",
-        content = @Content(schema = @Schema(implementation = ApiError.class))),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
-    @ApiResponse(
-        responseCode = "409",
-        description = "The definition is not unreleased, or already has a training instance.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @PostMapping(path = "/{definitionId}/levels/{levelType}")
-  public ResponseEntity<BasicLevelInfoDTO> createLevel(
-      @PathVariable("definitionId") Long definitionId,
-      @PathVariable("levelType") LevelType levelType) {
-    BasicLevelInfoDTO basicLevelInfoDTO;
-    if (levelType.equals(LevelType.TRAINING)) {
-      basicLevelInfoDTO = trainingDefinitionFacade.createTrainingLevel(definitionId);
-    } else if (levelType.equals(LevelType.ASSESSMENT)) {
-      basicLevelInfoDTO = trainingDefinitionFacade.createAssessmentLevel(definitionId);
-    } else if (levelType.equals(LevelType.ACCESS)) {
-      basicLevelInfoDTO = trainingDefinitionFacade.createAccessLevel(definitionId);
-    } else {
-      basicLevelInfoDTO = trainingDefinitionFacade.createInfoLevel(definitionId);
-    }
-    return new ResponseEntity<>(basicLevelInfoDTO, HttpStatus.CREATED);
-  }
-
-  /**
-   * Returns a page of the users the user-and-group service reports as holding the training designer
-   * role.
-   *
-   * @param givenName restricts the result to users whose given name matches, no restriction when
-   *     absent
-   * @param familyName restricts the result to users whose family name matches, no restriction when
-   *     absent
-   * @param pageable pageable parameter with information about pagination
-   * @return the page of {@link UserRefDTO} holding the role
-   */
-  @Operation(operationId = "getDesigners", summary = "List users holding the designer role")
-  @ApiResponses(@ApiResponse(responseCode = "200", description = "The page of designers."))
-  @SortableProperties(SortableList.USER)
-  @GetMapping(path = "/designers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<PageResultResource<UserRefDTO>> getDesigners(
-      @RequestParam(value = "givenName", required = false) String givenName,
-      @RequestParam(value = "familyName", required = false) String familyName,
-      @ParameterObject Pageable pageable) {
-    PageResultResource<UserRefDTO> designers =
-        trainingDefinitionFacade.getUsersWithGivenRole(
-            RoleType.ROLE_TRAINING_DESIGNER, pageable, givenName, familyName);
-    return ResponseEntity.ok(designers);
-  }
-
-  /**
-   * Returns a page of the users the user-and-group service reports as holding the training
-   * organizer role.
-   *
-   * @param givenName restricts the result to users whose given name matches, no restriction when
-   *     absent
-   * @param familyName restricts the result to users whose family name matches, no restriction when
-   *     absent
-   * @param pageable pageable parameter with information about pagination
-   * @return the page of {@link UserRefDTO} holding the role
-   */
-  @Operation(operationId = "getOrganizers", summary = "List users holding the organizer role")
-  @ApiResponses(@ApiResponse(responseCode = "200", description = "The page of organizers."))
-  @SortableProperties(SortableList.USER)
-  @GetMapping(path = "/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<PageResultResource<UserRefDTO>> getOrganizers(
-      @RequestParam(value = "givenName", required = false) String givenName,
-      @RequestParam(value = "familyName", required = false) String familyName,
-      @ParameterObject Pageable pageable) {
-    PageResultResource<UserRefDTO> organizers =
-        trainingDefinitionFacade.getUsersWithGivenRole(
-            RoleType.ROLE_TRAINING_ORGANIZER, pageable, givenName, familyName);
-    return ResponseEntity.ok(organizers);
-  }
-
-  /**
    * Returns a page of the users holding the training designer role who do not yet author the given
    * training definition.
    *
@@ -713,6 +387,8 @@ public class TrainingDefinitionsRestController {
    *     absent
    * @param familyName restricts the result to users whose family name matches, no restriction when
    *     absent
+   * @param name restricts the result to users whose given name or family name matches every word of
+   *     it, no restriction when absent
    * @param pageable pageable parameter with information about pagination
    * @return the page of {@link UserRefDTO} not authoring the definition
    */
@@ -734,38 +410,16 @@ public class TrainingDefinitionsRestController {
       @PathVariable("definitionId") Long trainingDefinitionId,
       @RequestParam(value = "givenName", required = false) String givenName,
       @RequestParam(value = "familyName", required = false) String familyName,
+      @Parameter(
+              description =
+                  "Restricts the result to users whose given name or family name matches every word of"
+                      + " the text.")
+          @RequestParam(value = "name", required = false)
+          String name,
       @ParameterObject Pageable pageable) {
     PageResultResource<UserRefDTO> designers =
         trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(
-            trainingDefinitionId, pageable, givenName, familyName);
-    return ResponseEntity.ok(designers);
-  }
-
-  /**
-   * Returns a page of the organizers making up the given training definition's beta testing group.
-   * A definition without such a group, or with an empty one, yields an empty page.
-   *
-   * @param trainingDefinitionId id of the training definition whose beta testing group is read
-   * @param pageable pageable parameter with information about pagination
-   * @return the page of {@link UserRefDTO} making up the beta testing group
-   */
-  @Operation(
-      operationId = "getBetaTesters",
-      summary = "List the beta testers of a training definition",
-      description = "A definition with no beta testing group yields an empty page.")
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "The page of beta testers."),
-    @ApiResponse(
-        responseCode = "404",
-        description = "No training definition with this id.",
-        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
-  })
-  @SortableProperties(SortableList.USER)
-  @GetMapping(path = "/{definitionId}/beta-testers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<PageResultResource<UserRefDTO>> getBetaTesters(
-      @PathVariable("definitionId") Long trainingDefinitionId, @ParameterObject Pageable pageable) {
-    PageResultResource<UserRefDTO> designers =
-        trainingDefinitionFacade.getBetaTesters(trainingDefinitionId, pageable);
+            trainingDefinitionId, pageable, new UserNameFilter(givenName, familyName, name));
     return ResponseEntity.ok(designers);
   }
 
@@ -777,6 +431,8 @@ public class TrainingDefinitionsRestController {
    *     absent
    * @param familyName restricts the result to authors whose family name matches, no restriction
    *     when absent
+   * @param name restricts the result to authors whose given name or family name matches every word
+   *     of it, no restriction when absent
    * @param pageable pageable parameter with information about pagination
    * @return the page of {@link UserRefDTO} authoring the definition
    */
@@ -794,9 +450,16 @@ public class TrainingDefinitionsRestController {
       @PathVariable("definitionId") Long trainingDefinitionId,
       @RequestParam(value = "givenName", required = false) String givenName,
       @RequestParam(value = "familyName", required = false) String familyName,
+      @Parameter(
+              description =
+                  "Restricts the result to users whose given name or family name matches every word of"
+                      + " the text.")
+          @RequestParam(value = "name", required = false)
+          String name,
       @ParameterObject Pageable pageable) {
     PageResultResource<UserRefDTO> designers =
-        trainingDefinitionFacade.getAuthors(trainingDefinitionId, pageable, givenName, familyName);
+        trainingDefinitionFacade.getAuthors(
+            trainingDefinitionId, pageable, new UserNameFilter(givenName, familyName, name));
     return ResponseEntity.ok(designers);
   }
 

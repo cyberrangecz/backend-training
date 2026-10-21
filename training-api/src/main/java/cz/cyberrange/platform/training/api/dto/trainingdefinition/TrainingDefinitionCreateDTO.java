@@ -1,11 +1,13 @@
 package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
-import cz.cyberrange.platform.training.api.dto.betatestinggroup.BetaTestingGroupCreateDTO;
+import cz.cyberrange.platform.training.api.dto.AbstractLevelCreateDTO;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Data;
 
 /** Encapsulates information about Training definition, intended for creation of new definition */
@@ -35,14 +37,17 @@ public class TrainingDefinitionCreateDTO {
   private TDState state;
 
   /**
-   * When present, its organizer ids replace the group's membership on the created definition; when
-   * absent, the definition is created without a beta testing group
+   * Levels of the new definition in presentation order, none when left out; a level carries no id,
+   * and the definition's estimated duration is the sum of their estimated durations
    */
-  @Valid private BetaTestingGroupCreateDTO betaTestingGroup;
-
-  /** Governs whether the newly created definition is populated with a default set of levels */
   @Schema(
-      description = "Whether to also create a first info level and a first access level.",
-      example = "false")
-  private boolean defaultContent;
+      description =
+          "The definition's levels in order, none when left out. Levels and their hints,"
+              + " questions, choices and matching items carry no ids; the server assigns them and"
+              + " a level carrying an id is refused.")
+  @NotNull(message = "{trainingDefinition.levels.NotNull.message}")
+  private List<
+          @Valid @NotNull(message = "{trainingDefinition.level.NotNull.message}")
+          AbstractLevelCreateDTO>
+      levels = new ArrayList<>();
 }

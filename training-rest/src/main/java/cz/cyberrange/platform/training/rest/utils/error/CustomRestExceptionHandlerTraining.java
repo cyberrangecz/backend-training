@@ -13,12 +13,12 @@ import jakarta.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -46,12 +46,12 @@ import org.springframework.web.util.UrlPathHelper;
  * ApiError#getStatus()} value regardless of the {@code headers} and {@code status} parameters
  * supplied by the overridden {@link ResponseEntityExceptionHandler} methods.
  */
+@Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @RestControllerAdvice
 public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionHandler {
 
   private static final UrlPathHelper URL_PATH_HELPER = new UrlPathHelper();
-  private static Logger LOG = LoggerFactory.getLogger(CustomRestExceptionHandlerTraining.class);
 
   /** Always answers with {@link HttpStatus#BAD_REQUEST}, ignoring the framework-derived status */
   @Override
@@ -417,6 +417,28 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
   }
 
   /**
+   * Always answers with {@link HttpStatus#CONFLICT}, for a write whose row another transaction
+   * changed after this one read it. The body carries fixed texts only; the exception's own message
+   * is written to the log.
+   */
+  @ExceptionHandler({OptimisticLockingFailureException.class})
+  public ResponseEntity<Object> handleOptimisticLockingFailureException(
+      final OptimisticLockingFailureException ex,
+      final WebRequest request,
+      HttpServletRequest req) {
+    String path = URL_PATH_HELPER.getRequestUri(req);
+    log.warn("Concurrent write refused on {}: {}", path, ex.getMessage(), ex);
+    final ApiError apiError =
+        ApiError.of(
+            HttpStatus.CONFLICT,
+            "Write refused: another request changed the same data first. Reload it and repeat the"
+                + " change.",
+            "The stored data changed after this request read it.",
+            path);
+    return ApiErrorResponder.asJson(apiError);
+  }
+
+  /**
    * Catches every exception not matched by a more specific handler in this class and always answers
    * with {@link HttpStatus#INTERNAL_SERVER_ERROR}, reporting the deepest cause of {@code ex} as the
    * error description
@@ -446,19 +468,6 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return exception;
   }
 
-  private String getFullStackTrace(Exception exception) {
-    try (StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw)) {
-      exception.printStackTrace(pw);
-      String fullStackTrace = sw.toString();
-      LOG.error(fullStackTrace);
-      return fullStackTrace;
-    } catch (IOException e) {
-      LOG.error("It was not possible to get the stack trace for that exception: ", e);
-    }
-    return "It was not possible to get the stack trace for that exception.";
-  }
-
   /**
    * Logs {@code exception}'s full stack trace at error level and returns {@link
    * Exception#getMessage()} despite its name
@@ -467,10 +476,10 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     try (StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw)) {
       exception.printStackTrace(pw);
-      LOG.error(sw.toString());
+      log.error(sw.toString());
       return exception.getMessage();
     } catch (IOException ex) {
-      LOG.error("It was not possible to get the stack trace for that exception: ", ex);
+      log.error("It was not possible to get the stack trace for that exception: ", ex);
     }
     return "It was not possible to get the stack trace for that exception.";
   }

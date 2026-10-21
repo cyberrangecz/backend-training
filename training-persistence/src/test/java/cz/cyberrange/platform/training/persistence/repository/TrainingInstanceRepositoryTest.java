@@ -120,4 +120,20 @@ public class TrainingInstanceRepositoryTest {
 
     assertFalse(trainingInstanceRepository.existsForToken("non-existing-token"));
   }
+
+  @Test
+  public void countGroupedByTrainingDefinitionCountsInstancesPerDefinition() {
+    entityManager.persist(trainingInstance1);
+    entityManager.persist(trainingInstance2);
+    TrainingDefinition definitionWithoutInstances =
+        entityManager.persist(testDataFactory.getUnreleasedDefinition());
+
+    List<TrainingInstanceRepository.DefinitionInstanceCount> counts =
+        trainingInstanceRepository.countGroupedByTrainingDefinition(
+            List.of(trainingDefinition.getId(), definitionWithoutInstances.getId()));
+
+    assertEquals(1, counts.size());
+    assertEquals(trainingDefinition.getId(), counts.get(0).getDefinitionId());
+    assertEquals(2L, counts.get(0).getInstanceCount());
+  }
 }

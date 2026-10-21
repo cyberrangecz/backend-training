@@ -44,17 +44,7 @@ import org.hibernate.annotations.ConcreteProxy;
   @NamedQuery(
       name = "AbstractLevel.findLevelInDefinition",
       query =
-          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.id = :levelId"),
-  @NamedQuery(
-      name = "AbstractLevel.increaseOrderOfLevels",
-      query =
-          "UPDATE AbstractLevel l SET l.order = l.order + 1 "
-              + "WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.order >= :fromOrder AND l.order <= :toOrder"),
-  @NamedQuery(
-      name = "AbstractLevel.decreaseOrderOfLevels",
-      query =
-          "UPDATE AbstractLevel l SET l.order = l.order - 1 "
-              + "WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.order >= :fromOrder AND l.order <= :toOrder")
+          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.id = :levelId")
 })
 public abstract class AbstractLevel extends AbstractEntity<Long> {
 

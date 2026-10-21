@@ -24,8 +24,8 @@ public class TrainingInstanceFindAllResponseDTO {
   private String title;
 
   /**
-   * Mapped through {@code TrainingDefinitionMapper.mapToDTO}; its {@code canBeArchived} is never
-   * patched afterward here, so it always carries that flag's default value of false
+   * The instance's definition with its real {@code instanceCount}; its {@code canBeArchived} is not
+   * computed here, so it always carries that flag's default value of false
    */
   private TrainingDefinitionDTO trainingDefinition;
 

@@ -3,13 +3,8 @@ package cz.cyberrange.platform.training.service.facade;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
-import cz.cyberrange.platform.training.api.dto.accesslevel.AccessLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintBasicDTO;
-import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.AbstractTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
@@ -18,30 +13,17 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionMitreTechniquesDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
-import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.enums.QuestionType;
 import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
-import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
-import cz.cyberrange.platform.training.persistence.model.AccessLevel;
-import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.BetaTestingGroup;
-import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
-import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
-import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
-import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingOption;
-import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
-import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrAdmin;
-import cz.cyberrange.platform.training.service.annotations.security.IsDesignerOrOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsOrganizerOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.security.IsTraineeOrAdmin;
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
@@ -52,22 +34,19 @@ import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
+import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import cz.cyberrange.platform.training.service.services.UserService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -77,6 +56,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class TrainingDefinitionFacade {
+
+  /**
+   * Admits an administrator, and a designer or organizer who may see the training definition named
+   * by the {@code trainingDefinitionId} argument.
+   */
+  private static final String VISIBLE_DEFINITION_TO_DESIGNER_OR_ORGANIZER =
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + " or (hasAnyAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER,"
+          + " T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)"
+          + " and @securityService.isVisibleTrainingDefinition(#trainingDefinitionId))";
 
   private final TrainingDefinitionService trainingDefinitionService;
   private final UserService userService;
@@ -113,8 +102,7 @@ public class TrainingDefinitionFacade {
   /**
    * Finds one training definition together with the full detail of every level it holds and with
    * the flag telling whether it can be archived. Open to an administrator, an author of the
-   * definition, a member of its beta testing group, and an organizer of any instance created from
-   * it.
+   * definition, and an organizer of any instance created from it.
    *
    * @param id id of the training definition to return
    * @return the {@link TrainingDefinitionWithLevelsDTO} of that definition, its levels in
@@ -124,8 +112,7 @@ public class TrainingDefinitionFacade {
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)"
-          + "or @securityService.isOrganizerForGivenTrainingDefinition(#id)"
-          + "or @securityService.isBetaTesterOfGivenTrainingDefinition(#id)")
+          + "or @securityService.isOrganizerForGivenTrainingDefinition(#id)")
   @TransactionalRO
   public TrainingDefinitionWithLevelsDTO findById(Long id) {
     TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
@@ -134,30 +121,18 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Sets the archiving flag on the given definition DTO according to whether the definition it
-   * describes can currently be archived.
+   * Sets the archiving flag and the instance count on the given definition DTO according to whether
+   * the definition it describes can currently be archived and how many training instances it has.
    *
    * @param trainingDefinitionDTO the DTO to complete, carrying the id of the definition to decide
    *     for
-   * @return the same instance, with the flag set
+   * @return the same instance, with the flag and the count set
    */
   private <T extends TrainingDefinitionDTO> T addArchivingInfo(T trainingDefinitionDTO) {
     trainingDefinitionDTO.setCanBeArchived(
         trainingDefinitionService.canBeArchived(trainingDefinitionDTO.getId()));
+    trainingDefinitionService.completeInstanceCounts(List.of(trainingDefinitionDTO));
     return trainingDefinitionDTO;
-  }
-
-  /**
-   * Collects the basic level information of every level of the given definition, in presentation
-   * order.
-   *
-   * @param definitionId id of the definition whose levels are collected
-   * @return the levels' basic information, empty when the definition holds none
-   */
-  private List<BasicLevelInfoDTO> gatherBasicLevelInfo(Long definitionId) {
-    return trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
-        .map(this.levelMapper::mapToBasicLevelInfoDTO)
-        .collect(Collectors.toList());
   }
 
   /**
@@ -191,8 +166,7 @@ public class TrainingDefinitionFacade {
 
   /**
    * Finds Training Definitions matching the given predicate. An administrator sees every matching
-   * definition; any other caller sees only definitions where they are an author or a beta testing
-   * organizer.
+   * definition; any other caller sees only definitions where they are an author.
    *
    * @param predicate represents a predicate (boolean-valued function) of one argument.
    * @param pageable pageable parameter with information about pagination.
@@ -213,10 +187,10 @@ public class TrainingDefinitionFacade {
 
   /**
    * Maps a page of training definition entities to their DTOs and sets each one's archiving flag
-   * according to whether any of its training instances ends in the future.
+   * according to whether any of its training instances ends in the future, and its instance count.
    *
    * @param trainingDefinitionPage the page of entities to map
-   * @return the mapped page, with the archiving flag set on every DTO
+   * @return the mapped page, with the archiving flag and the instance count set on every DTO
    */
   private PageResultResource<TrainingDefinitionDTO> mapToDtoAndAddArchivingInfo(
       Page<TrainingDefinition> trainingDefinitionPage) {
@@ -233,6 +207,7 @@ public class TrainingDefinitionFacade {
       trainingDefinitionDTO.setCanBeArchived(
           !definitionIdsWithRunningInstance.contains(trainingDefinitionDTO.getId()));
     }
+    trainingDefinitionService.completeInstanceCounts(resource.getContent());
     return resource;
   }
 
@@ -269,9 +244,8 @@ public class TrainingDefinitionFacade {
   /**
    * Finds Training Definitions in the given state, restricted to those the caller may see. For
    * {@link TDState#RELEASED} every released definition is returned. For {@link TDState#UNRELEASED},
-   * an administrator sees every unreleased definition; a caller holding both the designer and
-   * organizer roles sees unreleased definitions where they are a designer or organizer; any other
-   * caller sees only unreleased definitions where they are an organizer.
+   * an administrator sees every unreleased definition; a caller holding the designer role sees the
+   * unreleased definitions where they are an author; any other caller sees none.
    *
    * @param state whether released or unreleased definitions are wanted
    * @param pageable pageable parameter with information about pagination.
@@ -281,6 +255,14 @@ public class TrainingDefinitionFacade {
   @IsOrganizerOrAdmin
   @TransactionalRO
   public PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizers(
+      TDState state, Pageable pageable) {
+    PageResultResource<TrainingDefinitionInfoDTO> page =
+        findAllForOrganizersWithoutCounts(state, pageable);
+    trainingDefinitionService.completeInstanceCounts(page.getContent());
+    return page;
+  }
+
+  private PageResultResource<TrainingDefinitionInfoDTO> findAllForOrganizersWithoutCounts(
       TDState state, Pageable pageable) {
     Long loggedInUserId = securityService.getUserRefIdFromUserAndGroup();
     if (state == TDState.RELEASED) {
@@ -293,14 +275,11 @@ public class TrainingDefinitionFacade {
             trainingDefinitionService.findAllByState(
                 cz.cyberrange.platform.training.persistence.model.enums.TDState.UNRELEASED,
                 pageable));
-      } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER)
-          && securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)) {
+      } else if (securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_DESIGNER)) {
         return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
-            trainingDefinitionService.findAllForDesignersAndOrganizersUnreleased(
-                loggedInUserId, pageable));
+            trainingDefinitionService.findAllForDesignersUnreleased(loggedInUserId, pageable));
       } else {
-        return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(
-            trainingDefinitionService.findAllForOrganizersUnreleased(loggedInUserId, pageable));
+        return trainingDefinitionMapper.mapToPageResultResourceInfoDTO(Page.empty(pageable));
       }
     }
     throw new BadRequestException(
@@ -308,95 +287,83 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Creates a new training definition, assigning the requesting user as an author and, when a beta
-   * testing group is given, creating that group with its organizers. When the request asks for
-   * default content, a first info level and a first access level with default content are created
-   * alongside it.
+   * Creates a new training definition together with its levels, assigning the requesting user as an
+   * author.
    *
-   * @param trainingDefinition the definition to create
+   * @param trainingDefinition the definition to create, its levels in presentation order
    * @return the created definition together with its levels, {@link
    *     TrainingDefinitionWithLevelsDTO}
+   * @throws BadRequestException when a level carries an id or fails a content check
+   * @throws cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException when a
+   *     training level's hint penalties exceed its maximal score
    */
   @IsDesignerOrAdmin
   @TransactionalWO
   public TrainingDefinitionWithLevelsDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
     TrainingDefinition newTrainingDefinition =
         trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
-    if (trainingDefinition.getBetaTestingGroup() != null) {
-      addOrganizersToTrainingDefinition(
-          newTrainingDefinition, trainingDefinition.getBetaTestingGroup().getOrganizersRefIds());
-    }
     TrainingDefinition createdTrainingDefinition =
         trainingDefinitionService.create(
-            newTrainingDefinition, trainingDefinition.isDefaultContent());
-    return addArchivingInfo(
-        trainingDefinitionMapper.mapToDTOWithLevels(
-            createdTrainingDefinition, gatherLevels(createdTrainingDefinition.getId())));
+            newTrainingDefinition,
+            trainingDefinition.getLevels().stream()
+                .map(levelMapper::mapCreateToEntity)
+                .collect(Collectors.toList()));
+    return mapToDTOWithoutInstances(createdTrainingDefinition);
   }
 
   /**
-   * Updates a training definition, carrying its creation timestamp and estimated duration over from
-   * the stored definition, and its existing authors joined by the requesting user. Reachable only
-   * by an administrator or by a designer of the definition being updated. The beta testing group
-   * cannot be removed by this call: if the request carries none while the stored definition has
-   * one, the update is refused.
+   * Replaces the content and the whole level list of a training definition in one transaction,
+   * keeping its state, creation time and existing authors, which the requesting user joins. A level
+   * without an id is created, a level carrying the id of one of the definition's levels replaces
+   * that level, and every stored level the list leaves out is deleted. Reachable only by an
+   * administrator or by a designer of the definition.
    *
-   * @param trainingDefinitionUpdateDTO the update, carrying the id of the definition to update
-   * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the stored definition's beta testing group would be
-   *     removed, or when the definition is not {@link TDState#UNRELEASED} or already has a training
-   *     instance
+   * @param definitionId id of the definition to update
+   * @param trainingDefinitionUpdateDTO the new content and levels, with the version it was made on
+   * @return the updated definition together with its levels, its new version, its instance count
+   *     and the flag telling whether it can be archived, {@link TrainingDefinitionWithLevelsDTO}
+   * @throws EntityNotFoundException when no training definition with the given id exists, or a
+   *     level id names no level of the definition
+   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED}, already
+   *     has a training instance, or carries another version
+   * @throws BadRequestException when a level id repeats, a level would change its type, or a level
+   *     fails a content check
+   * @throws cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException when a
+   *     training level's hint penalties exceed its maximal score
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionUpdateDTO.getId())")
+          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
   @TransactionalWO
-  public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
-    TrainingDefinition mappedTrainingDefinition =
-        trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
-    TrainingDefinition trainingDefinition =
-        trainingDefinitionService.findById(trainingDefinitionUpdateDTO.getId());
-    mappedTrainingDefinition.setCreatedAt(trainingDefinition.getCreatedAt());
-    mappedTrainingDefinition.setAuthors(new HashSet<>(trainingDefinition.getAuthors()));
-    if (trainingDefinitionUpdateDTO.getBetaTestingGroup() != null) {
-      addOrganizersToTrainingDefinition(
-          mappedTrainingDefinition,
-          trainingDefinitionUpdateDTO.getBetaTestingGroup().getOrganizersRefIds());
-      if (trainingDefinition.getBetaTestingGroup() != null) {
-        trainingDefinition
-            .getBetaTestingGroup()
-            .setId(trainingDefinition.getBetaTestingGroup().getId());
-      }
-    } else if (trainingDefinition.getBetaTestingGroup() != null) {
-      throw new EntityConflictException(
-          new EntityErrorDetail(
-              BetaTestingGroup.class,
-              "id",
-              Long.class,
-              trainingDefinition.getBetaTestingGroup().getId(),
-              "Cannot delete beta testing group. You only can remove organizers from group."));
-    }
-    trainingDefinitionService.update(mappedTrainingDefinition);
+  public TrainingDefinitionWithLevelsDTO update(
+      Long definitionId, TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
+    TrainingDefinition updatedTrainingDefinition =
+        trainingDefinitionService.update(
+            definitionId,
+            trainingDefinitionUpdateDTO.getVersion(),
+            trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO),
+            trainingDefinitionUpdateDTO.getLevels().stream()
+                .map(levelMapper::mapUpdateToEntity)
+                .collect(Collectors.toList()));
+    return addArchivingInfo(
+        trainingDefinitionMapper.mapToDTOWithLevels(
+            updatedTrainingDefinition, gatherLevels(definitionId)));
   }
 
   /**
-   * Replaces the organizers of the given training definition's beta testing group with the users
-   * carrying the given ids, creating a local user reference for any of them that does not have one
-   * yet.
+   * Maps a stored training definition that has no training instance to its DTO with its levels,
+   * marked as one that can be archived and counting no instance.
    *
-   * @param trainingDefinition the definition whose beta testing group's organizers are replaced
-   * @param userRefIds cross-service ids of the users to set as organizers
+   * @param trainingDefinition the stored definition to map
+   * @return the definition together with its levels in presentation order
    */
-  private void addOrganizersToTrainingDefinition(
-      TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
-    trainingDefinition.getBetaTestingGroup().setOrganizers(new HashSet<>());
-    PageResultResource<UserRefDTO> organizers =
-        userService.getUsersRefDTOByGivenUserIds(
-            new ArrayList<>(userRefIds), PageRequest.of(0, 999), null, null);
-    for (UserRefDTO organizer : organizers.getContent()) {
-      UserRef userRef = userService.createOrGetUserRef(organizer.getUserRefId());
-      trainingDefinition.getBetaTestingGroup().addOrganizer(userRef);
-    }
+  private TrainingDefinitionWithLevelsDTO mapToDTOWithoutInstances(
+      TrainingDefinition trainingDefinition) {
+    TrainingDefinitionWithLevelsDTO trainingDefinitionDTO =
+        trainingDefinitionMapper.mapToDTOWithLevels(
+            trainingDefinition, gatherLevels(trainingDefinition.getId()));
+    trainingDefinitionDTO.setCanBeArchived(true);
+    return trainingDefinitionDTO;
   }
 
   /**
@@ -414,55 +381,7 @@ public class TrainingDefinitionFacade {
           + "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
   @TransactionalWO
   public TrainingDefinitionWithLevelsDTO clone(Long id, String title) {
-    TrainingDefinition clonedDefinition = trainingDefinitionService.clone(id, title);
-    return addArchivingInfo(
-        trainingDefinitionMapper.mapToDTOWithLevels(
-            clonedDefinition, gatherLevels(clonedDefinition.getId())));
-  }
-
-  /**
-   * Swaps the order of two levels within a training definition, so each takes the other's position,
-   * and records the definition as edited.
-   *
-   * @param definitionId id of the definition containing the levels
-   * @param swapLevelFrom id of the first level to swap
-   * @param swapLevelTo id of the second level to swap
-   * @return the basic information of every level of the definition, in presentation order
-   * @throws EntityNotFoundException when the definition or either level does not exist
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public List<BasicLevelInfoDTO> swapLevels(
-      Long definitionId, Long swapLevelFrom, Long swapLevelTo) {
-    trainingDefinitionService.swapLevels(definitionId, swapLevelFrom, swapLevelTo);
-    return gatherBasicLevelInfo(definitionId);
-  }
-
-  /**
-   * Moves a level to a new position within its definition, shifting the levels between the old and
-   * new position to close the gap, and records the definition as edited. A requested position
-   * outside the definition's range is clamped to the nearest valid position rather than rejected.
-   *
-   * @param definitionId id of the definition containing the level
-   * @param levelIdToBeMoved id of the level to move
-   * @param newPosition position to move the level to
-   * @return the basic information of every level of the definition, in presentation order
-   * @throws EntityNotFoundException when the definition or the level does not exist
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public List<BasicLevelInfoDTO> moveLevel(
-      Long definitionId, Long levelIdToBeMoved, Integer newPosition) {
-    trainingDefinitionService.moveLevel(definitionId, levelIdToBeMoved, newPosition);
-    return gatherBasicLevelInfo(definitionId);
+    return mapToDTOWithoutInstances(trainingDefinitionService.clone(id, title));
   }
 
   /**
@@ -482,285 +401,17 @@ public class TrainingDefinitionFacade {
   }
 
   /**
-   * Deletes a level, shifting the order of every level after it back by one and reducing the
-   * definition's estimated duration by the deleted level's own estimated duration.
-   *
-   * @param definitionId - id of definition containing level to be deleted
-   * @param levelId - id of level to be deleted
-   * @return the list of {@link BasicLevelInfoDTO} about all levels from given definition
-   * @throws EntityNotFoundException when the definition or the level does not exist
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED}
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public List<BasicLevelInfoDTO> deleteOneLevel(Long definitionId, Long levelId) {
-    trainingDefinitionService.deleteOneLevel(definitionId, levelId);
-    return gatherBasicLevelInfo(definitionId);
-  }
-
-  /**
-   * Updates several levels of one training definition in a single call, dispatching each update to
-   * the handling matching its level type. For an assessment level of type {@link
-   * AssessmentType#TEST}, the correct option of every extended matching statement is resolved and
-   * set before the level is saved.
-   *
-   * @param definitionId - id of training definition containing levels to be updated
-   * @param updatedLevelDTOs updated levels to be stored
-   * @throws EntityNotFoundException when the definition does not exist, or when one of the given
-   *     levels does not belong to it
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   * @throws BadRequestException when a TEST assessment level leaves the correct option of an
-   *     extended matching statement unset
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public void updateLevels(Long definitionId, List<AbstractLevelUpdateDTO> updatedLevelDTOs) {
-    TrainingDefinition trainingDefinition = trainingDefinitionService.findById(definitionId);
-    trainingDefinitionService.checkIfCanBeUpdated(trainingDefinition);
-    Map<Long, AbstractLevel> persistedLevelsById =
-        trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
-            .collect(Collectors.toMap(AbstractLevel::getId, Function.identity()));
-    for (var updatedLevelDTO : updatedLevelDTOs) {
-      AbstractLevel persistedLevel = persistedLevelsById.get(updatedLevelDTO.getId());
-      if (persistedLevel == null) {
-        throw new EntityNotFoundException(
-            new EntityErrorDetail(
-                AbstractLevel.class,
-                "id",
-                Long.class,
-                updatedLevelDTO.getId(),
-                "Level was not found in definition (id: " + definitionId + ")."));
-      }
-      switch (updatedLevelDTO.getLevelType()) {
-        case TRAINING_LEVEL:
-          TrainingLevel updatedTrainingLevel =
-              levelMapper.mapUpdateToEntity((TrainingLevelUpdateDTO) updatedLevelDTO);
-          trainingDefinitionService.updateTrainingLevel(
-              updatedTrainingLevel, (TrainingLevel) persistedLevel);
-          break;
-        case ACCESS_LEVEL:
-          AccessLevel updatedAccessLevel =
-              levelMapper.mapUpdateToEntity((AccessLevelUpdateDTO) updatedLevelDTO);
-          trainingDefinitionService.updateAccessLevel(
-              updatedAccessLevel, (AccessLevel) persistedLevel);
-          break;
-        case INFO_LEVEL:
-          InfoLevel updatedInfoLevel =
-              levelMapper.mapUpdateToEntity((InfoLevelUpdateDTO) updatedLevelDTO);
-          trainingDefinitionService.updateInfoLevel(updatedInfoLevel, (InfoLevel) persistedLevel);
-          break;
-        case ASSESSMENT_LEVEL:
-          AssessmentLevel updatedAssessmentLevel =
-              levelMapper.mapUpdateToEntity((AssessmentLevelUpdateDTO) updatedLevelDTO);
-          if (updatedAssessmentLevel.getAssessmentType() == AssessmentType.TEST) {
-            this.checkAndSetCorrectOptionsOfStatements(
-                updatedAssessmentLevel, (AssessmentLevelUpdateDTO) updatedLevelDTO);
-          }
-          trainingDefinitionService.updateAssessmentLevel(
-              updatedAssessmentLevel, (AssessmentLevel) persistedLevel);
-          break;
-      }
-    }
-    this.trainingDefinitionService.auditAndSave(trainingDefinition);
-  }
-
-  /**
-   * Updates a training level of the given training definition.
-   *
-   * @param definitionId - id of training definition containing level to be updated
-   * @param trainingLevel to be updated
-   * @throws EntityNotFoundException when the definition does not exist, the level does not exist,
-   *     or the level does not belong to the definition
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public void updateTrainingLevel(Long definitionId, TrainingLevelUpdateDTO trainingLevel) {
-    TrainingLevel trainingLevelToUpdate = levelMapper.mapUpdateToEntity(trainingLevel);
-    TrainingLevel updatedTrainingLevel =
-        trainingDefinitionService.updateTrainingLevel(definitionId, trainingLevelToUpdate);
-    this.trainingDefinitionService.auditAndSave(updatedTrainingLevel.getTrainingDefinition());
-  }
-
-  /**
-   * Updates an info level of the given training definition.
-   *
-   * @param definitionId - id of training definition containing level to be updated
-   * @param infoLevel to be updated
-   * @throws EntityNotFoundException when the definition does not exist, the level does not exist,
-   *     or the level does not belong to the definition
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public void updateInfoLevel(Long definitionId, InfoLevelUpdateDTO infoLevel) {
-    InfoLevel updatedInfoLevel =
-        trainingDefinitionService.updateInfoLevel(
-            definitionId, levelMapper.mapUpdateToEntity(infoLevel));
-    this.trainingDefinitionService.auditAndSave(updatedInfoLevel.getTrainingDefinition());
-  }
-
-  /**
-   * Updates an assessment level of the given training definition. When the assessment is of type
-   * {@link AssessmentType#TEST}, the correct option of every extended matching statement is
-   * resolved and set before the level is saved.
-   *
-   * @param definitionId - id of training definition containing level to be updated
-   * @param assessmentLevelToUpdate to be updated
-   * @throws EntityNotFoundException when the definition does not exist, the level does not exist,
-   *     or the level does not belong to the definition
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   * @throws BadRequestException when a TEST assessment leaves the correct option of an extended
-   *     matching statement unset
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public void updateAssessmentLevel(
-      Long definitionId, AssessmentLevelUpdateDTO assessmentLevelToUpdate) {
-    AssessmentLevel assessmentLevel = levelMapper.mapUpdateToEntity(assessmentLevelToUpdate);
-    if (assessmentLevel.getAssessmentType() == AssessmentType.TEST) {
-      this.checkAndSetCorrectOptionsOfStatements(assessmentLevel, assessmentLevelToUpdate);
-    }
-    AssessmentLevel updatedAssessmentLevel =
-        trainingDefinitionService.updateAssessmentLevel(definitionId, assessmentLevel);
-    this.trainingDefinitionService.auditAndSave(updatedAssessmentLevel.getTrainingDefinition());
-  }
-
-  /**
-   * Resolves and sets the correct extended matching option of every extended matching statement of
-   * every EMI question in the given assessment level, matching statement and option by their order
-   * within the question.
-   *
-   * @param assessmentLevel the mapped assessment level whose statements are completed in place
-   * @param assessmentLevelUpdateDTO the update carrying the correct option order for each statement
-   * @throws BadRequestException when a statement leaves its correct option order unset
-   */
-  private void checkAndSetCorrectOptionsOfStatements(
-      AssessmentLevel assessmentLevel, AssessmentLevelUpdateDTO assessmentLevelUpdateDTO) {
-    assessmentLevelUpdateDTO.getQuestions().stream()
-        .filter(questionDTO -> questionDTO.getQuestionType() == QuestionType.EMI)
-        .forEach(
-            questionDTO ->
-                questionDTO
-                    .getExtendedMatchingStatements()
-                    .forEach(
-                        statementDTO -> {
-                          if (statementDTO.getCorrectOptionOrder() == null) {
-                            throw new BadRequestException(
-                                "You must set the correct option for the each statement in the assessment of the type TEST");
-                          }
-                          Question question =
-                              assessmentLevel.getQuestions().get(questionDTO.getOrder());
-                          ExtendedMatchingOption correctOption =
-                              question
-                                  .getExtendedMatchingOptions()
-                                  .get(statementDTO.getCorrectOptionOrder());
-                          ExtendedMatchingStatement statementToUpdate =
-                              question.getExtendedMatchingStatements().get(statementDTO.getOrder());
-                          statementToUpdate.setExtendedMatchingOption(correctOption);
-                        }));
-  }
-
-  /**
-   * Creates a new info level with default content, appended after the definition's current last
-   * level.
-   *
-   * @param definitionId - id of definition in which level will be created
-   * @return {@link BasicLevelInfoDTO} of new info level
-   * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public BasicLevelInfoDTO createInfoLevel(Long definitionId) {
-    InfoLevel newInfoLevel = trainingDefinitionService.createInfoLevel(definitionId);
-    return levelMapper.mapTo(newInfoLevel);
-  }
-
-  /**
-   * Creates a new training level with default placeholder content, appended after the definition's
-   * current last level.
-   *
-   * @param definitionId - id of definition in which level will be created
-   * @return {@link BasicLevelInfoDTO} of new training level
-   * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public BasicLevelInfoDTO createTrainingLevel(Long definitionId) {
-    TrainingLevel newTrainingLevel = trainingDefinitionService.createTrainingLevel(definitionId);
-    return levelMapper.mapTo(newTrainingLevel);
-  }
-
-  /**
-   * Creates a new access level with default content, appended after the definition's current last
-   * level.
-   *
-   * @param definitionId - id of definition in which level will be created
-   * @return {@link BasicLevelInfoDTO} of new access level
-   * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public BasicLevelInfoDTO createAccessLevel(Long definitionId) {
-    AccessLevel newAccessLevel = trainingDefinitionService.createAccessLevel(definitionId);
-    return levelMapper.mapTo(newAccessLevel);
-  }
-
-  /**
-   * Creates a new assessment level of type {@link AssessmentType#QUESTIONNAIRE} with default
-   * placeholder content, appended after the definition's current last level.
-   *
-   * @param definitionId - id of definition in which level will be created
-   * @return {@link BasicLevelInfoDTO} of new assessment level
-   * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED} or
-   *     already has a training instance
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
-          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
-  @TransactionalWO
-  public BasicLevelInfoDTO createAssessmentLevel(Long definitionId) {
-    AssessmentLevel newAssessmentLevel =
-        trainingDefinitionService.createAssessmentLevel(definitionId);
-    return levelMapper.mapTo(newAssessmentLevel);
-  }
-
-  /**
-   * Finds a level by id. Reachable by any designer or administrator, regardless of whether they are
-   * a designer of the level's own training definition.
+   * Finds a level by id. Reachable by an administrator, and by a designer when the level's training
+   * definition is not unreleased or the designer authors it.
    *
    * @param levelId - id of wanted level
    * @return wanted {@link AbstractLevelDTO}
    * @throws EntityNotFoundException when no level with the given id exists
    */
-  @IsDesignerOrAdmin
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + " or (hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_DESIGNER)"
+          + " and @securityService.isVisibleLevel(#levelId))")
   @TransactionalRO
   public AbstractLevelDTO findLevelById(Long levelId) {
     return levelMapper.mapToDTO(trainingDefinitionService.findLevelById(levelId));
@@ -822,12 +473,16 @@ public class TrainingDefinitionFacade {
     Map<Long, List<AbstractLevelBasicDTO>> levelsByDefinitionId =
         gatherBasicLevelsByDefinitionId(
             definitions.stream().map(TrainingDefinition::getId).collect(Collectors.toList()));
-    return definitions.stream()
-        .map(
-            definition ->
-                trainingDefinitionMapper.mapToBasicDTO(
-                    definition, levelsByDefinitionId.getOrDefault(definition.getId(), List.of())))
-        .collect(Collectors.toList());
+    List<TrainingDefinitionBasicDTO> basicDTOs =
+        definitions.stream()
+            .map(
+                definition ->
+                    trainingDefinitionMapper.mapToBasicDTO(
+                        definition,
+                        levelsByDefinitionId.getOrDefault(definition.getId(), List.of())))
+            .collect(Collectors.toList());
+    trainingDefinitionService.completeInstanceCounts(basicDTOs);
+    return basicDTOs;
   }
 
   /**
@@ -861,83 +516,48 @@ public class TrainingDefinitionFacade {
 
   /**
    * Retrieves one page of the given training definition's authors from the user-and-group service,
-   * identified by their cross-service user reference ids.
+   * identified by their cross-service user reference ids. Reachable by an administrator, and by a
+   * designer or organizer when the definition is not unreleased or the caller authors it.
    *
    * @param trainingDefinitionId id of the training definition whose authors are retrieved
    * @param pageable pageable parameter with information about pagination.
-   * @param givenName restricts the result to authors whose given name matches, no restriction when
-   *     null
-   * @param familyName restricts the result to authors whose family name matches, no restriction
-   *     when null
+   * @param nameFilter restricts the result to authors matching it by name
    * @return the requested page of authors
    * @throws EntityNotFoundException when no training definition with the given id exists
    * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
    *     to the user-and-group service fails
    */
-  @IsDesignerOrOrganizerOrAdmin
+  @PreAuthorize(VISIBLE_DEFINITION_TO_DESIGNER_OR_ORGANIZER)
+  @TransactionalRO
   public PageResultResource<UserRefDTO> getAuthors(
-      Long trainingDefinitionId, Pageable pageable, String givenName, String familyName) {
+      Long trainingDefinitionId, Pageable pageable, UserNameFilter nameFilter) {
     TrainingDefinition trainingDefinition =
         trainingDefinitionService.findById(trainingDefinitionId);
     return userService.getUsersRefDTOByGivenUserIds(
         trainingDefinition.getAuthors().stream().map(UserRef::getUserRefId).toList(),
         pageable,
-        givenName,
-        familyName);
-  }
-
-  /**
-   * Retrieves one page of a training definition's beta testing group organizers from the
-   * user-and-group service, identified by their cross-service user reference ids. Returns an empty
-   * page, without contacting that service, when the definition has no beta testing group or that
-   * group has no organizer.
-   *
-   * @param trainingDefinitionId id of the training definition whose beta testers are retrieved
-   * @param pageable pageable parameter with information about pagination.
-   * @return the requested page of beta testers, empty when the definition has none
-   * @throws EntityNotFoundException when no training definition with the given id exists
-   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
-   *     to the user-and-group service fails
-   */
-  @IsDesignerOrOrganizerOrAdmin
-  public PageResultResource<UserRefDTO> getBetaTesters(
-      Long trainingDefinitionId, Pageable pageable) {
-    TrainingDefinition trainingDefinition =
-        trainingDefinitionService.findById(trainingDefinitionId);
-    if (trainingDefinition.getBetaTestingGroup() != null
-        && !trainingDefinition.getBetaTestingGroup().getOrganizers().isEmpty()) {
-      return userService.getUsersRefDTOByGivenUserIds(
-          trainingDefinition.getBetaTestingGroup().getOrganizers().stream()
-              .map(UserRef::getUserRefId)
-              .toList(),
-          pageable,
-          null,
-          null);
-    }
-    return new PageResultResource<>(
-        Collections.emptyList(), new PageResultResource.Pagination(0, 0, 0, 0, 0));
+        nameFilter);
   }
 
   /**
    * Retrieves one page of the users holding the training designer role from the user-and-group
-   * service, excluding the given training definition's current authors.
+   * service, excluding the given training definition's current authors. Reachable by an
+   * administrator, and by a designer or organizer when the definition is not unreleased or the
+   * caller authors it.
    *
    * @param trainingDefinitionId id of the training definition whose authors are excluded from the
    *     result list.
    * @param pageable pageable parameter with information about pagination.
-   * @param givenName restricts the result to designers whose given name matches, no restriction
-   *     when null
-   * @param familyName restricts the result to designers whose family name matches, no restriction
-   *     when null
+   * @param nameFilter restricts the result to designers matching it by name
    * @return the requested page of designers, excluding the definition's authors
    * @throws EntityNotFoundException when no training definition with the given id exists
    * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when the call
    *     to the user-and-group service fails
    */
-  @IsDesignerOrOrganizerOrAdmin
+  @PreAuthorize(VISIBLE_DEFINITION_TO_DESIGNER_OR_ORGANIZER)
   @TransactionalRO
   public PageResultResource<UserRefDTO> getDesignersNotInGivenTrainingDefinition(
-      Long trainingDefinitionId, Pageable pageable, String givenName, String familyName) {
+      Long trainingDefinitionId, Pageable pageable, UserNameFilter nameFilter) {
     TrainingDefinition trainingDefinition =
         trainingDefinitionService.findById(trainingDefinitionId);
     Set<Long> excludedUsers =
@@ -945,7 +565,7 @@ public class TrainingDefinitionFacade {
             .map(UserRef::getUserRefId)
             .collect(Collectors.toSet());
     return userService.getUsersByGivenRoleAndNotWithGivenIds(
-        RoleType.ROLE_TRAINING_DESIGNER, excludedUsers, pageable, givenName, familyName);
+        RoleType.ROLE_TRAINING_DESIGNER, excludedUsers, pageable, nameFilter);
   }
 
   /**
@@ -988,7 +608,8 @@ public class TrainingDefinitionFacade {
    */
   private void addAuthorsToTrainingDefinition(
       TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
-    List<UserRefDTO> authors = getAllUsersRefsByGivenUsersIds(new ArrayList<>(userRefIds));
+    List<UserRefDTO> authors =
+        userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(userRefIds));
     Set<Long> actualAuthorsIds =
         trainingDefinition.getAuthors().stream()
             .map(UserRef::getUserRefId)
@@ -1000,28 +621,5 @@ public class TrainingDefinitionFacade {
       UserRef userRef = userService.createOrGetUserRef(author.getUserRefId());
       trainingDefinition.addAuthor(userRef);
     }
-  }
-
-  /**
-   * Retrieves the users carrying the given cross-service user reference ids in full, walking every
-   * page the user-and-group service reports.
-   *
-   * @param participantsRefIds cross-service user reference ids of the users to retrieve
-   * @return all matching users, unfiltered by name
-   * @throws cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException when any of the
-   *     calls to the user-and-group service fails
-   */
-  private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
-    List<UserRefDTO> users = new ArrayList<>();
-    PageResultResource<UserRefDTO> usersPageResultResource;
-    int page = 0;
-    do {
-      usersPageResultResource =
-          userService.getUsersRefDTOByGivenUserIds(
-              participantsRefIds, PageRequest.of(page, 999), null, null);
-      users.addAll(usersPageResultResource.getContent());
-      page++;
-    } while (page < usersPageResultResource.getPagination().getTotalPages());
-    return users;
   }
 }
