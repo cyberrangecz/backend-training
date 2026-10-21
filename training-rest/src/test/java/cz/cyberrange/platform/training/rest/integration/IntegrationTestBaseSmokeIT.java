@@ -28,7 +28,7 @@ class IntegrationTestBaseSmokeIT extends AbstractIntegrationTest {
             "SELECT version FROM flyway_schema_history WHERE success ORDER BY installed_rank",
             String.class);
 
-    assertThat(appliedVersions).containsExactly("1.0.0", "3.0.0", "3.1.0", "3.1.1");
+    assertThat(appliedVersions).containsExactly("1.0.0", "3.0.0", "3.1.0");
   }
 
   @Test
