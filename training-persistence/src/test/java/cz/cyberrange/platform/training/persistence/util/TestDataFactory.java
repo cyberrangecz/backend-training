@@ -209,11 +209,11 @@ public class TestDataFactory {
   private BasicLevelInfoDTO basicInfoLevelInfoDTO =
       generateBasicLevelInfoDTO("Basic Info Level info", LevelType.INFO_LEVEL);
 
-  private MitreTechnique mitreTechnique1 = generateMitreTechnique("T1548.002");
-  private MitreTechnique mitreTechnique2 = generateMitreTechnique("T2451.004");
+  private MitreTechnique mitreTechnique1 = generateMitreTechnique("TA0004.T1548.002");
+  private MitreTechnique mitreTechnique2 = generateMitreTechnique("TA0005.T2451.004");
 
-  private MitreTechniqueDTO mitreTechniqueDTO1 = generateMitreTechniqueDTO("T3548.003");
-  private MitreTechniqueDTO mitreTechniqueDTO2 = generateMitreTechniqueDTO("T5791.011");
+  private MitreTechniqueDTO mitreTechniqueDTO1 = generateMitreTechniqueDTO("TA0004.T3548.003");
+  private MitreTechniqueDTO mitreTechniqueDTO2 = generateMitreTechniqueDTO("TA0006.T5791.011");
 
   private Hint hint1 = generateHint("Hint 1", "Hint1 content", 25, 0);
   private Hint hint2 = generateHint("Hint 2", "Hint2 content", 50, 1);

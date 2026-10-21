@@ -52,7 +52,7 @@ public class MitreTechniqueRepositoryTest {
   @Test
   public void findByTechniqueKeysIn() {
     MitreTechnique mitreTechnique3 = new MitreTechnique();
-    mitreTechnique3.setTechniqueKey("T7933.001");
+    mitreTechnique3.setTechniqueKey("TA0007.T7933.001");
     entityManager.persist(mitreTechnique1);
     entityManager.persist(mitreTechnique2);
     entityManager.persist(mitreTechnique3);

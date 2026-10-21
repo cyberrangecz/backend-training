@@ -29,8 +29,8 @@ import org.mapstruct.factory.Mappers;
 class MitreTechniqueMapperTest {
 
   private static final Long ENTITY_ID = 42L;
-  private static final String TECHNIQUE_KEY = "T1548.001";
-  private static final String OTHER_TECHNIQUE_KEY = "T1548.002";
+  private static final String TECHNIQUE_KEY = "TA0004.T1548.001";
+  private static final String OTHER_TECHNIQUE_KEY = "TA0004.T1548.002";
 
   private MitreTechniqueMapper sut;
 
