@@ -11,7 +11,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriBuilder;
 
 /**
  * Client for the answer-storage microservice, which holds the generated variable answers for
@@ -163,8 +162,7 @@ public class AnswersStorageApiService {
    */
   public List<SandboxAnswersInfo> getAnswersBySandboxIds(List<String> sandboxIds) {
     try {
-      return getEverySandboxAnswersPage(
-          uriBuilder -> uriBuilder.queryParam("sandboxRefId", sandboxIds));
+      return getEverySandboxAnswersPage(query -> query.addAll("sandboxRefId", sandboxIds));
     } catch (CustomWebClientException ex) {
       throw new MicroserviceApiException(
           "Error when calling Answers Storage API to get correct answers for sandboxes (IDs: "
@@ -188,8 +186,7 @@ public class AnswersStorageApiService {
       String accessToken, List<Long> userIds) {
     try {
       return getEverySandboxAnswersPage(
-          uriBuilder ->
-              uriBuilder.queryParam("accessToken", accessToken).queryParam("userId", userIds));
+          query -> query.add("accessToken", accessToken).addAll("userId", userIds));
     } catch (CustomWebClientException ex) {
       throw new MicroserviceApiException(
           "Error when calling Answers Storage API to get correct answers for local sandboxes (accessToken: "
@@ -205,11 +202,12 @@ public class AnswersStorageApiService {
    * Requests the sandbox answers matching the given filter page by page, each page as large as
    * answer storage allows, until the last page has been read.
    *
-   * @param filter adds the filtering query parameters to the request URI
+   * @param filter adds the filtering query parameters to the request
    * @return the answers of every page, in page order
    * @throws CustomWebClientException when a page request fails
    */
-  private List<SandboxAnswersInfo> getEverySandboxAnswersPage(UnaryOperator<UriBuilder> filter) {
+  private List<SandboxAnswersInfo> getEverySandboxAnswersPage(
+      UnaryOperator<UriQueryParameters> filter) {
     List<SandboxAnswersInfo> answers = new ArrayList<>();
     int pageNumber = 0;
     int totalPages;
@@ -221,9 +219,9 @@ public class AnswersStorageApiService {
               .uri(
                   uriBuilder ->
                       filter
-                          .apply(uriBuilder.path(SANDBOXES_PATH))
-                          .queryParam("page", requestedPage)
-                          .queryParam("size", MAX_PAGE_SIZE)
+                          .apply(new UriQueryParameters(uriBuilder.path(SANDBOXES_PATH)))
+                          .add("page", requestedPage)
+                          .add("size", MAX_PAGE_SIZE)
                           .build())
               .retrieve()
               .bodyToMono(SANDBOX_ANSWERS_PAGE_TYPE)

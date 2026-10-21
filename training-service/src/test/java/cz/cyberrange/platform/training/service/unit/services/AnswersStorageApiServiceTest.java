@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -33,8 +34,7 @@ class AnswersStorageApiServiceTest {
         answers.stream().map(SandboxAnswersInfo::getSandboxRefId).toList());
     assertEquals(3, requestedUris.size());
     for (int page = 0; page < requestedUris.size(); page++) {
-      var queryParameters =
-          UriComponentsBuilder.fromUri(requestedUris.get(page)).build().getQueryParams();
+      var queryParameters = queryParametersOf(requestedUris.get(page));
       assertEquals(String.valueOf(page), queryParameters.getFirst("page"));
       assertEquals("2000", queryParameters.getFirst("size"));
       assertEquals(List.of("a", "b"), queryParameters.get("sandboxRefId"));
@@ -52,10 +52,33 @@ class AnswersStorageApiServiceTest {
 
     assertEquals(List.of(), answers);
     assertEquals(1, requestedUris.size());
-    var queryParameters =
-        UriComponentsBuilder.fromUri(requestedUris.getFirst()).build().getQueryParams();
+    var queryParameters = queryParametersOf(requestedUris.getFirst());
     assertEquals("token-1234", queryParameters.getFirst("accessToken"));
     assertEquals(List.of("1", "2"), queryParameters.get("userId"));
+  }
+
+  @Test
+  @DisplayName("getAnswersBySandboxIds, reserved characters in ids: forwards each id encoded")
+  void getAnswersBySandboxIds_reservedCharactersInIds_forwardsEachIdEncoded() {
+    AnswersStorageApiService service = serviceAnsweringPages(0);
+
+    service.getAnswersBySandboxIds(List.of("a+b", "{c}", "d&e=f", "100%"));
+
+    var queryParameters = queryParametersOf(requestedUris.getFirst());
+    assertEquals(
+        List.of("a%2Bb", "%7Bc%7D", "d%26e%3Df", "100%25"), queryParameters.get("sandboxRefId"));
+  }
+
+  @Test
+  @DisplayName(
+      "getAnswersByAccessTokenAndUserIds, reserved characters in token: forwards token encoded")
+  void getAnswersByAccessTokenAndUserIds_reservedCharactersInToken_forwardsTokenEncoded() {
+    AnswersStorageApiService service = serviceAnsweringPages(0);
+
+    service.getAnswersByAccessTokenAndUserIds("tok+{en}&x", List.of(1L));
+
+    var queryParameters = queryParametersOf(requestedUris.getFirst());
+    assertEquals(List.of("tok%2B%7Ben%7D%26x"), queryParameters.get("accessToken"));
   }
 
   /**
@@ -68,12 +91,7 @@ class AnswersStorageApiServiceTest {
             .exchangeFunction(
                 request -> {
                   requestedUris.add(request.url());
-                  int page =
-                      Integer.parseInt(
-                          UriComponentsBuilder.fromUri(request.url())
-                              .build()
-                              .getQueryParams()
-                              .getFirst("page"));
+                  int page = Integer.parseInt(queryParametersOf(request.url()).getFirst("page"));
                   return Mono.just(
                       ClientResponse.create(HttpStatus.OK)
                           .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -82,6 +100,10 @@ class AnswersStorageApiServiceTest {
                 })
             .build();
     return new AnswersStorageApiService(webClient);
+  }
+
+  private static MultiValueMap<String, String> queryParametersOf(URI uri) {
+    return UriComponentsBuilder.fromUri(uri).build().getQueryParams();
   }
 
   private static String pageJson(int page, int totalPages) {
