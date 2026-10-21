@@ -11,14 +11,10 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionInfoDTO;
-import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
-import cz.cyberrange.platform.training.persistence.model.BetaTestingGroup;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
-import cz.cyberrange.platform.training.persistence.model.UserRef;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.BetaTestingGroupMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
 import java.time.LocalDateTime;
@@ -44,7 +40,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 class TrainingDefinitionMapperTest {
 
   private static final Long ENTITY_ID = 42L;
-  private static final Long BTG_ID = 7L;
   private static final Long LEVEL_ID = 3L;
   private static final String TITLE = "Test Training";
   private static final String DESCRIPTION = "Test description";
@@ -59,24 +54,13 @@ class TrainingDefinitionMapperTest {
   private TrainingDefinitionMapper sut;
   private EnumMapper enumMapper;
 
-  private UserRef userRef;
-  private BetaTestingGroup betaTestingGroup;
   private TrainingDefinition entity;
 
   @BeforeEach
   void setUp() {
-    BetaTestingGroupMapper betaTestingGroupMapper = Mappers.getMapper(BetaTestingGroupMapper.class);
     enumMapper = Mappers.getMapper(EnumMapper.class);
     sut = Mappers.getMapper(TrainingDefinitionMapper.class);
     ReflectionTestUtils.setField(sut, "enumMapper", enumMapper);
-    ReflectionTestUtils.setField(sut, "betaTestingGroupMapper", betaTestingGroupMapper);
-
-    userRef = new UserRef();
-    userRef.setId(99L);
-    userRef.setUserRefId(100L);
-
-    betaTestingGroup = new BetaTestingGroup();
-    betaTestingGroup.setId(BTG_ID);
 
     entity = new TrainingDefinition();
     entity.setId(ENTITY_ID);
@@ -108,7 +92,6 @@ class TrainingDefinitionMapperTest {
       dto.setEstimatedDuration(ESTIMATED_DURATION);
       dto.setLastEdited(LAST_EDITED);
       dto.setLastEditedBy(LAST_EDITED_BY);
-      dto.setBetaTestingGroupId(BTG_ID);
       dto.setCanBeArchived(true);
       dto.setCreatedAt(CREATED_AT);
 
@@ -150,8 +133,6 @@ class TrainingDefinitionMapperTest {
     @Test
     @DisplayName("should map entity to DTO with levels")
     void shouldMapEntityToDtoWithLevels() {
-      entity.setBetaTestingGroup(betaTestingGroup);
-
       TrainingDefinitionWithLevelsDTO result = sut.mapToDTOWithLevels(entity, List.of());
 
       assertNotNull(result);
@@ -159,7 +140,6 @@ class TrainingDefinitionMapperTest {
       assertEquals(entity.getTitle(), result.getTitle());
       assertEquals(entity.getDescription(), result.getDescription());
       assertEquals(enumMapper.mapTDState(entity.getState()), result.getState());
-      assertEquals(BTG_ID, result.getBetaTestingGroupId());
     }
 
     @Test
@@ -181,14 +161,12 @@ class TrainingDefinitionMapperTest {
       entity.setDescription(null);
       entity.setPrerequisites(null);
       entity.setOutcomes(null);
-      entity.setBetaTestingGroup(null);
 
       TrainingDefinitionWithLevelsDTO result = sut.mapToDTOWithLevels(entity, List.of());
 
       assertNotNull(result);
       assertEquals(entity.getId(), result.getId());
       assertNull(result.getDescription());
-      assertNull(result.getBetaTestingGroupId());
     }
   }
 
@@ -199,8 +177,6 @@ class TrainingDefinitionMapperTest {
     @Test
     @DisplayName("should map entity to full DTO")
     void shouldMapEntityToDto() {
-      entity.setBetaTestingGroup(betaTestingGroup);
-
       TrainingDefinitionDTO result = sut.mapToDTO(entity);
 
       assertNotNull(result);
@@ -213,19 +189,6 @@ class TrainingDefinitionMapperTest {
       assertEquals(entity.getLastEdited(), result.getLastEdited());
       assertEquals(entity.getLastEditedBy(), result.getLastEditedBy());
       assertEquals(entity.getCreatedAt(), result.getCreatedAt());
-      assertEquals(BTG_ID, result.getBetaTestingGroupId());
-    }
-
-    @Test
-    @DisplayName("should map entity with null betaTestingGroup")
-    void shouldMapEntityWithNullBetaTestingGroup() {
-      entity.setBetaTestingGroup(null);
-
-      TrainingDefinitionDTO result = sut.mapToDTO(entity);
-
-      assertNotNull(result);
-      assertEquals(entity.getId(), result.getId());
-      assertNull(result.getBetaTestingGroupId());
     }
 
     @Test
@@ -236,7 +199,6 @@ class TrainingDefinitionMapperTest {
       entity.setDescription(null);
       entity.setPrerequisites(null);
       entity.setOutcomes(null);
-      entity.setBetaTestingGroup(null);
       entity.setLastEdited(null);
       entity.setLastEditedBy(null);
       entity.setCreatedAt(null);
@@ -246,7 +208,6 @@ class TrainingDefinitionMapperTest {
       assertNotNull(result);
       assertNull(result.getId());
       assertEquals("", result.getTitle());
-      assertNull(result.getBetaTestingGroupId());
     }
   }
 
@@ -347,7 +308,6 @@ class TrainingDefinitionMapperTest {
       dto.setTitle(TITLE);
       dto.setDescription(DESCRIPTION);
       dto.setState(STATE);
-      dto.setDefaultContent(false);
 
       TrainingDefinition result = sut.mapCreateToEntity(dto);
 
@@ -373,54 +333,12 @@ class TrainingDefinitionMapperTest {
   }
 
   @Nested
-  @DisplayName("mapUpdateToEntity(TrainingDefinitionUpdateDTO)")
-  class MapUpdateToEntity {
-
-    @Test
-    @DisplayName("should map update DTO to entity")
-    void shouldMapUpdateDtoToEntity() {
-      TrainingDefinitionUpdateDTO dto = new TrainingDefinitionUpdateDTO();
-      dto.setId(ENTITY_ID);
-      dto.setTitle(TITLE);
-      dto.setDescription(DESCRIPTION);
-      dto.setState(STATE);
-      dto.setShowStepperBar(true);
-
-      TrainingDefinition result = sut.mapUpdateToEntity(dto);
-
-      assertNotNull(result);
-      assertEquals(dto.getId(), result.getId());
-      assertEquals(dto.getTitle(), result.getTitle());
-      assertEquals(dto.getDescription(), result.getDescription());
-      assertEquals(enumMapper.mapTDState(dto.getState()), result.getState());
-    }
-
-    @Test
-    @DisplayName("should map update DTO with null fields")
-    void shouldMapUpdateDtoWithNullFields() {
-      TrainingDefinitionUpdateDTO dto = new TrainingDefinitionUpdateDTO();
-      dto.setId(ENTITY_ID);
-      dto.setTitle(null);
-      dto.setDescription(null);
-      dto.setState(null);
-
-      TrainingDefinition result = sut.mapUpdateToEntity(dto);
-
-      assertNotNull(result);
-      assertNull(result.getTitle());
-      assertNull(result.getDescription());
-      assertNull(result.getState());
-    }
-  }
-
-  @Nested
   @DisplayName("mapToPageResultResource(Page)")
   class MapToPageResultResource {
 
     @Test
-    @DisplayName("should map page with betaTestingGroup and set betaTestingGroupId")
-    void shouldMapPageWithBetaTestingGroupAndSetBetaTestingGroupId() {
-      entity.setBetaTestingGroup(betaTestingGroup);
+    @DisplayName("should map page of definitions")
+    void shouldMapPageOfDefinitions() {
       Page<TrainingDefinition> page = new PageImpl<>(List.of(entity), PageRequest.of(0, 10), 1);
 
       PageResultResource<TrainingDefinitionDTO> result = sut.mapToPageResultResource(page);
@@ -428,22 +346,8 @@ class TrainingDefinitionMapperTest {
       assertNotNull(result);
       assertNotNull(result.getContent());
       assertEquals(1, result.getContent().size());
-      assertEquals(BTG_ID, result.getContent().get(0).getBetaTestingGroupId());
       assertEquals(0, result.getPagination().getNumber());
       assertEquals(1, result.getPagination().getNumberOfElements());
-    }
-
-    @Test
-    @DisplayName("should map page with null betaTestingGroup and leave betaTestingGroupId null")
-    void shouldMapPageWithNullBetaTestingGroupAndLeaveBetaTestingGroupIdNull() {
-      entity.setBetaTestingGroup(null);
-      Page<TrainingDefinition> page = new PageImpl<>(List.of(entity), PageRequest.of(0, 10), 1);
-
-      PageResultResource<TrainingDefinitionDTO> result = sut.mapToPageResultResource(page);
-
-      assertNotNull(result);
-      assertEquals(1, result.getContent().size());
-      assertNull(result.getContent().get(0).getBetaTestingGroupId());
     }
 
     @Test

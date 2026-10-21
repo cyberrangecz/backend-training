@@ -11,6 +11,6 @@ public enum TDState {
   RELEASED,
   /** Retired from use; it may not be moved out of this state */
   ARCHIVED,
-  /** Still being authored, visible to its authors and its beta testing group */
+  /** Still being authored, visible to its authors */
   UNRELEASED;
 }

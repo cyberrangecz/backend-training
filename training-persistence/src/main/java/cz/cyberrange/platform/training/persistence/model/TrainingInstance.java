@@ -14,38 +14,17 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "training_instance")
-@NamedEntityGraphs({
-  @NamedEntityGraph(
-      name = "TrainingInstance.findAllAuthorsOrganizersBetaTestingGroupBetaTestingGroupOrganizers",
-      attributeNodes = {
-        @NamedAttributeNode(value = "organizers"),
-        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition"),
-      },
-      subgraphs = {
-        @NamedSubgraph(
-            name = "trainingDefinition",
-            attributeNodes = {
-              @NamedAttributeNode(value = "authors"),
-              @NamedAttributeNode(
-                  value = "betaTestingGroup",
-                  subgraph = "betaTestingGroup.organizers")
-            }),
-        @NamedSubgraph(
-            name = "betaTestingGroup.organizers",
-            attributeNodes = @NamedAttributeNode(value = "organizers"))
-      }),
-  @NamedEntityGraph(
-      name = "TrainingInstance.findByIdAuthorsOrganizers",
-      attributeNodes = {
-        @NamedAttributeNode(value = "organizers"),
-        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition.authors")
-      },
-      subgraphs = {
-        @NamedSubgraph(
-            name = "trainingDefinition.authors",
-            attributeNodes = @NamedAttributeNode(value = "authors"))
-      })
-})
+@NamedEntityGraph(
+    name = "TrainingInstance.findAllAuthorsOrganizers",
+    attributeNodes = {
+      @NamedAttributeNode(value = "organizers"),
+      @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition"),
+    },
+    subgraphs = {
+      @NamedSubgraph(
+          name = "trainingDefinition",
+          attributeNodes = @NamedAttributeNode(value = "authors"))
+    })
 @NamedQueries({
   // Matches an instance whose access token equals the given one and whose window (start time to
   // end time) currently contains the given moment.
@@ -55,16 +34,6 @@ import java.util.Set;
           "SELECT ti FROM TrainingInstance ti "
               + "JOIN FETCH ti.trainingDefinition td "
               + "WHERE ti.startTime < :datetime AND ti.endTime > :datetime AND ti.accessToken = :accessToken"),
-  @NamedQuery(
-      name = "TrainingInstance.findByIdIncludingDefinition",
-      query =
-          "SELECT ti FROM TrainingInstance ti "
-              + "LEFT OUTER JOIN FETCH ti.organizers "
-              + "JOIN FETCH ti.trainingDefinition td "
-              + "LEFT OUTER JOIN FETCH td.authors "
-              + "LEFT OUTER JOIN FETCH td.betaTestingGroup btg "
-              + "LEFT OUTER JOIN FETCH btg.organizers "
-              + "WHERE ti.id = :instanceId"),
   @NamedQuery(
       name = "TrainingInstance.findByPoolId",
       query = "SELECT ti FROM TrainingInstance ti " + "WHERE ti.poolId = :poolId"),

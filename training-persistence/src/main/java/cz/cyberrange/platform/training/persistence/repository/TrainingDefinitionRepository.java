@@ -50,15 +50,15 @@ public interface TrainingDefinitionRepository
   }
 
   /**
-   * Find all training definitions matching the given predicate, with authors and the beta testing
-   * group's organizers loaded eagerly along with each one.
+   * Find all training definitions matching the given predicate, with authors loaded eagerly along
+   * with each one.
    *
    * @param predicate the predicate
    * @param pageable the pageable
    * @return page of all {@link TrainingDefinition}
    */
   @EntityGraph(
-      value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+      value = "TrainingDefinition.findAllAuthors",
       type = EntityGraph.EntityGraphType.FETCH)
   Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
@@ -69,7 +69,7 @@ public interface TrainingDefinitionRepository
    * @return page of all {@link TrainingDefinition}
    */
   @EntityGraph(
-      value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+      value = "TrainingDefinition.findAllAuthors",
       type = EntityGraph.EntityGraphType.FETCH)
   Page<TrainingDefinition> findAll(Pageable pageable);
 
@@ -84,50 +84,13 @@ public interface TrainingDefinitionRepository
   Page<TrainingDefinition> findAllByState(@Param("state") TDState state, Pageable pageable);
 
   /**
-   * Find unreleased training definitions whose beta testing group lists the given user as an
-   * organizer.
-   *
-   * @param userRefId the cross-service user reference id to match against the beta testing group's
-   *     organizers
-   * @param pageable the page to return and its sort
-   * @return the page
-   */
-  @Query(
-      "SELECT DISTINCT td FROM TrainingDefinition td "
-          + "LEFT JOIN td.betaTestingGroup bt "
-          + "LEFT JOIN bt.organizers org "
-          + "WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'")
-  Page<TrainingDefinition> findAllForOrganizersUnreleased(
-      @Param("userRefId") Long userRefId, Pageable pageable);
-
-  /**
-   * Find unreleased training definitions where the given user is either an author or an organizer
-   * of the beta testing group.
-   *
-   * @param userRefId the cross-service user reference id to match against the definition's authors
-   *     and its beta testing group's organizers
-   * @param pageable the page to return and its sort
-   * @return the page
-   */
-  @Query(
-      "SELECT DISTINCT td FROM TrainingDefinition td "
-          + "LEFT JOIN td.betaTestingGroup bt "
-          + "LEFT JOIN bt.organizers org "
-          + "LEFT JOIN td.authors aut "
-          + "WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) "
-          + "AND td.state = 'UNRELEASED'")
-  Page<TrainingDefinition> findAllForDesignersAndOrganizersUnreleased(
-      @Param("userRefId") Long userRefId, Pageable pageable);
-
-  /**
-   * Find training definition by id, its authors, its beta testing group and that group's organizers
-   * loaded along with it.
+   * Find training definition by id, its authors loaded along with it.
    *
    * @param id the id of training definition
    * @return the {@link TrainingDefinition}, empty when no row carries the given id
    */
   @EntityGraph(
-      value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+      value = "TrainingDefinition.findAllAuthors",
       type = EntityGraph.EntityGraphType.FETCH)
   Optional<TrainingDefinition> findById(Long id);
 

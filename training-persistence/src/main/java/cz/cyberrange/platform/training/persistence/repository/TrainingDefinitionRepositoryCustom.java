@@ -9,9 +9,9 @@ import org.springframework.data.domain.Pageable;
 public interface TrainingDefinitionRepositoryCustom {
 
   /**
-   * Finds the training definitions the given user authored, or that belong to a beta testing group
-   * the user organizes, additionally narrowed by the given predicate. {@code loggedInUserId} is
-   * matched against each candidate user's cross-service {@code userRefId}, not a local primary key.
+   * Finds the training definitions the given user authored, additionally narrowed by the given
+   * predicate. {@code loggedInUserId} is matched against each author's cross-service {@code
+   * userRefId}, not a local primary key.
    *
    * @param predicate the predicate
    * @param pageable the pageable

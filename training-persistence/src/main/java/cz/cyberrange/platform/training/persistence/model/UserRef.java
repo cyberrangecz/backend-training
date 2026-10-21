@@ -15,9 +15,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Local row standing in for a user of the user-and-group microservice, so that training
- * definitions, instances and beta testing groups can reference that user without duplicating its
- * profile data
+ * Local row standing in for a user of the user-and-group microservice, so that training definitions
+ * and instances can reference that user without duplicating its profile data
  */
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
@@ -56,10 +55,6 @@ public class UserRef extends AbstractEntity<Long> {
   @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
   @OrderBy("id")
   private Set<TrainingDefinition> trainingDefinitions = new HashSet<>();
-
-  @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
-  @OrderBy("id")
-  private Set<BetaTestingGroup> betaTesters = new HashSet<>();
 
   public UserRef() {}
 
@@ -143,24 +138,6 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds beta testing group that can be accessed by user.
-   *
-   * @param viewGroup the view group
-   */
-  public void addViewGroup(BetaTestingGroup viewGroup) {
-    this.betaTesters.add(viewGroup);
-  }
-
-  /**
-   * Removes beta testing group that can be accessed by user.
-   *
-   * @param viewGroup the view group
-   */
-  public void removeViewGroup(BetaTestingGroup viewGroup) {
-    this.betaTesters.remove(viewGroup);
-  }
-
-  /**
    * Adds instance to the set of training instances user can access.
    *
    * @param trainingInstance the training instance
@@ -176,24 +153,6 @@ public class UserRef extends AbstractEntity<Long> {
    */
   public void removeTrainingInstance(TrainingInstance trainingInstance) {
     this.trainingInstances.remove(trainingInstance);
-  }
-
-  /**
-   * Gets set of Beta testing groups user can access.
-   *
-   * @return the beta testers
-   */
-  public Set<BetaTestingGroup> getBetaTesters() {
-    return Collections.unmodifiableSet(betaTesters);
-  }
-
-  /**
-   * Sets set of Beta testing groups user can access.
-   *
-   * @param betaTesters the beta testers
-   */
-  public void setBetaTesters(Set<BetaTestingGroup> betaTesters) {
-    this.betaTesters = betaTesters;
   }
 
   @Override

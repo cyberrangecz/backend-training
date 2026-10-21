@@ -22,7 +22,7 @@ import org.mapstruct.ReportingPolicy;
  */
 @Mapper(
     componentModel = "spring",
-    uses = {EnumMapper.class, UserRefMapper.class},
+    uses = {EnumMapper.class},
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ExportImportMapper extends ParentMapper {
 

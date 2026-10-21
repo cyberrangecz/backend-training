@@ -32,13 +32,11 @@ import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.BetaTestingGroupMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingRunMapperImpl;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.UserRefMapperImpl;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -70,10 +68,8 @@ import tools.jackson.databind.json.JsonMapper;
       TestDataFactory.class,
       EnumMapperImpl.class,
       TrainingInstanceMapperImpl.class,
-      UserRefMapperImpl.class,
       TrainingDefinitionMapperImpl.class,
-      TrainingRunMapperImpl.class,
-      BetaTestingGroupMapperImpl.class
+      TrainingRunMapperImpl.class
     })
 public class TrainingRunsRestControllerTest {
 

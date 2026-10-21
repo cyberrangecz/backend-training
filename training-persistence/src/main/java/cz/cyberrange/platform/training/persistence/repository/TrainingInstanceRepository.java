@@ -76,15 +76,14 @@ public interface TrainingInstanceRepository
 
   /**
    * Finds every training instance matching the given predicate. The entity graph loads each
-   * instance's organizers, its training definition, that definition's authors, that definition's
-   * beta testing group, and that group's organizers eagerly.
+   * instance's organizers, its training definition, and that definition's authors eagerly.
    *
    * @param predicate the predicate
    * @param pageable the pageable
    * @return page of all {@link TrainingInstance}
    */
   @EntityGraph(
-      value = "TrainingInstance.findAllAuthorsOrganizersBetaTestingGroupBetaTestingGroupOrganizers",
+      value = "TrainingInstance.findAllAuthorsOrganizers",
       type = EntityGraph.EntityGraphType.FETCH)
   Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
@@ -96,7 +95,7 @@ public interface TrainingInstanceRepository
    * @return {@link TrainingInstance}, empty when no instance has that id
    */
   @EntityGraph(
-      value = "TrainingInstance.findByIdAuthorsOrganizers",
+      value = "TrainingInstance.findAllAuthorsOrganizers",
       type = EntityGraph.EntityGraphType.FETCH)
   Optional<TrainingInstance> findById(Long id);
 
@@ -108,7 +107,7 @@ public interface TrainingInstanceRepository
    * @return the list of {@link TrainingInstance}s with organizers eagerly loaded
    */
   @EntityGraph(
-      value = "TrainingInstance.findByIdAuthorsOrganizers",
+      value = "TrainingInstance.findAllAuthorsOrganizers",
       type = EntityGraph.EntityGraphType.FETCH)
   List<TrainingInstance> findAllByIdInOrderById(@Param("ids") List<Long> ids);
 
@@ -148,18 +147,6 @@ public interface TrainingInstanceRepository
   @Query(
       "SELECT COUNT(*) > 0 FROM TrainingInstance instance WHERE instance.accessToken = :accessToken")
   boolean existsForToken(@Param("accessToken") String accessToken);
-
-  /**
-   * Finds the training instance with the given primary key together with its associated data.
-   * Established by the {@code TrainingInstance.findByIdIncludingDefinition} named query declared on
-   * {@link TrainingInstance}, which loads the instance's organizers, its training definition, that
-   * definition's authors, that definition's beta testing group, and that group's organizers
-   * eagerly.
-   *
-   * @param instanceId the instance id
-   * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
-   */
-  Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
 
   /**
    * Finds the training instance assigned the given sandbox pool. Established by the {@code

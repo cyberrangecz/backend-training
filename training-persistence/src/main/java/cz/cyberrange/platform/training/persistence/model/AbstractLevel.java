@@ -27,8 +27,6 @@ import org.hibernate.annotations.ConcreteProxy;
           "SELECT l FROM AbstractLevel l "
               + "JOIN FETCH l.trainingDefinition td "
               + "JOIN FETCH td.authors "
-              + "LEFT OUTER JOIN FETCH td.betaTestingGroup btg "
-              + "LEFT OUTER JOIN FETCH btg.organizers "
               + "WHERE l.id = :levelId"),
   @NamedQuery(
       name = "AbstractLevel.getCurrentMaxOrder",

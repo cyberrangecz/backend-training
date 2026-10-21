@@ -121,32 +121,13 @@ public class TrainingInstanceServiceTest {
 
     TrainingInstance tI = trainingInstanceService.findById(trainingInstance1.getId());
     deepEquals(trainingInstance1, tI);
+    assertEquals(trainingDefinition, tI.getTrainingDefinition());
     then(trainingInstanceRepository).should().findById(trainingInstance1.getId());
   }
 
   @Test
   public void findById_NotFound() {
     assertThrows(EntityNotFoundException.class, () -> trainingInstanceService.findById(10L));
-  }
-
-  @Test
-  public void findByIdIncludingDefinition() {
-    given(trainingInstanceRepository.findByIdIncludingDefinition(trainingInstance1.getId()))
-        .willReturn(Optional.of(trainingInstance1));
-    TrainingInstance result =
-        trainingInstanceService.findByIdIncludingDefinition(trainingInstance1.getId());
-    deepEquals(trainingInstance1, result);
-    assertEquals(trainingDefinition, result.getTrainingDefinition());
-    then(trainingInstanceRepository)
-        .should()
-        .findByIdIncludingDefinition(trainingInstance1.getId());
-  }
-
-  @Test
-  public void findByIdIncludingDefinition_NotFound() {
-    assertThrows(
-        EntityNotFoundException.class,
-        () -> trainingInstanceService.findByIdIncludingDefinition(10L));
   }
 
   @Test

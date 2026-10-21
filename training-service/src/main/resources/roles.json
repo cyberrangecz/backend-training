@@ -7,7 +7,7 @@
   {
     "role_type": "ROLE_TRAINING_DESIGNER",
     "default": false,
-    "description": "This role will allow you to manage, test, import and export training definitions and assign organizers to beta testing group in CyberRangeCZ Platform Training module."
+    "description": "This role will allow you to manage, test, import and export training definitions in CyberRangeCZ Platform Training module."
   },
   {
     "role_type": "ROLE_TRAINING_ORGANIZER",

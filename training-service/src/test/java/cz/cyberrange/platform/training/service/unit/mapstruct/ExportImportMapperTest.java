@@ -16,7 +16,6 @@ import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.ExportImportMapper;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.UserRefMapper;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,8 +29,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * Unit tests for {@link ExportImportMapper}.
  *
- * <p>Tests all mapping methods for export/import scenarios. Uses constructor injection with {@link
- * ExportImportMapperImpl} since the mapper uses {@link UserRefMapper}.
+ * <p>Tests all mapping methods for export/import scenarios.
  */
 @DisplayName("ExportImportMapper")
 class ExportImportMapperTest {
@@ -56,7 +54,6 @@ class ExportImportMapperTest {
 
   private ExportImportMapper sut;
   private EnumMapper enumMapper;
-  private UserRefMapper userRefMapper;
 
   private TrainingDefinition trainingDefinitionEntity;
   private TrainingInstance trainingInstanceEntity;
@@ -70,7 +67,6 @@ class ExportImportMapperTest {
 
   @BeforeEach
   void setUp() {
-    userRefMapper = Mappers.getMapper(UserRefMapper.class);
     enumMapper = Mappers.getMapper(EnumMapper.class);
     sut = Mappers.getMapper(ExportImportMapper.class);
     ReflectionTestUtils.setField(sut, "enumMapper", enumMapper);

@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.persistence.repository;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import cz.cyberrange.platform.training.persistence.model.QBetaTestingGroup;
 import cz.cyberrange.platform.training.persistence.model.QTrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.QUserRef;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
@@ -36,8 +35,7 @@ public class TrainingDefinitionRepositoryImpl extends QuerydslRepositorySupport
   }
 
   /**
-   * Left-joins each candidate definition to its authors, its beta testing group, and that group's
-   * organizers, then keeps only the definitions where an author or a beta testing group organizer
+   * Joins each candidate definition to its authors and keeps only the definitions where an author
    * has the given cross-service {@code userRefId}. Deduplicates the joined rows before applying the
    * given predicate and paging.
    */
@@ -48,18 +46,13 @@ public class TrainingDefinitionRepositoryImpl extends QuerydslRepositorySupport
     Objects.requireNonNull(loggedInUserId, "Input logged in user ID must not be null.");
     QTrainingDefinition trainingDefinition = QTrainingDefinition.trainingDefinition;
     QUserRef authors = new QUserRef("authors");
-    QUserRef organizers = new QUserRef("organizers");
-    QBetaTestingGroup betaTestingGroup = QBetaTestingGroup.betaTestingGroup;
 
     JPQLQuery<TrainingDefinition> query =
         new JPAQueryFactory(entityManager)
             .selectFrom(trainingDefinition)
             .distinct()
-            .leftJoin(trainingDefinition.authors, authors)
-            .leftJoin(trainingDefinition.betaTestingGroup, betaTestingGroup)
-            .leftJoin(trainingDefinition.betaTestingGroup.organizers, organizers)
-            .where(
-                authors.userRefId.eq(loggedInUserId).or(organizers.userRefId.eq(loggedInUserId)));
+            .join(trainingDefinition.authors, authors)
+            .where(authors.userRefId.eq(loggedInUserId));
 
     if (predicate != null) {
       query.where(predicate);

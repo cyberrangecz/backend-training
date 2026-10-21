@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.persistence.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cz.cyberrange.platform.training.persistence.model.BetaTestingGroup;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
@@ -20,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
@@ -31,14 +29,13 @@ public class TrainingDefinitionRepositoryTest {
   @Autowired private TestDataFactory testDataFactory;
   @Autowired private TrainingDefinitionRepository trainingDefinitionRepository;
 
-  private TrainingDefinition trainingDefinitionWithBG1,
-      trainingDefinitionWithBG2,
-      trainingDefinitionWithBG3,
-      trainingDefinitionWithBG4;
-  private TrainingDefinition trainingDefinition1, trainingDefinition2;
-  private UserRef author1, author2, organizer1;
-  private BetaTestingGroup viewGroup1, viewGroup2, viewGroup3, viewGroup4;
-  private Pageable pageable;
+  private TrainingDefinition trainingDefinition1,
+      trainingDefinition2,
+      trainingDefinition3,
+      trainingDefinition4,
+      trainingDefinition5,
+      trainingDefinition6;
+  private UserRef author1, author2;
 
   @BeforeEach
   public void init() {
@@ -46,62 +43,35 @@ public class TrainingDefinitionRepositoryTest {
     author1.setUserRefId(3L);
     author2 = new UserRef();
     author2.setUserRefId(8L);
-    organizer1 = new UserRef();
-    organizer1.setUserRefId(5L);
 
     trainingDefinition1 = testDataFactory.getReleasedDefinition();
     trainingDefinition2 = testDataFactory.getUnreleasedDefinition();
 
-    trainingDefinitionWithBG1 = testDataFactory.getReleasedDefinition();
-    trainingDefinitionWithBG2 = testDataFactory.getReleasedDefinition();
-    trainingDefinitionWithBG3 = testDataFactory.getReleasedDefinition();
-    trainingDefinitionWithBG4 = testDataFactory.getReleasedDefinition();
-    viewGroup1 = new BetaTestingGroup();
-    viewGroup2 = new BetaTestingGroup();
-    viewGroup3 = new BetaTestingGroup();
-    viewGroup4 = new BetaTestingGroup();
-
-    trainingDefinitionWithBG1.setBetaTestingGroup(viewGroup1);
-    trainingDefinitionWithBG2.setBetaTestingGroup(viewGroup2);
-    trainingDefinitionWithBG3.setBetaTestingGroup(viewGroup3);
-    trainingDefinitionWithBG4.setBetaTestingGroup(viewGroup4);
+    trainingDefinition3 = testDataFactory.getReleasedDefinition();
+    trainingDefinition4 = testDataFactory.getReleasedDefinition();
+    trainingDefinition5 = testDataFactory.getReleasedDefinition();
+    trainingDefinition6 = testDataFactory.getReleasedDefinition();
 
     entityManager.persist(trainingDefinition1);
     entityManager.persist(trainingDefinition2);
-    entityManager.persist(trainingDefinitionWithBG1);
-    entityManager.persist(trainingDefinitionWithBG2);
-    entityManager.persist(trainingDefinitionWithBG3);
-    entityManager.persist(trainingDefinitionWithBG4);
-
-    pageable = PageRequest.of(0, 10);
+    entityManager.persist(trainingDefinition3);
+    entityManager.persist(trainingDefinition4);
+    entityManager.persist(trainingDefinition5);
+    entityManager.persist(trainingDefinition6);
   }
 
   @Test
   public void findAllAsDesigner() {
     entityManager.persist(author1);
     entityManager.persist(author2);
-    entityManager.persist(organizer1);
 
     trainingDefinition2.addAuthor(author1);
     trainingDefinition2.addAuthor(author2);
-    entityManager.merge(trainingDefinition2);
-    trainingDefinitionWithBG1.addAuthor(author1);
-    viewGroup1.addOrganizer(organizer1);
-    entityManager.merge(trainingDefinitionWithBG2);
-    trainingDefinitionWithBG2.addAuthor(author1);
-    trainingDefinitionWithBG2.addAuthor(author2);
-    viewGroup2.addOrganizer(author1);
-    viewGroup2.addOrganizer(organizer1);
-    entityManager.merge(trainingDefinitionWithBG2);
+    trainingDefinition3.addAuthor(author1);
+    trainingDefinition4.addAuthor(author1);
+    trainingDefinition4.addAuthor(author2);
 
-    trainingDefinitionWithBG3.addAuthor(author2);
-    viewGroup3.addOrganizer(author2);
-    entityManager.merge(trainingDefinitionWithBG3);
-
-    trainingDefinitionWithBG4.addAuthor(author2);
-    viewGroup4.addOrganizer(author1);
-    viewGroup4.addOrganizer(organizer1);
-    entityManager.merge(trainingDefinitionWithBG4);
+    trainingDefinition5.addAuthor(author2);
 
     List<TrainingDefinition> trainingDefinitions =
         trainingDefinitionRepository
@@ -109,12 +79,8 @@ public class TrainingDefinitionRepositoryTest {
             .getContent();
     assertTrue(
         trainingDefinitions.containsAll(
-            List.of(
-                trainingDefinition2,
-                trainingDefinitionWithBG1,
-                trainingDefinitionWithBG2,
-                trainingDefinitionWithBG4)));
-    assertEquals(4, trainingDefinitions.size());
+            List.of(trainingDefinition2, trainingDefinition3, trainingDefinition4)));
+    assertEquals(3, trainingDefinitions.size());
   }
 
   @Test
@@ -125,7 +91,7 @@ public class TrainingDefinitionRepositoryTest {
 
     infoLevel1.setTrainingDefinition(trainingDefinition1);
     infoLevel2.setTrainingDefinition(trainingDefinition2);
-    infoLevel3.setTrainingDefinition(trainingDefinitionWithBG3);
+    infoLevel3.setTrainingDefinition(trainingDefinition5);
 
     entityManager.persist(infoLevel1);
     entityManager.persist(infoLevel2);
@@ -142,7 +108,7 @@ public class TrainingDefinitionRepositoryTest {
 
     trainingInstance1.setTrainingDefinition(trainingDefinition1);
     trainingInstance2.setTrainingDefinition(trainingDefinition2);
-    trainingInstance3.setTrainingDefinition(trainingDefinitionWithBG3);
+    trainingInstance3.setTrainingDefinition(trainingDefinition5);
 
     entityManager.persist(trainingInstance1);
     entityManager.persist(trainingInstance2);
@@ -190,10 +156,10 @@ public class TrainingDefinitionRepositoryTest {
 
     assertEquals(
         List.of(
-            trainingDefinitionWithBG4.getId(),
-            trainingDefinitionWithBG3.getId(),
-            trainingDefinitionWithBG2.getId(),
-            trainingDefinitionWithBG1.getId(),
+            trainingDefinition6.getId(),
+            trainingDefinition5.getId(),
+            trainingDefinition4.getId(),
+            trainingDefinition3.getId(),
             trainingDefinition1.getId()),
         releasedIdsDescending);
   }

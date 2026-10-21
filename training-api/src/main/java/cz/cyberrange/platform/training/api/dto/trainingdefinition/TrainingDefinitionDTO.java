@@ -21,10 +21,6 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
   @Schema(example = "UNRELEASED")
   private TDState state;
 
-  /** Primary key of the associated beta testing group entity, not a user id */
-  @Schema(description = "Identifies the beta testing group, not any user.", example = "14")
-  private Long betaTestingGroupId;
-
   /**
    * Left unset by the mapper; the facade always assigns it afterward, from whether any of the
    * definition's training instances still ends in the future

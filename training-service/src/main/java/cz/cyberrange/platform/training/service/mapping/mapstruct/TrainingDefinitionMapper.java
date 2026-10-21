@@ -26,7 +26,7 @@ import org.springframework.data.domain.Page;
  */
 @Mapper(
     componentModel = "spring",
-    uses = {EnumMapper.class, UserRefMapper.class, BetaTestingGroupMapper.class},
+    uses = {EnumMapper.class},
     nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
     unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface TrainingDefinitionMapper extends ParentMapper {
@@ -42,7 +42,6 @@ public interface TrainingDefinitionMapper extends ParentMapper {
    * @param levels the full levels of the definition, in the order they are presented in
    * @return the definition DTO carrying the given levels, without its archiving flag
    */
-  @Mapping(target = "betaTestingGroupId", source = "entity.betaTestingGroup.id")
   @Mapping(target = "levels", source = "levels")
   @Mapping(target = "canBeArchived", ignore = true)
   TrainingDefinitionWithLevelsDTO mapToDTOWithLevels(
@@ -57,7 +56,6 @@ public interface TrainingDefinitionMapper extends ParentMapper {
    * @return the definition DTO, without its archiving flag
    */
   @Named("trainingDefinitionToDTO")
-  @Mapping(target = "betaTestingGroupId", source = "betaTestingGroup.id")
   @Mapping(target = "canBeArchived", ignore = true)
   TrainingDefinitionDTO mapToDTO(TrainingDefinition entity);
 

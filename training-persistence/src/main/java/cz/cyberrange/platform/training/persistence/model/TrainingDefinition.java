@@ -16,16 +16,8 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "training_definition")
 @NamedEntityGraphs({
   @NamedEntityGraph(
-      name = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
-      attributeNodes = {
-        @NamedAttributeNode(value = "authors"),
-        @NamedAttributeNode(value = "betaTestingGroup", subgraph = "betaTestingGroup.organizers")
-      },
-      subgraphs = {
-        @NamedSubgraph(
-            name = "betaTestingGroup.organizers",
-            attributeNodes = @NamedAttributeNode(value = "organizers"))
-      })
+      name = "TrainingDefinition.findAllAuthors",
+      attributeNodes = @NamedAttributeNode(value = "authors"))
 })
 @NamedQueries({
   // Matches on userRefId: takes the external, cross-service identifier of the user.
@@ -65,14 +57,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
       inverseJoinColumns = @JoinColumn(name = "user_ref_id"))
   @OrderBy("id")
   private Set<UserRef> authors = new HashSet<>();
-
-  @OneToOne(
-      fetch = FetchType.LAZY,
-      orphanRemoval = true,
-      optional = true,
-      cascade = CascadeType.ALL)
-  @JoinColumn(name = "beta_testing_group_id", unique = true)
-  private BetaTestingGroup betaTestingGroup;
 
   @Column(name = "estimated_duration", nullable = true)
   private long estimatedDuration;
@@ -225,24 +209,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
    */
   public void removeAuthorsByUserRefIds(Set<Long> userRefIds) {
     this.authors.removeIf(userRef -> userRefIds.contains(userRef.getUserRefId()));
-  }
-
-  /**
-   * Gets the group of users allowed to test Training definition in unreleased state.
-   *
-   * @return the beta testing group
-   */
-  public BetaTestingGroup getBetaTestingGroup() {
-    return betaTestingGroup;
-  }
-
-  /**
-   * Sets the group of users allowed to test Training definition in unreleased state.
-   *
-   * @param betaTestingGroup the beta testing group
-   */
-  public void setBetaTestingGroup(BetaTestingGroup betaTestingGroup) {
-    this.betaTestingGroup = betaTestingGroup;
   }
 
   /**

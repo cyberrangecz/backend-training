@@ -6,6 +6,7 @@ import cz.cyberrange.platform.training.api.exceptions.CustomWebClientException;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
+import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
@@ -13,6 +14,7 @@ import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
 import cz.cyberrange.platform.training.persistence.model.detection.CheatingDetection;
+import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
 import cz.cyberrange.platform.training.persistence.repository.HintRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
@@ -212,40 +214,107 @@ public class SecurityService {
    * @throws EntityNotFoundException when no training definition with the given id exists
    */
   public boolean isDesignerOfGivenTrainingDefinition(Long definitionId) {
-    TrainingDefinition trainingDefinition =
-        trainingDefinitionRepository
-            .findById(definitionId)
+    return isAuthorOf(findTrainingDefinition(definitionId));
+  }
+
+  /**
+   * Decides whether the logged in user may see the given training definition: an unreleased
+   * definition is visible to its authors only, a definition in any other state to every caller.
+   *
+   * @param definitionId id of the training definition to examine
+   * @return true when the definition is not unreleased or the logged in user authors it
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   */
+  public boolean isVisibleTrainingDefinition(Long definitionId) {
+    return isVisible(findTrainingDefinition(definitionId));
+  }
+
+  /**
+   * Decides whether the logged in user may see the training definition the given level belongs to,
+   * by the rule of {@link #isVisibleTrainingDefinition(Long)}.
+   *
+   * @param levelId id of the level whose training definition is examined
+   * @return true when the level's definition is not unreleased or the logged in user authors it
+   * @throws EntityNotFoundException when no level with the given id exists
+   */
+  public boolean isVisibleLevel(Long levelId) {
+    AbstractLevel level =
+        abstractLevelRepository
+            .findByIdIncludingDefinition(levelId)
             .orElseThrow(
                 () ->
                     new EntityNotFoundException(
                         new EntityErrorDetail(
-                            TrainingDefinition.class,
+                            AbstractLevel.class,
                             "id",
-                            definitionId.getClass(),
-                            definitionId,
+                            levelId.getClass(),
+                            levelId,
                             "The necessary permissions are required for a resource.")));
-    return trainingDefinition.getAuthors().stream()
-        .anyMatch(a -> a.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+    return isVisible(level.getTrainingDefinition());
   }
 
   /**
-   * Decides whether the logged in user belongs to the beta testing group of the given training
-   * definition.
+   * Decides whether the logged in user may assign the given training definition to the given
+   * training instance: keeping the instance's current definition is always allowed, another
+   * definition has to be visible by the rule of {@link #isVisibleTrainingDefinition(Long)}.
    *
-   * @param definitionId id of the training definition whose beta testers are examined
-   * @return true when the logged in user is one of its beta testers; false when the definition does
-   *     not exist or has no beta testing group
+   * @param instanceId id of the training instance the definition is assigned to
+   * @param definitionId id of the training definition to assign
+   * @return true when the definition is the instance's current one or is visible to the user
+   * @throws EntityNotFoundException when the definition differs from the instance's current one and
+   *     no training definition with that id exists
    */
-  public boolean isBetaTesterOfGivenTrainingDefinition(Long definitionId) {
-    Long userRefId = getUserRefIdFromUserAndGroup();
+  public boolean mayAssignTrainingDefinition(Long instanceId, Long definitionId) {
+    boolean keepsCurrentDefinition =
+        trainingInstanceRepository
+            .findById(instanceId)
+            .map(instance -> instance.getTrainingDefinition().getId().equals(definitionId))
+            .orElse(false);
+    return keepsCurrentDefinition || isVisibleTrainingDefinition(definitionId);
+  }
+
+  /**
+   * Finds the training definition with the given id.
+   *
+   * @param definitionId id of the training definition to find
+   * @return the stored training definition
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   */
+  private TrainingDefinition findTrainingDefinition(Long definitionId) {
     return trainingDefinitionRepository
         .findById(definitionId)
-        .map(TrainingDefinition::getBetaTestingGroup)
-        .map(
-            betaTestingGroup ->
-                betaTestingGroup.getOrganizers().stream()
-                    .anyMatch(organizer -> organizer.getUserRefId().equals(userRefId)))
-        .orElse(false);
+        .orElseThrow(
+            () ->
+                new EntityNotFoundException(
+                    new EntityErrorDetail(
+                        TrainingDefinition.class,
+                        "id",
+                        definitionId.getClass(),
+                        definitionId,
+                        "The necessary permissions are required for a resource.")));
+  }
+
+  /**
+   * Decides whether the logged in user may see the given training definition: an unreleased
+   * definition is visible to its authors only, a definition in any other state to every caller.
+   *
+   * @param trainingDefinition the training definition to examine
+   * @return true when the definition is not unreleased or the logged in user authors it
+   */
+  private boolean isVisible(TrainingDefinition trainingDefinition) {
+    return trainingDefinition.getState() != TDState.UNRELEASED || isAuthorOf(trainingDefinition);
+  }
+
+  /**
+   * Decides whether the logged in user is one of the authors of the given training definition.
+   *
+   * @param trainingDefinition the training definition whose authors are examined
+   * @return true when the logged in user is among them
+   */
+  private boolean isAuthorOf(TrainingDefinition trainingDefinition) {
+    Long userRefId = getUserRefIdFromUserAndGroup();
+    return trainingDefinition.getAuthors().stream()
+        .anyMatch(author -> author.getUserRefId().equals(userRefId));
   }
 
   /**

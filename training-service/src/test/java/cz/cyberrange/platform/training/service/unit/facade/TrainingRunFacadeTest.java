@@ -46,11 +46,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
       TestDataFactory.class,
       EnumMapperImpl.class,
       TrainingDefinitionMapperImpl.class,
-      UserRefMapperImpl.class,
       LevelMapperImpl.class,
       HintMapperImpl.class,
       TrainingRunMapperImpl.class,
-      BetaTestingGroupMapperImpl.class,
       QuestionMapperImpl.class,
       AttachmentMapperImpl.class,
       MitreTechniqueMapperImpl.class
