@@ -621,7 +621,8 @@ public class TrainingRunsRestController {
       summary = "Archive a training run",
       description =
           "A training administrator, or an organizer of the run, may call it. The run's sandbox"
-              + " reference moves to its previous sandbox and is cleared.")
+              + " reference moves to its previous sandbox and is cleared; the sandbox instance"
+              + " itself is kept.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The run was archived."),
     @ApiResponse(
