@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ConcreteProxy;
 
 /**
  * Base of the level hierarchy shared by {@link TrainingLevel}, {@link InfoLevel}, {@link
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
+@ConcreteProxy
 @Table(name = "abstract_level")
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
