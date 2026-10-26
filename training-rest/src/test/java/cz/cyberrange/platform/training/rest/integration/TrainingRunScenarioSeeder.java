@@ -234,6 +234,7 @@ final class TrainingRunScenarioSeeder {
           instance.setAccessToken(accessToken);
           instance.setPoolId(poolId);
           instance.setLocalEnvironment(localEnvironment);
+          instance.setManaged(true);
           instance.setSandboxDefinitionId(77L);
           instance.setStartTime(startTime);
           instance.setEndTime(endTime);

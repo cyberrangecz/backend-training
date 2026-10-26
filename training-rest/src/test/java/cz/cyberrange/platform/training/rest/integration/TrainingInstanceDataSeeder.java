@@ -139,6 +139,7 @@ class TrainingInstanceDataSeeder {
     instance.setAccessToken(accessToken);
     instance.setPoolId(poolId);
     instance.setLocalEnvironment(poolId == null);
+    instance.setManaged(true);
     instance.setLastEdited(now());
     instance.setLastEditedBy("Seed Author");
     instance.setTrainingDefinition(definition);
