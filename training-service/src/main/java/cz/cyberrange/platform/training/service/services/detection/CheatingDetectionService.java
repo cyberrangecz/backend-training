@@ -22,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Service;
 public class CheatingDetectionService {
 
   private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
+  private static final Sort DEFAULT_SWEEP_SORT = Sort.by("executeTime");
   private final AbstractDetectionEventRepository detectionEventRepository;
   private final CheatingDetectionRepository cheatingDetectionRepository;
   private final DetectionEventParticipantRepository detectionEventParticipantRepository;
@@ -117,8 +120,10 @@ public class CheatingDetectionService {
    *
    * @param cheatingDetectionId the id of the sweep to delete
    * @param trainingInstanceId the training instance whose runs have the flag cleared
+   * @throws EntityNotFoundException if no sweep with that id exists; nothing is changed then
    */
   public void deleteCheatingDetection(Long cheatingDetectionId, Long trainingInstanceId) {
+    findCheatingDetectionById(cheatingDetectionId);
     trainingRunService.findAllByTrainingInstanceId(trainingInstanceId).stream()
         .peek(run -> run.setHasDetectionEvent(false))
         .forEach(trainingRunRepository::save);
@@ -148,13 +153,23 @@ public class CheatingDetectionService {
   }
 
   /**
-   * Returns the sweep record with the given primary key, or {@code null} if none matches.
+   * Returns the sweep record with the given primary key.
    *
    * @param cheatingDetectionId the primary key of the sweep
-   * @return the matching sweep record, or {@code null}
+   * @return the matching sweep record
+   * @throws EntityNotFoundException if no sweep with that id exists
    */
   public CheatingDetection findCheatingDetectionById(Long cheatingDetectionId) {
-    return cheatingDetectionRepository.findCheatingDetectionById(cheatingDetectionId);
+    return Optional.ofNullable(
+            cheatingDetectionRepository.findCheatingDetectionById(cheatingDetectionId))
+        .orElseThrow(
+            () ->
+                new EntityNotFoundException(
+                    new EntityErrorDetail(
+                        CheatingDetection.class,
+                        "id",
+                        cheatingDetectionId.getClass(),
+                        cheatingDetectionId)));
   }
 
   /**
@@ -166,18 +181,7 @@ public class CheatingDetectionService {
    * @throws EntityNotFoundException if no sweep with that id exists
    */
   public void reExecuteCheatingDetection(Long cheatingDetectionId) {
-    CheatingDetection cd =
-        Optional.ofNullable(
-                cheatingDetectionRepository.findCheatingDetectionById(cheatingDetectionId))
-            .orElseThrow(
-                () ->
-                    new EntityNotFoundException(
-                        new EntityErrorDetail(
-                            CheatingDetection.class,
-                            "id",
-                            cheatingDetectionId.getClass(),
-                            cheatingDetectionId)));
-
+    CheatingDetection cd = findCheatingDetectionById(cheatingDetectionId);
     cd.setExecuteStates();
 
     detectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId).stream()
@@ -208,16 +212,21 @@ public class CheatingDetectionService {
   }
 
   /**
-   * Returns, as one page, the sweep records of one training instance, ordered by their execute
-   * time.
+   * Returns, as one page, the sweep records of one training instance, ordered by the page's sort,
+   * or by their execute time when the page carries none.
    *
    * @param trainingInstanceId the training instance whose sweeps are returned
-   * @param pageable the page to return
+   * @param pageable the page to return and its sort
    * @return the matching page of sweep records
    */
   public Page<CheatingDetection> findAllCheatingDetectionsOfTrainingInstance(
       Long trainingInstanceId, Pageable pageable) {
-    return cheatingDetectionRepository.findAllByTrainingInstanceId(trainingInstanceId, pageable);
+    return cheatingDetectionRepository.findAllByTrainingInstanceId(
+        trainingInstanceId,
+        PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            pageable.getSortOr(DEFAULT_SWEEP_SORT)));
   }
 
   private void updateCheatingDetection(CheatingDetection cd) {

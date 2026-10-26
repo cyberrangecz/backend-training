@@ -11,7 +11,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
 import cz.cyberrange.platform.training.opensearch.events.commands.query.CommandEventsService;
@@ -35,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Unit tests for {@link ExportImportFacade#exportUserScoreFromTrainingInstance(Long)}.

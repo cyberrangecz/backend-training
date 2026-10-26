@@ -1,10 +1,12 @@
 package cz.cyberrange.platform.training.api.exceptions.errors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.beans.ConstructorProperties;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -20,9 +22,10 @@ import org.springframework.http.HttpStatus;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JavaApiError extends ApiSubError {
   @Schema(
-      description = "When that service produced the error, in milliseconds since the epoch",
-      example = "1789862400000")
-  private long timestamp;
+      description =
+          "When that service produced the error, as a UTC instant with millisecond precision",
+      example = "2026-10-06T11:34:04.071Z")
+  private LocalDateTime timestamp;
 
   @Schema(example = "The IDMGroup could not be found in database.")
   private String message;
@@ -41,8 +44,8 @@ public class JavaApiError extends ApiSubError {
   @JsonProperty("entity_error_detail")
   private EntityErrorDetail entityErrorDetail;
 
-  @ConstructorProperties({"message"})
-  private JavaApiError(String message) {
+  @JsonCreator
+  private JavaApiError(@JsonProperty("message") String message) {
     this.message = message;
   }
 
@@ -54,7 +57,7 @@ public class JavaApiError extends ApiSubError {
       HttpStatus httpStatus, String message, List<String> errors, String path) {
     JavaApiError apiError = new JavaApiError(message);
     apiError.setStatus(httpStatus);
-    apiError.setTimestamp(System.currentTimeMillis());
+    apiError.setTimestamp(LocalDateTime.now(Clock.systemUTC()));
     apiError.setErrors(errors);
     apiError.setPath(path);
     return apiError;
@@ -67,7 +70,7 @@ public class JavaApiError extends ApiSubError {
   public static JavaApiError of(HttpStatus httpStatus, String message, String error, String path) {
     JavaApiError apiError = new JavaApiError(message);
     apiError.setStatus(httpStatus);
-    apiError.setTimestamp(System.currentTimeMillis());
+    apiError.setTimestamp(LocalDateTime.now(Clock.systemUTC()));
     apiError.setError(error);
     apiError.setPath(path);
     return apiError;
@@ -97,11 +100,11 @@ public class JavaApiError extends ApiSubError {
     this.entityErrorDetail = entityErrorDetail;
   }
 
-  public long getTimestamp() {
+  public LocalDateTime getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(long timestamp) {
+  public void setTimestamp(LocalDateTime timestamp) {
     this.timestamp = timestamp;
   }
 

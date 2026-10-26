@@ -32,7 +32,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
     basePackages = {
       "cz.cyberrange.platform.training.service.services",
       "cz.cyberrange.platform.training.service.config",
-      "cz.cyberrange.platform.training.service.startup"
+      "cz.cyberrange.platform.training.service.export"
     })
 public class ServiceConfig {
 

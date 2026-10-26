@@ -62,12 +62,15 @@ public class CheatingDetectionFacade {
    *
    * @param cheatingDetectionId id of cheating detection for rerun.
    * @param trainingInstanceId id of training instance.
+   * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException if no cheating
+   *     detection with that id exists; nothing is deleted then
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
           + "or @securityService.isOrganizerOfGivenCheatingDetection(#cheatingDetectionId)")
   @TransactionalWO
   public void rerunCheatingDetection(Long cheatingDetectionId, Long trainingInstanceId) {
+    this.cheatingDetectionService.findCheatingDetectionById(cheatingDetectionId);
     this.detectionEventService.deleteDetectionEvents(cheatingDetectionId);
     this.cheatingDetectionService.reExecuteCheatingDetection(cheatingDetectionId);
   }
@@ -80,6 +83,8 @@ public class CheatingDetectionFacade {
    * @param cheatingDetectionId id of cheating detection.
    * @param trainingInstanceId id of the training instance whose runs have their detection-event
    *     flag cleared.
+   * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException if no cheating
+   *     detection with that id exists; nothing is changed then
    */
   @PreAuthorize(
       "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"

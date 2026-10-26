@@ -23,7 +23,7 @@ public interface LocationSimilarityDetectionEventRepository
   LocationSimilarityDetectionEvent findLocationSimilarityEventById(@Param("eventId") Long eventId);
 
   /**
-   * Returns the location similarity findings of one cheating detection sweep, in no defined order.
+   * Returns the location similarity findings of one cheating detection sweep, ordered by id.
    *
    * @param cheatingDetectionId the cheating detection the returned findings belong to
    */

@@ -104,7 +104,7 @@ public class TimeProximityService {
     Set<DetectionEventParticipant> participants = new HashSet<>();
 
     for (var level :
-        trainingLevelRepository.findAllByTrainingDefinitionId(
+        trainingLevelRepository.findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(
             trainingInstanceService
                 .findById(cd.getTrainingInstanceId())
                 .getTrainingDefinition()

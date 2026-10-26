@@ -19,8 +19,8 @@ import org.mapstruct.ReportingPolicy;
 public interface AttachmentMapper {
 
   /**
-   * Maps an imported attachment into a new entity, copying its content. The primary key, creation
-   * time and owning training level carry no matching source field and are left unset.
+   * Maps an imported attachment into a new entity, copying its content. The primary key and owning
+   * training level carry no matching source field and are left unset.
    *
    * @param dto the imported attachment to map
    * @return the mapped attachment entity

@@ -1,51 +1,25 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /** Class represents Training definition. Training instances can be created based on definitions. */
 @Entity
 @Table(name = "training_definition")
 @NamedEntityGraphs({
   @NamedEntityGraph(
-      name = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
-      attributeNodes = {
-        @NamedAttributeNode(value = "authors"),
-        @NamedAttributeNode(value = "betaTestingGroup", subgraph = "betaTestingGroup.organizers")
-      },
-      subgraphs = {
-        @NamedSubgraph(
-            name = "betaTestingGroup.organizers",
-            attributeNodes = @NamedAttributeNode(value = "organizers"))
-      })
+      name = "TrainingDefinition.findAllAuthors",
+      attributeNodes = @NamedAttributeNode(value = "authors"))
 })
 @NamedQueries({
-  @NamedQuery(
-      name = "TrainingDefinition.findAllByState",
-      query = "SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state"),
-  // Matches on userRefId: takes the external, cross-service identifier of the user.
-  @NamedQuery(
-      name = "TrainingDefinition.findAllForOrganizersUnreleased",
-      query =
-          "SELECT DISTINCT td FROM TrainingDefinition td "
-              + "LEFT JOIN td.betaTestingGroup bt "
-              + "LEFT JOIN bt.organizers org "
-              + "WHERE org.userRefId = :userRefId AND td.state = 'UNRELEASED'"),
-  // Matches on userRefId: takes the external, cross-service identifier of the user.
-  @NamedQuery(
-      name = "TrainingDefinition.findAllForDesignersAndOrganizersUnreleased",
-      query =
-          "SELECT DISTINCT td FROM TrainingDefinition td "
-              + "LEFT JOIN td.betaTestingGroup bt "
-              + "LEFT JOIN bt.organizers org "
-              + "LEFT JOIN td.authors aut "
-              + "WHERE (aut.userRefId = :userRefId OR org.userRefId = :userRefId) AND td.state = 'UNRELEASED'"),
   // Matches on userRefId: takes the external, cross-service identifier of the user.
   @NamedQuery(
       name = "TrainingDefinition.findPlayedDefinitionIdsByUser",
@@ -65,9 +39,11 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   private String description;
 
   @Column(name = "prerequisites", nullable = true)
+  @JdbcTypeCode(SqlTypes.VARBINARY)
   private String[] prerequisites;
 
   @Column(name = "outcomes", nullable = true)
+  @JdbcTypeCode(SqlTypes.VARBINARY)
   private String[] outcomes;
 
   @Column(name = "state", length = 128, nullable = false)
@@ -79,15 +55,8 @@ public class TrainingDefinition extends AbstractEntity<Long> {
       name = "training_definition_user_ref",
       joinColumns = @JoinColumn(name = "training_definition_id"),
       inverseJoinColumns = @JoinColumn(name = "user_ref_id"))
+  @OrderBy("id")
   private Set<UserRef> authors = new HashSet<>();
-
-  @OneToOne(
-      fetch = FetchType.LAZY,
-      orphanRemoval = true,
-      optional = true,
-      cascade = CascadeType.ALL)
-  @JoinColumn(name = "beta_testing_group_id", unique = true)
-  private BetaTestingGroup betaTestingGroup;
 
   @Column(name = "estimated_duration", nullable = true)
   private long estimatedDuration;
@@ -100,6 +69,10 @@ public class TrainingDefinition extends AbstractEntity<Long> {
 
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
+
+  @Version
+  @Column(name = "version", nullable = false)
+  private long version;
 
   /**
    * Gets unique identification number of Training definition.
@@ -243,24 +216,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
   }
 
   /**
-   * Gets the group of users allowed to test Training definition in unreleased state.
-   *
-   * @return the beta testing group
-   */
-  public BetaTestingGroup getBetaTestingGroup() {
-    return betaTestingGroup;
-  }
-
-  /**
-   * Sets the group of users allowed to test Training definition in unreleased state.
-   *
-   * @param betaTestingGroup the beta testing group
-   */
-  public void setBetaTestingGroup(BetaTestingGroup betaTestingGroup) {
-    this.betaTestingGroup = betaTestingGroup;
-  }
-
-  /**
    * Gets estimated duration in minutes that it should take to complete run based on given Training
    * definition.
    *
@@ -334,9 +289,20 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     this.createdAt = createdAt;
   }
 
+  /**
+   * Gets the optimistic-lock version of the Training Definition, raised by one on every write of
+   * the definition.
+   *
+   * @return the current version
+   */
+  public long getVersion() {
+    return version;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(description, outcomes, prerequisites, state, title);
+    return Objects.hash(
+        description, Arrays.hashCode(outcomes), Arrays.hashCode(prerequisites), state, title);
   }
 
   @Override

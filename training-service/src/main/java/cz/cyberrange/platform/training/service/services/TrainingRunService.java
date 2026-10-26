@@ -158,18 +158,6 @@ public class TrainingRunService {
   }
 
   /**
-   * Finds the training runs matching the given predicate, with each run's participant reference
-   * loaded eagerly.
-   *
-   * @param predicate the filter applied to the query
-   * @param pageable the requested page
-   * @return the matching page of {@link TrainingRun}s
-   */
-  public Page<TrainingRun> findAll(Predicate predicate, Pageable pageable) {
-    return trainingRunRepository.findAll(predicate, pageable);
-  }
-
-  /**
    * Deletes a training run, its question answers, its submissions and its acquisition lock.
    * Optionally deletes its recorded command and training event data from OpenSearch.
    *
@@ -251,7 +239,7 @@ public class TrainingRunService {
    * @return the matching {@link TrainingRun}s, or an empty set if none exist
    */
   public Set<TrainingRun> findAllByTrainingInstanceId(Long trainingInstanceId) {
-    return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId);
+    return trainingRunRepository.findAllByTrainingInstanceIdOrderById(trainingInstanceId);
   }
 
   /**
@@ -342,15 +330,20 @@ public class TrainingRunService {
     if (!abstractLevel.getTrainingDefinition().getId().equals(trainingRunDefinition.getId())) {
       throw new EntityConflictException(
           new EntityErrorDetail(
-              "Requested level (ID: "
-                  + levelId
-                  + ") is not part of the training run (ID: "
-                  + runId
-                  + ")."));
+              AbstractLevel.class,
+              "id",
+              levelId.getClass(),
+              levelId,
+              "Requested level is not part of the training run (ID: " + runId + ")."));
     }
     if (abstractLevel.getOrder() > trainingRun.getCurrentLevel().getOrder()) {
       throw new EntityConflictException(
-          new EntityErrorDetail("Requested level (ID: " + levelId + ") hasn't been visited yet"));
+          new EntityErrorDetail(
+              AbstractLevel.class,
+              "id",
+              levelId.getClass(),
+              levelId,
+              "Requested level hasn't been visited yet."));
     }
     return abstractLevel;
   }
@@ -1362,6 +1355,6 @@ public class TrainingRunService {
    * @return the run's {@link QuestionAnswer}s, or an empty list if none exist
    */
   public List<QuestionAnswer> getQuestionAnswersByTrainingRunId(Long runId) {
-    return questionAnswerRepository.getAllByTrainingRunId(runId);
+    return questionAnswerRepository.getAllByTrainingRunIdOrderByQuestionId(runId);
   }
 }

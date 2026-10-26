@@ -9,21 +9,16 @@ import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdate
 import cz.cyberrange.platform.training.api.enums.LevelType;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import lombok.Data;
 
 /**
- * Encapsulates the fields common to every level update payload. Extended by {@link
- * TrainingLevelUpdateDTO}, {@link AccessLevelUpdateDTO}, {@link AssessmentLevelUpdateDTO} and
- * {@link InfoLevelUpdateDTO}.
+ * A level of a training definition being updated: the content of its level type plus the id of the
+ * stored level it replaces. Implemented by {@link TrainingLevelUpdateDTO}, {@link
+ * AccessLevelUpdateDTO}, {@link AssessmentLevelUpdateDTO} and {@link InfoLevelUpdateDTO}.
  *
  * <p>Deserializing a value declared as this type picks the concrete subtype by reading the {@code
  * level_type} property that must already be present in the payload, matching it against one of the
- * names below. That property is the JSON key the request body carries for the {@code levelType}
- * field, once translated through the service's snake-case property naming strategy.
+ * names below.
  */
-@Data
 @Schema(
     description = "The fields every level update carries, whatever the level type.",
     subTypes = {
@@ -52,21 +47,24 @@ import lombok.Data;
   @JsonSubTypes.Type(value = AssessmentLevelUpdateDTO.class, name = "ASSESSMENT_LEVEL"),
   @JsonSubTypes.Type(value = InfoLevelUpdateDTO.class, name = "INFO_LEVEL")
 })
-public abstract class AbstractLevelUpdateDTO {
+public interface AbstractLevelUpdateDTO {
 
+  /**
+   * Identifies the stored level of the definition to replace.
+   *
+   * @return the stored level's id, null for a level to create
+   */
+  Long getId();
+
+  /**
+   * Names the level type the payload carries, the value the {@code level_type} discriminator
+   * selects the concrete subtype by.
+   *
+   * @return the payload's level type
+   */
   @Schema(
-      description = "Identifies the level to update within the definition.",
       requiredMode = Schema.RequiredMode.REQUIRED,
-      example = "1")
-  @NotNull(message = "{abstractLevel.id.NotNull.message}")
-  protected Long id;
-
-  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Training Level1")
-  @NotEmpty(message = "{abstractLevel.title.NotEmpty.message}")
-  protected String title;
-
-  @Schema(
       description = "Selects the payload's level type; GAME_LEVEL is read as TRAINING_LEVEL.",
       example = "TRAINING_LEVEL")
-  protected LevelType levelType;
+  LevelType getLevelType();
 }

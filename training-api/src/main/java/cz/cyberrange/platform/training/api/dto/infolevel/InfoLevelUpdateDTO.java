@@ -1,33 +1,24 @@
 package cz.cyberrange.platform.training.api.dto.infolevel;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.enums.LevelType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * Payload for replacing an info level's content. Carries the {@code INFO_LEVEL} discriminator that
- * lets {@link AbstractLevelUpdateDTO} resolve this subtype during deserialization.
+ * The content of an info level plus the id of the stored level it replaces. Carries the
+ * discriminator that lets {@link AbstractLevelUpdateDTO} resolve this subtype during
+ * deserialization.
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@Schema(description = "The text that replaces what an info level currently presents.")
-public class InfoLevelUpdateDTO extends AbstractLevelUpdateDTO {
+@Schema(description = "The content stored on an info level, with the level's id.")
+public class InfoLevelUpdateDTO extends InfoLevelContentDTO implements AbstractLevelUpdateDTO {
 
-  /** Text that replaces the level's stored content verbatim when the update is applied */
   @Schema(
-      description = "Text that replaces the level's current content.",
-      requiredMode = Schema.RequiredMode.REQUIRED,
-      example = "Informational stuff")
-  @NotEmpty(message = "{infoLevel.content.NotEmpty.message}")
-  private String content;
-
-  /** Sets the level type discriminator to info level */
-  public InfoLevelUpdateDTO() {
-    this.levelType = LevelType.INFO_LEVEL;
-  }
+      description = "Identifies the stored level to replace; leave it out to create a new level.",
+      example = "1")
+  private Long id;
 }

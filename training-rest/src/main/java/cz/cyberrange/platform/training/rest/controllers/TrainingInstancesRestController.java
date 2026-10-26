@@ -17,7 +17,10 @@ import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableProperties;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
+import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,10 +29,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
-import javax.validation.Valid;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -143,6 +146,7 @@ public class TrainingInstancesRestController {
           "A training administrator sees every instance. Anyone else sees only the instances they"
               + " organize. Text filters match partially and ignore case.")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The matching instances."))
+  @SortableProperties(SortableList.TRAINING_INSTANCE)
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<TrainingInstanceFindAllResponseDTO>>
       findAllTrainingInstances(
@@ -372,6 +376,7 @@ public class TrainingInstancesRestController {
         description = "No training instance with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(value = SortableList.TRAINING_RUN, defaultProperty = "startTime")
   @GetMapping(path = "/{instanceId}/training-runs", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<TrainingRunDTO>> findAllTrainingRunsByTrainingInstanceId(
       @PathVariable("instanceId") Long instanceId,
@@ -390,6 +395,7 @@ public class TrainingInstancesRestController {
    * @param trainingInstanceId id of training instance for which to get the organizers
    * @param givenName the given name
    * @param familyName the family name
+   * @param name text whose words must each match the given name or the family name
    * @param pageable pageable parameter with information about pagination.
    * @return organizers already assigned to the training instance, filtered by name.
    */
@@ -410,15 +416,22 @@ public class TrainingInstancesRestController {
         description = "No training instance with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.USER)
   @GetMapping(path = "/{instanceId}/organizers", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<UserRefDTO>> getOrganizersOfTrainingInstance(
       @PathVariable("instanceId") Long trainingInstanceId,
       @RequestParam(value = "givenName", required = false) String givenName,
       @RequestParam(value = "familyName", required = false) String familyName,
+      @Parameter(
+              description =
+                  "Restricts the result to users whose given name or family name matches every word of"
+                      + " the text.")
+          @RequestParam(value = "name", required = false)
+          String name,
       @ParameterObject Pageable pageable) {
     PageResultResource<UserRefDTO> designers =
         trainingInstanceFacade.getOrganizersOfTrainingInstance(
-            trainingInstanceId, pageable, givenName, familyName);
+            trainingInstanceId, pageable, new UserNameFilter(givenName, familyName, name));
     return ResponseEntity.ok(designers);
   }
 
@@ -428,6 +441,7 @@ public class TrainingInstancesRestController {
    * @param trainingInstanceId id ot the training instance
    * @param givenName the given name
    * @param familyName the family name
+   * @param name text whose words must each match the given name or the family name
    * @param pageable pageable parameter with information about pagination.
    * @return organizers not in the given training instance, filtered by name.
    */
@@ -448,6 +462,7 @@ public class TrainingInstancesRestController {
         description = "No training instance with this id.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
+  @SortableProperties(SortableList.USER)
   @GetMapping(
       path = "{instanceId}/organizers-not-in-training-instance",
       produces = MediaType.APPLICATION_JSON_VALUE)
@@ -455,10 +470,16 @@ public class TrainingInstancesRestController {
       @PathVariable("instanceId") Long trainingInstanceId,
       @RequestParam(value = "givenName", required = false) String givenName,
       @RequestParam(value = "familyName", required = false) String familyName,
+      @Parameter(
+              description =
+                  "Restricts the result to users whose given name or family name matches every word of"
+                      + " the text.")
+          @RequestParam(value = "name", required = false)
+          String name,
       @ParameterObject Pageable pageable) {
     PageResultResource<UserRefDTO> designers =
         trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(
-            trainingInstanceId, pageable, givenName, familyName);
+            trainingInstanceId, pageable, new UserNameFilter(givenName, familyName, name));
     return ResponseEntity.ok(designers);
   }
 

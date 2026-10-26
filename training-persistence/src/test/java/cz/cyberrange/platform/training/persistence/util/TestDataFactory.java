@@ -1,14 +1,8 @@
 package cz.cyberrange.platform.training.persistence.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelDTO;
@@ -23,6 +17,7 @@ import cz.cyberrange.platform.training.api.dto.imports.HintImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
+import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
@@ -54,12 +49,17 @@ import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchi
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionChoice;
-import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 @Component
 public class TestDataFactory {
@@ -67,11 +67,13 @@ public class TestDataFactory {
   private SimpleModule simpleModule =
       new SimpleModule("SimpleModule").addSerializer(new LocalDateTimeUTCSerializer());
   private ObjectMapper mapper =
-      new ObjectMapper()
-          .registerModule(new JavaTimeModule())
-          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-          .registerModule(simpleModule)
-          .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+      JsonMapper.builderWithJackson2Defaults()
+          .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+          .addModule(simpleModule)
+          .changeDefaultPropertyInclusion(
+              inclusion -> inclusion.withValueInclusion(JsonInclude.Include.NON_NULL))
+          .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+          .build();
 
   private AssessmentLevel test =
       generateAssessmentLevel("Test", 50, 10L, 1, "List of instructions", AssessmentType.TEST);
@@ -179,6 +181,8 @@ public class TestDataFactory {
   private InfoLevel infoLevel2 = generateInfoLevel("Info level 2", 9L, 6, "Content");
   private InfoLevelUpdateDTO infoLevelUpdateDTO =
       generateInfoLevelUpdateDTO("New Info Title", "New Info Content");
+  private InfoLevelCreateDTO infoLevelCreateDTO =
+      generateInfoLevelCreateDTO("New Info Title", "New Info Content");
   private InfoLevelImportDTO infoLevelImportDTO =
       generateInfoLevelImportDTO("Info level import", 5, "Info level import content");
   private InfoLevelDTO infoLevelDTO = generateInfoLevelDTO("Info DTO", 3, "DTO content");
@@ -202,16 +206,12 @@ public class TestDataFactory {
           "AbstractLevelDTO",
           8,
           8);
-  private BasicLevelInfoDTO basicTrainingLevelInfoDTO =
-      generateBasicLevelInfoDTO("Basic Training Level info", LevelType.TRAINING_LEVEL);
-  private BasicLevelInfoDTO basicInfoLevelInfoDTO =
-      generateBasicLevelInfoDTO("Basic Info Level info", LevelType.INFO_LEVEL);
 
-  private MitreTechnique mitreTechnique1 = generateMitreTechnique("T1548.002");
-  private MitreTechnique mitreTechnique2 = generateMitreTechnique("T2451.004");
+  private MitreTechnique mitreTechnique1 = generateMitreTechnique("TA0004.T1548.002");
+  private MitreTechnique mitreTechnique2 = generateMitreTechnique("TA0005.T2451.004");
 
-  private MitreTechniqueDTO mitreTechniqueDTO1 = generateMitreTechniqueDTO("T3548.003");
-  private MitreTechniqueDTO mitreTechniqueDTO2 = generateMitreTechniqueDTO("T5791.011");
+  private MitreTechniqueDTO mitreTechniqueDTO1 = generateMitreTechniqueDTO("TA0004.T3548.003");
+  private MitreTechniqueDTO mitreTechniqueDTO2 = generateMitreTechniqueDTO("TA0006.T5791.011");
 
   private Hint hint1 = generateHint("Hint 1", "Hint1 content", 25, 0);
   private Hint hint2 = generateHint("Hint 2", "Hint2 content", 50, 1);
@@ -274,9 +274,7 @@ public class TestDataFactory {
           "Training definition updaet DTO",
           "Update of definition",
           new String[] {"p6", "p7"},
-          new String[] {"o6", "o7"},
-          cz.cyberrange.platform.training.api.enums.TDState.UNRELEASED,
-          7L);
+          new String[] {"o6", "o7"});
   private ImportTrainingDefinitionDTO importTrainingDefinitionDTO =
       generateImportTrainingDefinitionDTO(
           "Imported definition",
@@ -681,6 +679,10 @@ public class TestDataFactory {
     return clone(infoLevelUpdateDTO, InfoLevelUpdateDTO.class);
   }
 
+  public InfoLevelCreateDTO getInfoLevelCreateDTO() {
+    return clone(infoLevelCreateDTO, InfoLevelCreateDTO.class);
+  }
+
   public InfoLevelImportDTO getInfoLevelImportDTO() {
     return clone(infoLevelImportDTO, InfoLevelImportDTO.class);
   }
@@ -703,14 +705,6 @@ public class TestDataFactory {
 
   public AbstractLevelDTO getAbstractLevelDTO() {
     return clone(abstractLevelDTO, TrainingLevelDTO.class);
-  }
-
-  public BasicLevelInfoDTO getBasicTrainingLevelInfoDTO() {
-    return clone(basicTrainingLevelInfoDTO, BasicLevelInfoDTO.class);
-  }
-
-  public BasicLevelInfoDTO getBasicInfoLevelInfoDTO() {
-    return clone(basicInfoLevelInfoDTO, BasicLevelInfoDTO.class);
   }
 
   public TrainingInstanceDTO getTrainingInstanceDTO() {
@@ -1078,18 +1072,14 @@ public class TestDataFactory {
   }
 
   private TrainingDefinitionUpdateDTO generateTrainingDefinitionUpdateDTO(
-      String title,
-      String description,
-      String[] prerequisites,
-      String[] outcomes,
-      cz.cyberrange.platform.training.api.enums.TDState state,
-      Long SDRefId) {
+      String title, String description, String[] prerequisites, String[] outcomes) {
     TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
     trainingDefinitionUpdateDTO.setTitle(title);
     trainingDefinitionUpdateDTO.setDescription(description);
     trainingDefinitionUpdateDTO.setPrerequisites(prerequisites);
     trainingDefinitionUpdateDTO.setOutcomes(outcomes);
-    trainingDefinitionUpdateDTO.setState(state);
+    trainingDefinitionUpdateDTO.setVersion(0L);
+    trainingDefinitionUpdateDTO.setLevels(new ArrayList<>());
     return trainingDefinitionUpdateDTO;
   }
 
@@ -1152,6 +1142,13 @@ public class TestDataFactory {
     infoLevelUpdateDTO.setTitle(title);
     infoLevelUpdateDTO.setContent(content);
     return infoLevelUpdateDTO;
+  }
+
+  private InfoLevelCreateDTO generateInfoLevelCreateDTO(String title, String content) {
+    InfoLevelCreateDTO infoLevelCreateDTO = new InfoLevelCreateDTO();
+    infoLevelCreateDTO.setTitle(title);
+    infoLevelCreateDTO.setContent(content);
+    return infoLevelCreateDTO;
   }
 
   private InfoLevelImportDTO generateInfoLevelImportDTO(
@@ -1238,13 +1235,6 @@ public class TestDataFactory {
     trainingDefinitionWithLevelsDTO.setLastEdited(lastEdited);
     trainingDefinitionWithLevelsDTO.setCreatedAt(createdAt);
     return trainingDefinitionWithLevelsDTO;
-  }
-
-  private BasicLevelInfoDTO generateBasicLevelInfoDTO(String title, LevelType levelType) {
-    BasicLevelInfoDTO basicLevelInfoDTO = new BasicLevelInfoDTO();
-    basicLevelInfoDTO.setTitle(title);
-    basicLevelInfoDTO.setLevelType(levelType);
-    return basicLevelInfoDTO;
   }
 
   private TrainingInstanceDTO generateTrainingInstanceDTO(
@@ -1447,10 +1437,9 @@ public class TestDataFactory {
 
   private <T> T clone(Object object, Class<T> tClass) {
     try {
-      mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
       String json = mapper.writeValueAsString(object);
       return mapper.readValue(json, tClass);
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }
@@ -1463,8 +1452,6 @@ public class TestDataFactory {
         return cz.cyberrange.platform.training.api.enums.TDState.RELEASED;
       case ARCHIVED:
         return cz.cyberrange.platform.training.api.enums.TDState.ARCHIVED;
-      case PRIVATED:
-        return cz.cyberrange.platform.training.api.enums.TDState.PRIVATED;
     }
     return null;
   }

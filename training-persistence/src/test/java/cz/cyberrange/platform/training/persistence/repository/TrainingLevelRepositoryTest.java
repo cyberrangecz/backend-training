@@ -12,8 +12,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 @DataJpaTest
@@ -81,7 +81,8 @@ public class TrainingLevelRepositoryTest {
     entityManager.persist(trainingLevel2);
     entityManager.persist(trainingLevel3);
     List<TrainingLevel> resultTrainingLevels =
-        trainingLevelRepository.findAllByTrainingDefinitionId(trainingDefinition1.getId());
+        trainingLevelRepository.findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(
+            trainingDefinition1.getId());
     assertTrue(
         resultTrainingLevels.stream().anyMatch(l -> l.getId().equals(trainingLevel1.getId())));
     assertTrue(

@@ -1,6 +1,6 @@
 package cz.cyberrange.platform.training.persistence.model.question;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

@@ -1,7 +1,5 @@
 package cz.cyberrange.platform.training.api.dto.run;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.enums.TRState;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,12 +16,10 @@ public class TrainingRunBasicDTO {
   @Schema(example = "ALLOCATED")
   protected TRState state;
 
-  @Schema(example = "2016-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2016-10-19T08:23:54.000Z")
   protected LocalDateTime startTime;
 
-  @Schema(example = "2022-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2022-10-19T08:23:54.000Z")
   protected LocalDateTime endTime;
 
   protected UserRefDTO participantRef;

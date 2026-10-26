@@ -25,6 +25,6 @@ public class DetectedForbiddenCommandDTO {
   @Schema(example = "attacker")
   private String hostname;
 
-  @Schema(example = "2022-01-01T05:55:23")
+  @Schema(example = "2022-01-01T05:55:23.000Z")
   private LocalDateTime occurredAt;
 }

@@ -10,10 +10,8 @@ import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.BetaTestingGroupMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapperImpl;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.UserRefMapperImpl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,13 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(
-    classes = {
-      TestDataFactory.class,
-      EnumMapperImpl.class,
-      TrainingDefinitionMapperImpl.class,
-      UserRefMapperImpl.class,
-      BetaTestingGroupMapperImpl.class
-    })
+    classes = {TestDataFactory.class, EnumMapperImpl.class, TrainingDefinitionMapperImpl.class})
 public class BeanMappingTest {
 
   @Autowired private TestDataFactory testDataFactory;

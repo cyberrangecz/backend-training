@@ -4,10 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
@@ -32,22 +28,34 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.apache.http.HttpHeaders;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(classes = {TestDataFactory.class})
 public class TrainingInstanceServiceTest {
@@ -55,12 +63,12 @@ public class TrainingInstanceServiceTest {
   @Autowired TestDataFactory testDataFactory;
   private TrainingInstanceService trainingInstanceService;
 
-  @MockBean private TrainingInstanceRepository trainingInstanceRepository;
-  @MockBean private TrainingRunRepository trainingRunRepository;
-  @MockBean private UserRefRepository organizerRefRepository;
-  @MockBean private SecurityService securityService;
-  @MockBean private UserService userService;
-  @MockBean private TrainingDefinition trainingDefinition;
+  @MockitoBean private TrainingInstanceRepository trainingInstanceRepository;
+  @MockitoBean private TrainingRunRepository trainingRunRepository;
+  @MockitoBean private UserRefRepository organizerRefRepository;
+  @MockitoBean private SecurityService securityService;
+  @MockitoBean private UserService userService;
+  @MockitoBean private TrainingDefinition trainingDefinition;
   private TrainingInstance trainingInstance1, trainingInstance2;
   private TrainingRun trainingRun1, trainingRun2;
   private UserRef user;
@@ -113,32 +121,13 @@ public class TrainingInstanceServiceTest {
 
     TrainingInstance tI = trainingInstanceService.findById(trainingInstance1.getId());
     deepEquals(trainingInstance1, tI);
+    assertEquals(trainingDefinition, tI.getTrainingDefinition());
     then(trainingInstanceRepository).should().findById(trainingInstance1.getId());
   }
 
   @Test
   public void findById_NotFound() {
     assertThrows(EntityNotFoundException.class, () -> trainingInstanceService.findById(10L));
-  }
-
-  @Test
-  public void findByIdIncludingDefinition() {
-    given(trainingInstanceRepository.findByIdIncludingDefinition(trainingInstance1.getId()))
-        .willReturn(Optional.of(trainingInstance1));
-    TrainingInstance result =
-        trainingInstanceService.findByIdIncludingDefinition(trainingInstance1.getId());
-    deepEquals(trainingInstance1, result);
-    assertEquals(trainingDefinition, result.getTrainingDefinition());
-    then(trainingInstanceRepository)
-        .should()
-        .findByIdIncludingDefinition(trainingInstance1.getId());
-  }
-
-  @Test
-  public void findByIdIncludingDefinition_NotFound() {
-    assertThrows(
-        EntityNotFoundException.class,
-        () -> trainingInstanceService.findByIdIncludingDefinition(10L));
   }
 
   @Test
@@ -315,58 +304,42 @@ public class TrainingInstanceServiceTest {
   //        trainingInstanceService.unlockPool(trainingInstance1.getPoolId());
   //    }
 
-  @Test
-  public void findTrainingRunsByTrainingInstance() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<>(expected);
-
+  @ParameterizedTest(name = "isActive={0}, requested sort={1}")
+  @MethodSource("runFiltersWithRequestedAndAppliedSort")
+  public void findTrainingRunsByTrainingInstance_appliesRequestedSortOrStartTimeDefault(
+      Boolean isActive, Sort requestedSort, Sort appliedSort) {
+    Page<TrainingRun> page = new PageImpl<>(List.of(trainingRun1, trainingRun2));
+    AtomicReference<Pageable> queriedPageable = new AtomicReference<>();
+    Answer<Page<TrainingRun>> recordPageable =
+        invocation -> {
+          queriedPageable.set(invocation.getArgument(1));
+          return page;
+        };
     given(trainingInstanceRepository.findById(anyLong()))
         .willReturn(Optional.of(trainingInstance1));
     given(trainingRunRepository.findAllByTrainingInstanceId(anyLong(), any(Pageable.class)))
-        .willReturn(p);
-    Page<TrainingRun> pr =
-        trainingInstanceService.findTrainingRunsByTrainingInstance(
-            trainingInstance1.getId(), null, PageRequest.of(0, 2));
-    assertEquals(2, pr.getTotalElements());
-  }
-
-  @Test
-  public void findTrainingRunsByTrainingInstance_OnlyActive() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<>(expected);
-
-    given(trainingInstanceRepository.findById(anyLong()))
-        .willReturn(Optional.of(trainingInstance1));
+        .willAnswer(recordPageable);
     given(trainingRunRepository.findAllActiveByTrainingInstanceId(anyLong(), any(Pageable.class)))
-        .willReturn(p);
+        .willAnswer(recordPageable);
+    given(trainingRunRepository.findAllInactiveByTrainingInstanceId(anyLong(), any(Pageable.class)))
+        .willAnswer(recordPageable);
+
     Page<TrainingRun> pr =
         trainingInstanceService.findTrainingRunsByTrainingInstance(
-            trainingInstance1.getId(), true, PageRequest.of(0, 2));
+            trainingInstance1.getId(), isActive, PageRequest.of(0, 2, requestedSort));
+
     assertEquals(2, pr.getTotalElements());
+    assertEquals(appliedSort, queriedPageable.get().getSort());
   }
 
-  @Test
-  public void findTrainingRunsByTrainingInstance_OnlyInActive() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<>(expected);
-
-    given(trainingInstanceRepository.findById(anyLong()))
-        .willReturn(Optional.of(trainingInstance1));
-    given(trainingRunRepository.findAllInactiveByTrainingInstanceId(anyLong(), any(Pageable.class)))
-        .willReturn(p);
-    Page<TrainingRun> pr =
-        trainingInstanceService.findTrainingRunsByTrainingInstance(
-            trainingInstance1.getId(), false, PageRequest.of(0, 2));
-    assertEquals(2, pr.getTotalElements());
+  private static Stream<Arguments> runFiltersWithRequestedAndAppliedSort() {
+    Sort requestedSort = Sort.by(Sort.Direction.DESC, "endTime");
+    return Stream.of(null, true, false)
+        .flatMap(
+            isActive ->
+                Stream.of(
+                    Arguments.of(isActive, Sort.unsorted(), Sort.by("startTime")),
+                    Arguments.of(isActive, requestedSort, requestedSort)));
   }
 
   @Test
@@ -389,11 +362,12 @@ public class TrainingInstanceServiceTest {
   }
 
   private static String convertObjectToJsonBytes(Object object) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
-    mapper.registerModule(new JavaTimeModule());
-    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    ObjectMapper mapper =
+        JsonMapper.builderWithJackson2Defaults()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build();
     return mapper.writeValueAsString(object);
   }
 

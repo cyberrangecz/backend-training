@@ -135,20 +135,21 @@ public class AnswerSimilarityService {
   private Map<Long, TrainingLevel> findTrainingLevelsById(Long trainingInstanceId) {
     Long trainingDefinitionId =
         trainingInstanceService.findById(trainingInstanceId).getTrainingDefinition().getId();
-    return trainingLevelRepository.findAllByTrainingDefinitionId(trainingDefinitionId).stream()
+    return trainingLevelRepository
+        .findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(trainingDefinitionId)
+        .stream()
         .collect(Collectors.toMap(TrainingLevel::getId, level -> level));
   }
 
   /**
-   * Fetches in one call the variant answers stored for the runs' sandboxes, keyed by sandbox id. A
-   * sandbox absent from answer storage maps to an empty list.
+   * Fetches the variant answers stored for the runs' sandboxes, keyed by sandbox id. A sandbox
+   * absent from answer storage maps to an empty list.
    */
   private Map<String, List<VariantAnswer>> fetchVariantAnswersBySandboxId(Set<TrainingRun> runs) {
     Map<String, List<VariantAnswer>> answersBySandboxId = new HashMap<>();
     runs.forEach(run -> answersBySandboxId.put(run.getSandboxInstanceRefId(), List.of()));
     answersStorageApiService
         .getAnswersBySandboxIds(List.copyOf(answersBySandboxId.keySet()))
-        .getContent()
         .forEach(
             sandboxAnswers ->
                 answersBySandboxId.put(

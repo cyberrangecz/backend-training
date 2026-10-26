@@ -12,6 +12,6 @@ import org.springframework.stereotype.Repository;
 public interface AssessmentLevelRepository
     extends JpaRepository<AssessmentLevel, Long>, QuerydslPredicateExecutor<AssessmentLevel> {
 
-  List<AssessmentLevel> findAllByTrainingDefinitionId(
+  List<AssessmentLevel> findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(
       @Param("trainingDefinitionId") Long trainingDefinitionId);
 }

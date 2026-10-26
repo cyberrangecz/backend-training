@@ -1,14 +1,15 @@
 package cz.cyberrange.platform.training.api.dto.traininginstance;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCDeserializer;
+import cz.cyberrange.platform.training.api.validation.StartNotTooFarInPast;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 /** Encapsulates information about Training Instance, intended for creation of new instance */
 @Getter
@@ -19,6 +20,7 @@ public class TrainingInstanceCreateDTO {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2020-11-20T10:28:02.727Z")
   @NotNull(message = "{trainingInstance.startTime.NotNull.message}")
+  @StartNotTooFarInPast
   @JsonDeserialize(using = LocalDateTimeUTCDeserializer.class)
   private LocalDateTime startTime;
 
@@ -48,7 +50,7 @@ public class TrainingInstanceCreateDTO {
    */
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
   @NotNull(message = "{traininginstancecreate.trainingDefinition.NotNull.message}")
-  private long trainingDefinitionId;
+  private Long trainingDefinitionId;
 
   /**
    * Mutually exclusive with localEnvironment: rejected when localEnvironment is true, required when
@@ -109,11 +111,11 @@ public class TrainingInstanceCreateDTO {
     this.accessToken = accessToken;
   }
 
-  public long getTrainingDefinitionId() {
+  public Long getTrainingDefinitionId() {
     return trainingDefinitionId;
   }
 
-  public void setTrainingDefinitionId(long trainingDefinitionId) {
+  public void setTrainingDefinitionId(Long trainingDefinitionId) {
     this.trainingDefinitionId = trainingDefinitionId;
   }
 

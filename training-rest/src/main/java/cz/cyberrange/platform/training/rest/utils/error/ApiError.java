@@ -2,6 +2,8 @@ package cz.cyberrange.platform.training.rest.utils.error;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -19,11 +21,11 @@ import org.springframework.http.HttpStatus;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
 
-  /** Epoch millisecond at which the handler that produced this error ran */
+  /** UTC moment at which the handler that produced this error ran */
   @Schema(
-      description = "When the error was produced, in milliseconds since the epoch",
-      example = "1789862400000")
-  private long timestamp;
+      description = "When the error was produced, as a UTC instant with millisecond precision",
+      example = "2026-10-06T11:34:04.071Z")
+  private LocalDateTime timestamp;
 
   /**
    * Status carried in the error body, which the handler also sets as the actual HTTP response
@@ -53,13 +55,7 @@ public class ApiError {
       example = "[Entity TrainingDefinition (id: 1) not found.]")
   private List<String> errors;
 
-  /**
-   * Request path associated with the error. Its source varies by handler method: the request's
-   * context path on the overridden {@link
-   * org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler} methods
-   * and on {@link CustomRestExceptionHandlerTraining#handleAuthenticationException}, or the full
-   * request URI on the other custom {@code @ExceptionHandler} methods.
-   */
+  /** Request path associated with the error, empty when the error was built without one */
   @Schema(example = "/training/api/v1/training-definitions/1")
   private String path;
 
@@ -69,7 +65,7 @@ public class ApiError {
     this.status = httpStatus;
     this.message = message;
     this.path = path;
-    this.timestamp = System.currentTimeMillis();
+    this.timestamp = LocalDateTime.now(Clock.systemUTC());
   }
 
   /**
@@ -78,7 +74,7 @@ public class ApiError {
    * @param httpStatus the status reported in the body and used for the HTTP response
    * @param message description of the error
    * @param errors the list stored as {@link #getErrors()}
-   * @param path the request path or context path associated with the error
+   * @param path the request path associated with the error
    * @return the built error body
    */
   public static ApiError of(
@@ -97,7 +93,7 @@ public class ApiError {
    * @param message description of the error
    * @param error the caught exception's own message, wrapped as the sole entry of {@link
    *     #getErrors()}
-   * @param path the request path or context path associated with the error
+   * @param path the request path associated with the error
    * @return the built error body
    */
   public static ApiError of(HttpStatus httpStatus, String message, String error, String path) {
@@ -114,11 +110,11 @@ public class ApiError {
     return ApiError.of(httpStatus, message, error, "");
   }
 
-  public long getTimestamp() {
+  public LocalDateTime getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(long timestamp) {
+  public void setTimestamp(LocalDateTime timestamp) {
     this.timestamp = timestamp;
   }
 

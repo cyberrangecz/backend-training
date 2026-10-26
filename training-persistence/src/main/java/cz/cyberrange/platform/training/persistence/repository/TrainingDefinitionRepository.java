@@ -30,8 +30,8 @@ public interface TrainingDefinitionRepository
         QuerydslBinderCustomizer<QTrainingDefinition> {
 
   /**
-   * That method is used to make the query dsl string values case insensitive and also it supports
-   * partial matches in the database.
+   * That method is used to make the query dsl string values case and accent insensitive and also
+   * it supports partial matches in the database.
    *
    * @param querydslBindings
    * @param qTrainingDefinition
@@ -44,21 +44,21 @@ public interface TrainingDefinitionRepository
         .all(
             (StringPath path, Collection<? extends String> values) -> {
               BooleanBuilder predicate = new BooleanBuilder();
-              values.forEach(value -> predicate.and(path.containsIgnoreCase(value)));
+              values.forEach(value -> predicate.and(FoldedSearchPredicate.contains(path, value)));
               return Optional.ofNullable(predicate);
             });
   }
 
   /**
-   * Find all training definitions matching the given predicate, with authors and the beta testing
-   * group's organizers loaded eagerly along with each one.
+   * Find all training definitions matching the given predicate, with authors loaded eagerly along
+   * with each one.
    *
    * @param predicate the predicate
    * @param pageable the pageable
    * @return page of all {@link TrainingDefinition}
    */
   @EntityGraph(
-      value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+      value = "TrainingDefinition.findAllAuthors",
       type = EntityGraph.EntityGraphType.FETCH)
   Page<TrainingDefinition> findAll(Predicate predicate, Pageable pageable);
 
@@ -69,7 +69,7 @@ public interface TrainingDefinitionRepository
    * @return page of all {@link TrainingDefinition}
    */
   @EntityGraph(
-      value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+      value = "TrainingDefinition.findAllAuthors",
       type = EntityGraph.EntityGraphType.FETCH)
   Page<TrainingDefinition> findAll(Pageable pageable);
 
@@ -77,44 +77,20 @@ public interface TrainingDefinitionRepository
    * Find all training definitions.
    *
    * @param state the state of training definition
-   * @param pageable the pageable
+   * @param pageable the page to return and its sort
    * @return page of all {@link TrainingDefinition}
    */
+  @Query("SELECT DISTINCT td FROM TrainingDefinition td WHERE td.state = :state")
   Page<TrainingDefinition> findAllByState(@Param("state") TDState state, Pageable pageable);
 
   /**
-   * Find unreleased training definitions whose beta testing group lists the given user as an
-   * organizer.
-   *
-   * @param userRefId the cross-service user reference id to match against the beta testing group's
-   *     organizers
-   * @param pageable the pageable
-   * @return the page
-   */
-  Page<TrainingDefinition> findAllForOrganizersUnreleased(
-      @Param("userRefId") Long userRefId, Pageable pageable);
-
-  /**
-   * Find unreleased training definitions where the given user is either an author or an organizer
-   * of the beta testing group.
-   *
-   * @param userRefId the cross-service user reference id to match against the definition's authors
-   *     and its beta testing group's organizers
-   * @param pageable the pageable
-   * @return the page
-   */
-  Page<TrainingDefinition> findAllForDesignersAndOrganizersUnreleased(
-      @Param("userRefId") Long userRefId, Pageable pageable);
-
-  /**
-   * Find training definition by id, its authors, its beta testing group and that group's organizers
-   * loaded along with it.
+   * Find training definition by id, its authors loaded along with it.
    *
    * @param id the id of training definition
    * @return the {@link TrainingDefinition}, empty when no row carries the given id
    */
   @EntityGraph(
-      value = "TrainingDefinition.findAllAuthorsBetaTestingGroupOrganizers",
+      value = "TrainingDefinition.findAllAuthors",
       type = EntityGraph.EntityGraphType.FETCH)
   Optional<TrainingDefinition> findById(Long id);
 
@@ -145,7 +121,13 @@ public interface TrainingDefinitionRepository
           + "ORDER BY definition.title, definition.id, technique.techniqueKey")
   List<MitreTechniqueUsage> findMitreTechniqueUsagesByState(@Param("state") TDState state);
 
-  List<TrainingDefinition> findAllByIdIn(Collection<Long> ids);
+  /**
+   * Finds the training definitions whose primary key is one of the given ids, ordered by id.
+   *
+   * @param ids the training definition ids
+   * @return the matching {@link TrainingDefinition}s
+   */
+  List<TrainingDefinition> findAllByIdInOrderById(Collection<Long> ids);
 
   /** A single MITRE technique key used by a training definition */
   interface MitreTechniqueUsage {

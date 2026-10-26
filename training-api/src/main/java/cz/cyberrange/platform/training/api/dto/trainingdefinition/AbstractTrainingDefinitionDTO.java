@@ -6,7 +6,7 @@ import lombok.Data;
 /** Encapsulates the identification and description shared by all training definition responses */
 @Data
 @Schema(description = "The identification and description shared by every training definition.")
-public abstract class AbstractTrainingDefinitionDTO {
+public abstract class AbstractTrainingDefinitionDTO implements InstanceCountHolder {
 
   /** Primary key of the training definition row, distinct from any user id space */
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
@@ -26,4 +26,10 @@ public abstract class AbstractTrainingDefinitionDTO {
       description = "Total time for the definition's levels in minutes, kept by the server.",
       example = "5")
   protected long estimatedDuration;
+
+  /** Resolved from the persisted training instances when the DTO is built; never stored */
+  @Schema(
+      description = "Number of training instances created from the definition, past ones included.",
+      example = "3")
+  protected long instanceCount;
 }

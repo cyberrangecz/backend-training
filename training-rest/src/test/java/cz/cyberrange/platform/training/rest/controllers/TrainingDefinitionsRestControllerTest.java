@@ -3,19 +3,15 @@ package cz.cyberrange.platform.training.rest.controllers;
 import static cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter.convertJsonBytesToObject;
 import static cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter.convertObjectToJsonBytes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
-import cz.cyberrange.platform.training.api.dto.BasicLevelInfoDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
-import cz.cyberrange.platform.training.api.dto.assessmentlevel.AssessmentLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
@@ -23,39 +19,41 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelDTO;
-import cz.cyberrange.platform.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
-import cz.cyberrange.platform.training.api.enums.RoleType;
+import cz.cyberrange.platform.training.api.enums.LevelType;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
-import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException;
-import cz.cyberrange.platform.training.api.exceptions.errors.JavaApiError;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
-import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
-import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
-import cz.cyberrange.platform.training.persistence.model.enums.LevelType;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.BetaTestingGroupMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapperImpl;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.UserRefMapperImpl;
+import cz.cyberrange.platform.training.service.services.UserNameFilter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -65,20 +63,20 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
-    classes = {
-      TestDataFactory.class,
-      EnumMapperImpl.class,
-      TrainingDefinitionMapperImpl.class,
-      UserRefMapperImpl.class,
-      BetaTestingGroupMapperImpl.class
-    })
+    classes = {TestDataFactory.class, EnumMapperImpl.class, TrainingDefinitionMapperImpl.class})
 public class TrainingDefinitionsRestControllerTest {
+
+  private static final long DEFINITION_ID = 4L;
+  private static final UserNameFilter JANE_DOE_FILTER = new UserNameFilter(null, null, "Jane Doe");
 
   private TrainingDefinitionsRestController trainingDefinitionsRestController;
 
@@ -95,20 +93,9 @@ public class TrainingDefinitionsRestControllerTest {
   private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO;
   private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO;
 
-  private TrainingLevel trainingLevel;
-  private TrainingLevelUpdateDTO trainingLevelUpdateDTO;
-
-  private InfoLevel infoLevel;
-  private InfoLevelUpdateDTO infoLevelUpdateDTO;
-
-  private AssessmentLevel assessmentLevel;
-  private AssessmentLevelUpdateDTO assessmentLevelUpdateDTO;
-
   private AbstractLevelDTO abstractLevelDTO;
-  private BasicLevelInfoDTO basicTrainingLevelInfoDTO, basicInfoLevelInfoDTO;
   private UserRefDTO designerDTO1, designerDTO2, organizerDTO;
 
-  private List<BasicLevelInfoDTO> basicLevelInfoDTOS;
   private PageResultResource<TrainingDefinitionInfoDTO> trainingDefinitionInfoDTOPageResultResource;
   private PageResultResource<TrainingDefinitionDTO> trainingDefinitionDTOPageResultResource;
 
@@ -117,8 +104,7 @@ public class TrainingDefinitionsRestControllerTest {
 
   @BeforeEach
   public void init() {
-    ObjectMapper snakeCaseMapper = new ObjectMapper();
-    snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+    JsonMapper snakeCaseMapper = ObjectConverter.restResponseMapper();
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingDefinitionsRestController =
@@ -130,27 +116,9 @@ public class TrainingDefinitionsRestControllerTest {
                 new QuerydslPredicateArgumentResolver(
                     new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
                     Optional.empty()))
-            .setMessageConverters(new MappingJackson2HttpMessageConverter(snakeCaseMapper))
+            .setMessageConverters(new JacksonJsonHttpMessageConverter(snakeCaseMapper))
             .setControllerAdvice(new CustomRestExceptionHandlerTraining())
             .build();
-
-    trainingLevel = testDataFactory.getPenalizedLevel();
-    trainingLevel.setId(1L);
-
-    trainingLevelUpdateDTO = testDataFactory.getTrainingLevelUpdateDTO();
-    trainingLevelUpdateDTO.setId(2L);
-
-    infoLevel = testDataFactory.getInfoLevel1();
-    infoLevel.setId(2L);
-
-    infoLevelUpdateDTO = testDataFactory.getInfoLevelUpdateDTO();
-    infoLevelUpdateDTO.setId(3L);
-
-    assessmentLevel = testDataFactory.getTest();
-    assessmentLevel.setId(3L);
-
-    assessmentLevelUpdateDTO = testDataFactory.getAssessmentLevelUpdateDTO();
-    assessmentLevelUpdateDTO.setId(9L);
 
     designerDTO1 = testDataFactory.getUserRefDTO1();
     designerDTO2 = testDataFactory.getUserRefDTO2();
@@ -163,8 +131,11 @@ public class TrainingDefinitionsRestControllerTest {
     trainingDefinitionDTO2.setId(2L);
     trainingDefinitionDTO2.setTitle("TDbyId2");
 
+    InfoLevelUpdateDTO infoLevelUpdateDTO = testDataFactory.getInfoLevelUpdateDTO();
+    infoLevelUpdateDTO.setLevelType(LevelType.INFO_LEVEL);
     trainingDefinitionUpdateDTO = testDataFactory.getTrainingDefinitionUpdateDTO();
-    trainingDefinitionUpdateDTO.setId(4L);
+    trainingDefinitionUpdateDTO.setVersion(3L);
+    trainingDefinitionUpdateDTO.setLevels(List.of(infoLevelUpdateDTO));
 
     trainingDefinitionCreateDTO = testDataFactory.getTrainingDefinitionCreateDTO();
 
@@ -172,18 +143,9 @@ public class TrainingDefinitionsRestControllerTest {
 
     abstractLevelDTO.setId(1L);
 
-    basicTrainingLevelInfoDTO = testDataFactory.getBasicTrainingLevelInfoDTO();
-    basicTrainingLevelInfoDTO.setId(1L);
-    basicTrainingLevelInfoDTO.setOrder(1);
-
-    basicInfoLevelInfoDTO = testDataFactory.getBasicInfoLevelInfoDTO();
-    basicInfoLevelInfoDTO.setId(2L);
-    basicInfoLevelInfoDTO.setOrder(2);
-
     trainingDefinition1 = testDataFactory.getArchivedDefinition();
     trainingDefinition2 = testDataFactory.getReleasedDefinition();
 
-    basicLevelInfoDTOS = List.of(basicTrainingLevelInfoDTO, basicInfoLevelInfoDTO);
     page = new PageImpl<>(List.of(trainingDefinition1, trainingDefinition2));
 
     trainingDefinitionInfoDTOPageResultResource =
@@ -195,6 +157,18 @@ public class TrainingDefinitionsRestControllerTest {
   @AfterEach
   void closeService() throws Exception {
     closeable.close();
+  }
+
+  private static Stream<Named<Consumer<TrainingDefinitionUpdateDTO>>> requiredFieldRemovals() {
+    return Stream.of(
+        Named.of("version", update -> update.setVersion(null)),
+        Named.of("levels", update -> update.setLevels(null)));
+  }
+
+  private MockHttpServletRequestBuilder putUpdate() throws IOException {
+    return put("/training-definitions/{definitionId}", DEFINITION_ID)
+        .content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
+        .contentType(MediaType.APPLICATION_JSON_VALUE);
   }
 
   @Test
@@ -210,8 +184,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         trainingDefinitionDTO1,
         convertJsonBytesToObject(
-            result.getContentAsString(),
-            TrainingDefinitionWithLevelsDTO.class));
+            result.getContentAsString(), TrainingDefinitionWithLevelsDTO.class));
   }
 
   @Test
@@ -288,9 +261,27 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         trainingDefinitionDTO1,
         convertJsonBytesToObject(
-            result.getContentAsString(),
-            TrainingDefinitionWithLevelsDTO.class));
+            result.getContentAsString(), TrainingDefinitionWithLevelsDTO.class));
     then(trainingDefinitionFacade).should().create(any(TrainingDefinitionCreateDTO.class));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"\"id\": 5, \"estimated_duration\": 1", "\"estimated_duration\": -1"})
+  public void createTrainingDefinition_InvalidLevel(String invalidLevelFields) throws Exception {
+    String body =
+        "{\"title\": \"T\", \"levels\": [{\"level_type\": \"INFO_LEVEL\","
+            + " \"title\": \"L\", \"content\": \"C\", "
+            + invalidLevelFields
+            + "}]}";
+
+    mockMvc
+        .perform(
+            post("/training-definitions")
+                .content(body)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isBadRequest());
+
+    then(trainingDefinitionFacade).shouldHaveNoInteractions();
   }
 
   @Test
@@ -304,43 +295,74 @@ public class TrainingDefinitionsRestControllerTest {
                 post("/training-definitions")
                     .content(convertObjectToJsonBytes(trainingDefinitionCreateDTO))
                     .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isUnprocessableEntity())
+            .andExpect(status().isUnprocessableContent())
             .andReturn()
             .getResponse();
     ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, error.getStatus());
+    assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, error.getStatus());
   }
 
   @Test
   public void updateTrainingDefinition() throws Exception {
-    mockMvc
-        .perform(
-            put("/training-definitions")
-                .content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isNoContent());
-    then(trainingDefinitionFacade).should().update(any(TrainingDefinitionUpdateDTO.class));
+    given(
+            trainingDefinitionFacade.update(
+                eq(DEFINITION_ID), any(TrainingDefinitionUpdateDTO.class)))
+        .willReturn(trainingDefinitionDTO1);
+    MockHttpServletResponse result =
+        mockMvc
+            .perform(putUpdate())
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andReturn()
+            .getResponse();
+    assertEquals(
+        trainingDefinitionDTO1,
+        convertJsonBytesToObject(
+            result.getContentAsString(), TrainingDefinitionWithLevelsDTO.class));
+    ArgumentCaptor<TrainingDefinitionUpdateDTO> updateCaptor =
+        ArgumentCaptor.forClass(TrainingDefinitionUpdateDTO.class);
+    then(trainingDefinitionFacade).should().update(eq(DEFINITION_ID), updateCaptor.capture());
+    assertEquals(1, updateCaptor.getValue().getLevels().size());
+    assertInstanceOf(InfoLevelUpdateDTO.class, updateCaptor.getValue().getLevels().get(0));
+  }
+
+  @ParameterizedTest(name = "without {0}")
+  @MethodSource("requiredFieldRemovals")
+  public void updateTrainingDefinition_RequiredFieldMissing(
+      Consumer<TrainingDefinitionUpdateDTO> removeRequiredField) throws Exception {
+    removeRequiredField.accept(trainingDefinitionUpdateDTO);
+    mockMvc.perform(putUpdate()).andExpect(status().isBadRequest());
+    then(trainingDefinitionFacade).shouldHaveNoInteractions();
   }
 
   @Test
   public void updateTrainingDefinition_FacadeException() throws Exception {
     willThrow(new EntityConflictException())
         .given(trainingDefinitionFacade)
-        .update(any(TrainingDefinitionUpdateDTO.class));
+        .update(eq(DEFINITION_ID), any(TrainingDefinitionUpdateDTO.class));
     MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                put("/training-definitions")
-                    .content(convertObjectToJsonBytes(trainingDefinitionUpdateDTO))
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isConflict())
-            .andReturn()
-            .getResponse();
+        mockMvc.perform(putUpdate()).andExpect(status().isConflict()).andReturn().getResponse();
     ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
     assertEquals(HttpStatus.CONFLICT, error.getStatus());
     assertEquals(
         "The request could not be completed due to a conflict with the current state of the target resource.",
         error.getMessage());
+  }
+
+  @Test
+  public void updateTrainingDefinition_ConcurrentWrite() throws Exception {
+    willThrow(new OptimisticLockingFailureException("Row was updated by another transaction"))
+        .given(trainingDefinitionFacade)
+        .update(eq(DEFINITION_ID), any(TrainingDefinitionUpdateDTO.class));
+    MockHttpServletResponse response =
+        mockMvc.perform(putUpdate()).andExpect(status().isConflict()).andReturn().getResponse();
+    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
+    assertEquals(HttpStatus.CONFLICT, error.getStatus());
+    assertEquals(
+        "Write refused: another request changed the same data first. Reload it and repeat the"
+            + " change.",
+        error.getMessage());
+    assertEquals(List.of("The stored data changed after this request read it."), error.getErrors());
   }
 
   @Test
@@ -384,112 +406,6 @@ public class TrainingDefinitionsRestControllerTest {
   }
 
   @Test
-  public void swapLevels() throws Exception {
-    given(
-            trainingDefinitionFacade.swapLevels(
-                trainingDefinitionDTO1.getId(), trainingLevel.getId(), infoLevel.getId()))
-        .willReturn(basicLevelInfoDTOS);
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                put(
-                        "/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}",
-                        trainingDefinitionDTO1.getId(),
-                        trainingLevel.getId(),
-                        infoLevel.getId())
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
-    assertEquals(
-        basicLevelInfoDTOS,
-        convertJsonBytesToObject(
-            response.getContentAsString(), new TypeReference<List<BasicLevelInfoDTO>>() {}));
-    then(trainingDefinitionFacade)
-        .should()
-        .swapLevels(trainingDefinitionDTO1.getId(), trainingLevel.getId(), infoLevel.getId());
-  }
-
-  @Test
-  public void swapLevels_FacadeException() throws Exception {
-    willThrow(new EntityConflictException())
-        .given(trainingDefinitionFacade)
-        .swapLevels(trainingDefinitionDTO1.getId(), trainingLevel.getId(), infoLevel.getId());
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                put(
-                        "/training-definitions/{definitionId}/levels/{levelIdFrom}/swap-with/{levelIdTo}",
-                        trainingDefinitionDTO1.getId(),
-                        trainingLevel.getId(),
-                        infoLevel.getId())
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isConflict())
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.CONFLICT, error.getStatus());
-    assertEquals(
-        "The request could not be completed due to a conflict with the current state of the target resource.",
-        error.getMessage());
-  }
-
-  @Test
-  public void moveLevel() throws Exception {
-    given(
-            trainingDefinitionFacade.moveLevel(
-                trainingDefinitionDTO1.getId(),
-                trainingLevel.getId(),
-                trainingLevel.getOrder() + 2))
-        .willReturn(basicLevelInfoDTOS);
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                put(
-                        "/training-definitions/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}",
-                        trainingDefinitionDTO1.getId(),
-                        trainingLevel.getId(),
-                        trainingLevel.getOrder() + 2)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
-    assertEquals(
-        basicLevelInfoDTOS,
-        convertJsonBytesToObject(
-            response.getContentAsString(), new TypeReference<List<BasicLevelInfoDTO>>() {}));
-    then(trainingDefinitionFacade)
-        .should()
-        .moveLevel(
-            trainingDefinitionDTO1.getId(), trainingLevel.getId(), trainingLevel.getOrder() + 2);
-  }
-
-  @Test
-  public void moveLevel_FacadeException() throws Exception {
-    willThrow(new EntityConflictException())
-        .given(trainingDefinitionFacade)
-        .moveLevel(
-            trainingDefinitionDTO1.getId(), trainingLevel.getId(), trainingLevel.getOrder() + 2);
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                put(
-                        "/training-definitions/{definitionId}/levels/{levelIdToBeMoved}/move-to/{newPosition}",
-                        trainingDefinitionDTO1.getId(),
-                        trainingLevel.getId(),
-                        trainingLevel.getOrder() + 2)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isConflict())
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.CONFLICT, error.getStatus());
-    assertEquals(
-        "The request could not be completed due to a conflict with the current state of the target resource.",
-        error.getMessage());
-  }
-
-  @Test
   public void deleteTrainingDefinition() throws Exception {
     mockMvc
         .perform(delete("/training-definitions/{id}", trainingDefinitionDTO1.getId()))
@@ -515,147 +431,6 @@ public class TrainingDefinitionsRestControllerTest {
   }
 
   @Test
-  public void deleteLevel() throws Exception {
-    mockMvc
-        .perform(
-            delete(
-                "/training-definitions/{definitionId}/levels/{levelId}",
-                trainingDefinitionDTO1.getId(),
-                trainingLevel.getId()))
-        .andExpect(status().isOk());
-    then(trainingDefinitionFacade)
-        .should()
-        .deleteOneLevel(trainingDefinitionDTO1.getId(), trainingLevel.getId());
-  }
-
-  @Test
-  public void deleteLevel_FacadeException() throws Exception {
-    willThrow(new EntityNotFoundException())
-        .given(trainingDefinitionFacade)
-        .deleteOneLevel(any(Long.class), any(Long.class));
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                delete(
-                    "/training-definitions/{definitionId}/levels/{levelId}",
-                    trainingDefinitionDTO2.getId(),
-                    trainingLevel.getId()))
-            .andExpect(status().isNotFound())
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-    assertEquals("The requested entity could not be found", error.getMessage());
-  }
-
-  @Test
-  public void updateTrainingLevel() throws Exception {
-    mockMvc
-        .perform(
-            put(
-                    "/training-definitions/{definitionId}/training-levels",
-                    trainingDefinitionDTO1.getId())
-                .content(convertObjectToJsonBytes(trainingLevelUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isNoContent());
-    then(trainingDefinitionFacade)
-        .should()
-        .updateTrainingLevel(eq(trainingDefinitionDTO1.getId()), any(TrainingLevelUpdateDTO.class));
-  }
-
-  @Test
-  public void updateTrainingLevel_FacadeException() throws Exception {
-    willThrow(new EntityNotFoundException())
-        .given(trainingDefinitionFacade)
-        .updateTrainingLevel(any(Long.class), any(TrainingLevelUpdateDTO.class));
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                put(
-                        "/training-definitions/{definitionId}/training-levels",
-                        trainingDefinitionDTO2.getId())
-                    .content(convertObjectToJsonBytes(trainingLevelUpdateDTO))
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isNotFound())
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-    assertEquals("The requested entity could not be found", error.getMessage());
-  }
-
-  @Test
-  public void updateInfoLevel() throws Exception {
-    mockMvc
-        .perform(
-            put("/training-definitions/{definitionId}/info-levels", trainingDefinitionDTO1.getId())
-                .content(convertObjectToJsonBytes(infoLevelUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isNoContent());
-    then(trainingDefinitionFacade)
-        .should()
-        .updateInfoLevel(eq(trainingDefinitionDTO1.getId()), any(InfoLevelUpdateDTO.class));
-  }
-
-  @Test
-  public void updateInfoLevel_FacadeException() throws Exception {
-    willThrow(new EntityNotFoundException())
-        .given(trainingDefinitionFacade)
-        .updateInfoLevel(any(Long.class), any(InfoLevelUpdateDTO.class));
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                put(
-                        "/training-definitions/{definitionId}/info-levels",
-                        trainingDefinitionDTO2.getId())
-                    .content(convertObjectToJsonBytes(infoLevelUpdateDTO))
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isNotFound())
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-    assertEquals("The requested entity could not be found", error.getMessage());
-  }
-
-  @Test
-  public void updateAssessmentLevel() throws Exception {
-    mockMvc
-        .perform(
-            put(
-                    "/training-definitions/{definitionId}/assessment-levels",
-                    trainingDefinitionDTO1.getId())
-                .content(convertObjectToJsonBytes(assessmentLevelUpdateDTO))
-                .contentType(MediaType.APPLICATION_JSON_VALUE))
-        .andExpect(status().isNoContent());
-    then(trainingDefinitionFacade)
-        .should()
-        .updateAssessmentLevel(
-            eq(trainingDefinitionDTO1.getId()), any(AssessmentLevelUpdateDTO.class));
-  }
-
-  @Test
-  public void updateAssessmentLevel_FacadeException() throws Exception {
-    willThrow(new EntityNotFoundException())
-        .given(trainingDefinitionFacade)
-        .updateInfoLevel(any(Long.class), any(InfoLevelUpdateDTO.class));
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                put(
-                        "/training-definitions/{definitionId}/info-levels",
-                        trainingDefinitionDTO2.getId())
-                    .content(convertObjectToJsonBytes(infoLevelUpdateDTO))
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isNotFound())
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-    assertEquals("The requested entity could not be found", error.getMessage());
-  }
-
-  @Test
   public void findLevelById() throws Exception {
     given(trainingDefinitionFacade.findLevelById(any(Long.class))).willReturn(abstractLevelDTO);
     MockHttpServletResponse result =
@@ -667,18 +442,15 @@ public class TrainingDefinitionsRestControllerTest {
             .getResponse();
     assertEquals(
         abstractLevelDTO,
-        convertJsonBytesToObject(
-            result.getContentAsString(), TrainingLevelDTO.class));
+        convertJsonBytesToObject(result.getContentAsString(), TrainingLevelDTO.class));
   }
 
   @Test
   public void findLevelById_FacadeException() throws Exception {
-    willThrow(new EntityNotFoundException())
-        .given(trainingDefinitionFacade)
-        .findLevelById(trainingLevel.getId());
+    willThrow(new EntityNotFoundException()).given(trainingDefinitionFacade).findLevelById(1L);
     MockHttpServletResponse result =
         mockMvc
-            .perform(get("/training-definitions/levels" + "/{levelId}", trainingLevel.getId()))
+            .perform(get("/training-definitions/levels" + "/{levelId}", 1L))
             .andExpect(status().isNotFound())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andReturn()
@@ -689,157 +461,17 @@ public class TrainingDefinitionsRestControllerTest {
   }
 
   @Test
-  public void createLevel() throws Exception {
-    given(trainingDefinitionFacade.createTrainingLevel(any(Long.class)))
-        .willReturn(basicTrainingLevelInfoDTO);
-    MockHttpServletResponse result =
-        mockMvc
-            .perform(
-                post(
-                        "/training-definitions/{definitionId}/levels/{levelType}",
-                        trainingDefinitionDTO1.getId(),
-                        LevelType.TRAINING)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isCreated())
-            .andReturn()
-            .getResponse();
-    then(trainingDefinitionFacade)
-        .should(never())
-        .createAssessmentLevel(trainingDefinitionDTO1.getId());
-    then(trainingDefinitionFacade).should(never()).createInfoLevel(trainingDefinitionDTO1.getId());
-    assertEquals(
-        basicTrainingLevelInfoDTO,
-        convertJsonBytesToObject(
-            result.getContentAsString(), BasicLevelInfoDTO.class));
-  }
-
-  @Test
-  public void createLevel_FacadeException() throws Exception {
-    willThrow(new UnprocessableEntityException())
-        .given(trainingDefinitionFacade)
-        .createTrainingLevel(trainingDefinitionDTO1.getId());
-    MockHttpServletResponse result =
-        mockMvc
-            .perform(
-                post(
-                        "/training-definitions/{definitionId}/levels/{levelType}",
-                        trainingDefinitionDTO1.getId(),
-                        LevelType.TRAINING)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isUnprocessableEntity())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, error.getStatus());
-    assertEquals("The requested data cannot be processed.", error.getMessage());
-  }
-
-  @Test
-  public void getDesigners() throws Exception {
-    List<UserRefDTO> designers = List.of(designerDTO1, designerDTO2);
-    given(
-            trainingDefinitionFacade.getUsersWithGivenRole(
-                eq(RoleType.ROLE_TRAINING_DESIGNER), any(Pageable.class), eq(null), eq(null)))
-        .willReturn(new PageResultResource<>(designers));
-    MockHttpServletResponse result =
-        mockMvc
-            .perform(
-                get("/training-definitions/designers")
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
-    assertEquals(
-        designers,
-        convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
-            .getContent());
-  }
-
-  @Test
-  public void getDesigners_MicroserviceError() throws Exception {
-    willThrow(
-            new MicroserviceApiException(
-                "Error while getting users from user and group microservice.",
-                HttpStatus.FORBIDDEN,
-                JavaApiError.of("Detail")))
-        .given(trainingDefinitionFacade)
-        .getUsersWithGivenRole(
-            eq(RoleType.ROLE_TRAINING_DESIGNER), any(Pageable.class), eq(null), eq(null));
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                get("/training-definitions/designers")
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isForbidden())
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
-    assertEquals(
-        "Error while getting users from user and group microservice. Detail", error.getMessage());
-  }
-
-  @Test
-  public void getOrganizers() throws Exception {
-    List<UserRefDTO> organizers = List.of(organizerDTO, designerDTO2);
-    given(
-            trainingDefinitionFacade.getUsersWithGivenRole(
-                eq(RoleType.ROLE_TRAINING_ORGANIZER), any(Pageable.class), eq(null), eq(null)))
-        .willReturn(new PageResultResource<>(organizers));
-    MockHttpServletResponse result =
-        mockMvc
-            .perform(
-                get("/training-definitions/organizers")
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
-    assertEquals(
-        organizers,
-        convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
-            .getContent());
-  }
-
-  @Test
-  public void getOrganizers_MicroserviceError() throws Exception {
-    willThrow(
-            new MicroserviceApiException(
-                "Error while getting users from user and group microservice.",
-                HttpStatus.FORBIDDEN,
-                JavaApiError.of("Detail")))
-        .given(trainingDefinitionFacade)
-        .getUsersWithGivenRole(
-            eq(RoleType.ROLE_TRAINING_ORGANIZER), any(Pageable.class), eq(null), eq(null));
-    MockHttpServletResponse response =
-        mockMvc
-            .perform(
-                get("/training-definitions/organizers")
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isForbidden())
-            .andReturn()
-            .getResponse();
-    ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
-    assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
-    assertEquals(
-        "Error while getting users from user and group microservice. Detail", error.getMessage());
-  }
-
-  @Test
   public void getAuthors() throws Exception {
     List<UserRefDTO> authors = List.of(organizerDTO, designerDTO1);
     given(
             trainingDefinitionFacade.getAuthors(
-                eq(trainingDefinitionDTO1.getId()), any(Pageable.class), eq(null), eq(null)))
+                eq(trainingDefinitionDTO1.getId()), any(Pageable.class), eq(JANE_DOE_FILTER)))
         .willReturn(new PageResultResource<>(authors));
     MockHttpServletResponse result =
         mockMvc
             .perform(
                 get("/training-definitions/{definitionId}/authors", trainingDefinitionDTO1.getId())
+                    .param("name", "Jane Doe")
                     .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isOk())
             .andReturn()
@@ -847,8 +479,7 @@ public class TrainingDefinitionsRestControllerTest {
     assertEquals(
         authors,
         convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
 
@@ -856,7 +487,8 @@ public class TrainingDefinitionsRestControllerTest {
   public void getAuthors_FacadeException() throws Exception {
     willThrow(new EntityNotFoundException())
         .given(trainingDefinitionFacade)
-        .getAuthors(eq(trainingDefinitionDTO1.getId()), any(Pageable.class), eq(null), eq(null));
+        .getAuthors(
+            eq(trainingDefinitionDTO1.getId()), any(Pageable.class), eq(UserNameFilter.NONE));
     MockHttpServletResponse response =
         mockMvc
             .perform(
@@ -867,6 +499,30 @@ public class TrainingDefinitionsRestControllerTest {
             .getResponse();
     ApiError error = convertJsonBytesToObject(response.getContentAsString(), ApiError.class);
     assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+  }
+
+  @Test
+  public void getDesignersNotInGivenTrainingDefinition() throws Exception {
+    List<UserRefDTO> designers = List.of(designerDTO1, designerDTO2);
+    given(
+            trainingDefinitionFacade.getDesignersNotInGivenTrainingDefinition(
+                eq(trainingDefinitionDTO1.getId()), any(Pageable.class), eq(JANE_DOE_FILTER)))
+        .willReturn(new PageResultResource<>(designers));
+    MockHttpServletResponse result =
+        mockMvc
+            .perform(
+                get(
+                        "/training-definitions/{definitionId}/designers-not-in-training-definition",
+                        trainingDefinitionDTO1.getId())
+                    .param("name", "Jane Doe"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse();
+    assertEquals(
+        designers,
+        convertJsonBytesToObject(
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
+            .getContent());
   }
 
   @Test

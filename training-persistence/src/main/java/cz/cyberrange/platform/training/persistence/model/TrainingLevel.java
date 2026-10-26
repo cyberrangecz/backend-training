@@ -1,10 +1,11 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import jakarta.persistence.*;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
 
 /**
  * Class specifying Abstract level as training level. Training levels contain tasks for trainees to
@@ -22,7 +23,7 @@ public class TrainingLevel extends AbstractLevel {
   private String answerVariableName;
 
   @Lob
-  @Column(name = "content", nullable = false)
+  @Column(name = "content", nullable = false, columnDefinition = "TEXT")
   private String content;
 
   @Lob
@@ -33,10 +34,12 @@ public class TrainingLevel extends AbstractLevel {
   private boolean solutionPenalized;
 
   @OneToMany(mappedBy = "trainingLevel", orphanRemoval = true)
+  @OrderBy("id")
   private Set<Attachment> attachments = new HashSet<>();
 
   @OneToMany(mappedBy = "trainingLevel", cascade = CascadeType.ALL, orphanRemoval = true)
-  private Set<Hint> hints = new HashSet<>();
+  @OrderBy("order ASC, id ASC")
+  private Set<Hint> hints = new LinkedHashSet<>();
 
   @Column(name = "incorrect_answer_limit")
   private int incorrectAnswerLimit;
@@ -51,6 +54,7 @@ public class TrainingLevel extends AbstractLevel {
       name = "training_level_mitre_technique",
       joinColumns = {@JoinColumn(name = "training_level_id")},
       inverseJoinColumns = {@JoinColumn(name = "mitre_technique_id")})
+  @OrderBy("id")
   private Set<MitreTechnique> mitreTechniques = new HashSet<>();
 
   @ElementCollection(fetch = FetchType.EAGER)
@@ -195,7 +199,7 @@ public class TrainingLevel extends AbstractLevel {
   }
 
   /**
-   * Gets hints associated with training level.
+   * Gets hints associated with training level, in their order within the level.
    *
    * @return the hints
    */
@@ -297,6 +301,19 @@ public class TrainingLevel extends AbstractLevel {
   public void removeMitreTechnique(MitreTechnique mitreTechnique) {
     this.mitreTechniques.remove(mitreTechnique);
     mitreTechnique.removeTrainingLevel(this);
+  }
+
+  /**
+   * Removes every technique from this level's set and unregisters this level, matched by id, on
+   * each technique's own side of the association.
+   */
+  public void detachMitreTechniques() {
+    mitreTechniques.forEach(
+        technique ->
+            technique
+                .getTrainingLevels()
+                .removeIf(level -> Objects.equals(level.getId(), getId())));
+    mitreTechniques.clear();
   }
 
   /**

@@ -1,13 +1,12 @@
 package cz.cyberrange.platform.training.persistence.model;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,9 +24,6 @@ public class Attachment extends AbstractEntity<Long> {
   @Column(name = "content", nullable = false)
   private String content;
 
-  @Column(name = "creation_time", nullable = false)
-  private LocalDateTime creationTime;
-
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "training_level_id")
   private TrainingLevel trainingLevel;
@@ -37,24 +33,16 @@ public class Attachment extends AbstractEntity<Long> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Attachment that = (Attachment) o;
-    return Objects.equals(content, that.content) && Objects.equals(creationTime, that.creationTime);
+    return Objects.equals(content, that.content);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(content, creationTime);
+    return Objects.hashCode(content);
   }
 
   @Override
   public String toString() {
-    return "Attachment{"
-        + "id="
-        + super.getId()
-        + ", content='"
-        + content
-        + '\''
-        + ", creationTime="
-        + creationTime
-        + '}';
+    return "Attachment{" + "id=" + super.getId() + ", content='" + content + '\'' + '}';
   }
 }

@@ -10,8 +10,8 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 @DataJpaTest
 public class MitreTechniqueRepositoryTest {
@@ -52,13 +52,13 @@ public class MitreTechniqueRepositoryTest {
   @Test
   public void findByTechniqueKeysIn() {
     MitreTechnique mitreTechnique3 = new MitreTechnique();
-    mitreTechnique3.setTechniqueKey("T7933.001");
+    mitreTechnique3.setTechniqueKey("TA0007.T7933.001");
     entityManager.persist(mitreTechnique1);
     entityManager.persist(mitreTechnique2);
     entityManager.persist(mitreTechnique3);
 
     Set<MitreTechnique> resultTechniques =
-        mitreTechniqueRepository.findAllByTechniqueKeyIn(
+        mitreTechniqueRepository.findAllByTechniqueKeyInOrderById(
             Set.of(
                 mitreTechnique1.getTechniqueKey(), mitreTechnique3.getTechniqueKey(), "NOT_KEY"));
     assertEquals(2, resultTechniques.size());

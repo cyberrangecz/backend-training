@@ -1,7 +1,5 @@
 package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
@@ -23,10 +21,6 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
   @Schema(example = "UNRELEASED")
   private TDState state;
 
-  /** Primary key of the associated beta testing group entity, not a user id */
-  @Schema(description = "Identifies the beta testing group, not any user.", example = "14")
-  private Long betaTestingGroupId;
-
   /**
    * Left unset by the mapper; the facade always assigns it afterward, from whether any of the
    * definition's training instances still ends in the future
@@ -42,8 +36,7 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
    */
   @Schema(
       description = "Set by the server to the time of the last change.",
-      example = "2017-10-19T10:23:54Z")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+      example = "2017-10-19T10:23:54.000Z")
   private LocalDateTime lastEdited;
 
   /**
@@ -60,7 +53,12 @@ public class TrainingDefinitionDTO extends AbstractTrainingDefinitionDTO {
    */
   @Schema(
       description = "Set by the server when the definition is created.",
-      example = "2017-10-19T10:23:54Z")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+      example = "2017-10-19T10:23:54.000Z")
   private LocalDateTime createdAt;
+
+  /** Raised by one on every write of the definition; an update must carry the current one */
+  @Schema(
+      description = "The current version of the definition, to send back with an update.",
+      example = "4")
+  private long version;
 }

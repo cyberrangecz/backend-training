@@ -3,8 +3,6 @@ package cz.cyberrange.platform.training.service.unit.facade;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.CorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.IsCorrectAnswerDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
@@ -36,21 +34,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(
     classes = {
       TestDataFactory.class,
       EnumMapperImpl.class,
       TrainingDefinitionMapperImpl.class,
-      UserRefMapperImpl.class,
       LevelMapperImpl.class,
       HintMapperImpl.class,
       TrainingRunMapperImpl.class,
-      BetaTestingGroupMapperImpl.class,
       QuestionMapperImpl.class,
       AttachmentMapperImpl.class,
       MitreTechniqueMapperImpl.class
@@ -64,10 +57,10 @@ public class TrainingRunFacadeTest {
 
   private TrainingRunFacade trainingRunFacade;
 
-  @MockBean private TrainingRunService trainingRunService;
-  @MockBean private SecurityService securityService;
-  @MockBean private UserService userService;
-  @MockBean private AnswersStorageApiService answersStorageApiService;
+  @MockitoBean private TrainingRunService trainingRunService;
+  @MockitoBean private SecurityService securityService;
+  @MockitoBean private UserService userService;
+  @MockitoBean private AnswersStorageApiService answersStorageApiService;
 
   private TrainingRun trainingRun1, trainingRun2;
   private Hint hint;
@@ -141,20 +134,6 @@ public class TrainingRunFacadeTest {
     given(userService.getUserRefDTOByUserRefId(anyLong())).willReturn(participantRefDTO);
     trainingRunFacade.findById(trainingRun1.getId());
     then(trainingRunService).should().findById(trainingRun1.getId());
-  }
-
-  @Test
-  public void findAllTrainingRuns() {
-    List<TrainingRun> expected = new ArrayList<>();
-    expected.add(trainingRun1);
-    expected.add(trainingRun2);
-
-    Page<TrainingRun> p = new PageImpl<TrainingRun>(expected);
-
-    PathBuilder<TrainingRun> tR = new PathBuilder<TrainingRun>(TrainingRun.class, "trainingRun");
-    Predicate predicate = tR.isNotNull();
-
-    given(trainingRunService.findAll(any(Predicate.class), any(Pageable.class))).willReturn(p);
   }
 
   @Test

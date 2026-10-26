@@ -31,8 +31,8 @@ public interface TrainingInstanceRepository
         QuerydslBinderCustomizer<QTrainingInstance> {
 
   /**
-   * That method is used to make the query dsl string values case insensitive and also it supports
-   * partial matches in the database.
+   * That method is used to make the query dsl string values case and accent insensitive and also
+   * it supports partial matches in the database.
    *
    * @param querydslBindings
    * @param qTrainingInstance
@@ -44,7 +44,7 @@ public interface TrainingInstanceRepository
         .all(
             (StringPath path, Collection<? extends String> values) -> {
               BooleanBuilder predicate = new BooleanBuilder();
-              values.forEach(value -> predicate.and(path.containsIgnoreCase(value)));
+              values.forEach(value -> predicate.and(FoldedSearchPredicate.contains(path, value)));
               return Optional.ofNullable(predicate);
             });
   }
@@ -76,15 +76,14 @@ public interface TrainingInstanceRepository
 
   /**
    * Finds every training instance matching the given predicate. The entity graph loads each
-   * instance's organizers, its training definition, that definition's authors, that definition's
-   * beta testing group, and that group's organizers eagerly.
+   * instance's organizers, its training definition, and that definition's authors eagerly.
    *
    * @param predicate the predicate
    * @param pageable the pageable
    * @return page of all {@link TrainingInstance}
    */
   @EntityGraph(
-      value = "TrainingInstance.findAllAuthorsOrganizersBetaTestingGroupBetaTestingGroupOrganizers",
+      value = "TrainingInstance.findAllAuthorsOrganizers",
       type = EntityGraph.EntityGraphType.FETCH)
   Page<TrainingInstance> findAll(Predicate predicate, Pageable pageable);
 
@@ -96,7 +95,7 @@ public interface TrainingInstanceRepository
    * @return {@link TrainingInstance}, empty when no instance has that id
    */
   @EntityGraph(
-      value = "TrainingInstance.findByIdAuthorsOrganizers",
+      value = "TrainingInstance.findAllAuthorsOrganizers",
       type = EntityGraph.EntityGraphType.FETCH)
   Optional<TrainingInstance> findById(Long id);
 
@@ -108,9 +107,9 @@ public interface TrainingInstanceRepository
    * @return the list of {@link TrainingInstance}s with organizers eagerly loaded
    */
   @EntityGraph(
-      value = "TrainingInstance.findByIdAuthorsOrganizers",
+      value = "TrainingInstance.findAllAuthorsOrganizers",
       type = EntityGraph.EntityGraphType.FETCH)
-  List<TrainingInstance> findAllByIdIn(@Param("ids") List<Long> ids);
+  List<TrainingInstance> findAllByIdInOrderById(@Param("ids") List<Long> ids);
 
   /**
    * Finds the training instance with the given access token whose window currently contains the
@@ -139,6 +138,21 @@ public interface TrainingInstanceRepository
   boolean existsAnyForTrainingDefinition(@Param("trainingDefinitionId") Long trainingDefinitionId);
 
   /**
+   * Counts, for each of the given training definitions that has any, the training instances created
+   * from it regardless of their start and end time. The {@code @Query} on this method is the source
+   * of the query text. A definition without instances has no row in the result.
+   *
+   * @param trainingDefinitionIds the training definition ids to restrict the lookup to
+   * @return one {@link DefinitionInstanceCount} per definition with at least one instance
+   */
+  @Query(
+      "SELECT ti.trainingDefinition.id AS definitionId, COUNT(ti) AS instanceCount "
+          + "FROM TrainingInstance ti WHERE ti.trainingDefinition.id IN :trainingDefinitionIds "
+          + "GROUP BY ti.trainingDefinition.id")
+  List<DefinitionInstanceCount> countGroupedByTrainingDefinition(
+      @Param("trainingDefinitionIds") Collection<Long> trainingDefinitionIds);
+
+  /**
    * Checks whether a training instance exists with the given access token. The {@code @Query} on
    * this method is the source of the query text.
    *
@@ -148,18 +162,6 @@ public interface TrainingInstanceRepository
   @Query(
       "SELECT COUNT(*) > 0 FROM TrainingInstance instance WHERE instance.accessToken = :accessToken")
   boolean existsForToken(@Param("accessToken") String accessToken);
-
-  /**
-   * Finds the training instance with the given primary key together with its associated data.
-   * Established by the {@code TrainingInstance.findByIdIncludingDefinition} named query declared on
-   * {@link TrainingInstance}, which loads the instance's organizers, its training definition, that
-   * definition's authors, that definition's beta testing group, and that group's organizers
-   * eagerly.
-   *
-   * @param instanceId the instance id
-   * @return {@link TrainingInstance} including its associated {@link TrainingDefinition}
-   */
-  Optional<TrainingInstance> findByIdIncludingDefinition(@Param("instanceId") Long instanceId);
 
   /**
    * Finds the training instance assigned the given sandbox pool. Established by the {@code
@@ -183,15 +185,32 @@ public interface TrainingInstanceRepository
       @Param("instanceId") Long instanceId, @Param("currentTime") LocalDateTime currentTime);
 
   /**
-   * Finds the training instances whose organizers include the given user. Derived from the method
-   * name, with no named query of this name on {@link TrainingInstance}; the {@code organizers} join
-   * table's {@code user_ref_id} column carries no explicit {@code referencedColumnName}, so JPA
-   * defaults it to the referenced entity's primary key. Membership is therefore decided by {@link
-   * UserRef#getId()}, not {@link UserRef#getUserRefId()}, despite the column name; the given {@code
-   * organizer} must already carry the correct primary key.
+   * Finds the training instances whose organizers include the given user, ordered by id. The {@code
+   * organizers} join table's {@code user_ref_id} column carries no explicit {@code
+   * referencedColumnName}, so JPA defaults it to the referenced entity's primary key. Membership is
+   * therefore decided by {@link UserRef#getId()}, not {@link UserRef#getUserRefId()}, despite the
+   * column name; the given {@code organizer} must already carry the correct primary key.
    *
    * @param organizer the user whose organized training instances are to be found
    * @return the list of {@link TrainingInstance}s whose organizers contain the given user
    */
-  List<TrainingInstance> findAllByOrganizersContains(UserRef organizer);
+  List<TrainingInstance> findAllByOrganizersContainsOrderById(UserRef organizer);
+
+  /** The number of training instances created from one training definition */
+  interface DefinitionInstanceCount {
+
+    /**
+     * Gets the id of the training definition the instances were created from.
+     *
+     * @return the training definition id
+     */
+    Long getDefinitionId();
+
+    /**
+     * Gets the number of training instances created from the definition.
+     *
+     * @return the instance count
+     */
+    long getInstanceCount();
+  }
 }

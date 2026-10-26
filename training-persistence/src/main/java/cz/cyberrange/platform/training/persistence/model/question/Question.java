@@ -2,11 +2,11 @@ package cz.cyberrange.platform.training.persistence.model.question;
 
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.enums.QuestionType;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -86,7 +86,7 @@ public class Question implements Serializable {
    * correct} flag. For an MCQ question, this list is the offered choices, and only those with
    * {@code correct} set count toward a correct answer. Unused for an EMI question.
    */
-  @OrderBy("order asc")
+  @OrderBy("order asc, id asc")
   @OneToMany(
       mappedBy = "question",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
@@ -98,7 +98,7 @@ public class Question implements Serializable {
    * For an EMI question, the statements to be paired with an option; each carries the option that
    * answers it correctly. Unused for an FFQ or MCQ question.
    */
-  @OrderBy("order asc")
+  @OrderBy("order asc, id asc")
   @OneToMany(
       mappedBy = "question",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
@@ -110,7 +110,7 @@ public class Question implements Serializable {
    * For an EMI question, the options offered to be paired against {@link
    * #extendedMatchingStatements}. Unused for an FFQ or MCQ question.
    */
-  @OrderBy("order asc")
+  @OrderBy("order asc, id asc")
   @OneToMany(
       mappedBy = "question",
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},

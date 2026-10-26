@@ -26,12 +26,11 @@ public interface HintRepository extends JpaRepository<Hint, Long>, QuerydslPredi
   void deleteHintsByLevelId(@Param("levelId") Long levelId);
 
   /**
-   * Finds the hints whose primary key is one of the given ids. Derived from the method name, with
-   * no named query of this name on {@link Hint}; imposes no ordering. Returns an empty list when
-   * none of the ids match.
+   * Finds the hints whose primary key is one of the given ids. Ordered by id. Returns an empty list
+   * when none of the ids match.
    *
    * @param ids the hint ids
    * @return the matching {@link Hint}s, associations left lazy
    */
-  List<Hint> findAllByIdIn(Collection<Long> ids);
+  List<Hint> findAllByIdInOrderById(Collection<Long> ids);
 }

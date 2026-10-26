@@ -1,5 +1,6 @@
 package cz.cyberrange.platform.training.persistence.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
@@ -15,8 +16,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 @DataJpaTest
 public class AbstractLevelRepositoryTest {
@@ -119,9 +120,7 @@ public class AbstractLevelRepositoryTest {
         Arrays.asList(trainingLevel, infoLevel, assessmentLevel, infoLevel2, trainingLevel2);
     expectedAbstractLevels.stream().forEach(a -> entityManager.persist(a));
     List<AbstractLevel> resultAbstractLevels = abstractLevelRepository.findAll();
-    assertNotNull(resultAbstractLevels);
-    assertEquals(expectedAbstractLevels.size(), resultAbstractLevels.size());
-    assertEquals(expectedAbstractLevels, resultAbstractLevels);
+    assertThat(resultAbstractLevels).containsExactlyInAnyOrderElementsOf(expectedAbstractLevels);
   }
 
   @Test

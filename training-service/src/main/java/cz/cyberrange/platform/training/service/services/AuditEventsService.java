@@ -254,17 +254,16 @@ public class AuditEventsService {
     return ChronoUnit.MILLIS.between(trainingStartedTime, LocalDateTime.now(Clock.systemUTC()));
   }
 
-  private EventLevelType getLevelType(AbstractLevel abstractLevel) {
-    if (abstractLevel instanceof TrainingLevel) {
+  private EventLevelType getLevelType(AbstractLevel level) {
+    if (level instanceof TrainingLevel) {
       return EventLevelType.TRAINING;
-    } else if (abstractLevel instanceof InfoLevel) {
+    } else if (level instanceof InfoLevel) {
       return EventLevelType.INFO;
-    } else if (abstractLevel instanceof AssessmentLevel) {
+    } else if (level instanceof AssessmentLevel) {
       return EventLevelType.ASSESSMENT;
-    } else if (abstractLevel instanceof AccessLevel) {
+    } else if (level instanceof AccessLevel) {
       return EventLevelType.ACCESS;
     }
-    throw new IllegalArgumentException(
-        "Unknown level type: " + abstractLevel.getClass().getSimpleName());
+    throw new IllegalArgumentException("Unknown level type: " + level.getClass().getSimpleName());
   }
 }

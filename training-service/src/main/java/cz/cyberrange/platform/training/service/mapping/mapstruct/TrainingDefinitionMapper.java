@@ -26,7 +26,7 @@ import org.springframework.data.domain.Page;
  */
 @Mapper(
     componentModel = "spring",
-    uses = {EnumMapper.class, UserRefMapper.class, BetaTestingGroupMapper.class},
+    uses = {EnumMapper.class},
     nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
     unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface TrainingDefinitionMapper extends ParentMapper {
@@ -35,30 +35,29 @@ public interface TrainingDefinitionMapper extends ParentMapper {
 
   /**
    * Maps a training definition entity together with its levels to a {@link
-   * TrainingDefinitionWithLevelsDTO}, flattening the beta testing group's identifier into {@code
-   * betaTestingGroupId} and leaving {@code canBeArchived} unset.
+   * TrainingDefinitionWithLevelsDTO}, leaving {@code canBeArchived} and {@code instanceCount}
+   * unset.
    *
    * @param entity the training definition to map
    * @param levels the full levels of the definition, in the order they are presented in
    * @return the definition DTO carrying the given levels, without its archiving flag
    */
-  @Mapping(target = "betaTestingGroupId", source = "entity.betaTestingGroup.id")
   @Mapping(target = "levels", source = "levels")
   @Mapping(target = "canBeArchived", ignore = true)
+  @Mapping(target = "instanceCount", ignore = true)
   TrainingDefinitionWithLevelsDTO mapToDTOWithLevels(
       TrainingDefinition entity, List<AbstractLevelDTO> levels);
 
   /**
-   * Maps a training definition entity to a {@link TrainingDefinitionDTO}, flattening the beta
-   * testing group's identifier into {@code betaTestingGroupId} and leaving {@code canBeArchived}
-   * unset.
+   * Maps a training definition entity to a {@link TrainingDefinitionDTO}, leaving {@code
+   * canBeArchived} and {@code instanceCount} unset.
    *
    * @param entity the training definition to map
    * @return the definition DTO, without its archiving flag
    */
   @Named("trainingDefinitionToDTO")
-  @Mapping(target = "betaTestingGroupId", source = "betaTestingGroup.id")
   @Mapping(target = "canBeArchived", ignore = true)
+  @Mapping(target = "instanceCount", ignore = true)
   TrainingDefinitionDTO mapToDTO(TrainingDefinition entity);
 
   /**
@@ -67,17 +66,18 @@ public interface TrainingDefinitionMapper extends ParentMapper {
    *
    * @param entity the training definition to map
    * @param levels the levels of the definition, in the order they are presented in
-   * @return the basic definition DTO carrying the given levels
+   * @return the basic definition DTO carrying the given levels, with {@code instanceCount} unset
    */
   @Mapping(target = "levels", source = "levels")
+  @Mapping(target = "instanceCount", ignore = true)
   TrainingDefinitionBasicDTO mapToBasicDTO(
       TrainingDefinition entity, List<AbstractLevelBasicDTO> levels);
 
+  @Mapping(target = "instanceCount", ignore = true)
   TrainingDefinitionInfoDTO mapToInfoDTO(TrainingDefinition entity);
 
   /**
-   * Maps a training definition creation request into a new entity, leaving its beta testing group's
-   * organizers unpopulated for the caller to assign.
+   * Maps a training definition creation request into a new entity.
    *
    * @param dto the creation request to map
    * @return the mapped training definition
@@ -85,11 +85,11 @@ public interface TrainingDefinitionMapper extends ParentMapper {
   TrainingDefinition mapCreateToEntity(TrainingDefinitionCreateDTO dto);
 
   /**
-   * Maps a training definition update into a new entity, leaving its beta testing group's
-   * organizers unpopulated for the caller to assign.
+   * Maps a training definition update request into a detached entity carrying the new title,
+   * description, prerequisites and outcomes.
    *
-   * @param dto the update to map
-   * @return the mapped training definition
+   * @param dto the update request to map
+   * @return the mapped training definition content
    */
   TrainingDefinition mapUpdateToEntity(TrainingDefinitionUpdateDTO dto);
 

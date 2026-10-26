@@ -2,76 +2,38 @@ package cz.cyberrange.platform.training.service.unit.services;
 
 import static org.mockito.BDDMockito.*;
 
-import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.InfoLevel;
-import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
-import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
-import cz.cyberrange.platform.training.persistence.repository.*;
-import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.persistence.repository.QuestionAnswerRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
+import cz.cyberrange.platform.training.persistence.repository.TrainingRunRepository;
 import cz.cyberrange.platform.training.service.services.ExportImportService;
-import java.util.ArrayList;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SpringBootTest(classes = {TestDataFactory.class})
+@ExtendWith(MockitoExtension.class)
 public class ExportImportServiceTest {
 
-  private static ExportImportService exportImportService;
-  @MockBean private static TrainingDefinitionRepository trainingDefinitionRepository;
-  @MockBean private static AbstractLevelRepository abstractLevelRepository;
-  @MockBean private static AssessmentLevelRepository assessmentLevelRepository;
-  @MockBean private static QuestionAnswerRepository questionAnswerRepository;
-  @MockBean private static InfoLevelRepository infoLevelRepository;
-  @MockBean private static TrainingLevelRepository trainingLevelRepository;
-  @MockBean private static MitreTechniqueRepository mitreTechniqueRepository;
-  @MockBean private static AccessLevelRepository accessLevelRepository;
-  @MockBean private static TrainingInstanceRepository trainingInstanceRepository;
-  @MockBean private static TrainingRunRepository trainingRunRepository;
+  private ExportImportService exportImportService;
+  @Mock private TrainingDefinitionRepository trainingDefinitionRepository;
+  @Mock private QuestionAnswerRepository questionAnswerRepository;
+  @Mock private TrainingInstanceRepository trainingInstanceRepository;
+  @Mock private TrainingRunRepository trainingRunRepository;
 
-  @Mock private static AssessmentLevel assessmentLevel;
-  @Mock private static TrainingLevel trainingLevel;
-  @Mock private static InfoLevel infoLevel;
-  @Mock private static TrainingInstance trainingInstance;
+  @Mock private TrainingInstance trainingInstance;
 
   @BeforeEach
   public void init() {
-    MockitoAnnotations.openMocks(this);
     exportImportService =
         new ExportImportService(
             trainingDefinitionRepository,
-            abstractLevelRepository,
-            assessmentLevelRepository,
             questionAnswerRepository,
-            infoLevelRepository,
-            trainingLevelRepository,
-            mitreTechniqueRepository,
-            accessLevelRepository,
             trainingInstanceRepository,
             trainingRunRepository);
-
-    given(assessmentLevel.getId()).willReturn(1L);
-    given(assessmentLevel.getQuestions()).willReturn(new ArrayList<>());
-    given(trainingLevel.getId()).willReturn(2L);
-    given(infoLevel.getId()).willReturn(3L);
-  }
-
-  @Test
-  public void createLevel() {
-    TrainingDefinition trainingDefinition = new TrainingDefinition();
-
-    exportImportService.createLevel(assessmentLevel, trainingDefinition);
-    exportImportService.createLevel(trainingLevel, trainingDefinition);
-    exportImportService.createLevel(infoLevel, trainingDefinition);
-
-    then(assessmentLevelRepository).should().save(assessmentLevel);
-    then(trainingLevelRepository).should().save(trainingLevel);
-    then(infoLevelRepository).should().save(infoLevel);
   }
 
   @Test

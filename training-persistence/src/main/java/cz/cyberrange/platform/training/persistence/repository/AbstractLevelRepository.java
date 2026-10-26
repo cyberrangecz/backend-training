@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,23 +39,28 @@ public interface AbstractLevelRepository
       @Param("trainingDefinitionIds") Collection<Long> trainingDefinitionIds);
 
   /**
-   * Find all levels by level ids, confined to one training definition.
+   * Find all levels by level ids, confined to one training definition, ordered by level order then
+   * id.
    *
    * @param levelIds the ids of the levels
    * @param trainingDefinitionId the training definition the levels have to belong to
    * @return list of {@link AbstractLevel}s carrying one of the given ids and belonging to that
    *     definition, a level of another definition being left out without notice
    */
-  List<AbstractLevel> findAllByIdIsInAndTrainingDefinitionId(
+  List<AbstractLevel> findAllByIdIsInAndTrainingDefinitionIdOrderByOrderAscIdAsc(
       List<Long> levelIds, Long trainingDefinitionId);
 
   /**
    * Find first level for particular training definition.
    *
    * @param trainingDefinitionId the training definition id
+   * @param pageable the page to return; its sort orders levels of equal order
    * @return {@link AbstractLevel}s associated with {@link
-   *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition}
+   *     cz.cyberrange.platform.training.persistence.model.TrainingDefinition}, by level order
    */
+  @Query(
+      "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId "
+          + "ORDER BY l.order")
   List<AbstractLevel> findFirstLevelByTrainingDefinitionId(
       @Param("trainingDefinitionId") Long trainingDefinitionId, Pageable pageable);
 
@@ -71,8 +76,8 @@ public interface AbstractLevelRepository
       @Param("trainingDefinitionId") Long trainingDefinitionId, @Param("levelId") Long levelId);
 
   /**
-   * Find a level by id, with its training definition, that definition's authors and, when present,
-   * its beta testing group's organizers loaded eagerly along with it.
+   * Find a level by id, with its training definition and that definition's authors loaded eagerly
+   * along with it.
    *
    * @param levelId the level id
    * @return {@link AbstractLevel} with its associated {@link
@@ -91,32 +96,10 @@ public interface AbstractLevelRepository
   Integer getCurrentMaxOrder(@Param("trainingDefinitionId") Long trainingDefinitionId);
 
   /**
-   * Adds 1 to the order of every level of the given training definition whose order lies between
-   * the given bounds, both inclusive.
+   * Find all levels by level ids, ordered by id.
    *
-   * @param trainingDefinitionId the training definition whose levels are affected
-   * @param fromOrder lowest order value to increase
-   * @param toOrder highest order value to increase
+   * @param ids the ids of the levels
+   * @return list of {@link AbstractLevel}s carrying one of the given ids
    */
-  @Modifying
-  void increaseOrderOfLevels(
-      @Param("trainingDefinitionId") Long trainingDefinitionId,
-      @Param("fromOrder") Integer fromOrder,
-      @Param("toOrder") Integer toOrder);
-
-  /**
-   * Subtracts 1 from the order of every level of the given training definition whose order lies
-   * between the given bounds, both inclusive.
-   *
-   * @param trainingDefinitionId the training definition whose levels are affected
-   * @param fromOrder lowest order value to decrease
-   * @param toOrder highest order value to decrease
-   */
-  @Modifying
-  void decreaseOrderOfLevels(
-      @Param("trainingDefinitionId") Long trainingDefinitionId,
-      @Param("fromOrder") Integer fromOrder,
-      @Param("toOrder") Integer toOrder);
-
-  List<AbstractLevel> findAllByIdIn(Collection<Long> ids);
+  List<AbstractLevel> findAllByIdInOrderById(Collection<Long> ids);
 }

@@ -1,11 +1,11 @@
 package cz.cyberrange.platform.training.persistence.model.detection;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +29,7 @@ import lombok.ToString;
   @NamedQuery(
       name = "LocationSimilarityDetectionEvent.findAllByCheatingDetectionId",
       query =
-          "SELECT lsde FROM LocationSimilarityDetectionEvent lsde WHERE lsde.cheatingDetectionId = :cheatingDetectionId")
+          "SELECT lsde FROM LocationSimilarityDetectionEvent lsde WHERE lsde.cheatingDetectionId = :cheatingDetectionId ORDER BY lsde.id")
 })
 public class LocationSimilarityDetectionEvent extends AbstractDetectionEvent {
 

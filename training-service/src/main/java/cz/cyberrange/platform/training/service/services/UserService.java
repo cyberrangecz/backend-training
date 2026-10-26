@@ -9,22 +9,27 @@ import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
+import cz.cyberrange.platform.training.service.services.api.UriQueryParameters;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriBuilder;
 
 /** The type User service */
 @Service
 public class UserService {
+
+  private static final int USER_AND_GROUP_PAGE_SIZE_LIMIT = 1000;
 
   private final WebClient userManagementServiceWebClient;
   private final UserRefRepository userRefRepository;
@@ -101,35 +106,35 @@ public class UserService {
    *
    * @param userRefIds the cross-service user reference ids to retrieve
    * @param pageable pageable parameter with information about pagination
-   * @param givenName restricts the result to users whose given name matches, no restriction when
-   *     null
-   * @param familyName restricts the result to users whose family name matches, no restriction when
-   *     null
+   * @param nameFilter restricts the result to users matching it by name
    * @return the requested page of users, an empty page without contacting the service when no id is
    *     given
    * @throws MicroserviceApiException when the call to the user-and-group service fails
    */
   public PageResultResource<UserRefDTO> getUsersRefDTOByGivenUserIds(
-      List<Long> userRefIds, Pageable pageable, String givenName, String familyName) {
+      List<Long> userRefIds, Pageable pageable, UserNameFilter nameFilter) {
     if (userRefIds.isEmpty()) {
       return new PageResultResource<>(
           Collections.emptyList(),
           new PageResultResource.Pagination(0, 0, pageable.getPageSize(), 0, 0));
     }
     try {
-      return userManagementServiceWebClient
-          .get()
-          .uri(
-              uriBuilder -> {
-                uriBuilder
-                    .path("/users/ids")
-                    .queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-                this.setCommonParams(givenName, familyName, pageable, uriBuilder);
-                return uriBuilder.build();
-              })
-          .retrieve()
-          .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
-          .block();
+      return fetchWithinPageSizeLimit(
+          pageable,
+          limitedPageable ->
+              userManagementServiceWebClient
+                  .get()
+                  .uri(
+                      uriBuilder -> {
+                        UriQueryParameters query =
+                            new UriQueryParameters(uriBuilder.path("/users/ids"));
+                        query.add("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
+                        setCommonParams(nameFilter, limitedPageable, query);
+                        return query.build();
+                      })
+                  .retrieve()
+                  .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
+                  .block());
     } catch (CustomWebClientException ex) {
       throw new MicroserviceApiException(
           "Error when calling user management service API to obtain users by IDs: "
@@ -154,46 +159,11 @@ public class UserService {
     do {
       participantsInfo =
           this.getUsersRefDTOByGivenUserIds(
-              participantsRefIds, PageRequest.of(page, 999), null, null);
+              participantsRefIds, PageRequest.of(page, 999), UserNameFilter.NONE);
       participants.addAll(participantsInfo.getContent());
       page++;
     } while (page < participantsInfo.getPagination().getTotalPages());
     return participants;
-  }
-
-  /**
-   * Asks the user-and-group service for one page of the users holding the given role.
-   *
-   * @param roleType the role its holders are requested for
-   * @param pageable pageable parameter with information about pagination
-   * @param givenName restricts the result to users whose given name matches, no restriction when
-   *     null
-   * @param familyName restricts the result to users whose family name matches, no restriction when
-   *     null
-   * @return the requested page of users holding that role
-   * @throws MicroserviceApiException when the call to the user-and-group service fails
-   */
-  public PageResultResource<UserRefDTO> getUsersByGivenRole(
-      RoleType roleType, Pageable pageable, String givenName, String familyName) {
-    try {
-      return userManagementServiceWebClient
-          .get()
-          .uri(
-              uriBuilder -> {
-                uriBuilder.path("/roles/users").queryParam("roleType", roleType.name());
-                this.setCommonParams(givenName, familyName, pageable, uriBuilder);
-                return uriBuilder.build();
-              })
-          .retrieve()
-          .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
-          .block();
-    } catch (CustomWebClientException ex) {
-      throw new MicroserviceApiException(
-          "Error when calling user management service API to obtain users with role "
-              + roleType.name()
-              + ".",
-          ex);
-    }
   }
 
   /**
@@ -203,34 +173,32 @@ public class UserService {
    * @param roleType the role its holders are requested for
    * @param userRefIds cross-service user reference ids to exclude from the result
    * @param pageable pageable parameter with information about pagination
-   * @param givenName restricts the result to users whose given name matches, no restriction when
-   *     null
-   * @param familyName restricts the result to users whose family name matches, no restriction when
-   *     null
+   * @param nameFilter restricts the result to users matching it by name
    * @return the requested page of the remaining users holding that role
    * @throws MicroserviceApiException when the call to the user-and-group service fails
    */
   public PageResultResource<UserRefDTO> getUsersByGivenRoleAndNotWithGivenIds(
-      RoleType roleType,
-      Set<Long> userRefIds,
-      Pageable pageable,
-      String givenName,
-      String familyName) {
+      RoleType roleType, Set<Long> userRefIds, Pageable pageable, UserNameFilter nameFilter) {
     try {
-      return userManagementServiceWebClient
-          .get()
-          .uri(
-              uriBuilder -> {
-                uriBuilder
-                    .path("/roles/users-not-with-ids")
-                    .queryParam("roleType", roleType.name())
-                    .queryParam("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
-                this.setCommonParams(givenName, familyName, pageable, uriBuilder);
-                return uriBuilder.build();
-              })
-          .retrieve()
-          .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
-          .block();
+      return fetchWithinPageSizeLimit(
+          pageable,
+          limitedPageable ->
+              userManagementServiceWebClient
+                  .get()
+                  .uri(
+                      uriBuilder -> {
+                        UriQueryParameters query =
+                            new UriQueryParameters(uriBuilder.path("/roles/users-not-with-ids"));
+                        query
+                            .add("roleType", roleType.name())
+                            .add(
+                                "ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
+                        setCommonParams(nameFilter, limitedPageable, query);
+                        return query.build();
+                      })
+                  .retrieve()
+                  .bodyToMono(new ParameterizedTypeReference<PageResultResource<UserRefDTO>>() {})
+                  .block());
     } catch (CustomWebClientException ex) {
       throw new MicroserviceApiException(
           "Error when calling user management service API to obtain users with role "
@@ -264,23 +232,74 @@ public class UserService {
   }
 
   /**
+   * Serves a page of any size from a user-and-group endpoint that refuses page sizes of {@value
+   * #USER_AND_GROUP_PAGE_SIZE_LIMIT} or more. A page within the limit is requested as it is; a
+   * larger one is assembled from consecutive requests of the largest accepted size.
+   *
+   * @param pageable the page asked for, of any size
+   * @param pageFetcher requests one page of at most the accepted size
+   * @return the page asked for, with pagination metadata describing it
+   */
+  private static PageResultResource<UserRefDTO> fetchWithinPageSizeLimit(
+      Pageable pageable, Function<Pageable, PageResultResource<UserRefDTO>> pageFetcher) {
+    if (pageable.getPageSize() < USER_AND_GROUP_PAGE_SIZE_LIMIT) {
+      return pageFetcher.apply(pageable);
+    }
+    long windowStart = pageable.getOffset();
+    long windowEnd = windowStart + pageable.getPageSize();
+    List<UserRefDTO> fetched = new ArrayList<>();
+    PageResultResource.Pagination fetchedPagination;
+    int chunkNumber = 0;
+    do {
+      PageResultResource<UserRefDTO> chunk =
+          pageFetcher.apply(
+              PageRequest.of(
+                  chunkNumber, USER_AND_GROUP_PAGE_SIZE_LIMIT - 1, pageable.getSort()));
+      fetched.addAll(chunk.getContent());
+      fetchedPagination = chunk.getPagination();
+      chunkNumber++;
+    } while (chunkNumber < fetchedPagination.getTotalPages() && fetched.size() < windowEnd);
+    List<UserRefDTO> window =
+        windowStart >= fetched.size()
+            ? Collections.emptyList()
+            : fetched.subList((int) windowStart, (int) Math.min(windowEnd, fetched.size()));
+    long totalElements = fetchedPagination.getTotalElements();
+    return new PageResultResource<>(
+        window,
+        new PageResultResource.Pagination(
+            pageable.getPageNumber(),
+            window.size(),
+            pageable.getPageSize(),
+            totalElements,
+            (int) Math.ceil((double) totalElements / pageable.getPageSize())));
+  }
+
+  /**
    * Appends the pagination query parameters to the request being built, along with whichever name
    * filters were supplied.
    *
-   * @param givenName given name filter to append, skipped when null
-   * @param familyName family name filter to append, skipped when null
-   * @param pageable the pagination to translate into query parameters
-   * @param builder the request URI being built
+   * @param nameFilter the name filters to append, each skipped when null
+   * @param pageable the pagination and sort to translate into query parameters
+   * @param query the query parameters of the request URI being built
    */
-  private void setCommonParams(
-      String givenName, String familyName, Pageable pageable, UriBuilder builder) {
-    if (givenName != null) {
-      builder.queryParam("givenName", givenName);
+  private static void setCommonParams(
+      UserNameFilter nameFilter, Pageable pageable, UriQueryParameters query) {
+    if (nameFilter.givenName() != null) {
+      query.add("givenName", nameFilter.givenName());
     }
-    if (familyName != null) {
-      builder.queryParam("familyName", familyName);
+    if (nameFilter.familyName() != null) {
+      query.add("familyName", nameFilter.familyName());
     }
-    builder.queryParam("page", pageable.getPageNumber());
-    builder.queryParam("size", pageable.getPageSize());
+    if (nameFilter.name() != null) {
+      query.add("name", nameFilter.name());
+    }
+    query.add("page", pageable.getPageNumber());
+    query.add("size", pageable.getPageSize());
+    pageable.getSort().forEach(order -> query.add("sort", sortParameterValue(order)));
+  }
+
+  private static String sortParameterValue(Sort.Order order) {
+    String value = order.getProperty() + "," + order.getDirection().name().toLowerCase(Locale.ROOT);
+    return order.isIgnoreCase() ? value + ",ignorecase" : value;
   }
 }

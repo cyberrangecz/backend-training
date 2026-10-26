@@ -14,12 +14,13 @@ import cz.cyberrange.platform.training.api.dto.run.AccessTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.AccessedTrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunBasicDTO;
 import cz.cyberrange.platform.training.api.dto.run.TrainingRunByIdDTO;
-import cz.cyberrange.platform.training.api.dto.run.TrainingRunDTO;
 import cz.cyberrange.platform.training.api.dto.traininglevel.ValidateAnswerDTO;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
+import cz.cyberrange.platform.training.rest.utils.sort.SortableProperties;
 import cz.cyberrange.platform.training.service.facade.TrainingRunFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,9 +30,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
-import javax.validation.Valid;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -183,30 +184,6 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Gets a page of all training runs matching the given predicate, each with its participant
-   * reference resolved from the user management service.
-   *
-   * @param predicate specifies query to database.
-   * @param pageable pageable parameter with information about pagination.
-   * @return all Training Runs.
-   */
-  @Operation(
-      operationId = "findAllTrainingRuns",
-      summary = "List training runs matching a filter",
-      description =
-          "Only a training administrator may call it. Text filters match partially and ignore"
-              + " case.")
-  @ApiResponses(@ApiResponse(responseCode = "200", description = "The matching runs."))
-  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<PageResultResource<TrainingRunDTO>> findAllTrainingRuns(
-      @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
-      @ParameterObject Pageable pageable) {
-    PageResultResource<TrainingRunDTO> trainingRunResource =
-        trainingRunFacade.findAll(predicate, pageable);
-    return new ResponseEntity<>(trainingRunResource, HttpStatus.OK);
-  }
-
-  /**
    * Accesses the training instance identified by the given access token on behalf of the logged in
    * user. Resumes the user's own already-running training run for that instance if one exists;
    * otherwise creates a new run, assigns it a sandbox unless the instance runs in a local
@@ -264,7 +241,7 @@ public class TrainingRunsRestController {
    * @param predicate specifies query to database.
    * @param pageable pageable parameter with information about pagination.
    * @param sortByTitle "asc" for ascending alphabetical sort by title, "desc" for descending, or
-   *     omitted for no sort
+   *     omitted for no title order
    * @return all accessed Training Runs.
    */
   @Operation(
@@ -274,14 +251,15 @@ public class TrainingRunsRestController {
           "Only a trainee or a training administrator may call it. Text filters match partially and"
               + " ignore case.")
   @ApiResponses(@ApiResponse(responseCode = "200", description = "The caller's runs."))
+  @SortableProperties(SortableList.ACCESSIBLE_TRAINING_RUN)
   @GetMapping(path = "/accessible", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PageResultResource<AccessedTrainingRunDTO>> getAllAccessedTrainingRuns(
       @QuerydslPredicate(root = TrainingRun.class) Predicate predicate,
       @ParameterObject Pageable pageable,
       @Parameter(
               description =
-                  "asc or desc to order the returned page by title; any other value leaves the"
-                      + " order alone.",
+                  "asc or desc to order all runs by title before the sort parameter applies; any"
+                      + " other value leaves the order alone.",
               schema = @Schema(example = "asc"))
           @RequestParam(value = "sortByTitle", required = false)
           String sortByTitle) {
@@ -617,7 +595,8 @@ public class TrainingRunsRestController {
       summary = "Archive a training run",
       description =
           "A training administrator, or an organizer of the run, may call it. The run's sandbox"
-              + " reference moves to its previous sandbox and is cleared.")
+              + " reference moves to its previous sandbox and is cleared; the sandbox instance"
+              + " itself is kept.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The run was archived."),
     @ApiResponse(
@@ -703,10 +682,9 @@ public class TrainingRunsRestController {
   }
 
   /**
-   * Gets training runs by their ids. The sandbox instance reference id of each run is masked
-   * according to caller privilege: administrators and organizers of the runs see the plain sandbox
-   * id for every run; any other caller sees the plain id only for their own run and a hash of it
-   * for every other run.
+   * Gets training runs by their ids. Only a training administrator, the organizer of every listed
+   * run, or the participant of every listed run is allowed; any other caller, including a trainee
+   * listing one of their own runs together with another trainee's run, is refused.
    *
    * @param ids the ids of Training Runs to return.
    * @return List of requested Training Runs.
@@ -715,9 +693,8 @@ public class TrainingRunsRestController {
       operationId = "findTrainingRunsByIds",
       summary = "Find training runs by their ids",
       description =
-          "A training administrator, an organizer of the runs, or their participant may call it."
-              + " A caller who is neither administrator nor organizer sees the sandbox id of"
-              + " another trainee's run only as a hash.")
+          "A training administrator, the organizer of every listed run, or the participant of"
+              + " every listed run may call it.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The matching runs."),
     @ApiResponse(

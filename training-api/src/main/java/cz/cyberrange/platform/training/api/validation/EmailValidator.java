@@ -1,8 +1,8 @@
 package cz.cyberrange.platform.training.api.validation;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 /**
  * Checks a string against a hand-written pattern: one or more of {@code _A-Za-z0-9-+}, then zero or

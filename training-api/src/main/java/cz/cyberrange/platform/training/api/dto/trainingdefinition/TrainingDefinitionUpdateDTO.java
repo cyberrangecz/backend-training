@@ -1,21 +1,20 @@
 package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
-import cz.cyberrange.platform.training.api.dto.betatestinggroup.BetaTestingGroupUpdateDTO;
-import cz.cyberrange.platform.training.api.enums.TDState;
+import cz.cyberrange.platform.training.api.dto.AbstractLevelUpdateDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.Data;
 
-/** Encapsulates information about Training Definition, intended for edit of the definition */
+/**
+ * The whole editable content of a training definition, its levels included, written in one
+ * transaction over what is stored. The definition's state is not part of it.
+ */
 @Data
-@Schema(description = "The training definition content that replaces what is stored.")
+@Schema(description = "The training definition content and levels that replace what is stored.")
 public class TrainingDefinitionUpdateDTO {
-
-  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
-  @NotNull(message = "{trainingDefinition.id.NotNull.message}")
-  private Long id;
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "TrainingDefinition2")
   @NotEmpty(message = "{trainingDefinition.title.NotEmpty.message}")
@@ -29,25 +28,32 @@ public class TrainingDefinitionUpdateDTO {
 
   private String[] outcomes;
 
-  @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "UNRELEASED")
-  @NotNull(message = "{trainingDefinition.state.NotNull.message}")
-  private TDState state;
-
   /**
-   * When present, its organizer ids replace the beta testing group's membership on the updated
-   * definition. Omitting it while the stored definition already has a group is refused as a
-   * conflict rather than removing the group.
-   */
-  @Valid private BetaTestingGroupUpdateDTO betaTestingGroup;
-
-  /**
-   * Required by validation but not read by the mapper or the facade; the training definition entity
-   * carries no such field
+   * The version the caller last read; the write is refused when the stored definition carries
+   * another one
    */
   @Schema(
-      description = "Required in the request but not stored.",
+      description = "The version of the definition the change was made on, as last read.",
       requiredMode = Schema.RequiredMode.REQUIRED,
-      example = "false")
-  @NotNull(message = "{trainingDefinition.showStepperBar.NotNull.message}")
-  private boolean showStepperBar;
+      example = "4")
+  @NotNull(message = "{trainingDefinition.version.NotNull.message}")
+  private Long version;
+
+  /**
+   * Every level the definition keeps, in presentation order. A level without an id is created, a
+   * level with the id of one of the definition's levels replaces that level, and a stored level
+   * left out is deleted.
+   */
+  @Schema(
+      description =
+          "All levels in order: one without an id is created, one with the id of a level of"
+              + " this definition replaces it, and a stored level left out is deleted. New levels,"
+              + " hints, questions, choices and matching items carry no ids; the server assigns"
+              + " them.",
+      requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotNull(message = "{trainingDefinition.levels.NotNull.message}")
+  private List<
+          @Valid @NotNull(message = "{trainingDefinition.level.NotNull.message}")
+          AbstractLevelUpdateDTO>
+      levels;
 }

@@ -17,10 +17,8 @@ import lombok.Data;
 public class UserRefDTO {
 
   /**
-   * Holds the cross-service user reference id, never the local primary key. {@code UserRefMapper}
-   * sets it by matching {@code UserRef.userRefId}, and {@code UserService} sets it by deserializing
-   * the user-and-group service's response, aliased from that response's {@code id} or {@code
-   * user_ref_id} JSON key.
+   * Holds the cross-service user reference id, never the local primary key; read from the {@code
+   * id} or {@code user_ref_id} JSON key.
    */
   @JsonAlias({"id", "user_ref_id"})
   @Schema(
@@ -30,8 +28,7 @@ public class UserRefDTO {
 
   /**
    * Set only by deserializing the user-and-group service's response, from that response's {@code
-   * sub} JSON key; {@code UserRefMapper} leaves it unset, since the local {@code UserRef} entity
-   * carries no matching property
+   * sub} JSON key.
    */
   @Schema(description = "The login the user signs in with.", example = "999999@mail.example.cz")
   @JsonProperty("sub")
@@ -39,8 +36,7 @@ public class UserRefDTO {
 
   /**
    * Set only by deserializing the user-and-group service's response, from that response's {@code
-   * full_name} JSON key; {@code UserRefMapper} leaves it unset, since the local {@code UserRef}
-   * entity carries no matching property
+   * full_name} JSON key.
    */
   @Schema(example = "Mgr. John Doe")
   @JsonProperty("full_name")

@@ -1,11 +1,15 @@
 package cz.cyberrange.platform.training.service.services.detection;
 
 import com.querydsl.core.types.Predicate;
+import cz.cyberrange.platform.training.api.exceptions.EntityErrorDetail;
+import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.persistence.model.Submission;
 import cz.cyberrange.platform.training.persistence.model.detection.AbstractDetectionEvent;
+import cz.cyberrange.platform.training.persistence.model.detection.CheatingDetection;
 import cz.cyberrange.platform.training.persistence.model.detection.DetectedForbiddenCommand;
 import cz.cyberrange.platform.training.persistence.model.detection.DetectionEventParticipant;
 import cz.cyberrange.platform.training.persistence.repository.detection.AbstractDetectionEventRepository;
+import cz.cyberrange.platform.training.persistence.repository.detection.CheatingDetectionRepository;
 import cz.cyberrange.platform.training.persistence.repository.detection.DetectedForbiddenCommandRepository;
 import cz.cyberrange.platform.training.persistence.repository.detection.DetectionEventParticipantRepository;
 import cz.cyberrange.platform.training.service.services.UserService;
@@ -15,7 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
@@ -25,22 +31,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class DetectionEventService {
   private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
+  private static final Sort DEFAULT_PARTICIPANT_SORT = Sort.by("occurredAt");
   private final AbstractDetectionEventRepository detectionEventRepository;
+  private final CheatingDetectionRepository cheatingDetectionRepository;
   private final DetectionEventParticipantRepository detectionEventParticipantRepository;
   private final DetectedForbiddenCommandRepository detectedForbiddenCommandRepository;
   private final UserService userService;
 
   /**
    * Creates the service with the repositories it reads and persists detection events, their
-   * participants and their forbidden-command findings through
+   * participants and their forbidden-command findings through, and checks sweeps' existence with
    */
   @Autowired
   public DetectionEventService(
       AbstractDetectionEventRepository abstractDetectionEventRepository,
+      CheatingDetectionRepository cheatingDetectionRepository,
       DetectionEventParticipantRepository detectionEventParticipantRepository,
       DetectedForbiddenCommandRepository detectedForbiddenCommandRepository,
       UserService userService) {
     this.detectionEventRepository = abstractDetectionEventRepository;
+    this.cheatingDetectionRepository = cheatingDetectionRepository;
     this.detectionEventParticipantRepository = detectionEventParticipantRepository;
     this.detectedForbiddenCommandRepository = detectedForbiddenCommandRepository;
     this.userService = userService;
@@ -64,9 +74,15 @@ public class DetectionEventService {
    * @param pageable the page to return
    * @param predicate an extra condition ANDed onto the sweep filter
    * @return the matching page of detection events
+   * @throws EntityNotFoundException if no sweep with that id exists
    */
   public Page<AbstractDetectionEvent> findAllDetectionEventsOfCheatingDetection(
       Long cheatingDetectionId, Pageable pageable, Predicate predicate) {
+    if (!cheatingDetectionRepository.existsById(cheatingDetectionId)) {
+      throw new EntityNotFoundException(
+          new EntityErrorDetail(
+              CheatingDetection.class, "id", cheatingDetectionId.getClass(), cheatingDetectionId));
+    }
     return detectionEventRepository.findAllByCheatingDetectionId(
         cheatingDetectionId, pageable, predicate);
   }
@@ -132,16 +148,21 @@ public class DetectionEventService {
   }
 
   /**
-   * Returns, as one page, the participants of one detection event, ordered by the moment their
-   * submission occurred.
+   * Returns, as one page, the participants of one detection event, ordered by the page's sort, or
+   * by the moment their submission occurred when the page carries none.
    *
    * @param eventId the detection event whose participants are returned
-   * @param pageable the page to return
+   * @param pageable the page to return and its sort
    * @return the matching page of participants
    */
   public Page<DetectionEventParticipant> findAllParticipantsOfEvent(
       Long eventId, Pageable pageable) {
-    return detectionEventParticipantRepository.findAllByEventId(eventId, pageable);
+    return detectionEventParticipantRepository.findAllByEventId(
+        eventId,
+        PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            pageable.getSortOr(DEFAULT_PARTICIPANT_SORT)));
   }
 
   /**

@@ -17,6 +17,15 @@ public class TrainingRunDTO extends TrainingRunBasicDTO {
 
   private Integer sandboxInstanceAllocationId;
 
+  /**
+   * UUID of the sandbox the run held before it was archived and its sandbox reference cleared;
+   * {@code null} while the run has never been archived
+   */
+  @Schema(
+      description = "UUID of the sandbox the run held before it was archived.",
+      example = "d2f6b1c4-9a3e-4c07-8b52-1e7a5c9d3f80")
+  private String previousSandboxInstanceRefId;
+
   /** False unless the caller explicitly resolves and sets this run's logging state */
   @Schema(example = "true")
   private boolean eventLoggingState;

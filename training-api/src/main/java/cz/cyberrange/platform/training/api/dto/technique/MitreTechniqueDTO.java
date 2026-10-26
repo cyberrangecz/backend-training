@@ -2,7 +2,8 @@ package cz.cyberrange.platform.training.api.dto.technique;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 /**
@@ -25,9 +26,13 @@ public class MitreTechniqueDTO {
   private Long id;
 
   @Schema(
-      description = "The technique's key in the MITRE ATT&CK catalogue.",
+      description =
+          "The technique's key in the MITRE ATT&CK catalogue, as TA####.T#### or TA####.T####.###.",
       requiredMode = Schema.RequiredMode.REQUIRED,
-      example = "T1548.001")
+      example = "TA0004.T1548.001")
   @NotEmpty(message = "{mitreTechnique.techniqueKey.NotEmpty.message}")
+  @Pattern(
+      regexp = "^TA\\d{4}\\.T\\d{4}(\\.\\d{3})?$",
+      message = "{mitreTechnique.techniqueKey.Pattern.message}")
   private String techniqueKey;
 }

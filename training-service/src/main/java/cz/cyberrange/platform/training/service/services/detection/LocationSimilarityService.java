@@ -99,7 +99,7 @@ public class LocationSimilarityService {
   void executeCheatingDetectionOfLocationSimilarity(CheatingDetection cd) {
     Long trainingInstanceId = cd.getTrainingInstanceId();
     trainingLevelRepository
-        .findAllByTrainingDefinitionId(
+        .findAllByTrainingDefinitionIdOrderByOrderAscIdAsc(
             trainingInstanceService.findById(trainingInstanceId).getTrainingDefinition().getId())
         .stream()
         .map(
@@ -170,12 +170,7 @@ public class LocationSimilarityService {
       if (hasSimilarIPToExistingGroup || submissions.size() == 1) {
         continue;
       }
-      groups.add(
-          new ArrayList<>() {
-            {
-              add(submission);
-            }
-          });
+      groups.add(new ArrayList<>(List.of(submission)));
     }
   }
 

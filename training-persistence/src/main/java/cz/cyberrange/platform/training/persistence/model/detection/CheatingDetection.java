@@ -2,10 +2,10 @@ package cz.cyberrange.platform.training.persistence.model.detection;
 
 import cz.cyberrange.platform.training.persistence.model.AbstractEntity;
 import cz.cyberrange.platform.training.persistence.model.enums.CheatingDetectionState;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,12 +23,6 @@ import lombok.ToString;
 @Entity
 @Table(name = "cheating_detection")
 @NamedQueries({
-  @NamedQuery(
-      name = "CheatingDetection.findAllByTrainingInstanceId",
-      query =
-          "SELECT cd FROM CheatingDetection cd "
-              + "WHERE cd.trainingInstanceId = :trainingInstanceId "
-              + "ORDER BY cd.executeTime"),
   @NamedQuery(
       name = "CheatingDetection.findCheatingDetectionById",
       query = "SELECT cd FROM CheatingDetection cd " + "WHERE cd.id = :cheatingDetectionId"),
@@ -91,6 +85,7 @@ public class CheatingDetection extends AbstractEntity<Long> {
       cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
       orphanRemoval = true,
       fetch = FetchType.LAZY)
+  @OrderBy("id")
   private List<ForbiddenCommand> commands = new ArrayList<>();
 
   /**

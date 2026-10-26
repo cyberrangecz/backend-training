@@ -2,9 +2,9 @@ package cz.cyberrange.platform.training.api.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 /**
  * Structured detail about the entity involved in an {@link ExceptionWithEntity}. The training-rest

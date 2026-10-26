@@ -1,9 +1,9 @@
 package cz.cyberrange.platform.training.api.dto.assessmentlevel.question;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Set;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 /**

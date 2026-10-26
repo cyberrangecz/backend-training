@@ -2,6 +2,7 @@ package cz.cyberrange.platform.training.api.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -14,16 +15,18 @@ import lombok.ToString;
 public class TrainingRunFinishedDTO extends TrainingEventDTO {
 
   /**
-   * Epoch-millisecond instant the training run started, copied unchanged from the audit document;
-   * unlike {@link AbstractEventDTO#getTimestamp()} it is not converted to a {@code LocalDateTime}
+   * Moment the training run started, in UTC, converted from the epoch-millisecond value the audit
+   * document stores
    */
   @JsonProperty("start_time")
-  private Long startTime;
+  @Schema(example = "2021-03-24T11:00:00.000Z")
+  private LocalDateTime startTime;
 
   /**
-   * Epoch-millisecond instant the training run finished, copied unchanged from the audit document;
-   * unlike {@link AbstractEventDTO#getTimestamp()} it is not converted to a {@code LocalDateTime}
+   * Moment the training run finished, in UTC, converted from the epoch-millisecond value the audit
+   * document stores
    */
   @JsonProperty("end_time")
-  private Long endTime;
+  @Schema(example = "2021-03-24T12:00:00.000Z")
+  private LocalDateTime endTime;
 }

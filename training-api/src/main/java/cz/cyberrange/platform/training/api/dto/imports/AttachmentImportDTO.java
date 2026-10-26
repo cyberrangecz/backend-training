@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.imports;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 /** An imported attachment, carrying the URL to its file or website content */

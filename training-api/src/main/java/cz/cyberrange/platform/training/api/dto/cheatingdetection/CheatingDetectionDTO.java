@@ -1,13 +1,11 @@
 package cz.cyberrange.platform.training.api.dto.cheatingdetection;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.enums.CheatingDetectionState;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -28,9 +26,8 @@ public class CheatingDetectionDTO {
   private String executedBy;
 
   @Schema(
-      example = "2022-01-01T05:55:23Z",
+      example = "2022-01-01T05:55:23.000Z",
       description = "When the run started; the server fills it in.")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
   private LocalDateTime executeTime;
 
   /**
@@ -49,7 +46,11 @@ public class CheatingDetectionDTO {
   private Long id;
 
   /** Where the run as a whole stands, moved on as the individual detections are worked through */
-  @Schema(example = "RUNNING", description = "How far the run as a whole has got.")
+  @Schema(
+      requiredMode = Schema.RequiredMode.REQUIRED,
+      example = "RUNNING",
+      description = "How far the run as a whole has got.")
+  @NotNull
   private CheatingDetectionState currentState;
 
   /** How many findings the run has recorded so far; zero until the first detection reports */

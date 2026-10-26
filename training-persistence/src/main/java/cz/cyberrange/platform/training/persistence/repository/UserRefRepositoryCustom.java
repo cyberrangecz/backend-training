@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.persistence.repository;
 
 import cz.cyberrange.platform.training.persistence.model.UserRef;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 

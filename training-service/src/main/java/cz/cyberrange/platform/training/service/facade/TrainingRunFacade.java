@@ -51,7 +51,6 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +58,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -67,7 +65,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,7 +81,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TrainingRunFacade {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrainingRunFacade.class);
-  private static final int TIME_TO_PROPAGATE_EVENTS = 5;
+  private static final String RUN_INSTANCE_TITLE_PROPERTY = "trainingInstance.title";
 
   @Value("${central.syslog.ip:127.0.0.1}")
   private String centralSyslogIp;
@@ -132,23 +132,6 @@ public class TrainingRunFacade {
         userService.getUserRefDTOByUserRefId(
             trainingRunByIdDTO.getParticipantRef().getUserRefId()));
     return trainingRunByIdDTO;
-  }
-
-  /**
-   * Find all Training Runs.
-   *
-   * @param predicate specifies query to the database.
-   * @param pageable pageable parameter with information about pagination.
-   * @return page of all {@link TrainingRunDTO}
-   */
-  @PreAuthorize(
-      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
-  @TransactionalRO
-  public PageResultResource<TrainingRunDTO> findAll(Predicate predicate, Pageable pageable) {
-    PageResultResource<TrainingRunDTO> trainingRunDTOPageResultResource =
-        trainingRunMapper.mapToPageResultResource(trainingRunService.findAll(predicate, pageable));
-    addParticipantsToTrainingRunDTOs(trainingRunDTOPageResultResource.getContent());
-    return trainingRunDTOPageResultResource;
   }
 
   /**
@@ -207,8 +190,9 @@ public class TrainingRunFacade {
   public PageResultResource<AccessedTrainingRunDTO> findAllAccessedTrainingRuns(
       Predicate predicate, Pageable pageable, String sortByTitle) {
     Page<TrainingRun> trainingRuns =
-        trainingRunService.findAllByParticipantRefUserRefId(predicate, pageable);
-    return convertToAccessedRunDTO(trainingRuns, sortByTitle);
+        trainingRunService.findAllByParticipantRefUserRefId(
+            predicate, orderedByInstanceTitle(pageable, sortByTitle));
+    return convertToAccessedRunDTO(trainingRuns);
   }
 
   /**
@@ -467,8 +451,7 @@ public class TrainingRunFacade {
   }
 
   /**
-   * Finishes a training run, then blocks the calling thread for a fixed delay to let its audited
-   * events propagate before returning.
+   * Finishes a training run.
    *
    * @param trainingRunId id of Training Run to be finished.
    */
@@ -478,7 +461,6 @@ public class TrainingRunFacade {
   @TransactionalWO
   public void finishTrainingRun(Long trainingRunId) {
     trainingRunService.finishTrainingRun(trainingRunId);
-    waitToPropagateEvents();
   }
 
   /**
@@ -530,10 +512,10 @@ public class TrainingRunFacade {
   /**
    * Finds Training Runs by their ids.
    *
-   * <p>The {@code sandboxInstanceRefId} field is masked according to caller privilege:
-   * administrators and organizers of the runs see the plain sandbox UUID for every run; all other
-   * callers see a plain UUID only for their own run and the SHA-256 hash of the UUID for all other
-   * runs.
+   * <p>Only an administrator, the organizer of every listed run, or the participant of every listed
+   * run is admitted, so a trainee receives only their own runs, each with its plain sandbox UUID.
+   * For a caller who is neither administrator nor organizer, any run that is not the caller's own
+   * would carry the SHA-256 hash of its sandbox UUID instead.
    *
    * @param ids the ids of Training Runs to return.
    * @return List of requested {@link TrainingRunBasicDTO}.
@@ -701,29 +683,25 @@ public class TrainingRunFacade {
   }
 
   private PageResultResource<AccessedTrainingRunDTO> convertToAccessedRunDTO(
-      Page<TrainingRun> trainingRuns, String sortByTitle) {
+      Page<TrainingRun> trainingRuns) {
     List<AccessedTrainingRunDTO> accessedTrainingRunDTOS = new ArrayList<>();
     for (TrainingRun trainingRun : trainingRuns) {
       AccessedTrainingRunDTO accessedTrainingRunDTO = generateAccessedTrainingRunDTO(trainingRun);
       accessedTrainingRunDTOS.add(accessedTrainingRunDTO);
     }
     return new PageResultResource<>(
-        sortByTitle(accessedTrainingRunDTOS, sortByTitle),
-        trainingRunMapper.createPagination(trainingRuns));
+        accessedTrainingRunDTOS, trainingRunMapper.createPagination(trainingRuns));
   }
 
-  private List<AccessedTrainingRunDTO> sortByTitle(
-      List<AccessedTrainingRunDTO> runs, String sortByTitle) {
-    if (sortByTitle != null && !sortByTitle.isBlank()) {
-      if (!runs.isEmpty()) {
-        if (sortByTitle.equals("asc")) {
-          runs.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle));
-        } else if (sortByTitle.equals("desc")) {
-          runs.sort(Comparator.comparing(AccessedTrainingRunDTO::getTitle).reversed());
-        }
-      }
-    }
-    return runs;
+  private Pageable orderedByInstanceTitle(Pageable pageable, String sortByTitle) {
+    return Sort.Direction.fromOptionalString(sortByTitle)
+        .<Pageable>map(
+            direction ->
+                PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    Sort.by(direction, RUN_INSTANCE_TITLE_PROPERTY).and(pageable.getSort())))
+        .orElse(pageable);
   }
 
   private AccessedTrainingRunDTO generateAccessedTrainingRunDTO(TrainingRun trainingRun) {
@@ -893,13 +871,5 @@ public class TrainingRunFacade {
                   .getExtendedMatchingStatements()
                   .forEach(statementDTO -> statementDTO.setCorrectOptionOrder(null));
             });
-  }
-
-  private void waitToPropagateEvents() {
-    try {
-      TimeUnit.SECONDS.sleep(TIME_TO_PROPAGATE_EVENTS);
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-    }
   }
 }

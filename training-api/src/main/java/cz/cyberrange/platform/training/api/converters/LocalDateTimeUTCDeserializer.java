@@ -1,13 +1,12 @@
 package cz.cyberrange.platform.training.api.converters;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * Reads a JSON string in ISO-8601 instant form with a trailing {@code Z} (for example {@code
@@ -23,7 +22,7 @@ public class LocalDateTimeUTCDeserializer extends StdDeserializer<LocalDateTime>
   }
 
   @Override
-  public LocalDateTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+  public LocalDateTime deserialize(JsonParser jp, DeserializationContext ctxt) {
     Instant instant = Instant.parse(jp.readValueAs(String.class));
     return LocalDateTime.ofInstant(instant, ZoneId.of(ZoneOffset.UTC.getId()));
   }

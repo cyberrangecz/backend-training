@@ -13,8 +13,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -119,5 +119,21 @@ public class TrainingInstanceRepositoryTest {
     assertTrue(trainingInstanceRepository.existsForToken(trainingInstance1.getAccessToken()));
 
     assertFalse(trainingInstanceRepository.existsForToken("non-existing-token"));
+  }
+
+  @Test
+  public void countGroupedByTrainingDefinitionCountsInstancesPerDefinition() {
+    entityManager.persist(trainingInstance1);
+    entityManager.persist(trainingInstance2);
+    TrainingDefinition definitionWithoutInstances =
+        entityManager.persist(testDataFactory.getUnreleasedDefinition());
+
+    List<TrainingInstanceRepository.DefinitionInstanceCount> counts =
+        trainingInstanceRepository.countGroupedByTrainingDefinition(
+            List.of(trainingDefinition.getId(), definitionWithoutInstances.getId()));
+
+    assertEquals(1, counts.size());
+    assertEquals(trainingDefinition.getId(), counts.get(0).getDefinitionId());
+    assertEquals(2L, counts.get(0).getInstanceCount());
   }
 }

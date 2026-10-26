@@ -1,10 +1,10 @@
 package cz.cyberrange.platform.training.persistence.model.question;
 
 import cz.cyberrange.platform.training.persistence.model.TrainingRun;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.*;
 import lombok.ToString;
 
 /**
@@ -23,7 +23,8 @@ import lombok.ToString;
               + "JOIN FETCH qa.question q "
               + "JOIN FETCH qa.trainingRun tr "
               + "JOIN FETCH tr.trainingInstance ti "
-              + "WHERE q.id = :questionId AND ti.id = :instanceId")
+              + "WHERE q.id = :questionId AND ti.id = :instanceId "
+              + "ORDER BY tr.id")
 })
 @ToString
 @Entity

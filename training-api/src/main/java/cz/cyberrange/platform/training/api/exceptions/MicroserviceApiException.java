@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.api.exceptions;
 
 import cz.cyberrange.platform.training.api.exceptions.errors.ApiSubError;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -31,13 +32,16 @@ public class MicroserviceApiException extends RuntimeException {
 
   /**
    * Rebuilds the exception from the status code and sub-error carried by {@code
-   * customWebClientException}
+   * customWebClientException}. A status code {@link HttpStatus} does not define becomes {@link
+   * HttpStatus#INTERNAL_SERVER_ERROR}.
    */
   public MicroserviceApiException(
       String message, CustomWebClientException customWebClientException) {
     this(
         message,
-        customWebClientException.getStatusCode(),
+        Objects.requireNonNullElse(
+            HttpStatus.resolve(customWebClientException.getStatusCode().value()),
+            HttpStatus.INTERNAL_SERVER_ERROR),
         customWebClientException.getApiSubError());
   }
 

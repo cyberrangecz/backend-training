@@ -10,9 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceAssignPoolIdDTO;
@@ -27,15 +24,18 @@ import cz.cyberrange.platform.training.api.exceptions.errors.JavaApiError;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.rest.controllers.util.ObjectConverter;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.CustomRestExceptionHandlerTraining;
+import cz.cyberrange.platform.training.service.config.ValidationMessagesConfig;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.BetaTestingGroupMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapperImpl;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.UserRefMapperImpl;
+import cz.cyberrange.platform.training.service.services.UserNameFilter;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -45,7 +45,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -55,28 +54,32 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.querydsl.QuerydslPredicateArgumentResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
     classes = {
       TestDataFactory.class,
       EnumMapperImpl.class,
       TrainingInstanceMapperImpl.class,
-      TrainingDefinitionMapperImpl.class,
-      UserRefMapperImpl.class,
-      BetaTestingGroupMapperImpl.class
+      TrainingDefinitionMapperImpl.class
     })
 public class TrainingInstancesRestControllerTest {
+
+  private static final UserNameFilter JANE_DOE_FILTER = new UserNameFilter(null, null, "Jane Doe");
 
   private TrainingInstancesRestController trainingInstancesRestController;
 
   @Autowired private TestDataFactory testDataFactory;
   @Autowired TrainingInstanceMapper trainingInstanceMapper;
 
-  @MockBean private TrainingInstanceFacade trainingInstanceFacade;
+  @MockitoBean private TrainingInstanceFacade trainingInstanceFacade;
 
   private MockMvc mockMvc;
   private AutoCloseable closeable;
@@ -97,19 +100,21 @@ public class TrainingInstancesRestControllerTest {
 
   @BeforeEach
   public void init() throws Exception {
-    ObjectMapper snakeCaseMapper = new ObjectMapper();
-    snakeCaseMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+    JsonMapper snakeCaseMapper = ObjectConverter.restResponseMapper();
+    LocalValidatorFactoryBean validator = new ValidationMessagesConfig().getValidator();
+    validator.afterPropertiesSet();
 
     closeable = MockitoAnnotations.openMocks(this);
     trainingInstancesRestController = new TrainingInstancesRestController(trainingInstanceFacade);
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(trainingInstancesRestController)
+            .setValidator(validator)
             .setCustomArgumentResolvers(
                 new PageableHandlerMethodArgumentResolver(),
                 new QuerydslPredicateArgumentResolver(
                     new QuerydslBindingsFactory(SimpleEntityPathResolver.INSTANCE),
                     Optional.empty()))
-            .setMessageConverters(new MappingJackson2HttpMessageConverter(snakeCaseMapper))
+            .setMessageConverters(new JacksonJsonHttpMessageConverter(snakeCaseMapper))
             .setControllerAdvice(new CustomRestExceptionHandlerTraining())
             .build();
 
@@ -212,9 +217,7 @@ public class TrainingInstancesRestControllerTest {
             .andExpect(status().isOk())
             .andReturn()
             .getResponse();
-    assertEquals(
-        convertObjectToJsonBytes(trainingInstance1DTO),
-        result.getContentAsString());
+    assertEquals(convertObjectToJsonBytes(trainingInstance1DTO), result.getContentAsString());
   }
 
   @Test
@@ -234,6 +237,37 @@ public class TrainingInstancesRestControllerTest {
     ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);
     assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
     assertEquals("The requested entity could not be found", error.getMessage());
+  }
+
+  @Test
+  public void createTrainingInstances_StartTenSecondsInPast_Accepted() throws Exception {
+    trainingInstanceCreateDTO.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusSeconds(10));
+    given(trainingInstanceFacade.create(any(TrainingInstanceCreateDTO.class)))
+        .willReturn(trainingInstance1DTO);
+    mockMvc
+        .perform(
+            post("/training-instances")
+                .content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  public void createTrainingInstances_StartOneMinuteInPast_Refused() throws Exception {
+    trainingInstanceCreateDTO.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusMinutes(1));
+    MockHttpServletResponse result =
+        mockMvc
+            .perform(
+                post("/training-instances")
+                    .content(convertObjectToJsonBytes(trainingInstanceCreateDTO))
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isBadRequest())
+            .andReturn()
+            .getResponse();
+    ApiError error = convertJsonBytesToObject(result.getContentAsString(), ApiError.class);
+    assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+    assertEquals("Training Instance field 'startTime' cannot be in the past", error.getMessage());
+    verifyNoInteractions(trainingInstanceFacade);
   }
 
   @Test
@@ -363,20 +397,21 @@ public class TrainingInstancesRestControllerTest {
     pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
     given(
             trainingInstanceFacade.getOrganizersOfTrainingInstance(
-                eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null)))
+                eq(trainingInstance1.getId()), any(Pageable.class), eq(JANE_DOE_FILTER)))
         .willReturn(expectedUsersRefDTOs);
 
     MockHttpServletResponse result =
         mockMvc
-            .perform(get("/training-instances/{id}/organizers", trainingInstance1.getId()))
+            .perform(
+                get("/training-instances/{id}/organizers", trainingInstance1.getId())
+                    .param("name", "Jane Doe"))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse();
     assertEquals(
         expectedUsersRefDTOs.getContent(),
         convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
 
@@ -385,7 +420,7 @@ public class TrainingInstancesRestControllerTest {
     willThrow(new EntityNotFoundException())
         .given(trainingInstanceFacade)
         .getOrganizersOfTrainingInstance(
-            eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
+            eq(trainingInstance1.getId()), any(Pageable.class), eq(UserNameFilter.NONE));
     MockHttpServletResponse response =
         mockMvc
             .perform(get("/training-instances/{id}/organizers", trainingInstance1.getId()))
@@ -404,23 +439,23 @@ public class TrainingInstancesRestControllerTest {
     pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
     given(
             trainingInstanceFacade.getOrganizersNotInGivenTrainingInstance(
-                eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null)))
+                eq(trainingInstance1.getId()), any(Pageable.class), eq(JANE_DOE_FILTER)))
         .willReturn(expectedUsersRefDTOs);
 
     MockHttpServletResponse result =
         mockMvc
             .perform(
                 get(
-                    "/training-instances/{id}/organizers-not-in-training-instance",
-                    trainingInstance1.getId()))
+                        "/training-instances/{id}/organizers-not-in-training-instance",
+                        trainingInstance1.getId())
+                    .param("name", "Jane Doe"))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse();
     assertEquals(
         expectedUsersRefDTOs.getContent(),
         convertJsonBytesToObject(
-                result.getContentAsString(),
-                new TypeReference<PageResultResource<UserRefDTO>>() {})
+                result.getContentAsString(), new TypeReference<PageResultResource<UserRefDTO>>() {})
             .getContent());
   }
 
@@ -429,7 +464,7 @@ public class TrainingInstancesRestControllerTest {
     willThrow(new EntityNotFoundException())
         .given(trainingInstanceFacade)
         .getOrganizersNotInGivenTrainingInstance(
-            eq(trainingInstance1.getId()), any(Pageable.class), eq(null), eq(null));
+            eq(trainingInstance1.getId()), any(Pageable.class), eq(UserNameFilter.NONE));
     MockHttpServletResponse response =
         mockMvc
             .perform(

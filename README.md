@@ -14,15 +14,15 @@ This project is divided into several modules:
   * Documented with Swagger.
 * `training-api`
   * Contains API (DTO classes)
-    * These are annotated with proprietary converters for DateTime processing.
     * Localized Bean validations are set (messages are localized).
     * Annotations for Swagger documentation are included.
-  * Map Entities to DTO classes and vice versa with MapStruct framework.
-  * Contains @Transactional annotations.
 * `training-service`
     * Provides business logic of the application:
       * Calls persistence layer for database queries and combining the results as necessary.
       * Calls another microservices.
+    * Maps Entities to DTO classes and vice versa with MapStruct framework.
+    * Contains @Transactional annotations.
+    * Writes every date-time as UTC with a `Z` suffix and millisecond precision.
 * `training-persistence`
   * Provides data layer of the application (Database queries).
   * Uses Spring Data JPA (Spring wrapper layer over JPA implemented with Hibernate framework).
@@ -53,7 +53,7 @@ To build and run the project in docker it is necessary to prepare several config
 
 * Fill OIDC credentials gained from the previous step and set additional settings in the [training.properties](https://github.com/cyberrangecz/backend-training/blob/master/etc/training.properties) file and save it.
 
-* By default, the provided configuration uses the in-memory H2 database. To use PostgreSQL instead, point the `spring.datasource.*` properties in `training.properties` to your PostgreSQL instance (run as its own, separate service/container).
+* The service stores its data in PostgreSQL. Point the `spring.datasource.*` properties in `training.properties` to your PostgreSQL instance (run as its own, separate service/container). The provided configuration sets `spring.flyway.enabled=true` and `spring.jpa.hibernate.ddl-auto=validate`: the database schema is created and upgraded by the Flyway migrations and checked by Hibernate at startup.
 
 * This service calls out to other CyberRangeCZ Platform microservices, configured via the following properties in `training.properties`:
   * `user-and-group-server.uri` &mdash; [backend-user-and-group](https://github.com/cyberrangecz/backend-user-and-group)

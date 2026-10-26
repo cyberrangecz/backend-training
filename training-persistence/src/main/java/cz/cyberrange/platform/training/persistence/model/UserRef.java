@@ -1,22 +1,22 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 /**
- * Local row standing in for a user of the user-and-group microservice, so that training
- * definitions, instances and beta testing groups can reference that user without duplicating its
- * profile data
+ * Local row standing in for a user of the user-and-group microservice, so that training definitions
+ * and instances can reference that user without duplicating its profile data
  */
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
@@ -24,7 +24,7 @@ import javax.persistence.UniqueConstraint;
   // Matches on userRefId: takes and returns the external, cross-service user identifiers.
   @NamedQuery(
       name = "UserRef.findUsers",
-      query = "SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId"),
+      query = "SELECT ur FROM UserRef ur WHERE ur.userRefId IN :userRefId ORDER BY ur.id"),
   // Matches on userRefId: takes an external user identifier, not the local primary key.
   @NamedQuery(
       name = "UserRef.findUserByUserRefId",
@@ -49,13 +49,12 @@ public class UserRef extends AbstractEntity<Long> {
   private Long userRefId;
 
   @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
+  @OrderBy("id")
   private Set<TrainingInstance> trainingInstances = new HashSet<>();
 
   @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
+  @OrderBy("id")
   private Set<TrainingDefinition> trainingDefinitions = new HashSet<>();
-
-  @ManyToMany(mappedBy = "organizers", fetch = FetchType.LAZY)
-  private Set<BetaTestingGroup> betaTesters = new HashSet<>();
 
   public UserRef() {}
 
@@ -139,24 +138,6 @@ public class UserRef extends AbstractEntity<Long> {
   }
 
   /**
-   * Adds beta testing group that can be accessed by user.
-   *
-   * @param viewGroup the view group
-   */
-  public void addViewGroup(BetaTestingGroup viewGroup) {
-    this.betaTesters.add(viewGroup);
-  }
-
-  /**
-   * Removes beta testing group that can be accessed by user.
-   *
-   * @param viewGroup the view group
-   */
-  public void removeViewGroup(BetaTestingGroup viewGroup) {
-    this.betaTesters.remove(viewGroup);
-  }
-
-  /**
    * Adds instance to the set of training instances user can access.
    *
    * @param trainingInstance the training instance
@@ -172,24 +153,6 @@ public class UserRef extends AbstractEntity<Long> {
    */
   public void removeTrainingInstance(TrainingInstance trainingInstance) {
     this.trainingInstances.remove(trainingInstance);
-  }
-
-  /**
-   * Gets set of Beta testing groups user can access.
-   *
-   * @return the beta testers
-   */
-  public Set<BetaTestingGroup> getBetaTesters() {
-    return Collections.unmodifiableSet(betaTesters);
-  }
-
-  /**
-   * Sets set of Beta testing groups user can access.
-   *
-   * @param betaTesters the beta testers
-   */
-  public void setBetaTesters(Set<BetaTestingGroup> betaTesters) {
-    this.betaTesters = betaTesters;
   }
 
   @Override

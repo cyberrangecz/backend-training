@@ -49,7 +49,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * Unit tests for {@link ScoreReportService}.
@@ -63,10 +63,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
     classes = {
       EnumMapperImpl.class,
       TrainingDefinitionMapperImpl.class,
-      UserRefMapperImpl.class,
       LevelMapperImpl.class,
       HintMapperImpl.class,
-      BetaTestingGroupMapperImpl.class,
       QuestionMapperImpl.class,
       AttachmentMapperImpl.class,
       MitreTechniqueMapperImpl.class,
@@ -81,10 +79,10 @@ class ScoreReportServiceTest {
   @Autowired private LevelMapperImpl levelMapper;
   @Autowired private ScoreReportMapperImpl scoreReportMapper;
 
-  @MockBean private ExportImportService exportImportService;
-  @MockBean private TrainingDefinitionService trainingDefinitionService;
-  @MockBean private UserRefRepository userRefRepository;
-  @MockBean private TrainingScoreAggregationService trainingScoreAggregationService;
+  @MockitoBean private ExportImportService exportImportService;
+  @MockitoBean private TrainingDefinitionService trainingDefinitionService;
+  @MockitoBean private UserRefRepository userRefRepository;
+  @MockitoBean private TrainingScoreAggregationService trainingScoreAggregationService;
 
   private ScoreReportService sut;
   private TrainingInstance instance;

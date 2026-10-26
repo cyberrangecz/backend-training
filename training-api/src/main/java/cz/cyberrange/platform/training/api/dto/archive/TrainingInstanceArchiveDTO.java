@@ -1,7 +1,5 @@
 package cz.cyberrange.platform.training.api.dto.archive;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -23,12 +21,10 @@ public class TrainingInstanceArchiveDTO {
   @Schema(example = "1")
   private Long definitionId;
 
-  @Schema(example = "2016-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2016-10-19T08:23:54.000Z")
   private LocalDateTime startTime;
 
-  @Schema(example = "2017-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2017-10-19T08:23:54.000Z")
   private LocalDateTime endTime;
 
   @Schema(example = "Concluded Instance")

@@ -1,49 +1,63 @@
 package cz.cyberrange.platform.training.service.unit.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
 import cz.cyberrange.platform.training.api.enums.RoleType;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import cz.cyberrange.platform.training.service.services.UserService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.apache.http.HttpHeaders;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(classes = {TestDataFactory.class})
 public class UserServiceTest {
 
+  private static final UserNameFilter JANE_DOE_FILTER = new UserNameFilter(null, null, "Jane Doe");
+
   private UserService userService;
-  @MockBean private UserRefRepository userRefRepository;
-  @MockBean private ExchangeFunction exchangeFunction;
+  @MockitoBean private UserRefRepository userRefRepository;
+  @MockitoBean private ExchangeFunction exchangeFunction;
 
   private UserRef userRef1, userRef2, userRef3;
   private UserRefDTO userRefDTO1, userRefDTO2;
@@ -133,7 +147,9 @@ public class UserServiceTest {
 
     PageResultResource<UserRefDTO> userRefDTOPageResultResource =
         userService.getUsersRefDTOByGivenUserIds(
-            List.of(userRef1.getUserRefId(), userRef2.getUserRefId()), pageable, null, null);
+            List.of(userRef1.getUserRefId(), userRef2.getUserRefId()),
+            pageable,
+            UserNameFilter.NONE);
     assertTrue(
         userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
     assertEquals(pagination.getNumber(), userRefDTOPageResultResource.getPagination().getNumber());
@@ -152,23 +168,9 @@ public class UserServiceTest {
   public void getUsersRefDTOByGivenUserIdsWithEmptyIds() {
     pagination = new PageResultResource.Pagination(0, 0, 5, 0, 0);
     PageResultResource<UserRefDTO> userRefDTOPageResultResource =
-        userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(), pageable, null, null);
+        userService.getUsersRefDTOByGivenUserIds(new ArrayList<>(), pageable, UserNameFilter.NONE);
     assertTrue(userRefDTOPageResultResource.getContent().isEmpty());
     assertEquals(pagination.toString(), userRefDTOPageResultResource.getPagination().toString());
-  }
-
-  @Test
-  public void getUsersByGivenRole() throws Exception {
-    pagination = new PageResultResource.Pagination(0, 2, 5, 2, 1);
-    given(exchangeFunction.exchange(any(ClientRequest.class)))
-        .willReturn(
-            buildMockResponse(
-                new PageResultResource<UserRefDTO>(List.of(userRefDTO1, userRefDTO2), pagination)));
-
-    PageResultResource<UserRefDTO> userRefDTOPageResultResource =
-        userService.getUsersByGivenRole(RoleType.ROLE_TRAINING_DESIGNER, pageable, null, null);
-    assertTrue(
-        userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
   }
 
   @Test
@@ -184,8 +186,7 @@ public class UserServiceTest {
             RoleType.ROLE_TRAINING_ORGANIZER,
             Set.of(userRef1.getUserRefId(), userRef2.getUserRefId()),
             pageable,
-            null,
-            null);
+            UserNameFilter.NONE);
     assertTrue(
         userRefDTOPageResultResource.getContent().containsAll(List.of(userRefDTO1, userRefDTO2)));
     assertEquals(pagination.getNumber(), userRefDTOPageResultResource.getPagination().getNumber());
@@ -209,6 +210,108 @@ public class UserServiceTest {
     then(userRefRepository).should().createOrGet(userRef.getUserRefId());
   }
 
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("userListCalls")
+  public void userListCall_sortRequested_forwardsEachOrderAsSortParameter(UserListCall call)
+      throws Exception {
+    givenEmptyUserPage();
+    Pageable sortedPageable =
+        PageRequest.of(
+            0, 5, Sort.by(Sort.Order.desc("givenName"), Sort.Order.asc("familyName").ignoreCase()));
+
+    call.list(userService, sortedPageable, UserNameFilter.NONE);
+
+    assertEquals(
+        List.of("givenName%2Cdesc", "familyName%2Casc%2Cignorecase"),
+        forwardedQueryParameters().get("sort"));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("userListCalls")
+  public void userListCall_nameGiven_forwardsNameParameter(UserListCall call) throws Exception {
+    givenEmptyUserPage();
+
+    call.list(userService, PageRequest.of(0, 5), JANE_DOE_FILTER);
+
+    assertEquals(List.of("Jane%20Doe"), forwardedQueryParameters().get("name"));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("userListCalls")
+  public void userListCall_noSortOrNameGiven_forwardsNeither(UserListCall call) throws Exception {
+    givenEmptyUserPage();
+
+    call.list(userService, PageRequest.of(0, 5), UserNameFilter.NONE);
+
+    MultiValueMap<String, String> forwarded = forwardedQueryParameters();
+    assertNull(forwarded.get("sort"));
+    assertNull(forwarded.get("name"));
+  }
+
+  @ParameterizedTest(name = "{0} -> {1}")
+  @MethodSource("nameFilterValuesAndEncodedForms")
+  public void userListCall_filterValueWithReservedCharacters_forwardsValueEncodedUnchanged(
+      String filterValue, String encodedValue) throws Exception {
+    givenEmptyUserPage();
+
+    userService.getUsersByGivenRoleAndNotWithGivenIds(
+        RoleType.ROLE_TRAINING_DESIGNER,
+        Set.of(10L),
+        PageRequest.of(0, 5),
+        new UserNameFilter(filterValue, filterValue, filterValue));
+
+    MultiValueMap<String, String> forwarded = forwardedQueryParameters();
+    assertEquals(List.of(encodedValue), forwarded.get("givenName"));
+    assertEquals(List.of(encodedValue), forwarded.get("familyName"));
+    assertEquals(List.of(encodedValue), forwarded.get("name"));
+  }
+
+  private static Stream<Arguments> nameFilterValuesAndEncodedForms() {
+    return Stream.of(
+        Arguments.of("Jane+Doe", "Jane%2BDoe"),
+        Arguments.of("Jane Doe", "Jane%20Doe"),
+        Arguments.of("Doe&sort=id", "Doe%26sort%3Did"),
+        Arguments.of("{name}", "%7Bname%7D"),
+        Arguments.of("{", "%7B"),
+        Arguments.of("100%", "100%25"),
+        Arguments.of("%41", "%2541"),
+        Arguments.of("Dvořák Šimek", "Dvo%C5%99%C3%A1k%20%C5%A0imek"));
+  }
+
+  private static Stream<Named<UserListCall>> userListCalls() {
+    return Stream.of(
+        Named.of(
+            "users by ids",
+            (service, pageable, filter) ->
+                service.getUsersRefDTOByGivenUserIds(List.of(10L), pageable, filter)),
+        Named.of(
+            "users by role without ids",
+            (service, pageable, filter) ->
+                service.getUsersByGivenRoleAndNotWithGivenIds(
+                    RoleType.ROLE_TRAINING_DESIGNER, Set.of(10L), pageable, filter)));
+  }
+
+  /** Requests one page of users from user-and-group through a user-listing method. */
+  @FunctionalInterface
+  private interface UserListCall {
+    PageResultResource<UserRefDTO> list(
+        UserService service, Pageable pageable, UserNameFilter filter);
+  }
+
+  private void givenEmptyUserPage() throws IOException {
+    given(exchangeFunction.exchange(any(ClientRequest.class)))
+        .willReturn(
+            buildMockResponse(
+                new PageResultResource<UserRefDTO>(
+                    List.of(), new PageResultResource.Pagination(0, 0, 5, 0, 0))));
+  }
+
+  private MultiValueMap<String, String> forwardedQueryParameters() {
+    ArgumentCaptor<ClientRequest> forwardedRequest = ArgumentCaptor.forClass(ClientRequest.class);
+    then(exchangeFunction).should().exchange(forwardedRequest.capture());
+    return UriComponentsBuilder.fromUri(forwardedRequest.getValue().url()).build().getQueryParams();
+  }
+
   private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {
     ClientResponse clientResponse =
         ClientResponse.create(HttpStatus.OK)
@@ -219,11 +322,12 @@ public class UserServiceTest {
   }
 
   private static String convertObjectToJsonBytes(Object object) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
-    mapper.registerModule(new JavaTimeModule());
-    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    ObjectMapper mapper =
+        JsonMapper.builderWithJackson2Defaults()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build();
     return mapper.writeValueAsString(object);
   }
 }

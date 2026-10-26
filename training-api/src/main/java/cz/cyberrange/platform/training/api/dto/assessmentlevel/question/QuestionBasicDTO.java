@@ -3,8 +3,8 @@ package cz.cyberrange.platform.training.api.dto.assessmentlevel.question;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import cz.cyberrange.platform.training.api.enums.QuestionType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**

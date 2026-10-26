@@ -1,7 +1,7 @@
 ARG PROJECT_ARTIFACT_ID=training
 
 ############ BUILD STAGE ############
-FROM maven:3.8.5-openjdk-17-slim AS build
+FROM maven:3.10.0-eclipse-temurin-25 AS build
 
 WORKDIR /app
 
@@ -22,7 +22,7 @@ RUN mvn -ntp -q clean install -DskipTests -DskipChecks=true $MAVEN_CLI_OPTS && \
     cp /app/training-rest/target/$PROJECT_ARTIFACT_ID-*.jar /app/$PROJECT_ARTIFACT_ID.jar
 
 ############ RUNNABLE STAGE ############
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:25-jre-noble
 
 WORKDIR /app
 
@@ -31,12 +31,13 @@ ARG PROJECT_ARTIFACT_ID
 ENV PROJECT_ARTIFACT_ID=${PROJECT_ARTIFACT_ID}
 
 COPY etc/$PROJECT_ARTIFACT_ID.properties /app/etc/$PROJECT_ARTIFACT_ID.properties
+COPY etc/logback-spring.xml /app/etc/logback-spring.xml
 COPY entrypoint.sh /app/entrypoint.sh
 COPY --from=build /app/$PROJECT_ARTIFACT_ID.jar ./
 
 RUN apt-get update && \
     # Required to use nc command in the wait for it function, see entrypoint.sh
-    apt-get install -y netcat && \
+    apt-get install -y netcat-openbsd && \
     # Make a file executable
     chmod a+x entrypoint.sh
 

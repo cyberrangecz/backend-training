@@ -1,7 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.traininginstance;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /** Encapsulates information about Training Instance, intended for assigning pool id */

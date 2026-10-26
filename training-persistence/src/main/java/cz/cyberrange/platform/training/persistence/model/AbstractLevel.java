@@ -1,10 +1,10 @@
 package cz.cyberrange.platform.training.persistence.model;
 
-import java.util.Objects;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ConcreteProxy;
 
 /**
  * Base of the level hierarchy shared by {@link TrainingLevel}, {@link InfoLevel}, {@link
@@ -17,6 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
+@ConcreteProxy
 @Table(name = "abstract_level")
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
@@ -26,8 +27,6 @@ import lombok.Setter;
           "SELECT l FROM AbstractLevel l "
               + "JOIN FETCH l.trainingDefinition td "
               + "JOIN FETCH td.authors "
-              + "LEFT OUTER JOIN FETCH td.betaTestingGroup btg "
-              + "LEFT OUTER JOIN FETCH btg.organizers "
               + "WHERE l.id = :levelId"),
   @NamedQuery(
       name = "AbstractLevel.getCurrentMaxOrder",
@@ -36,30 +35,16 @@ import lombok.Setter;
   @NamedQuery(
       name = "AbstractLevel.findAllLevelsByTrainingDefinitionId",
       query =
-          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order"),
+          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order, l.id"),
   @NamedQuery(
       name = "AbstractLevel.findAllLevelsByTrainingDefinitionIdIn",
       query =
           "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id IN :trainingDefinitionIds "
-              + "ORDER BY l.order"),
-  @NamedQuery(
-      name = "AbstractLevel.findFirstLevelByTrainingDefinitionId",
-      query =
-          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId ORDER BY l.order"),
+              + "ORDER BY l.order, l.id"),
   @NamedQuery(
       name = "AbstractLevel.findLevelInDefinition",
       query =
-          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.id = :levelId"),
-  @NamedQuery(
-      name = "AbstractLevel.increaseOrderOfLevels",
-      query =
-          "UPDATE AbstractLevel l SET l.order = l.order + 1 "
-              + "WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.order >= :fromOrder AND l.order <= :toOrder"),
-  @NamedQuery(
-      name = "AbstractLevel.decreaseOrderOfLevels",
-      query =
-          "UPDATE AbstractLevel l SET l.order = l.order - 1 "
-              + "WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.order >= :fromOrder AND l.order <= :toOrder")
+          "SELECT l FROM AbstractLevel l WHERE l.trainingDefinition.id = :trainingDefinitionId AND l.id = :levelId")
 })
 public abstract class AbstractLevel extends AbstractEntity<Long> {
 
@@ -92,19 +77,6 @@ public abstract class AbstractLevel extends AbstractEntity<Long> {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "training_definition_id")
   private TrainingDefinition trainingDefinition;
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof AbstractLevel)) return false;
-    AbstractLevel that = (AbstractLevel) o;
-    return getMaxScore() == that.getMaxScore() && Objects.equals(getId(), that.getId());
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(getId(), getMaxScore());
-  }
 
   @Override
   public String toString() {

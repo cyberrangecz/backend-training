@@ -1,12 +1,12 @@
 package cz.cyberrange.platform.training.persistence.model;
 
+import jakarta.persistence.*;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
 
 /**
  * Class represents Training instance. Training instances can be created based on definitions.
@@ -14,38 +14,17 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "training_instance")
-@NamedEntityGraphs({
-  @NamedEntityGraph(
-      name = "TrainingInstance.findAllAuthorsOrganizersBetaTestingGroupBetaTestingGroupOrganizers",
-      attributeNodes = {
-        @NamedAttributeNode(value = "organizers"),
-        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition"),
-      },
-      subgraphs = {
-        @NamedSubgraph(
-            name = "trainingDefinition",
-            attributeNodes = {
-              @NamedAttributeNode(value = "authors"),
-              @NamedAttributeNode(
-                  value = "betaTestingGroup",
-                  subgraph = "betaTestingGroup.organizers")
-            }),
-        @NamedSubgraph(
-            name = "betaTestingGroup.organizers",
-            attributeNodes = @NamedAttributeNode(value = "organizers"))
-      }),
-  @NamedEntityGraph(
-      name = "TrainingInstance.findByIdAuthorsOrganizers",
-      attributeNodes = {
-        @NamedAttributeNode(value = "organizers"),
-        @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition.authors")
-      },
-      subgraphs = {
-        @NamedSubgraph(
-            name = "trainingDefinition.authors",
-            attributeNodes = @NamedAttributeNode(value = "authors"))
-      })
-})
+@NamedEntityGraph(
+    name = "TrainingInstance.findAllAuthorsOrganizers",
+    attributeNodes = {
+      @NamedAttributeNode(value = "organizers"),
+      @NamedAttributeNode(value = "trainingDefinition", subgraph = "trainingDefinition"),
+    },
+    subgraphs = {
+      @NamedSubgraph(
+          name = "trainingDefinition",
+          attributeNodes = @NamedAttributeNode(value = "authors"))
+    })
 @NamedQueries({
   // Matches an instance whose access token equals the given one and whose window (start time to
   // end time) currently contains the given moment.
@@ -56,22 +35,12 @@ import javax.persistence.*;
               + "JOIN FETCH ti.trainingDefinition td "
               + "WHERE ti.startTime < :datetime AND ti.endTime > :datetime AND ti.accessToken = :accessToken"),
   @NamedQuery(
-      name = "TrainingInstance.findByIdIncludingDefinition",
-      query =
-          "SELECT ti FROM TrainingInstance ti "
-              + "LEFT OUTER JOIN FETCH ti.organizers "
-              + "JOIN FETCH ti.trainingDefinition td "
-              + "LEFT OUTER JOIN FETCH td.authors "
-              + "LEFT OUTER JOIN FETCH td.betaTestingGroup btg "
-              + "LEFT OUTER JOIN FETCH btg.organizers "
-              + "WHERE ti.id = :instanceId"),
-  @NamedQuery(
       name = "TrainingInstance.findByPoolId",
       query = "SELECT ti FROM TrainingInstance ti " + "WHERE ti.poolId = :poolId"),
   @NamedQuery(
       name = "TrainingInstance.findAllByTrainingDefinitionId",
       query =
-          "SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId"),
+          "SELECT ti FROM TrainingInstance ti JOIN FETCH ti.trainingDefinition td WHERE td.id = :trainingDefId ORDER BY ti.id"),
   @NamedQuery(
       name = "TrainingInstance.findTrainingDefinitionIdsWithInstanceEndingAfter",
       query =
@@ -121,6 +90,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
       name = "training_instance_user_ref",
       joinColumns = @JoinColumn(name = "training_instance_id"),
       inverseJoinColumns = @JoinColumn(name = "user_ref_id"))
+  @OrderBy("id")
   private Set<UserRef> organizers = new HashSet<>();
 
   @Column(name = "local_environment", nullable = false)

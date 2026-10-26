@@ -1,7 +1,5 @@
 package cz.cyberrange.platform.training.api.dto.traininginstance;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cz.cyberrange.platform.training.api.converters.LocalDateTimeUTCSerializer;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
@@ -16,20 +14,18 @@ public class TrainingInstanceFindAllResponseDTO {
   @Schema(example = "1")
   private Long id;
 
-  @Schema(example = "2016-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2016-10-19T08:23:54.000Z")
   private LocalDateTime startTime;
 
-  @Schema(example = "2017-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2017-10-19T08:23:54.000Z")
   private LocalDateTime endTime;
 
   @Schema(example = "Concluded Instance")
   private String title;
 
   /**
-   * Mapped through {@code TrainingDefinitionMapper.mapToDTO}; its {@code canBeArchived} is never
-   * patched afterward here, so it always carries that flag's default value of false
+   * The instance's definition with its real {@code instanceCount}; its {@code canBeArchived} is not
+   * computed here, so it always carries that flag's default value of false
    */
   private TrainingDefinitionDTO trainingDefinition;
 
@@ -47,8 +43,7 @@ public class TrainingInstanceFindAllResponseDTO {
   @Schema(example = "1")
   private Long poolId;
 
-  @Schema(example = "2017-10-19 10:23:54+02")
-  @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+  @Schema(example = "2017-10-19T08:23:54.000Z")
   private LocalDateTime lastEdited;
 
   @Schema(example = "John Doe")

@@ -1,9 +1,9 @@
 package cz.cyberrange.platform.training.persistence.model;
 
 import cz.cyberrange.platform.training.persistence.model.enums.SubmissionType;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,7 +25,7 @@ import lombok.ToString;
           "SELECT s FROM Submission s "
               + "JOIN FETCH s.trainingRun tr "
               + "WHERE s.type ='CORRECT' AND tr.id = :trainingRunId "
-              + "ORDER BY s.date"),
+              + "ORDER BY s.date, s.id"),
   @NamedQuery(
       name = "Submission.getCorrectSubmissionsOfTrainingInstance",
       query =
@@ -33,7 +33,7 @@ import lombok.ToString;
               + "JOIN FETCH s.trainingRun tr "
               + "JOIN FETCH tr.trainingInstance ti "
               + "WHERE s.type = 'CORRECT' AND ti.id = :trainingInstanceId "
-              + "ORDER BY tr.id, s.date"),
+              + "ORDER BY tr.id, s.date, s.id"),
   // Orders by pr.userRefId, the external user-and-group identifier, not the local UserRef
   // primary key.
   @NamedQuery(
@@ -44,7 +44,7 @@ import lombok.ToString;
               + "JOIN FETCH tr.trainingInstance ti "
               + "JOIN FETCH tr.participantRef pr "
               + "WHERE s.type = 'INCORRECT' AND ti.id = :trainingInstanceId "
-              + "ORDER BY pr.userRefId, s.date"),
+              + "ORDER BY pr.userRefId, s.date, s.id"),
   @NamedQuery(
       name = "Submission.getAllTimeProximitySubmissionsOfLevel",
       query =
@@ -53,7 +53,7 @@ import lombok.ToString;
               + "JOIN FETCH tr.trainingInstance ti "
               + "JOIN FETCH s.level l "
               + "WHERE s.type = 'CORRECT' AND ti.id = :trainingInstanceId AND l.id = :levelId "
-              + "ORDER BY s.date"),
+              + "ORDER BY s.date, s.id"),
   @NamedQuery(
       name = "Submission.getSubmissionsByLevelAndInstance",
       query =
@@ -62,7 +62,7 @@ import lombok.ToString;
               + "JOIN FETCH tr.trainingInstance ti "
               + "JOIN FETCH s.level l "
               + "WHERE l.id = :levelId AND ti.id = :trainingInstanceId "
-              + "ORDER BY tr.id, s.date")
+              + "ORDER BY tr.id, s.date, s.id")
 })
 public class Submission extends AbstractEntity<Long> implements Serializable {
 

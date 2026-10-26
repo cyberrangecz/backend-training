@@ -29,7 +29,7 @@ import org.springframework.data.domain.PageImpl;
  */
 @Mapper(
     componentModel = "spring",
-    uses = {EnumMapper.class, TrainingDefinitionMapper.class, UserRefMapper.class},
+    uses = {EnumMapper.class, TrainingDefinitionMapper.class},
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TrainingInstanceMapper extends ParentMapper {
   TrainingInstance mapToEntity(TrainingInstanceDTO dto);
