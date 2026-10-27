@@ -230,7 +230,7 @@ public class SandboxApiService {
       }
       return Optional.of(units.get(0));
     } catch (CustomWebClientException ex) {
-      if (ex.getStatusCode() == HttpStatus.CONFLICT) {
+      if (ex.getStatusCode().isSameCodeAs(HttpStatus.CONFLICT)) {
         return Optional.empty();
       }
       throw new MicroserviceApiException(
@@ -257,7 +257,7 @@ public class SandboxApiService {
               .bodyToMono(AllocationUnitInfo.class)
               .block());
     } catch (CustomWebClientException ex) {
-      if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
+      if (ex.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
         return Optional.empty();
       }
       throw new MicroserviceApiException(
@@ -314,7 +314,7 @@ public class SandboxApiService {
           .block();
       return true;
     } catch (CustomWebClientException ex) {
-      if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
+      if (ex.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
         return false;
       }
       throw new MicroserviceApiException(
