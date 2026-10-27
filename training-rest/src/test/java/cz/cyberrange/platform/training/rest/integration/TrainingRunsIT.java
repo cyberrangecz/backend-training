@@ -2248,8 +2248,8 @@ class TrainingRunsIT extends AbstractIntegrationTest {
 
   @Test
   @DisplayName(
-      "Listing correct answers returns one per training level in level order, resolving variant answers from answers-storage")
-  void getCorrectAnswers_organizer_returnsAnswerPerTrainingLevelInOrder() throws Exception {
+      "Listing correct answers returns one per training and test level in level order, resolving variant answers from answers-storage")
+  void getCorrectAnswers_organizer_returnsAnswerPerTrainingAndTestLevelInOrder() throws Exception {
     TrainingLevel variantLevel = seeder.variantTrainingLevel(definition, 4, "flag", "solution");
     TrainingRun run = runAt(trainingLevel, false);
     stubVariantAnswers(SANDBOX_ID, "flag", "variant-secret");
@@ -2257,17 +2257,29 @@ class TrainingRunsIT extends AbstractIntegrationTest {
     call(ORGANIZER_USER_REF_ID, ORGANIZER, get(path(run.getId(), "/answers")))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(jsonPath("$", hasSize(3)))
         .andExpect(jsonPath("$[0].level_id").value(trainingLevel.getId()))
         .andExpect(jsonPath("$[0].level_title").value("training level 1"))
         .andExpect(jsonPath("$[0].level_order").value(1))
+        .andExpect(jsonPath("$[0].level_type").value("TRAINING_LEVEL"))
         .andExpect(
             jsonPath("$[0].correct_answer").value(TrainingRunScenarioSeeder.TRAINING_LEVEL_ANSWER))
         .andExpect(jsonPath("$[0].variable_name").doesNotExist())
-        .andExpect(jsonPath("$[1].level_id").value(variantLevel.getId()))
-        .andExpect(jsonPath("$[1].level_order").value(4))
-        .andExpect(jsonPath("$[1].correct_answer").value("variant-secret"))
-        .andExpect(jsonPath("$[1].variable_name").value("flag"));
+        .andExpect(jsonPath("$[1].level_id").value(assessmentLevel.getId()))
+        .andExpect(jsonPath("$[1].level_order").value(3))
+        .andExpect(jsonPath("$[1].level_type").value("ASSESSMENT_LEVEL"))
+        .andExpect(jsonPath("$[1].correct_answer").doesNotExist())
+        .andExpect(jsonPath("$[1].question_correct_answers", hasSize(3)))
+        .andExpect(jsonPath("$[1].question_correct_answers[0].correct_answers[0]").value("alpha"))
+        .andExpect(jsonPath("$[1].question_correct_answers[1].correct_answers", hasSize(1)))
+        .andExpect(jsonPath("$[1].question_correct_answers[1].correct_answers[0]").value("red"))
+        .andExpect(
+            jsonPath("$[1].question_correct_answers[2].correct_answers[0]")
+                .value("statement -> second option"))
+        .andExpect(jsonPath("$[2].level_id").value(variantLevel.getId()))
+        .andExpect(jsonPath("$[2].level_order").value(4))
+        .andExpect(jsonPath("$[2].correct_answer").value("variant-secret"))
+        .andExpect(jsonPath("$[2].variable_name").value("flag"));
   }
 
   @Test
@@ -2294,7 +2306,7 @@ class TrainingRunsIT extends AbstractIntegrationTest {
 
     call(ADMINISTRATOR_USER_REF_ID, ADMINISTRATOR, get(path(run.getId(), "/answers")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[1].correct_answer").value("local-secret"));
+        .andExpect(jsonPath("$[2].correct_answer").value("local-secret"));
   }
 
   @Test
