@@ -23,8 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -39,10 +38,10 @@ import org.springframework.web.reactive.function.client.WebClientException;
  * A trainee holds at most one active sandbox at a time, across all instances; the sandbox service
  * enforces the same per pool.
  */
+@Slf4j
 @Service
 public class TraineeSandboxService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TraineeSandboxService.class);
   private static final String STAGE_FINISHED = "FINISHED";
   private static final String STAGE_FAILED = "FAILED";
 
@@ -257,11 +256,11 @@ public class TraineeSandboxService {
     try {
       sandboxApiService.requestCleanup(unitId);
     } catch (MicroserviceApiException | WebClientException ex) {
-      LOG.warn(
-          "Could not remove the sandbox of allocation unit {} of finished training run {}: {}",
+      log.warn(
+          "Could not remove the sandbox of allocation unit {} of finished training run {}",
           unitId,
           trainingRun.getId(),
-          ex.getMessage());
+          ex);
     }
   }
 

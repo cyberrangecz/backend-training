@@ -409,7 +409,7 @@ public class TrainingRunFacade {
     try {
       return traineeSandboxService.findOwnSandboxes(securityService.getOidcSub());
     } catch (MicroserviceApiException | WebClientException ex) {
-      LOG.warn("Could not list the sandboxes of the logged in user: {}", ex.getMessage());
+      LOG.warn("Could not list the sandboxes of the logged in user", ex);
       return List.of();
     }
   }
