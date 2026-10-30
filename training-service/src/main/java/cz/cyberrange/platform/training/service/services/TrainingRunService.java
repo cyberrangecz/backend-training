@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,9 @@ public class TrainingRunService {
 
   private static final Logger LOG = LoggerFactory.getLogger(TrainingRunService.class);
   private static final String X_REAL_IP_HEADER = "x-real-ip";
+
+  /** How many minutes after its end an instance still accepts its access token */
+  static final int ACCESS_TOKEN_END_GRACE_MINUTES = 2;
 
   private final TrainingRunRepository trainingRunRepository;
   private final AbstractLevelRepository abstractLevelRepository;
@@ -269,7 +273,7 @@ public class TrainingRunService {
     int maxLevelOrder =
         abstractLevelRepository.getCurrentMaxOrder(
             trainingRun.getCurrentLevel().getTrainingDefinition().getId());
-    if (!trainingRun.isLevelAnswered()) {
+    if (!isCurrentLevelDone(trainingRun)) {
       throw new EntityConflictException(
           new EntityErrorDetail(
               TrainingRun.class,
@@ -431,8 +435,24 @@ public class TrainingRunService {
   }
 
   /**
+   * Finds the running training run of the given training instance access token whose participant
+   * carries the given cross-service user reference id, whether or not a sandbox is assigned to it
+   * yet. Loads the run's training instance, participant reference and current level eagerly.
+   *
+   * @param accessToken the training instance access token
+   * @param participantRefId the cross-service user reference id of the participant
+   * @return the matching {@link TrainingRun}, empty when none matches
+   */
+  public Optional<TrainingRun> findUnfinishedTrainingRunOfUser(
+      String accessToken, Long participantRefId) {
+    return trainingRunRepository.findUnfinishedTrainingRunOfUser(accessToken, participantRefId);
+  }
+
+  /**
    * Finds the training instance carrying the given access token whose start time is in the past and
-   * whose end time is in the future, with its training definition loaded eagerly.
+   * whose end time is in the future, or at most {@value #ACCESS_TOKEN_END_GRACE_MINUTES} minutes in
+   * the past, with its training definition loaded eagerly. The grace period covers requests in
+   * flight when the instance ends, and clock skew.
    *
    * @param accessToken the training instance access token
    * @return the matching {@link TrainingInstance}
@@ -441,10 +461,11 @@ public class TrainingRunService {
    *     allocated
    */
   public TrainingInstance getTrainingInstanceForParticularAccessToken(String accessToken) {
+    LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
     TrainingInstance trainingInstance =
         trainingInstanceRepository
-            .findByStartTimeAfterAndEndTimeBeforeAndAccessToken(
-                LocalDateTime.now(Clock.systemUTC()), accessToken)
+            .findStartedByAccessTokenEndingAfter(
+                now, now.minusMinutes(ACCESS_TOKEN_END_GRACE_MINUTES), accessToken)
             .orElseThrow(
                 () ->
                     new EntityNotFoundException(
@@ -587,6 +608,32 @@ public class TrainingRunService {
    */
   public TrainingRun resumeTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    checkTrainingRunResumable(trainingRun);
+    if (!trainingRun.getTrainingInstance().isLocalEnvironment()
+        && trainingRun.getSandboxInstanceRefId() == null) {
+      throw new EntityConflictException(
+          new EntityErrorDetail(
+              TrainingRun.class,
+              "id",
+              trainingRunId.getClass(),
+              trainingRunId,
+              "Sandbox of this training run was already deleted, you have to start new training."));
+    }
+    auditEventsService.auditTrainingRunResumedAction(trainingRun);
+    return trainingRun;
+  }
+
+  /**
+   * Checks that a training run may be resumed, whether or not it has a sandbox: it is neither
+   * finished nor archived, its training instance has not ended yet, and, unless the instance is
+   * local, a sandbox pool is allocated to the instance.
+   *
+   * @param trainingRun the training run, with its training instance
+   * @throws EntityConflictException when the run is finished or archived, its training instance has
+   *     already ended, or its training instance has no sandbox pool allocated
+   */
+  public void checkTrainingRunResumable(TrainingRun trainingRun) {
+    Long trainingRunId = trainingRun.getId();
     TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
     if (trainingRun.getState().equals(TRState.FINISHED)
         || trainingRun.getState().equals(TRState.ARCHIVED)) {
@@ -616,18 +663,6 @@ public class TrainingRunService {
               trainingRunId,
               "The pool assignment of the appropriate training instance has been probably canceled. Please contact the organizer."));
     }
-
-    if (!trainingInstance.isLocalEnvironment() && trainingRun.getSandboxInstanceRefId() == null) {
-      throw new EntityConflictException(
-          new EntityErrorDetail(
-              TrainingRun.class,
-              "id",
-              trainingRunId.getClass(),
-              trainingRunId,
-              "Sandbox of this training run was already deleted, you have to start new training."));
-    }
-    auditEventsService.auditTrainingRunResumedAction(trainingRun);
-    return trainingRun;
   }
 
   /**
@@ -937,7 +972,7 @@ public class TrainingRunService {
               trainingRunId,
               "Cannot finish training run because current level is not last."));
     }
-    if (!trainingRun.isLevelAnswered()) {
+    if (!isCurrentLevelDone(trainingRun)) {
       throw new EntityConflictException(
           new EntityErrorDetail(
               TrainingRun.class,
@@ -955,6 +990,16 @@ public class TrainingRunService {
     }
     auditEventsService.auditTrainingRunEndedAction(trainingRun);
     return trainingRun;
+  }
+
+  /**
+   * Decides whether the run's current level is done: answered, or an info level, which needs no
+   * answer. {@link TrainingRun#setCurrentLevel} marks an info level answered only when it is handed
+   * the level itself; a Hibernate proxy of the level leaves the flag unset.
+   */
+  private static boolean isCurrentLevelDone(TrainingRun trainingRun) {
+    return trainingRun.isLevelAnswered()
+        || Hibernate.unproxy(trainingRun.getCurrentLevel()) instanceof InfoLevel;
   }
 
   /**

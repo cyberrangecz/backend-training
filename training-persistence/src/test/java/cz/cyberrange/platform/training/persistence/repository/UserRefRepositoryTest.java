@@ -44,4 +44,11 @@ public class UserRefRepositoryTest {
     assertTrue(users.contains(userRef1));
     assertTrue(users.contains(userRef3));
   }
+
+  @Test
+  public void lockByUserRefId() {
+    assertEquals(
+        userRef2, userRefRepository.lockByUserRefId(userRef2.getUserRefId()).orElseThrow());
+    assertTrue(userRefRepository.lockByUserRefId(4L).isEmpty());
+  }
 }

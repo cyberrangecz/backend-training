@@ -465,6 +465,18 @@ public class SecurityService {
   }
 
   /**
+   * Reads the subject claim of the bearer token carried by the current request. The sandbox service
+   * records it as the owner of a sandbox the logged in user allocates for themselves.
+   *
+   * @return the OIDC subject of the logged in user
+   */
+  public String getOidcSub() {
+    JwtAuthenticationToken authentication =
+        (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    return authentication.getToken().getSubject();
+  }
+
+  /**
    * Decides whether every one of the given users has a training run in an instance the logged in
    * user either has a training run in or organizes. A given user's own instances are collected from
    * their training runs alone; organizing is checked only for the logged in user, not for the given

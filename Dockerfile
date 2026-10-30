@@ -6,7 +6,8 @@ FROM maven:3.10.0-eclipse-temurin-25 AS build
 WORKDIR /app
 
 ARG PROJECT_ARTIFACT_ID
-ARG MAVEN_CLI_OPTS=EXTRA-OPTIONS
+# The settings define app-version, which the build needs.
+ARG MAVEN_CLI_OPTS="-s etc/ci_settings.xml"
 
 COPY pom.xml /app/pom.xml
 COPY etc/ci_settings.xml /app/etc/ci_settings.xml
@@ -17,8 +18,8 @@ COPY training-persistence /app/training-persistence
 COPY training-service /app/training-service
 COPY training-rest /app/training-rest
 
-# Build JAR file
-RUN mvn -ntp -q clean install -DskipTests -DskipChecks=true $MAVEN_CLI_OPTS && \
+# Build JAR file. Failsafe 3.6+ ignores -DskipTests, -DskipITs skips the Testcontainers ITs (no Docker here).
+RUN mvn -ntp -q clean install -DskipTests -DskipITs -DskipChecks=true $MAVEN_CLI_OPTS && \
     cp /app/training-rest/target/$PROJECT_ARTIFACT_ID-*.jar /app/$PROJECT_ARTIFACT_ID.jar
 
 ############ RUNNABLE STAGE ############

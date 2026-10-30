@@ -7,8 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceBasicDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
+import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
+import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingInstanceMapper;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for the basic-view mapping methods of {@link TrainingInstanceMapper}.
@@ -139,6 +143,40 @@ class TrainingInstanceMapperTest {
     @DisplayName("should map null list to null")
     void shouldMapNullListToNull() {
       assertNull(sut.mapToBasicDtoList(null));
+    }
+  }
+
+  @Nested
+  @DisplayName("managed")
+  class Managed {
+
+    @Test
+    @DisplayName("should carry managed from a creation request to the entity")
+    void shouldMapManagedFromCreateDto() {
+      TrainingInstanceCreateDTO dto = new TrainingInstanceCreateDTO();
+      dto.setManaged(true);
+
+      assertTrue(sut.mapCreateToEntity(dto).isManaged());
+    }
+
+    @Test
+    @DisplayName("should carry managed from an update to the entity")
+    void shouldMapManagedFromUpdateDto() {
+      TrainingInstanceUpdateDTO dto = new TrainingInstanceUpdateDTO();
+      dto.setManaged(true);
+
+      assertTrue(sut.mapUpdateToEntity(dto).isManaged());
+    }
+
+    @Test
+    @DisplayName("should list managed with each instance")
+    void shouldMapManagedToFindAllViewDto() {
+      ReflectionTestUtils.setField(
+          sut, "trainingDefinitionMapper", Mappers.getMapper(TrainingDefinitionMapper.class));
+      TrainingInstance entity = new TrainingInstance();
+      entity.setManaged(true);
+
+      assertTrue(sut.mapToFindAllViewDTO(entity).isManaged());
     }
   }
 }

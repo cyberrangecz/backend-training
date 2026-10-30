@@ -1,9 +1,14 @@
 package cz.cyberrange.platform.training.persistence.repository;
 
 import cz.cyberrange.platform.training.persistence.model.UserRef;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -35,6 +40,22 @@ public interface UserRefRepository
    * @return the {@link UserRef}, empty when none matches
    */
   Optional<UserRef> findUserByUserRefId(@Param("userRefId") Long userRefId);
+
+  /**
+   * Locks the row of the user whose cross-service {@code user_ref_id} column equals the given value
+   * until the current transaction ends, so that transactions acting for the same user run one at a
+   * time. Does not wait for a lock another transaction holds, but fails instead. Matches {@link
+   * UserRef#getUserRefId()}, not the local primary key.
+   *
+   * @param userRefId the user ref id
+   * @return the locked {@link UserRef}, empty when none matches
+   * @throws org.springframework.dao.PessimisticLockingFailureException when another transaction
+   *     holds the lock
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "0"))
+  @Query("SELECT u FROM UserRef u WHERE u.userRefId = :userRefId")
+  Optional<UserRef> lockByUserRefId(@Param("userRefId") Long userRefId);
 
   /**
    * Finds the cross-service {@code userRefId} of every participant of the given training instance.

@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
     properties = {
       "spring.flyway.enabled=true",
       "spring.jpa.hibernate.ddl-auto=validate",
+      "single.sandbox.per.user.enabled=true",
       "server.port=8083",
       "microservice.name=training",
       "crczp.identity.providers[0].issuer=http://localhost/integration-test-issuer"
