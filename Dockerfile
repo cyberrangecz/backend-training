@@ -18,8 +18,8 @@ COPY training-persistence /app/training-persistence
 COPY training-service /app/training-service
 COPY training-rest /app/training-rest
 
-# Build JAR file
-RUN mvn -ntp -q clean install -DskipTests -DskipChecks=true $MAVEN_CLI_OPTS && \
+# Build JAR file. Failsafe 3.6+ ignores -DskipTests, -DskipITs skips the Testcontainers ITs (no Docker here).
+RUN mvn -ntp -q clean install -DskipTests -DskipITs -DskipChecks=true $MAVEN_CLI_OPTS && \
     cp /app/training-rest/target/$PROJECT_ARTIFACT_ID-*.jar /app/$PROJECT_ARTIFACT_ID.jar
 
 ############ RUNNABLE STAGE ############
