@@ -83,9 +83,9 @@ public class TrainingInstanceCreateDTO {
       description =
           "True when trainees work only in sandboxes the organizer allocated in the pool. When"
               + " false and the deployment lets trainees allocate sandboxes, each trainee allocates"
-              + " their own.",
-      example = "false")
-  private boolean managed;
+              + " their own. Defaults to true.",
+      example = "true")
+  private boolean managed = true;
 
   public LocalDateTime getStartTime() {
     return startTime;

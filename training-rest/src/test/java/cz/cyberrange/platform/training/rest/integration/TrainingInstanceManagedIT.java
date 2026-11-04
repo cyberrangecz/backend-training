@@ -1,15 +1,18 @@
 package cz.cyberrange.platform.training.rest.integration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceCreateDTO;
 import cz.cyberrange.platform.training.api.dto.traininginstance.TrainingInstanceUpdateDTO;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
 import cz.cyberrange.platform.training.persistence.model.TrainingInstance;
@@ -32,8 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Exercises the {@code managed} flag of training instances through the secured application: how it
- * is reported, and how an update keeps, changes or refuses to change it.
+ * Exercises the {@code managed} flag of training instances through the secured application: what a
+ * create sets, how it is reported, and how an update keeps, changes or refuses to change it.
  */
 @Transactional
 class TrainingInstanceManagedIT extends AbstractIntegrationTest {
@@ -49,6 +52,7 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
       "Whether the running or finished instance is managed cannot be changed. Only title and end"
           + " time can be updated.";
   private static final long ORGANIZER_REF_ID = 1000L;
+  private static final long POOL_ID = 5L;
 
   private final JsonMapper jsonMapper = new JsonMapper();
 
@@ -132,6 +136,35 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("createTrainingInstance without managed creates a managed instance")
+  void createTrainingInstance_withoutManaged_createsManagedInstance() throws Exception {
+    stubPoolLock();
+    perform(post(BASE_PATH), createBody(null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.managed").value(true));
+  }
+
+  @Test
+  @DisplayName("createTrainingInstance with managed false creates a not managed instance")
+  void createTrainingInstance_withManagedFalse_createsNotManagedInstance() throws Exception {
+    stubPoolLock();
+    perform(post(BASE_PATH), createBody(false))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.managed").value(false));
+  }
+
+  @Test
+  @DisplayName("A create request omitting managed deserializes it to true")
+  void createRequest_omittingManaged_deserializesToTrue() throws Exception {
+    String requestBody = jsonMapper.writeValueAsString(createBody(null));
+
+    TrainingInstanceCreateDTO parsed =
+        jsonMapper.readValue(requestBody, TrainingInstanceCreateDTO.class);
+
+    assertThat(parsed.isManaged()).isTrue();
+  }
+
+  @Test
   @DisplayName("updateTrainingInstance without managed keeps the flag of a future instance")
   void updateTrainingInstance_withoutManagedOnFutureInstance_keepsManaged() throws Exception {
     perform(put(BASE_PATH), updateBody(managedFutureInstance, null))
@@ -193,6 +226,35 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
         jsonMapper.readValue(requestBody, TrainingInstanceUpdateDTO.class);
 
     assertThat(parsed.getManaged()).isNull();
+  }
+
+  private void stubPoolLock() {
+    externalServices.stubFor(
+        WireMock.post(
+                urlPathEqualTo(
+                    IntegrationTestInfrastructure.SANDBOX_SERVICE_PATH
+                        + "/pools/"
+                        + POOL_ID
+                        + "/locks"))
+            .willReturn(okJson("{\"id\": 1, \"pool_id\": " + POOL_ID + "}")));
+  }
+
+  private Map<String, Object> createBody(Boolean managed) {
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("title", "Created instance");
+    body.put("access_token", "created");
+    body.put("start_time", isoUtc(TrainingInstanceDataSeeder.now().plusDays(10)));
+    body.put("end_time", isoUtc(TrainingInstanceDataSeeder.now().plusDays(11)));
+    body.put(
+        "training_definition_id", managedFutureInstance.getTrainingDefinition().getId());
+    body.put("local_environment", false);
+    body.put("pool_id", POOL_ID);
+    body.put("show_stepper_bar", true);
+    body.put("backward_mode", false);
+    if (managed != null) {
+      body.put("managed", managed);
+    }
+    return body;
   }
 
   private Map<String, Object> updateBody(TrainingInstance instance, Boolean managed) {
