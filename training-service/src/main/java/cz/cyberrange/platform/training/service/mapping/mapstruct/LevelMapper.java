@@ -66,13 +66,7 @@ import org.mapstruct.SubclassMapping;
  */
 @Mapper(
     componentModel = "spring",
-    uses = {
-      EnumMapper.class,
-      HintMapper.class,
-      AttachmentMapper.class,
-      QuestionMapper.class,
-      MitreTechniqueMapper.class
-    },
+    uses = {EnumMapper.class, HintMapper.class, QuestionMapper.class, MitreTechniqueMapper.class},
     nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
     subclassExhaustiveStrategy = SubclassExhaustiveStrategy.RUNTIME_EXCEPTION,
     unmappedTargetPolicy = ReportingPolicy.IGNORE)
@@ -272,8 +266,8 @@ public interface LevelMapper extends ParentMapper {
    * Maps an imported training level into a new entity, copying title, order, estimated duration,
    * minimal possible solve time, score, answer, answer variable name, content, solution, solution
    * penalty flag, incorrect answer limit, variant answers flag, commands-required flag, hints,
-   * attachments, MITRE techniques, and expected commands. Primary key and training definition
-   * association carry no matching source field and are left unset.
+   * MITRE techniques, and expected commands. Primary key and training definition association carry
+   * no matching source field and are left unset.
    *
    * @param dto the imported training level to map
    * @return the mapped training level entity
@@ -291,8 +285,8 @@ public interface LevelMapper extends ParentMapper {
    * Maps a training level to its export DTO, labelled with the training level type, copying title,
    * order, estimated duration, minimal possible solve time, score, answer, answer variable name,
    * content, solution, solution penalty flag, incorrect answer limit, variant answers flag,
-   * commands-required flag, hints, attachments, and expected commands. Each MITRE technique is
-   * mapped with its id left unset.
+   * commands-required flag, hints, and expected commands. Each MITRE technique is mapped with its
+   * id left unset.
    *
    * @param entity the training level to map
    * @return the exported training level

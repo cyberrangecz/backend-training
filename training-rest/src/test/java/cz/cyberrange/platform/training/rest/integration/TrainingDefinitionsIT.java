@@ -728,7 +728,7 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
     return """
         {"title": "Renamed", "description": "New description",
          "prerequisites": ["New prerequisite"], "outcomes": ["New outcome"],
-         "version": %d, "levels": %s%s}
+         "version": %d, "materials": [], "levels": %s%s}
         """
         .formatted(version, levelsJson, additionalFields);
   }
@@ -1718,21 +1718,6 @@ class TrainingDefinitionsIT extends AbstractIntegrationTest {
       assertThat(copy.<Number>read("$.levels[4].max_score")).isEqualTo(1);
       assertThat(listAt(copy, "$.levels[4].hints[*].hint_penalty")).containsExactly(5);
       assertThat(listAt(copy, "$.levels[4].hints[*].title")).containsExactly("Costly hint");
-    }
-
-    @Test
-    @DisplayName("the attachments of a training level are copied onto the copied level")
-    void cloneDefinition_levelHasAttachment_copiesAttachmentOntoCopiedLevel() {
-      SeededDefinition source =
-          seedFourLevelDefinition("Source", TDState.RELEASED, OTHER_DESIGNER_REF_ID);
-      Long sourceLevelId = seeder.trainingLevelWithAttachment(source.id(), 4, "Network diagram");
-
-      DocumentContext copy = respond(postAs(administrator(), CLONE, source.id()), HttpStatus.OK);
-
-      Long copiedLevelId = copy.<Number>read("$.levels[4].id").longValue();
-      assertThat(copiedLevelId).isNotEqualTo(sourceLevelId);
-      assertThat(seeder.attachmentContents(copiedLevelId)).containsExactly("Network diagram");
-      assertThat(seeder.attachmentContents(sourceLevelId)).containsExactly("Network diagram");
     }
 
     @Test

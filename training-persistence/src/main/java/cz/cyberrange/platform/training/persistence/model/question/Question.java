@@ -38,7 +38,7 @@ public class Question implements Serializable {
   private QuestionType questionType;
 
   /** The question's prompt, shown to the participant */
-  @Column(name = "text")
+  @Column(name = "text", columnDefinition = "TEXT")
   private String text;
 
   /**

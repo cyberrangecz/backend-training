@@ -6,7 +6,6 @@ import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.Attachment;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.MitreTechnique;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
@@ -18,7 +17,6 @@ import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchi
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionChoice;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
-import cz.cyberrange.platform.training.persistence.repository.AttachmentRepository;
 import cz.cyberrange.platform.training.persistence.repository.HintRepository;
 import cz.cyberrange.platform.training.persistence.repository.MitreTechniqueRepository;
 import java.util.Collection;
@@ -50,27 +48,23 @@ public class TrainingDefinitionLevelsService {
   private final AbstractLevelRepository abstractLevelRepository;
   private final MitreTechniqueRepository mitreTechniqueRepository;
   private final HintRepository hintRepository;
-  private final AttachmentRepository attachmentRepository;
 
   /**
-   * Creates the service over the repositories of the levels, their hints and attachments, and the
-   * MITRE techniques they reference.
+   * Creates the service over the repositories of the levels, their hints, and the MITRE techniques
+   * they reference.
    *
    * @param abstractLevelRepository the repository of levels of every type
    * @param mitreTechniqueRepository the MITRE technique repository
    * @param hintRepository the hint repository
-   * @param attachmentRepository the attachment repository
    */
   @Autowired
   public TrainingDefinitionLevelsService(
       AbstractLevelRepository abstractLevelRepository,
       MitreTechniqueRepository mitreTechniqueRepository,
-      HintRepository hintRepository,
-      AttachmentRepository attachmentRepository) {
+      HintRepository hintRepository) {
     this.abstractLevelRepository = abstractLevelRepository;
     this.mitreTechniqueRepository = mitreTechniqueRepository;
     this.hintRepository = hintRepository;
-    this.attachmentRepository = attachmentRepository;
   }
 
   /**
@@ -81,8 +75,7 @@ public class TrainingDefinitionLevelsService {
    * its id only when it belongs to the stored level or question it is sent under, and is created
    * anew otherwise; a MITRE technique is matched by its key against the stored ones. The questions
    * of an assessment and their choices, statements and options take their list positions as order.
-   * The attachments of a created training level are stored and linked to it. The definition's
-   * estimated duration becomes the sum of the levels' estimated durations.
+   * The definition's estimated duration becomes the sum of the levels' estimated durations.
    *
    * @param trainingDefinition the persisted definition whose levels are written
    * @param levels the levels the definition holds afterwards, in presentation order; each is saved
@@ -192,7 +185,7 @@ public class TrainingDefinitionLevelsService {
 
   /**
    * Completes one level of the list from its stored counterpart and the checks of its type, then
-   * saves it, together with the attachments of a new training level.
+   * saves it.
    *
    * @param level the level to save, in place
    * @param storedLevel the stored level it replaces, or null for a new level
@@ -206,28 +199,12 @@ public class TrainingDefinitionLevelsService {
       level.setMinimalPossibleSolveTime(storedLevel.getMinimalPossibleSolveTime());
     }
     abstractLevelRepository.save(level);
-    if (storedLevel == null && level instanceof TrainingLevel trainingLevel) {
-      saveNewAttachments(trainingLevel);
-    }
   }
 
   /**
-   * Stores the attachments of a newly saved training level, each linked to the level.
-   *
-   * @param trainingLevel the saved training level whose attachments are stored
-   */
-  private void saveNewAttachments(TrainingLevel trainingLevel) {
-    Set<Attachment> attachments = trainingLevel.getAttachments();
-    for (Attachment attachment : attachments) {
-      attachment.setTrainingLevel(trainingLevel);
-    }
-    attachmentRepository.saveAll(attachments);
-  }
-
-  /**
-   * Keeps the stored attachments of a replaced training level, keeps only its own hint ids, checks
-   * the hint penalties and the answer fields, sorts the hints by their order, links them back to
-   * the level and matches its MITRE techniques against the stored ones.
+   * Keeps only the own hint ids of a training level, checks the hint penalties and the answer
+   * fields, sorts the hints by their order, links them back to the level and matches its MITRE
+   * techniques against the stored ones.
    *
    * @param trainingLevel the training level to complete
    * @param storedLevel the stored training level it replaces, or null for a new level
@@ -236,7 +213,6 @@ public class TrainingDefinitionLevelsService {
    */
   private void completeTrainingLevel(TrainingLevel trainingLevel, TrainingLevel storedLevel) {
     if (storedLevel != null) {
-      trainingLevel.setAttachments(new HashSet<>(storedLevel.getAttachments()));
       storedLevel.detachMitreTechniques();
     }
     keepOwnedIds(

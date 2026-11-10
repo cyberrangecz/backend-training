@@ -22,7 +22,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Schema(description = "A training level to create, the task a trainee solves")
-@JsonIgnoreProperties({"reference_solution", "order"})
+@JsonIgnoreProperties({"reference_solution", "order", "attachments"})
 public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
 
   /**
@@ -70,10 +70,6 @@ public class TrainingLevelImportDTO extends AbstractLevelImportDTO {
   @Max(value = 100, message = "{trainingLevel.incorrectAnswerLimit.Max.message}")
   @JsonAlias({"incorrect_flag_limit"})
   private Integer incorrectAnswerLimit;
-
-  @Valid
-  @Schema(example = "[]")
-  private List<AttachmentImportDTO> attachments;
 
   /** Caps the total penalty the level's {@link #hints} may carry; see {@link #hints} */
   @Schema(

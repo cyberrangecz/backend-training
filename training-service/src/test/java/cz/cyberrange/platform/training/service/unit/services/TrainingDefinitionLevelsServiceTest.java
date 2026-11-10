@@ -20,7 +20,6 @@ import cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityExcepti
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.Attachment;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.MitreTechnique;
@@ -33,7 +32,6 @@ import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchi
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.model.question.QuestionChoice;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
-import cz.cyberrange.platform.training.persistence.repository.AttachmentRepository;
 import cz.cyberrange.platform.training.persistence.repository.HintRepository;
 import cz.cyberrange.platform.training.persistence.repository.MitreTechniqueRepository;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionLevelsService;
@@ -42,13 +40,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -61,8 +56,6 @@ public class TrainingDefinitionLevelsServiceTest {
   @Mock private AbstractLevelRepository abstractLevelRepository;
   @Mock private MitreTechniqueRepository mitreTechniqueRepository;
   @Mock private HintRepository hintRepository;
-  @Mock private AttachmentRepository attachmentRepository;
-  @Captor private ArgumentCaptor<Iterable<Attachment>> attachmentsCaptor;
 
   private TrainingDefinitionLevelsService levelsService;
   private TrainingDefinition definition;
@@ -71,10 +64,7 @@ public class TrainingDefinitionLevelsServiceTest {
   void init() {
     levelsService =
         new TrainingDefinitionLevelsService(
-            abstractLevelRepository,
-            mitreTechniqueRepository,
-            hintRepository,
-            attachmentRepository);
+            abstractLevelRepository, mitreTechniqueRepository, hintRepository);
     definition = new TrainingDefinition();
     definition.setId(DEFINITION_ID);
   }
@@ -127,12 +117,6 @@ public class TrainingDefinitionLevelsServiceTest {
     hint.setHintPenalty(penalty);
     hint.setOrder(order);
     return hint;
-  }
-
-  private static Attachment attachment(String content) {
-    Attachment attachment = new Attachment();
-    attachment.setContent(content);
-    return attachment;
   }
 
   private static MitreTechnique technique(Long id, String techniqueKey) {
@@ -302,45 +286,6 @@ public class TrainingDefinitionLevelsServiceTest {
     levelsService.replaceLevels(definition, List.of(sentInfo));
 
     assertEquals(42L, sentInfo.getMinimalPossibleSolveTime());
-  }
-
-  @Test
-  void replaceLevels_trainingLevelReplaced_keepsStoredAttachments() {
-    TrainingLevel storedTraining = trainingLevel(6L, 20);
-    Attachment attachment = new Attachment();
-    attachment.setId(9L);
-    attachment.setContent("https://attachment");
-    storedTraining.addAttachment(attachment);
-    givenStoredLevels(storedTraining);
-    TrainingLevel sentTraining = trainingLevel(6L, 20);
-
-    levelsService.replaceLevels(definition, List.of(sentTraining));
-
-    assertEquals(Set.of(attachment), sentTraining.getAttachments());
-    then(attachmentRepository).shouldHaveNoInteractions();
-  }
-
-  @Test
-  void replaceLevels_newTrainingLevelWithAttachments_savesThemLinkedToLevel() {
-    givenStoredLevels();
-    TrainingLevel sentTraining = trainingLevel(null, 20);
-    sentTraining.addAttachment(attachment("https://first"));
-    sentTraining.addAttachment(attachment("https://second"));
-
-    levelsService.replaceLevels(definition, List.of(sentTraining));
-
-    InOrder saveOrder = inOrder(abstractLevelRepository, attachmentRepository);
-    saveOrder.verify(abstractLevelRepository).save(sentTraining);
-    saveOrder.verify(attachmentRepository).saveAll(attachmentsCaptor.capture());
-    List<Attachment> savedAttachments = new ArrayList<>();
-    attachmentsCaptor.getValue().forEach(savedAttachments::add);
-    assertEquals(
-        Set.of("https://first", "https://second"),
-        savedAttachments.stream().map(Attachment::getContent).collect(Collectors.toSet()));
-    for (Attachment savedAttachment : savedAttachments) {
-      assertSame(sentTraining, savedAttachment.getTrainingLevel());
-    }
-    assertEquals(new HashSet<>(savedAttachments), sentTraining.getAttachments());
   }
 
   @Test

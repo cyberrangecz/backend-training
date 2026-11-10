@@ -62,7 +62,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
       HintMapperImpl.class,
       TrainingRunMapperImpl.class,
       QuestionMapperImpl.class,
-      AttachmentMapperImpl.class,
       MitreTechniqueMapperImpl.class
     })
 public class TrainingRunFacadeTest {

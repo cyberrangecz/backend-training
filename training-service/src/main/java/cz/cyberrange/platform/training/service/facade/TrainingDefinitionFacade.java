@@ -4,6 +4,12 @@ import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentDownloadDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentListDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentMetadataDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentPosterDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentSummaryDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.TrainingMaterialDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintBasicDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.AbstractTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
@@ -36,6 +42,9 @@ import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import cz.cyberrange.platform.training.service.services.UserService;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentReader;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentService;
+import cz.cyberrange.platform.training.service.services.attachment.SuppliedAttachment;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -67,7 +76,18 @@ public class TrainingDefinitionFacade {
           + " T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ORGANIZER)"
           + " and @securityService.isVisibleTrainingDefinition(#trainingDefinitionId))";
 
+  /**
+   * Admits whoever {@link #VISIBLE_DEFINITION_TO_DESIGNER_OR_ORGANIZER} admits, and a user with a
+   * training run in an instance of the definition named by the {@code trainingDefinitionId}
+   * argument.
+   */
+  private static final String VISIBLE_DEFINITION_TO_ITS_PARTICIPANT =
+      VISIBLE_DEFINITION_TO_DESIGNER_OR_ORGANIZER
+          + " or @securityService.participatesInTrainingDefinitions({#trainingDefinitionId})";
+
   private final TrainingDefinitionService trainingDefinitionService;
+  private final DefinitionAttachmentReader definitionAttachmentReader;
+  private final DefinitionAttachmentService definitionAttachmentService;
   private final UserService userService;
   private final SecurityService securityService;
   private final TrainingDefinitionMapper trainingDefinitionMapper;
@@ -78,6 +98,8 @@ public class TrainingDefinitionFacade {
    * Instantiates a new Training definition facade.
    *
    * @param trainingDefinitionService the training definition service
+   * @param definitionAttachmentReader the reader of the files a definition links to
+   * @param definitionAttachmentService the keeper of the links between a definition and its files
    * @param trainingDefMapper the training def mapper
    * @param levelMapper the level mapper
    * @param userService the user service
@@ -86,12 +108,16 @@ public class TrainingDefinitionFacade {
   @Autowired
   public TrainingDefinitionFacade(
       TrainingDefinitionService trainingDefinitionService,
+      DefinitionAttachmentReader definitionAttachmentReader,
+      DefinitionAttachmentService definitionAttachmentService,
       UserService userService,
       SecurityService securityService,
       TrainingDefinitionMapper trainingDefMapper,
       LevelMapper levelMapper,
       HintMapper hintMapper) {
     this.trainingDefinitionService = trainingDefinitionService;
+    this.definitionAttachmentReader = definitionAttachmentReader;
+    this.definitionAttachmentService = definitionAttachmentService;
     this.userService = userService;
     this.securityService = securityService;
     this.trainingDefinitionMapper = trainingDefMapper;
@@ -290,16 +316,27 @@ public class TrainingDefinitionFacade {
    * Creates a new training definition together with its levels, assigning the requesting user as an
    * author.
    *
-   * @param trainingDefinition the definition to create, its levels in presentation order
+   * @param trainingDefinition the definition to create, its levels in presentation order and its
+   *     materials
+   * @param suppliedFiles the files that came with the request, possibly none; the ones that are
+   *     materials or that level content references are stored and linked to the definition
+   * @param keepUnresolvedReferences whether level content may reference a file that was neither
+   *     supplied nor stored, which then stays referenced without a link
    * @return the created definition together with its levels, {@link
    *     TrainingDefinitionWithLevelsDTO}
-   * @throws BadRequestException when a level carries an id or fails a content check
+   * @throws BadRequestException when a level carries an id or fails a content check, or the content
+   *     references or a material names a file that was neither supplied nor stored
+   * @throws cz.cyberrange.platform.training.api.exceptions.PayloadTooLargeException when the linked
+   *     files exceed the budget of a definition
    * @throws cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException when a
    *     training level's hint penalties exceed its maximal score
    */
   @IsDesignerOrAdmin
   @TransactionalWO
-  public TrainingDefinitionWithLevelsDTO create(TrainingDefinitionCreateDTO trainingDefinition) {
+  public TrainingDefinitionWithLevelsDTO create(
+      TrainingDefinitionCreateDTO trainingDefinition,
+      Collection<SuppliedAttachment> suppliedFiles,
+      boolean keepUnresolvedReferences) {
     TrainingDefinition newTrainingDefinition =
         trainingDefinitionMapper.mapCreateToEntity(trainingDefinition);
     TrainingDefinition createdTrainingDefinition =
@@ -308,6 +345,11 @@ public class TrainingDefinitionFacade {
             trainingDefinition.getLevels().stream()
                 .map(levelMapper::mapCreateToEntity)
                 .collect(Collectors.toList()));
+    definitionAttachmentService.synchronizeLinks(
+        createdTrainingDefinition,
+        trainingDefinition.getMaterials(),
+        suppliedFiles,
+        keepUnresolvedReferences);
     return mapToDTOWithoutInstances(createdTrainingDefinition);
   }
 
@@ -320,14 +362,22 @@ public class TrainingDefinitionFacade {
    *
    * @param definitionId id of the definition to update
    * @param trainingDefinitionUpdateDTO the new content and levels, with the version it was made on
+   * @param suppliedFiles the files that came with the request, possibly none; the ones that are
+   *     materials or that level content references are stored and linked to the definition, and
+   *     links to files that are neither are removed
+   * @param keepUnresolvedReferences whether level content may reference a file that was neither
+   *     supplied nor stored, which then stays referenced without a link
    * @return the updated definition together with its levels, its new version, its instance count
    *     and the flag telling whether it can be archived, {@link TrainingDefinitionWithLevelsDTO}
    * @throws EntityNotFoundException when no training definition with the given id exists, or a
    *     level id names no level of the definition
    * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED}, already
    *     has a training instance, or carries another version
-   * @throws BadRequestException when a level id repeats, a level would change its type, or a level
-   *     fails a content check
+   * @throws BadRequestException when a level id repeats, a level would change its type, a level
+   *     fails a content check, or the content references (unless kept) a file that was neither supplied nor
+   *     stored
+   * @throws cz.cyberrange.platform.training.api.exceptions.PayloadTooLargeException when the linked
+   *     files exceed the budget of a definition
    * @throws cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException when a
    *     training level's hint penalties exceed its maximal score
    */
@@ -336,7 +386,10 @@ public class TrainingDefinitionFacade {
           + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
   @TransactionalWO
   public TrainingDefinitionWithLevelsDTO update(
-      Long definitionId, TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
+      Long definitionId,
+      TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO,
+      Collection<SuppliedAttachment> suppliedFiles,
+      boolean keepUnresolvedReferences) {
     TrainingDefinition updatedTrainingDefinition =
         trainingDefinitionService.update(
             definitionId,
@@ -345,6 +398,11 @@ public class TrainingDefinitionFacade {
             trainingDefinitionUpdateDTO.getLevels().stream()
                 .map(levelMapper::mapUpdateToEntity)
                 .collect(Collectors.toList()));
+    definitionAttachmentService.synchronizeLinks(
+        updatedTrainingDefinition,
+        trainingDefinitionUpdateDTO.getMaterials(),
+        suppliedFiles,
+        keepUnresolvedReferences);
     return addArchivingInfo(
         trainingDefinitionMapper.mapToDTOWithLevels(
             updatedTrainingDefinition, gatherLevels(definitionId)));
@@ -601,5 +659,123 @@ public class TrainingDefinitionFacade {
       UserRef userRef = userService.createOrGetUserRef(author.getUserRefId());
       trainingDefinition.addAuthor(userRef);
     }
+  }
+
+  /**
+   * Lists the training materials of a definition with the budget and the bytes used. Open to the
+   * same users as {@link #findAttachmentMetadata(Long, String)}.
+   *
+   * @param trainingDefinitionId id of the training definition
+   * @return the materials, the budget of a definition and the bytes the definition uses
+   * @throws EntityNotFoundException when no training definition has the given id
+   */
+  @PreAuthorize(VISIBLE_DEFINITION_TO_ITS_PARTICIPANT)
+  @TransactionalRO
+  public AttachmentListDTO listAttachments(Long trainingDefinitionId) {
+    trainingDefinitionService.findById(trainingDefinitionId);
+    return definitionAttachmentReader.list(trainingDefinitionId);
+  }
+
+  /**
+   * Describes an attachment file of a training definition without reading the file bytes. Open to
+   * an administrator, to a designer or organizer who may see the definition, and to a user with a
+   * training run in an instance of it.
+   *
+   * @param trainingDefinitionId id of the training definition using the file
+   * @param hash the hash of the file
+   * @return the file name the definition gives the file, with its media type and size
+   * @throws EntityNotFoundException when no training definition has the given id, or it does not
+   *     use a file with that hash
+   */
+  @PreAuthorize(VISIBLE_DEFINITION_TO_ITS_PARTICIPANT)
+  @TransactionalRO
+  public AttachmentMetadataDTO findAttachmentMetadata(Long trainingDefinitionId, String hash) {
+    trainingDefinitionService.findById(trainingDefinitionId);
+    return definitionAttachmentReader.findMetadata(trainingDefinitionId, hash);
+  }
+
+  /**
+   * Reads an attachment file of a training definition. Open to the same users as {@link
+   * #findAttachmentMetadata(Long, String)}.
+   *
+   * @param trainingDefinitionId id of the training definition using the file
+   * @param hash the hash of the file
+   * @return the file bytes with their description
+   * @throws EntityNotFoundException when no training definition has the given id, or it does not
+   *     use a file with that hash
+   */
+  @PreAuthorize(VISIBLE_DEFINITION_TO_ITS_PARTICIPANT)
+  @TransactionalRO
+  public AttachmentDownloadDTO downloadAttachment(Long trainingDefinitionId, String hash) {
+    trainingDefinitionService.findById(trainingDefinitionId);
+    return definitionAttachmentReader.read(trainingDefinitionId, hash);
+  }
+
+  /**
+   * Reads the poster image of an attachment file of a training definition. Open to the same users
+   * as {@link #findAttachmentMetadata(Long, String)}.
+   *
+   * @param trainingDefinitionId id of the training definition using the file
+   * @param hash the hash of the file
+   * @return the poster image with its media type
+   * @throws EntityNotFoundException when no training definition has the given id, it does not use a
+   *     file with that hash, or the file has no poster
+   */
+  @PreAuthorize(VISIBLE_DEFINITION_TO_ITS_PARTICIPANT)
+  @TransactionalRO
+  public AttachmentPosterDTO downloadAttachmentPoster(Long trainingDefinitionId, String hash) {
+    trainingDefinitionService.findById(trainingDefinitionId);
+    return definitionAttachmentReader.readPoster(trainingDefinitionId, hash);
+  }
+
+  /**
+   * Links a file the service already stores to an unreleased definition as a training material.
+   * Reachable only by an administrator or by a designer of the definition.
+   *
+   * @param definitionId id of the definition
+   * @param material the hash of the stored file and the name the definition gives it
+   * @return the linked material
+   * @throws EntityNotFoundException when no training definition has the given id, or no file with
+   *     that hash is stored
+   * @throws cz.cyberrange.platform.training.api.exceptions.EntityConflictException when the
+   *     definition is not unreleased or already has a training instance
+   * @throws cz.cyberrange.platform.training.api.exceptions.PayloadTooLargeException when the linked
+   *     files exceed the budget of a definition
+   */
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+  @TransactionalWO
+  public AttachmentSummaryDTO linkAttachment(Long definitionId, TrainingMaterialDTO material) {
+    TrainingDefinition definition = trainingDefinitionService.findUpdatable(definitionId);
+    definitionAttachmentService.linkStored(definition, material.hash(), material.fileName());
+    return definitionAttachmentReader.findSummary(definitionId, material.hash());
+  }
+
+  /**
+   * Stores an uploaded file and links it to an unreleased definition as a training material.
+   * Reachable only by an administrator or by a designer of the definition.
+   *
+   * @param definitionId id of the definition
+   * @param file the uploaded file with its media metadata
+   * @param claimedHash the hash the uploader computed for the file
+   * @return the linked material
+   * @throws EntityNotFoundException when no training definition has the given id
+   * @throws cz.cyberrange.platform.training.api.exceptions.EntityConflictException when the
+   *     definition is not unreleased or already has a training instance
+   * @throws BadRequestException when the claimed hash is not the hash of the bytes, or the media
+   *     metadata is invalid
+   * @throws cz.cyberrange.platform.training.api.exceptions.PayloadTooLargeException when the linked
+   *     files exceed the budget of a definition
+   */
+  @PreAuthorize(
+      "hasAuthority(T(cz.cyberrange.platform.training.service.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)"
+          + "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+  @TransactionalWO
+  public AttachmentSummaryDTO uploadAttachment(
+      Long definitionId, SuppliedAttachment file, String claimedHash) {
+    TrainingDefinition definition = trainingDefinitionService.findUpdatable(definitionId);
+    definitionAttachmentService.upload(definition, file, claimedHash);
+    return definitionAttachmentReader.findSummary(definitionId, file.hash());
   }
 }

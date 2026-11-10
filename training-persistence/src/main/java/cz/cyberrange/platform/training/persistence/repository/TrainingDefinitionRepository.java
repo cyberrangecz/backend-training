@@ -30,8 +30,8 @@ public interface TrainingDefinitionRepository
         QuerydslBinderCustomizer<QTrainingDefinition> {
 
   /**
-   * That method is used to make the query dsl string values case and accent insensitive and also
-   * it supports partial matches in the database.
+   * That method is used to make the query dsl string values case and accent insensitive and also it
+   * supports partial matches in the database.
    *
    * @param querydslBindings
    * @param qTrainingDefinition

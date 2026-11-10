@@ -24,6 +24,10 @@ import cz.cyberrange.platform.training.service.services.ExportImportService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionArchiveReader;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionArchiveWriter;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentReader;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentService;
 import cz.cyberrange.platform.training.service.services.score.ScoreReportService;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +63,10 @@ class ExportUserScoreFacadeTest {
   @Mock private TrainingEventsService trainingEventsService;
   @Mock private EventMapper eventMapper;
   @Mock private ScoreReportService scoreReportService;
+  @Mock private DefinitionAttachmentReader definitionAttachmentReader;
+  @Mock private DefinitionAttachmentService definitionAttachmentService;
+  @Mock private DefinitionArchiveWriter definitionArchiveWriter;
+  @Mock private DefinitionArchiveReader definitionArchiveReader;
 
   private ExportImportFacade sut;
 
@@ -78,7 +86,11 @@ class ExportUserScoreFacadeTest {
             commandEventsService,
             trainingEventsService,
             eventMapper,
-            scoreReportService);
+            scoreReportService,
+            definitionAttachmentReader,
+            definitionAttachmentService,
+            definitionArchiveWriter,
+            definitionArchiveReader);
   }
 
   private UserRefDTO userRefDTO(long userRefId) {
