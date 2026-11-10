@@ -23,6 +23,7 @@ import cz.cyberrange.platform.training.opensearch.events.training.model.FreeForm
 import cz.cyberrange.platform.training.opensearch.events.training.model.MultipleChoiceEventAnswer;
 import cz.cyberrange.platform.training.opensearch.events.training.query.TrainingEventsService;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
+import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
@@ -69,6 +70,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -379,6 +381,8 @@ public class TrainingRunServiceTest {
         trainingRun1.isLevelAnswered()); // because next level is info and it is always set to true
     then(trainingRunRepository).should().findByIdWithLevel(trainingRun1.getId());
     then(trainingRunRepository).should().save(trainingRun1);
+    then(auditEventService).should().auditLevelStartedAction(trainingRun1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -391,11 +395,17 @@ public class TrainingRunServiceTest {
         .willReturn(infoLevel.getOrder() + 1);
     given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(any(Long.class)))
         .willReturn(new ArrayList<>(List.of(infoLevel, trainingLevel)));
+    List<AbstractLevel> completedLevels = recordLevelsAuditedAsCompleted(trainingRun1);
 
     AbstractLevel nextLevel =
         trainingRunService.moveToNextLevel(trainingRun1.getId()).getCurrentLevel();
 
     assertEquals(trainingLevel, nextLevel);
+    assertEquals(List.of(infoLevel), completedLevels);
+    InOrder inOrder = inOrder(auditEventService);
+    then(auditEventService).should(inOrder).auditLevelCompletedAction(trainingRun1);
+    then(auditEventService).should(inOrder).auditLevelStartedAction(trainingRun1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -414,6 +424,7 @@ public class TrainingRunServiceTest {
     assertThrows(
         EntityConflictException.class,
         () -> trainingRunService.moveToNextLevel(trainingRun1.getId()));
+    then(auditEventService).shouldHaveNoInteractions();
   }
 
   @Test
@@ -425,6 +436,17 @@ public class TrainingRunServiceTest {
     assertThrows(
         EntityNotFoundException.class,
         () -> trainingRunService.moveToNextLevel(trainingRun2.getId()));
+    then(auditEventService).shouldHaveNoInteractions();
+  }
+
+  @Test
+  public void auditTrainingRunStartedAuditsRunStartAndLevelStart() {
+    trainingRunService.auditTrainingRunStarted(trainingRun1);
+
+    InOrder inOrder = inOrder(auditEventService);
+    then(auditEventService).should(inOrder).auditTrainingRunStartedAction(trainingRun1);
+    then(auditEventService).should(inOrder).auditLevelStartedAction(trainingRun1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -643,6 +665,8 @@ public class TrainingRunServiceTest {
 
     assertEquals(trainingRun.getId(), trainingRun1.getId());
     assertTrue(trainingRun.getCurrentLevel() instanceof TrainingLevel);
+    then(auditEventService).should().auditTrainingRunResumedAction(trainingRun1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -663,6 +687,7 @@ public class TrainingRunServiceTest {
     assertThrows(
         EntityConflictException.class,
         () -> trainingRunService.resumeTrainingRun(trainingRun1.getId()));
+    then(auditEventService).shouldHaveNoInteractions();
   }
 
   @Test
@@ -703,6 +728,12 @@ public class TrainingRunServiceTest {
         scoreBefore + (trainingRun1.getMaxLevelScore() - trainingRun1.getCurrentPenalty()),
         trainingRun1.getTotalTrainingScore() + trainingRun1.getTotalAssessmentScore());
     assertTrue(trainingRun1.isLevelAnswered());
+    InOrder inOrder = inOrder(auditEventService);
+    then(auditEventService)
+        .should(inOrder)
+        .auditCorrectAnswerSubmittedAction(trainingRun1, trainingLevel.getAnswer());
+    then(auditEventService).should(inOrder).auditLevelCompletedAction(trainingRun1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -712,6 +743,8 @@ public class TrainingRunServiceTest {
     boolean isCorrect = trainingRunService.isCorrectAnswer(trainingRun1.getId(), "wrong answer");
     assertFalse(isCorrect);
     assertFalse(trainingRun1.isLevelAnswered());
+    then(auditEventService).should().auditWrongAnswerSubmittedAction(trainingRun1, "wrong answer");
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -721,6 +754,62 @@ public class TrainingRunServiceTest {
     assertThrows(
         BadRequestException.class,
         () -> trainingRunService.isCorrectAnswer(trainingRun2.getId(), "answer"));
+    then(auditEventService).shouldHaveNoInteractions();
+  }
+
+  @Test
+  public void isCorrectPassKeyAuditsCorrectAnswerAndLevelCompleted() {
+    AccessLevel accessLevel = accessLevelOfRun1();
+    given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+
+    boolean isCorrect =
+        trainingRunService.isCorrectPassKey(trainingRun1.getId(), accessLevel.getPasskey());
+
+    assertTrue(isCorrect);
+    assertTrue(trainingRun1.isLevelAnswered());
+    InOrder inOrder = inOrder(auditEventService);
+    then(auditEventService)
+        .should(inOrder)
+        .auditCorrectAnswerSubmittedAction(trainingRun1, accessLevel.getPasskey());
+    then(auditEventService).should(inOrder).auditLevelCompletedAction(trainingRun1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
+  }
+
+  @Test
+  public void isCorrectPassKeyNotCorrectAuditsWrongAnswer() {
+    accessLevelOfRun1();
+    given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+
+    boolean isCorrect = trainingRunService.isCorrectPassKey(trainingRun1.getId(), "wrong passkey");
+
+    assertFalse(isCorrect);
+    assertFalse(trainingRun1.isLevelAnswered());
+    then(auditEventService).should().auditWrongAnswerSubmittedAction(trainingRun1, "wrong passkey");
+    then(auditEventService).shouldHaveNoMoreInteractions();
+  }
+
+  @Test
+  public void isCorrectPassKeyOfNonAccessLevel() {
+    given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+    assertThrows(
+        BadRequestException.class,
+        () -> trainingRunService.isCorrectPassKey(trainingRun1.getId(), "passkey"));
+    then(auditEventService).shouldHaveNoInteractions();
+  }
+
+  @Test
+  public void isCorrectPassKeyAlreadyAnswered() {
+    AccessLevel accessLevel = accessLevelOfRun1();
+    trainingRun1.setLevelAnswered(true);
+    given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+    assertThrows(
+        EntityConflictException.class,
+        () -> trainingRunService.isCorrectPassKey(trainingRun1.getId(), accessLevel.getPasskey()));
+    then(auditEventService).shouldHaveNoInteractions();
   }
 
   @Test
@@ -740,6 +829,8 @@ public class TrainingRunServiceTest {
     String solution = trainingRunService.getSolution(trainingRun1.getId());
     assertEquals(solution, trainingLevel.getSolution());
     assertFalse(trainingRun1.isLevelAnswered());
+    then(auditEventService).should().auditSolutionDisplayedAction(trainingRun1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -750,6 +841,7 @@ public class TrainingRunServiceTest {
     String solution = trainingRunService.getSolution(trainingRun1.getId());
     assertEquals(solution, trainingLevel.getSolution());
     assertFalse(trainingRun1.isLevelAnswered());
+    then(auditEventService).shouldHaveNoInteractions();
   }
 
   @Test
@@ -758,6 +850,7 @@ public class TrainingRunServiceTest {
         .willReturn(Optional.of(trainingRun2));
     assertThrows(
         BadRequestException.class, () -> trainingRunService.getSolution(trainingRun2.getId()));
+    then(auditEventService).shouldHaveNoInteractions();
   }
 
   @Test
@@ -768,6 +861,8 @@ public class TrainingRunServiceTest {
     Hint resultHint1 = trainingRunService.getHint(trainingRun1.getId(), hint1.getId());
     assertEquals(hint1, resultHint1);
     assertEquals(hint1.getHintPenalty(), (Integer) trainingRun1.getCurrentPenalty());
+    then(auditEventService).should().auditHintTakenAction(trainingRun1, hint1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -777,6 +872,7 @@ public class TrainingRunServiceTest {
     assertThrows(
         BadRequestException.class,
         () -> trainingRunService.getHint(trainingRun2.getId(), hint1.getId()));
+    then(auditEventService).shouldHaveNoInteractions();
   }
 
   @Test
@@ -791,6 +887,25 @@ public class TrainingRunServiceTest {
             trainingRun2.getParticipantRef().getUserRefId(),
             trainingRun2.getTrainingInstance().getId());
     assertEquals(trainingRun2.getState(), TRState.FINISHED);
+    InOrder inOrder = inOrder(auditEventService);
+    then(auditEventService).should(inOrder).auditLevelCompletedAction(trainingRun2);
+    then(auditEventService).should(inOrder).auditTrainingRunEndedAction(trainingRun2);
+    then(auditEventService).shouldHaveNoMoreInteractions();
+  }
+
+  @Test
+  public void testFinishTrainingRunOnTrainingLevelAuditsOnlyRunEnded() {
+    trainingRun1.setLevelAnswered(true);
+    given(trainingRunRepository.findByIdWithLevel(any(Long.class)))
+        .willReturn(Optional.of(trainingRun1));
+    given(abstractLevelRepository.getCurrentMaxOrder(anyLong()))
+        .willReturn(trainingLevel.getOrder());
+
+    trainingRunService.finishTrainingRun(trainingRun1.getId());
+
+    assertEquals(TRState.FINISHED, trainingRun1.getState());
+    then(auditEventService).should().auditTrainingRunEndedAction(trainingRun1);
+    then(auditEventService).shouldHaveNoMoreInteractions();
   }
 
   @Test
@@ -814,6 +929,7 @@ public class TrainingRunServiceTest {
     assertThrows(
         EntityConflictException.class,
         () -> trainingRunService.finishTrainingRun(trainingRun1.getId()));
+    then(auditEventService).shouldHaveNoInteractions();
   }
 
   @Test
@@ -823,6 +939,35 @@ public class TrainingRunServiceTest {
     assertThrows(
         EntityConflictException.class,
         () -> trainingRunService.finishTrainingRun(trainingRun1.getId()));
+    then(auditEventService).shouldHaveNoInteractions();
+  }
+
+  /**
+   * Makes the access level fixture the current level of the first training run.
+   *
+   * @return the access level now current in the run
+   */
+  private AccessLevel accessLevelOfRun1() {
+    AccessLevel accessLevel = testDataFactory.getAccessLevel();
+    accessLevel.setId(4L);
+    accessLevel.setTrainingDefinition(trainingDefinition);
+    trainingRun1.setCurrentLevel(accessLevel);
+    trainingRun1.setLevelAnswered(false);
+    return accessLevel;
+  }
+
+  /**
+   * Records the run's current level each time a level completion is audited for the run.
+   *
+   * @param trainingRun the run whose level completions are recorded
+   * @return the levels recorded, in audit order
+   */
+  private List<AbstractLevel> recordLevelsAuditedAsCompleted(TrainingRun trainingRun) {
+    List<AbstractLevel> completedLevels = new ArrayList<>();
+    willAnswer(invocation -> completedLevels.add(trainingRun.getCurrentLevel()))
+        .given(auditEventService)
+        .auditLevelCompletedAction(trainingRun);
+    return completedLevels;
   }
 
   private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {
@@ -1007,7 +1152,10 @@ public class TrainingRunServiceTest {
     trainingRunService.evaluateResponsesToAssessment(50L, submission);
 
     ArgumentCaptor<List<EventAnswer>> captor = ArgumentCaptor.forClass(List.class);
-    then(auditEventService).should().auditAssessmentAnswersAction(eq(run), captor.capture());
+    InOrder inOrder = inOrder(auditEventService);
+    then(auditEventService).should(inOrder).auditAssessmentAnswersAction(eq(run), captor.capture());
+    then(auditEventService).should(inOrder).auditLevelCompletedAction(run);
+    then(auditEventService).shouldHaveNoMoreInteractions();
     List<EventAnswer> answers = captor.getValue();
 
     assertEquals(3, answers.size());
