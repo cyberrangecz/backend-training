@@ -1080,6 +1080,7 @@ public class TestDataFactory {
     trainingDefinitionUpdateDTO.setOutcomes(outcomes);
     trainingDefinitionUpdateDTO.setVersion(0L);
     trainingDefinitionUpdateDTO.setLevels(new ArrayList<>());
+    trainingDefinitionUpdateDTO.setMaterials(new ArrayList<>());
     return trainingDefinitionUpdateDTO;
   }
 

@@ -66,7 +66,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
       LevelMapperImpl.class,
       HintMapperImpl.class,
       QuestionMapperImpl.class,
-      AttachmentMapperImpl.class,
       MitreTechniqueMapperImpl.class,
       ScoreReportMapperImpl.class
     })

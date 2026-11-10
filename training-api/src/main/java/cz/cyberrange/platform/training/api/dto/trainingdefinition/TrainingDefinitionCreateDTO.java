@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.api.dto.trainingdefinition;
 
 import cz.cyberrange.platform.training.api.dto.AbstractLevelCreateDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.TrainingMaterialDTO;
 import cz.cyberrange.platform.training.api.enums.TDState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -50,4 +51,21 @@ public class TrainingDefinitionCreateDTO {
           @Valid @NotNull(message = "{trainingDefinition.level.NotNull.message}")
           AbstractLevelCreateDTO>
       levels = new ArrayList<>();
+
+  /**
+   * The training materials the definition keeps, each a file by hash with its name; a material
+   * stays stored whether or not level content references it, and every file the content references
+   * counts as a material too
+   */
+  @Schema(
+      description =
+          "The definition's training materials. Every file level content references is kept as a"
+              + " material as well; a material is a file supplied with the request or already"
+              + " stored.",
+      requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotNull(message = "{trainingDefinition.materials.NotNull.message}")
+  private List<
+          @Valid @NotNull(message = "{trainingDefinition.material.NotNull.message}")
+          TrainingMaterialDTO>
+      materials = new ArrayList<>();
 }

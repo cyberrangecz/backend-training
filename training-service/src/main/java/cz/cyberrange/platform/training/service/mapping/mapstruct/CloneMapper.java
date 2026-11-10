@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.service.mapping.mapstruct;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.Attachment;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
@@ -21,9 +20,9 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
 /**
- * Copies training definitions and their levels, together with every hint, attachment and assessment
- * question they hold, into new detached entities. Each copy leaves its identifier unset, and a
- * copied level leaves its training definition unset for the caller to assign.
+ * Copies training definitions and their levels, together with every hint and assessment question
+ * they hold, into new detached entities. Each copy leaves its identifier unset, and a copied level
+ * leaves its training definition unset for the caller to assign.
  */
 @Mapper(
     componentModel = "spring",
@@ -87,9 +86,9 @@ public interface CloneMapper {
   AccessLevel clone(AccessLevel entity);
 
   /**
-   * Copies a training level together with copies of its hints and attachments, each linked to the
-   * copy, sharing its MITRE techniques, and leaving its identifier and training definition unset
-   * for the caller to assign.
+   * Copies a training level together with copies of its hints, each linked to the copy, sharing its
+   * MITRE techniques, and leaving its identifier and training definition unset for the caller to
+   * assign.
    *
    * @param entity the training level to copy
    * @return the copy
@@ -99,14 +98,13 @@ public interface CloneMapper {
   TrainingLevel clone(TrainingLevel entity);
 
   /**
-   * Links each copied hint and attachment of the training level copy to that copy.
+   * Links each copied hint of the training level copy to that copy.
    *
-   * @param clone the training level copy whose hints and attachments are linked
+   * @param clone the training level copy whose hints are linked
    */
   @AfterMapping
-  default void linkHintsAndAttachments(@MappingTarget TrainingLevel clone) {
+  default void linkHints(@MappingTarget TrainingLevel clone) {
     clone.getHints().forEach(hint -> hint.setTrainingLevel(clone));
-    clone.getAttachments().forEach(attachment -> attachment.setTrainingLevel(clone));
   }
 
   /**
@@ -126,24 +124,6 @@ public interface CloneMapper {
    * @return the copies
    */
   Set<Hint> cloneHints(Set<Hint> entities);
-
-  /**
-   * Copies an attachment, leaving its identifier and training level unset.
-   *
-   * @param entity the attachment to copy
-   * @return the copy
-   */
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "trainingLevel", ignore = true)
-  Attachment clone(Attachment entity);
-
-  /**
-   * Copies each of the given attachments.
-   *
-   * @param entities the attachments to copy
-   * @return the copies
-   */
-  Set<Attachment> cloneAttachments(Set<Attachment> entities);
 
   /**
    * Copies an assessment level together with copies of its questions, each linked to the copy,

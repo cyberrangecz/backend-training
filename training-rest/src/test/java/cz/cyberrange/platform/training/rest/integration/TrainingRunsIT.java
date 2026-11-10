@@ -727,6 +727,7 @@ class TrainingRunsIT extends AbstractIntegrationTest {
     call(TRAINEE_USER_REF_ID, TRAINEE, post("/training-runs").param("accessToken", ACCESS_TOKEN))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.training_run_id").value(run.getId()))
+        .andExpect(jsonPath("$.definition_id").value(definition.getId()))
         .andExpect(jsonPath("$.abstract_level_dto.id").value(trainingLevel.getId()))
         .andExpect(jsonPath("$.sandbox_instance_ref_id").value(SANDBOX_ID));
 
@@ -1608,6 +1609,7 @@ class TrainingRunsIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.training_run_id").value(run.getId()))
         .andExpect(jsonPath("$.abstract_level_dto.id").value(trainingLevel.getId()))
         .andExpect(jsonPath("$.instance_id").value(instance.getId()))
+        .andExpect(jsonPath("$.definition_id").value(definition.getId()))
         .andExpect(jsonPath("$.sandbox_instance_ref_id").value(SANDBOX_ID))
         .andExpect(jsonPath("$.level_answered").value(false))
         .andExpect(jsonPath("$.info_about_levels", hasSize(4)))
