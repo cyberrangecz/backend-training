@@ -23,14 +23,10 @@ public final class FoldedSearchPredicate {
   public static BooleanExpression contains(StringPath path, String rawQuery) {
     return Expressions.booleanTemplate(
         "cast(search_fold({0}) as string) like concat('%', cast(search_fold({1}) as string), '%') escape '!'",
-        path,
-        escapeWildcards(rawQuery));
+        path, escapeWildcards(rawQuery));
   }
 
   private static String escapeWildcards(String rawQuery) {
-    return rawQuery
-        .replace("!", "!!")
-        .replace("%", "!%")
-        .replace("_", "!_");
+    return rawQuery.replace("!", "!!").replace("%", "!%").replace("_", "!_");
   }
 }
