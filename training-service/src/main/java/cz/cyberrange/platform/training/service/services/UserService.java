@@ -202,8 +202,7 @@ public class UserService {
                             new UriQueryParameters(uriBuilder.path("/roles/users-not-with-ids"));
                         query
                             .add("roleType", roleType.name())
-                            .add(
-                                "ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
+                            .add("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
                         setCommonParams(nameFilter, limitedPageable, query);
                         return query.build();
                       })
@@ -264,8 +263,7 @@ public class UserService {
     do {
       PageResultResource<UserRefDTO> chunk =
           pageFetcher.apply(
-              PageRequest.of(
-                  chunkNumber, USER_AND_GROUP_PAGE_SIZE_LIMIT - 1, pageable.getSort()));
+              PageRequest.of(chunkNumber, USER_AND_GROUP_PAGE_SIZE_LIMIT - 1, pageable.getSort()));
       fetched.addAll(chunk.getContent());
       fetchedPagination = chunk.getPagination();
       chunkNumber++;

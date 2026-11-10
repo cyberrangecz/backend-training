@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
-import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import cz.cyberrange.platform.training.api.exceptions.CustomWebClientException;
