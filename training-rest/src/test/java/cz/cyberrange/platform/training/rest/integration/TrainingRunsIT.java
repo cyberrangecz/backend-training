@@ -2,6 +2,7 @@ package cz.cyberrange.platform.training.rest.integration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -66,6 +67,11 @@ class TrainingRunsIT extends AbstractIntegrationTest {
   private static final long ADMINISTRATOR_USER_REF_ID = 5006L;
   private static final long UNKNOWN_ID = 987654L;
   private static final long POOL_ID = 11L;
+  private static final String GET_AND_LOCK_PATH =
+      IntegrationTestInfrastructure.SANDBOX_SERVICE_PATH
+          + "/pools/"
+          + POOL_ID
+          + "/sandboxes/get-and-lock";
   private static final String ACCESS_TOKEN = "pwn-1234";
   private static final String SANDBOX_ID = "11111111-1111-4111-8111-111111111111";
   private static final String OTHER_SANDBOX_ID = "22222222-2222-4222-8222-222222222222";
@@ -651,13 +657,8 @@ class TrainingRunsIT extends AbstractIntegrationTest {
 
   private void stubSandboxAvailable(String sandboxId, String accessToken) {
     externalServices.stubFor(
-        WireMock.get(
-                urlPathEqualTo(
-                    IntegrationTestInfrastructure.SANDBOX_SERVICE_PATH
-                        + "/pools/"
-                        + POOL_ID
-                        + "/sandboxes/get-and-lock/"
-                        + accessToken))
+        WireMock.get(urlPathEqualTo(GET_AND_LOCK_PATH))
+            .withHeader("X-Training-Access-Token", equalTo(accessToken))
             .willReturn(
                 okJson("{\"id\":\"" + sandboxId + "\",\"lock_id\":3,\"allocation_unit_id\":7}")));
   }
@@ -693,13 +694,8 @@ class TrainingRunsIT extends AbstractIntegrationTest {
     assertThat(count("user_ref", "user_ref_id = ?", TRAINEE_USER_REF_ID)).isEqualTo(1);
     externalServices.verify(
         1,
-        getRequestedFor(
-            urlPathEqualTo(
-                IntegrationTestInfrastructure.SANDBOX_SERVICE_PATH
-                    + "/pools/"
-                    + POOL_ID
-                    + "/sandboxes/get-and-lock/"
-                    + ACCESS_TOKEN)));
+        getRequestedFor(urlPathEqualTo(GET_AND_LOCK_PATH))
+            .withHeader("X-Training-Access-Token", equalTo(ACCESS_TOKEN)));
   }
 
   @Test
@@ -715,7 +711,7 @@ class TrainingRunsIT extends AbstractIntegrationTest {
 
     assertThat(count("training_run", "training_instance_id = ?", localInstance.getId()))
         .isEqualTo(1);
-    externalServices.verify(0, getRequestedFor(urlPathMatching(".*/sandboxes/get-and-lock/.*")));
+    externalServices.verify(0, getRequestedFor(urlPathMatching(".*/sandboxes/get-and-lock.*")));
   }
 
   @Test
@@ -731,7 +727,7 @@ class TrainingRunsIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.sandbox_instance_ref_id").value(SANDBOX_ID));
 
     assertThat(count("training_run", "training_instance_id = ?", instance.getId())).isEqualTo(1);
-    externalServices.verify(0, getRequestedFor(urlPathMatching(".*/sandboxes/get-and-lock/.*")));
+    externalServices.verify(0, getRequestedFor(urlPathMatching(".*/sandboxes/get-and-lock.*")));
   }
 
   @Test
@@ -752,7 +748,7 @@ class TrainingRunsIT extends AbstractIntegrationTest {
       "Accessing an instance without a free sandbox is forbidden and leaves no run or lock")
   void accessTrainingRun_noFreeSandbox_returnsForbiddenAndReleasesLock() throws Exception {
     externalServices.stubFor(
-        WireMock.get(urlPathMatching(".*/sandboxes/get-and-lock/.*"))
+        WireMock.get(urlPathEqualTo(GET_AND_LOCK_PATH))
             .willReturn(
                 aResponse()
                     .withStatus(409)
