@@ -140,10 +140,8 @@ public class SandboxApiService {
     try {
       return sandboxServiceWebClient
           .get()
-          .uri(
-              "/pools/{poolId}/sandboxes/get-and-lock/{trainingAccessToken}",
-              poolId,
-              trainingAccessToken)
+          .uri("/pools/{poolId}/sandboxes/get-and-lock", poolId)
+          .header(TRAINING_ACCESS_TOKEN_HEADER, trainingAccessToken)
           .retrieve()
           .bodyToMono(SandboxInfo.class)
           .block();
