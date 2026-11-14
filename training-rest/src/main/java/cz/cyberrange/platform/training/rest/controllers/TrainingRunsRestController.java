@@ -381,7 +381,8 @@ public class TrainingRunsRestController {
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
-        description = "The current level has not been answered yet.",
+        description =
+            "The run is finished or archived, or its current level has not been answered yet.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(path = "/{runId}/next-levels", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -415,6 +416,10 @@ public class TrainingRunsRestController {
     @ApiResponse(
         responseCode = "404",
         description = "No training run with this id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The run is finished or archived.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "500",
@@ -451,7 +456,9 @@ public class TrainingRunsRestController {
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
-        description = "The hint belongs to another level than the run's current one.",
+        description =
+            "The run is finished or archived, or the hint belongs to another level than its"
+                + " current one.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @GetMapping(path = "/{runId}/hints/{hintId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -489,7 +496,8 @@ public class TrainingRunsRestController {
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
-        description = "The current level has already been answered.",
+        description =
+            "The run is finished or archived, or its current level has already been answered.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PostMapping(path = "/{runId}/is-correct-answer", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -524,7 +532,8 @@ public class TrainingRunsRestController {
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
-        description = "The current level has already been answered.",
+        description =
+            "The run is finished or archived, or its current level has already been answered.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PostMapping(path = "/{runId}/is-correct-passkey", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -602,7 +611,9 @@ public class TrainingRunsRestController {
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
-        description = "The run is not on its last level, or that level is unanswered.",
+        description =
+            "The run is already finished or archived, is not on its last level, or that level"
+                + " is unanswered.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(path = "/{runId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -636,7 +647,8 @@ public class TrainingRunsRestController {
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
         responseCode = "409",
-        description = "The current level has already been answered.",
+        description =
+            "The run is finished or archived, or its current level has already been answered.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
   })
   @PutMapping(
@@ -689,7 +701,7 @@ public class TrainingRunsRestController {
       description =
           "A training administrator, or an organizer of the run, may call it. The run's sandbox"
               + " reference moves to its previous sandbox and is cleared; the sandbox instance"
-              + " itself is kept.")
+              + " itself is kept. Archiving a run that is already archived changes nothing.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The run was archived."),
     @ApiResponse(
