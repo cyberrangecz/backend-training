@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -265,10 +266,12 @@ public class TrainingRunService {
    * @return the {@link TrainingRun} with its new current level
    * @throws EntityNotFoundException when the training run does not exist, or its current level is
    *     already the last one of the training definition
-   * @throws EntityConflictException when the current level has not been answered yet
+   * @throws EntityConflictException when the run is no longer running, or its current level has
+   *     not been answered yet
    */
   public TrainingRun moveToNextLevel(Long runId) {
     TrainingRun trainingRun = findByIdWithLevel(runId);
+    checkTrainingRunRunning(trainingRun);
     int currentLevelOrder = trainingRun.getCurrentLevel().getOrder();
     int maxLevelOrder =
         abstractLevelRepository.getCurrentMaxOrder(
@@ -665,6 +668,19 @@ public class TrainingRunService {
     }
   }
 
+  /** Refuses an action on a training run that is finished or archived. */
+  private static void checkTrainingRunRunning(TrainingRun trainingRun) {
+    if (trainingRun.getState() != TRState.RUNNING) {
+      throw new EntityConflictException(
+          new EntityErrorDetail(
+              TrainingRun.class,
+              "id",
+              Long.class,
+              trainingRun.getId(),
+              "Training run is " + trainingRun.getState().name().toLowerCase(Locale.ROOT) + "."));
+    }
+  }
+
   /**
    * Checks the given answer against the training run's current level, which must be a {@link
    * TrainingLevel} not yet answered.
@@ -674,10 +690,12 @@ public class TrainingRunService {
    * @return true when the answer is correct
    * @throws EntityNotFoundException when no training run carries that id
    * @throws BadRequestException when the current level is not a {@link TrainingLevel}
-   * @throws EntityConflictException when the current level has already been answered
+   * @throws EntityConflictException when the run is no longer running, or the current level has
+   *     already been answered
    */
   public boolean isCorrectAnswer(Long runId, String answer) {
     TrainingRun trainingRun = findByIdWithLevel(runId);
+    checkTrainingRunRunning(trainingRun);
     AbstractLevel level = trainingRun.getCurrentLevel();
     if (level.getClass() != TrainingLevel.class) {
       throw new BadRequestException(
@@ -729,10 +747,12 @@ public class TrainingRunService {
    * @return true when the passkey is correct
    * @throws EntityNotFoundException when no training run carries that id
    * @throws BadRequestException when the current level is not an {@link AccessLevel}
-   * @throws EntityConflictException when the current level has already been answered
+   * @throws EntityConflictException when the run is no longer running, or the current level has
+   *     already been answered
    */
   public boolean isCorrectPassKey(Long runId, String passkey) {
     TrainingRun trainingRun = findByIdWithLevel(runId);
+    checkTrainingRunRunning(trainingRun);
     AbstractLevel level = trainingRun.getCurrentLevel();
     if (level.getClass() != AccessLevel.class) {
       throw new BadRequestException("Current level is not access level and does not have passkey.");
@@ -830,9 +850,11 @@ public class TrainingRunService {
    * @return the current level's solution, with its answer placeholder resolved
    * @throws EntityNotFoundException when no training run carries that id
    * @throws BadRequestException when the current level is not a {@link TrainingLevel}
+   * @throws EntityConflictException when the run is no longer running
    */
   public String getSolution(Long trainingRunId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    checkTrainingRunRunning(trainingRun);
     AbstractLevel level = trainingRun.getCurrentLevel();
     if (level instanceof TrainingLevel trainingLevel) {
       if (!trainingRun.isSolutionTaken()) {
@@ -902,10 +924,12 @@ public class TrainingRunService {
    * @return the requested {@link Hint}
    * @throws EntityNotFoundException when the training run or the hint does not exist
    * @throws BadRequestException when the current level is not a {@link TrainingLevel}
-   * @throws EntityConflictException when the hint does not belong to the current level
+   * @throws EntityConflictException when the run is no longer running, or the hint does not belong
+   *     to the current level
    */
   public Hint getHint(Long trainingRunId, Long hintId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    checkTrainingRunRunning(trainingRun);
     AbstractLevel level = trainingRun.getCurrentLevel();
     if (level instanceof TrainingLevel) {
       Hint hint =
@@ -955,11 +979,12 @@ public class TrainingRunService {
    * @param trainingRunId the training run's primary key
    * @return the finished {@link TrainingRun}
    * @throws EntityNotFoundException when no training run carries that id
-   * @throws EntityConflictException when the current level is not the last one, or has not been
-   *     answered
+   * @throws EntityConflictException when the run is no longer running, or its current level is not
+   *     the last one or has not been answered
    */
   public TrainingRun finishTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    checkTrainingRunRunning(trainingRun);
     int maxOrder =
         abstractLevelRepository.getCurrentMaxOrder(
             trainingRun.getCurrentLevel().getTrainingDefinition().getId());
@@ -1005,13 +1030,16 @@ public class TrainingRunService {
   /**
    * Archives a training run: sets its state to {@link TRState#ARCHIVED}, moves its current sandbox
    * reference to its previous sandbox reference and clears its sandbox and allocation unit
-   * references, and deletes its acquisition lock.
+   * references, and deletes its acquisition lock. A run already archived is left unchanged.
    *
    * @param trainingRunId the training run's primary key
    * @throws EntityNotFoundException when no training run carries that id
    */
   public void archiveTrainingRun(Long trainingRunId) {
     TrainingRun trainingRun = findById(trainingRunId);
+    if (trainingRun.getState() == TRState.ARCHIVED) {
+      return;
+    }
     trainingRun.setState(TRState.ARCHIVED);
     trainingRun.setPreviousSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
     trainingRun.setSandboxInstanceRefId(null);
@@ -1061,11 +1089,13 @@ public class TrainingRunService {
    * @throws EntityNotFoundException when no training run carries that id
    * @throws BadRequestException when the current level is not an {@link AssessmentLevel}, or a
    *     question that must be answered is missing from {@code answersToQuestions}
-   * @throws EntityConflictException when the current level has already been answered
+   * @throws EntityConflictException when the run is no longer running, or the current level has
+   *     already been answered
    */
   public void evaluateResponsesToAssessment(
       Long trainingRunId, Map<Long, QuestionAnswerDTO> answersToQuestions) {
     TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    checkTrainingRunRunning(trainingRun);
     if (!(trainingRun.getCurrentLevel() instanceof AssessmentLevel)) {
       throw new BadRequestException(
           "Current level is not assessment level and cannot be evaluated.");

@@ -942,6 +942,82 @@ public class TrainingRunServiceTest {
     then(auditEventService).shouldHaveNoInteractions();
   }
 
+  @Test
+  public void finishTrainingRunAlreadyFinishedKeepsItsEndTime() {
+    LocalDateTime endTime = LocalDateTime.now(Clock.systemUTC()).minusHours(1);
+    trainingRun1.setState(TRState.FINISHED);
+    trainingRun1.setLevelAnswered(true);
+    trainingRun1.setEndTime(endTime);
+    given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+
+    assertThrows(
+        EntityConflictException.class,
+        () -> trainingRunService.finishTrainingRun(trainingRun1.getId()));
+
+    assertEquals(endTime, trainingRun1.getEndTime());
+    then(trAcquisitionLockRepository).shouldHaveNoInteractions();
+    then(auditEventService).shouldHaveNoInteractions();
+  }
+
+  @Test
+  public void getSolutionOnFinishedRunIsRefused() {
+    trainingRun1.setState(TRState.FINISHED);
+    given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+
+    assertThrows(
+        EntityConflictException.class, () -> trainingRunService.getSolution(trainingRun1.getId()));
+
+    assertFalse(trainingRun1.isSolutionTaken());
+    then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
+    then(auditEventService).shouldHaveNoInteractions();
+  }
+
+  @Test
+  public void getHintOnArchivedRunIsRefused() {
+    trainingRun1.setState(TRState.ARCHIVED);
+    int penalty = trainingRun1.getCurrentPenalty();
+    given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+
+    assertThrows(
+        EntityConflictException.class,
+        () -> trainingRunService.getHint(trainingRun1.getId(), hint1.getId()));
+
+    assertEquals(penalty, trainingRun1.getCurrentPenalty());
+    then(auditEventService).shouldHaveNoInteractions();
+  }
+
+  @Test
+  public void archiveTrainingRunAlreadyArchivedChangesNothing() {
+    trainingRun1.setState(TRState.ARCHIVED);
+    trainingRun1.setSandboxInstanceRefId(null);
+    trainingRun1.setPreviousSandboxInstanceRefId("previous-sandbox");
+    given(trainingRunRepository.findById(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+
+    trainingRunService.archiveTrainingRun(trainingRun1.getId());
+
+    assertEquals("previous-sandbox", trainingRun1.getPreviousSandboxInstanceRefId());
+    then(trAcquisitionLockRepository).shouldHaveNoInteractions();
+    then(trainingRunRepository).should(never()).save(any(TrainingRun.class));
+  }
+
+  @Test
+  public void isCorrectAnswerOnFinishedRunIsRefused() {
+    trainingRun1.setState(TRState.FINISHED);
+    given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId()))
+        .willReturn(Optional.of(trainingRun1));
+
+    assertThrows(
+        EntityConflictException.class,
+        () -> trainingRunService.isCorrectAnswer(trainingRun1.getId(), "answer"));
+
+    then(submissionRepository).shouldHaveNoInteractions();
+    then(auditEventService).shouldHaveNoInteractions();
+  }
+
   /**
    * Makes the access level fixture the current level of the first training run.
    *
