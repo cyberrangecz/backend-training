@@ -749,15 +749,15 @@ public class TrainingRunService {
   }
 
   /**
-   * Compares the submitted passkey against the level's passkey. Audits a wrong answer submission on
-   * both a match and a mismatch; on a match it also marks the level answered and audits the level
-   * as completed.
+   * Compares the submitted passkey against the level's passkey. On a match, marks the level
+   * answered and audits a correct answer and a completed level. On a mismatch, audits a wrong
+   * answer.
    */
   private boolean evaluateAccessLevelPasskey(TrainingRun trainingRun, String passkey) {
     AccessLevel accessLevel = (AccessLevel) trainingRun.getCurrentLevel();
     if (accessLevel.getPasskey().equals(passkey)) {
       trainingRun.setLevelAnswered(true);
-      auditEventsService.auditWrongAnswerSubmittedAction(trainingRun, passkey);
+      auditEventsService.auditCorrectAnswerSubmittedAction(trainingRun, passkey);
       auditEventsService.auditLevelCompletedAction(trainingRun);
       return true;
     }
