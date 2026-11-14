@@ -559,14 +559,31 @@ class TrainingInstancesIT extends AbstractIntegrationTest {
       "createTrainingInstance with a sandbox definition lacking a variable the definition needs returns conflict")
   void createTrainingInstance_sandboxDefinitionLacksVariable_returnsConflict() throws Exception {
     seeder.level(definition, 2, "Variable level", "secret");
-    externalServices.stubFor(
-        WireMock.get(urlPathEqualTo(SANDBOX + "/definitions/7/variables"))
-            .willReturn(okJson("[\"port\"]")));
+    stubSandboxDefinitionVariables(7, "port");
     Map<String, Object> body = createBody();
     body.put("sandbox_definition_id", 7);
 
     expectEntityError(
-        perform(post(BASE_PATH), body, RoleTypeSecurity.ROLE_TRAINING_ORGANIZER), 409, "CONFLICT");
+            perform(post(BASE_PATH), body, RoleTypeSecurity.ROLE_TRAINING_ORGANIZER),
+            409,
+            "CONFLICT")
+        .andExpect(jsonPath("$.entity_error_detail.reason", containsString("secret")));
+  }
+
+  @Test
+  @DisplayName(
+      "createTrainingInstance with a sandbox definition offering every variable the definition needs succeeds")
+  void createTrainingInstance_sandboxDefinitionOffersVariables_returnsInstance() throws Exception {
+    seeder.level(definition, 2, "Variable level", "secret");
+    stubSandboxDefinitionVariables(7, "port", "secret");
+    Map<String, Object> body = createBody();
+    body.put("sandbox_definition_id", 7);
+
+    perform(post(BASE_PATH), body, RoleTypeSecurity.ROLE_TRAINING_ORGANIZER)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.sandbox_definition_id").value(7));
+
+    externalServices.verify(getRequestedFor(urlPathEqualTo(SANDBOX + "/definitions/7/variables")));
   }
 
   @Test
@@ -2272,6 +2289,12 @@ class TrainingInstancesIT extends AbstractIntegrationTest {
   private void stubPoolVariables(long poolId, String... variables) {
     externalServices.stubFor(
         WireMock.get(urlPathEqualTo(SANDBOX + "/pools/" + poolId + "/variables"))
+            .willReturn(okJson("{\"variables\": [\"" + String.join("\",\"", variables) + "\"]}")));
+  }
+
+  private void stubSandboxDefinitionVariables(long sandboxDefinitionId, String... variables) {
+    externalServices.stubFor(
+        WireMock.get(urlPathEqualTo(SANDBOX + "/definitions/" + sandboxDefinitionId + "/variables"))
             .willReturn(okJson("{\"variables\": [\"" + String.join("\",\"", variables) + "\"]}")));
   }
 

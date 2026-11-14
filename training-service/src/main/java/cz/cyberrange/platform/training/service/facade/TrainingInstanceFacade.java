@@ -239,8 +239,9 @@ public class TrainingInstanceFacade {
       Set<String> sandboxDefinitionVariables =
           trainingInstance.getPoolId() != null
               ? sandboxApiService.getVariablesByPoolId(trainingInstance.getPoolId()).getVariables()
-              : sandboxApiService.getVariablesBySandboxDefinitionId(
-                  trainingInstance.getSandboxDefinitionId());
+              : sandboxApiService
+                  .getVariablesBySandboxDefinitionId(trainingInstance.getSandboxDefinitionId())
+                  .getVariables();
       if (!sandboxDefinitionVariables.containsAll(trainingDefinitionVariables)) {
         trainingDefinitionVariables.removeAll(sandboxDefinitionVariables);
         throw new EntityConflictException(
