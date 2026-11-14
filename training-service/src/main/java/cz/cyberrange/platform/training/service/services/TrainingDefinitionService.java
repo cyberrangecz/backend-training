@@ -14,13 +14,13 @@ import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
-import cz.cyberrange.platform.training.persistence.repository.AttachmentRepository;
 import cz.cyberrange.platform.training.persistence.repository.HintRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository.DefinitionInstanceCount;
 import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.CloneMapper;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -48,11 +48,11 @@ public class TrainingDefinitionService {
   private final TrainingInstanceRepository trainingInstanceRepository;
   private final AbstractLevelRepository abstractLevelRepository;
   private final HintRepository hintRepository;
-  private final AttachmentRepository attachmentRepository;
   private final UserRefRepository userRefRepository;
   private final SecurityService securityService;
   private final UserService userService;
   private final TrainingDefinitionLevelsService trainingDefinitionLevelsService;
+  private final DefinitionAttachmentService definitionAttachmentService;
 
   /**
    * Instantiates a new Training definition service.
@@ -61,11 +61,11 @@ public class TrainingDefinitionService {
    * @param abstractLevelRepository the abstract level repository
    * @param trainingInstanceRepository the training instance repository
    * @param hintRepository the hint repository
-   * @param attachmentRepository the attachment repository
    * @param userRefRepository the user ref repository
    * @param securityService the security service
    * @param userService the user service
    * @param trainingDefinitionLevelsService the service writing the levels of a definition
+   * @param definitionAttachmentService the keeper of the links between a definition and its files
    * @param cloneMapper the clone mapper
    */
   @Autowired
@@ -74,21 +74,21 @@ public class TrainingDefinitionService {
       AbstractLevelRepository abstractLevelRepository,
       TrainingInstanceRepository trainingInstanceRepository,
       HintRepository hintRepository,
-      AttachmentRepository attachmentRepository,
       UserRefRepository userRefRepository,
       SecurityService securityService,
       UserService userService,
       TrainingDefinitionLevelsService trainingDefinitionLevelsService,
+      DefinitionAttachmentService definitionAttachmentService,
       CloneMapper cloneMapper) {
     this.trainingDefinitionRepository = trainingDefinitionRepository;
     this.abstractLevelRepository = abstractLevelRepository;
     this.trainingInstanceRepository = trainingInstanceRepository;
     this.hintRepository = hintRepository;
-    this.attachmentRepository = attachmentRepository;
     this.userRefRepository = userRefRepository;
     this.securityService = securityService;
     this.userService = userService;
     this.trainingDefinitionLevelsService = trainingDefinitionLevelsService;
+    this.definitionAttachmentService = definitionAttachmentService;
     this.cloneMapper = cloneMapper;
   }
 
@@ -227,8 +227,7 @@ public class TrainingDefinitionService {
    */
   public TrainingDefinition update(
       Long id, long expectedVersion, TrainingDefinition content, List<AbstractLevel> levels) {
-    TrainingDefinition trainingDefinition = findById(id);
-    checkIfCanBeUpdated(trainingDefinition);
+    TrainingDefinition trainingDefinition = findUpdatable(id);
     if (trainingDefinition.getVersion() != expectedVersion) {
       throw definitionConflict(
           id,
@@ -256,7 +255,7 @@ public class TrainingDefinitionService {
    * Creates a copy of the given training definition under a new title, together with a copy of
    * every one of its levels as stored: the clone is unreleased, the currently logged-in user is its
    * sole author, its creation time is the current time, and its levels keep their stored order and
-   * content, training level attachments included, without any level content check.
+   * content, without any level content check.
    *
    * @param id id of the definition to clone
    * @param title the title of the new, cloned definition
@@ -264,25 +263,25 @@ public class TrainingDefinitionService {
    * @throws EntityNotFoundException when no training definition with the given id exists
    */
   public TrainingDefinition clone(Long id, String title) {
-    TrainingDefinition clonedTrainingDefinition = cloneMapper.clone(findById(id));
+    TrainingDefinition sourceDefinition = findById(id);
+    TrainingDefinition clonedTrainingDefinition = cloneMapper.clone(sourceDefinition);
     clonedTrainingDefinition.setTitle(title);
     TrainingDefinition createdTrainingDefinition = saveNewDefinition(clonedTrainingDefinition);
     for (AbstractLevel level : findAllLevelsFromDefinition(id)) {
       AbstractLevel clonedLevel = cloneMapper.cloneLevel(level);
       clonedLevel.setTrainingDefinition(createdTrainingDefinition);
       abstractLevelRepository.save(clonedLevel);
-      if (clonedLevel instanceof TrainingLevel clonedTrainingLevel) {
-        attachmentRepository.saveAll(clonedTrainingLevel.getAttachments());
-      }
     }
     trainingDefinitionRepository.flush();
+    definitionAttachmentService.copyLinks(sourceDefinition, createdTrainingDefinition);
     log.info(
         "Training definition with id: {} cloned into {}.", id, createdTrainingDefinition.getId());
     return createdTrainingDefinition;
   }
 
   /**
-   * Deletes the given training definition together with every one of its levels.
+   * Deletes the given training definition together with every one of its levels and its attachment
+   * links, and the attachment files no other definition links to.
    *
    * @param definitionId id of the definition to delete
    * @throws EntityNotFoundException when no training definition with the given id exists
@@ -303,6 +302,7 @@ public class TrainingDefinitionService {
     List<AbstractLevel> abstractLevels =
         abstractLevelRepository.findAllLevelsByTrainingDefinitionId(definitionId);
     abstractLevels.forEach(trainingDefinitionLevelsService::deleteLevel);
+    definitionAttachmentService.removeAllLinks(definition);
     trainingDefinitionRepository.delete(definition);
   }
 
@@ -482,6 +482,22 @@ public class TrainingDefinitionService {
     addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
     trainingDefinition.setCreatedAt(getCurrentTimeInUTC());
     return auditAndSave(trainingDefinition);
+  }
+
+  /**
+   * Finds a training definition that may still be changed: one whose state is {@code UNRELEASED}
+   * and that carries no created training instance.
+   *
+   * @param id id of the definition
+   * @return the stored definition
+   * @throws EntityNotFoundException when no training definition with the given id exists
+   * @throws EntityConflictException when the definition is not unreleased or already has a training
+   *     instance
+   */
+  public TrainingDefinition findUpdatable(Long id) {
+    TrainingDefinition trainingDefinition = findById(id);
+    checkIfCanBeUpdated(trainingDefinition);
+    return trainingDefinition;
   }
 
   /**

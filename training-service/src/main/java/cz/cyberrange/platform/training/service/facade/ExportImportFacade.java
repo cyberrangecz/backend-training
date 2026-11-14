@@ -6,6 +6,7 @@ import cz.cyberrange.platform.training.api.dto.archive.QuestionAnswersDetailsDTO
 import cz.cyberrange.platform.training.api.dto.archive.QuestionEMIAnswer;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingInstanceArchiveDTO;
 import cz.cyberrange.platform.training.api.dto.archive.TrainingRunArchiveDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.TrainingMaterialDTO;
 import cz.cyberrange.platform.training.api.dto.event.CommandEventDTO;
 import cz.cyberrange.platform.training.api.dto.export.AbstractLevelExportDTO;
 import cz.cyberrange.platform.training.api.dto.export.ExportTrainingDefinitionAndLevelsDTO;
@@ -43,6 +44,13 @@ import cz.cyberrange.platform.training.service.services.ExportImportService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserService;
 import cz.cyberrange.platform.training.service.services.api.SandboxApiService;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionArchive;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionArchiveReader;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionArchiveWriter;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentReader;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentService;
+import cz.cyberrange.platform.training.service.services.attachment.ExportedAttachment;
+import cz.cyberrange.platform.training.service.services.attachment.SuppliedAttachment;
 import cz.cyberrange.platform.training.service.services.score.ScoreReportService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -56,8 +64,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -76,7 +82,6 @@ import tools.jackson.databind.ObjectMapper;
 @Transactional
 public class ExportImportFacade {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ExportImportFacade.class);
   private static final String LOGS_FOLDER = "logs";
   private static final String EVENTS_FOLDER = "training_events";
   private static final String RUNS_FOLDER = "training_runs";
@@ -94,6 +99,10 @@ public class ExportImportFacade {
   private final TrainingEventsService trainingEventsService;
   private final EventMapper eventMapper;
   private final ScoreReportService scoreReportService;
+  private final DefinitionAttachmentReader definitionAttachmentReader;
+  private final DefinitionAttachmentService definitionAttachmentService;
+  private final DefinitionArchiveWriter definitionArchiveWriter;
+  private final DefinitionArchiveReader definitionArchiveReader;
 
   @Autowired
   public ExportImportFacade(
@@ -108,7 +117,11 @@ public class ExportImportFacade {
       CommandEventsService commandEventsService,
       TrainingEventsService trainingEventsService,
       EventMapper eventMapper,
-      ScoreReportService scoreReportService) {
+      ScoreReportService scoreReportService,
+      DefinitionAttachmentReader definitionAttachmentReader,
+      DefinitionAttachmentService definitionAttachmentService,
+      DefinitionArchiveWriter definitionArchiveWriter,
+      DefinitionArchiveReader definitionArchiveReader) {
     this.exportImportService = exportImportService;
     this.trainingDefinitionService = trainingDefinitionService;
     this.sandboxApiService = sandboxApiService;
@@ -121,16 +134,22 @@ public class ExportImportFacade {
     this.trainingEventsService = trainingEventsService;
     this.eventMapper = eventMapper;
     this.scoreReportService = scoreReportService;
+    this.definitionAttachmentReader = definitionAttachmentReader;
+    this.definitionAttachmentService = definitionAttachmentService;
+    this.definitionArchiveWriter = definitionArchiveWriter;
+    this.definitionArchiveReader = definitionArchiveReader;
   }
 
   /**
    * Serializes the given training definition together with its levels, in level order, into a
-   * single file in {@code format}. The file is titled after the definition, or left untitled when
-   * the definition carries no title.
+   * single document in {@code format}. A definition that links no attachment is returned as that
+   * document, titled after the definition or left untitled when it carries no title. A definition
+   * that links attachments is returned as a ZIP archive holding the document, the attachment
+   * metadata and the attachment files, titled after the definition cleaned for file names.
    *
    * @param trainingDefinitionId id of the definition to export
-   * @param format the format the file is written in
-   * @return the file's bytes and title, {@link FileToReturnDTO}
+   * @param format the format the document is written in
+   * @return the file's bytes, title and whether it is an archive, {@link FileToReturnDTO}
    * @throws cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException when no
    *     definition carries that id
    * @throws InternalServerErrorException when the definition cannot be serialized
@@ -141,22 +160,39 @@ public class ExportImportFacade {
   @TransactionalRO
   public FileToReturnDTO dbExport(Long trainingDefinitionId, ExportFormat format) {
     TrainingDefinition td = exportImportService.findById(trainingDefinitionId);
-    ExportTrainingDefinitionAndLevelsDTO dbExport = exportImportMapper.mapToDTO(td);
-    if (dbExport != null) {
-      dbExport.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingDefinitionId));
-    }
+    ExportTrainingDefinitionAndLevelsDTO dbExport = mapToExportWithContent(td);
+    List<ExportedAttachment> attachments =
+        definitionAttachmentReader.readAllForExport(trainingDefinitionId);
     try {
+      byte[] document = format.writeDocument(dbExport);
       FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
-      fileToReturnDTO.setContent(format.writeDocument(dbExport));
-      if (dbExport != null && dbExport.getTitle() != null) {
-        fileToReturnDTO.setTitle(dbExport.getTitle());
-      } else {
-        fileToReturnDTO.setTitle("");
+      if (attachments.isEmpty()) {
+        fileToReturnDTO.setContent(document);
+        fileToReturnDTO.setTitle(dbExport.getTitle() != null ? dbExport.getTitle() : "");
+        return fileToReturnDTO;
       }
+      String archiveName = definitionArchiveWriter.archiveNameOf(dbExport.getTitle());
+      fileToReturnDTO.setContent(
+          definitionArchiveWriter.write(archiveName, format, document, attachments));
+      fileToReturnDTO.setTitle(archiveName);
+      fileToReturnDTO.setArchive(true);
       return fileToReturnDTO;
     } catch (JacksonException ex) {
       throw new InternalServerErrorException(ex);
     }
+  }
+
+  /**
+   * Maps a definition to its exported shape with its levels in level order.
+   *
+   * @param trainingDefinition the definition being exported
+   * @return its exported shape
+   */
+  private ExportTrainingDefinitionAndLevelsDTO mapToExportWithContent(
+      TrainingDefinition trainingDefinition) {
+    ExportTrainingDefinitionAndLevelsDTO exported = exportImportMapper.mapToDTO(trainingDefinition);
+    exported.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingDefinition.getId()));
+    return exported;
   }
 
   /**
@@ -178,33 +214,80 @@ public class ExportImportFacade {
    * Creates a new training definition from a submitted one together with its levels in the order
    * given, through the same level writing as a definition created over the API. The new definition
    * starts out unreleased and takes its estimated duration from the sum of its levels'. A blank
-   * answer or answer variable name of a training level counts as absent.
+   * answer or answer variable name of a training level counts as absent. The submitted definition
+   * carries no files, so its level content may not reference any unless unresolved references are
+   * kept.
    *
    * @param importTrainingDefinitionDTO the definition to create, levels included
+   * @param keepUnresolvedReferences whether level content may reference a file the import does not
+   *     hold, which then stays referenced without a link
    * @return the created definition with its levels, {@link TrainingDefinitionWithLevelsDTO}
    * @throws UnprocessableEntityException when a training level's hint penalties exceed its maximum
    *     score
-   * @throws BadRequestException when a training level's answer configuration is inconsistent, or a
-   *     statement of a test assessment names no correct option
+   * @throws BadRequestException when a training level's answer configuration is inconsistent, a
+   *     statement of a test assessment names no correct option, or level content references a file
    */
   @IsDesignerOrAdmin
   @TransactionalWO
   public TrainingDefinitionWithLevelsDTO dbImport(
-      ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
+      ImportTrainingDefinitionDTO importTrainingDefinitionDTO, boolean keepUnresolvedReferences) {
+    return importWithFiles(importTrainingDefinitionDTO, List.of(), keepUnresolvedReferences);
+  }
+
+  /**
+   * Creates a new training definition from an exported ZIP archive, linking the attachment files
+   * the archive holds, otherwise as {@link #dbImport(ImportTrainingDefinitionDTO)} does.
+   *
+   * @param archive the ZIP bytes
+   * @param keepUnresolvedReferences whether level content may reference a file the archive does
+   *     not hold, which then stays referenced without a link
+   * @return the created definition with its levels, {@link TrainingDefinitionWithLevelsDTO}
+   * @throws BadRequestException when the archive breaks its layout, its metadata is invalid, or
+   *     level content references a file the archive does not hold and unresolved references are
+   *     not kept
+   * @throws cz.cyberrange.platform.training.api.exceptions.PayloadTooLargeException when the
+   *     unpacked archive or its linked files exceed the attachment budget of a definition
+   */
+  @IsDesignerOrAdmin
+  @TransactionalWO
+  public TrainingDefinitionWithLevelsDTO dbImportArchive(
+      byte[] archive, boolean keepUnresolvedReferences) {
+    DefinitionArchive definitionArchive = definitionArchiveReader.read(archive);
+    return importWithFiles(
+        definitionArchive.definition(), definitionArchive.attachments(), keepUnresolvedReferences);
+  }
+
+  private TrainingDefinitionWithLevelsDTO importWithFiles(
+      ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
+      List<SuppliedAttachment> suppliedFiles,
+      boolean keepUnresolvedReferences) {
     TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
     newDefinition.setState(TDState.UNRELEASED);
     List<AbstractLevel> levels =
         importTrainingDefinitionDTO.getLevels().stream()
             .map(levelMapper::mapImportToEntity)
             .collect(Collectors.toList());
+    definitionAttachmentService.requireReferencesSupplied(
+        levels, suppliedFiles, keepUnresolvedReferences);
     TrainingDefinition newTrainingDefinition =
         trainingDefinitionService.create(newDefinition, levels);
+    definitionAttachmentService.synchronizeLinks(
+        newTrainingDefinition,
+        materialsOf(suppliedFiles),
+        suppliedFiles,
+        keepUnresolvedReferences);
     TrainingDefinitionWithLevelsDTO importedDefinition =
         trainingDefinitionMapper.mapToDTOWithLevels(
             newTrainingDefinition,
             levels.stream().map(levelMapper::mapToDTO).collect(Collectors.toList()));
     importedDefinition.setCanBeArchived(true);
     return importedDefinition;
+  }
+
+  private List<TrainingMaterialDTO> materialsOf(List<SuppliedAttachment> suppliedFiles) {
+    return suppliedFiles.stream()
+        .map(file -> new TrainingMaterialDTO(file.hash(), file.fileName()))
+        .toList();
   }
 
   /**
@@ -670,17 +753,11 @@ public class ExportImportFacade {
       throws IOException {
     Long trainingDefinitionId = trainingInstance.getTrainingDefinition().getId();
     ExportTrainingDefinitionAndLevelsDTO tD =
-        exportImportMapper.mapToDTO(exportImportService.findById(trainingDefinitionId));
-    if (tD != null) {
-      tD.setLevels(mapAbstractLevelToAbstractLevelDTO(trainingDefinitionId));
-      ZipEntry definitionEntry =
-          new ZipEntry(
-              "training_definition-id"
-                  + trainingInstance.getTrainingDefinition().getId()
-                  + format.getFileExtension());
-      zos.putNextEntry(definitionEntry);
-      zos.write(format.writeDocument(tD));
-    }
+        mapToExportWithContent(exportImportService.findById(trainingDefinitionId));
+    ZipEntry definitionEntry =
+        new ZipEntry("training_definition-id" + trainingDefinitionId + format.getFileExtension());
+    zos.putNextEntry(definitionEntry);
+    zos.write(format.writeDocument(tD));
   }
 
   /**

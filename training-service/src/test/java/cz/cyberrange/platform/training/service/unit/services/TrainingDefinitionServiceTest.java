@@ -12,7 +12,6 @@ import cz.cyberrange.platform.training.api.exceptions.EntityConflictException;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.Attachment;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
@@ -25,7 +24,6 @@ import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchi
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
-import cz.cyberrange.platform.training.persistence.repository.AttachmentRepository;
 import cz.cyberrange.platform.training.persistence.repository.HintRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
@@ -37,6 +35,7 @@ import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionLevelsService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserService;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentService;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -70,14 +69,13 @@ public class TrainingDefinitionServiceTest {
   @Mock private AbstractLevelRepository abstractLevelRepository;
   @Mock private TrainingInstanceRepository trainingInstanceRepository;
   @Mock private HintRepository hintRepository;
-  @Mock private AttachmentRepository attachmentRepository;
   @Mock private UserRefRepository userRefRepository;
   @Mock private SecurityService securityService;
   @Mock private UserService userService;
   @Mock private TrainingDefinitionLevelsService trainingDefinitionLevelsService;
+  @Mock private DefinitionAttachmentService definitionAttachmentService;
   @Captor private ArgumentCaptor<TrainingDefinition> definitionCaptor;
   @Captor private ArgumentCaptor<AbstractLevel> levelCaptor;
-  @Captor private ArgumentCaptor<Iterable<Attachment>> attachmentsCaptor;
 
   private TrainingDefinitionService trainingDefinitionService;
   private TrainingDefinition unreleasedDefinition;
@@ -95,11 +93,11 @@ public class TrainingDefinitionServiceTest {
             abstractLevelRepository,
             trainingInstanceRepository,
             hintRepository,
-            attachmentRepository,
             userRefRepository,
             securityService,
             userService,
             trainingDefinitionLevelsService,
+            definitionAttachmentService,
             new CloneMapperImpl());
 
     infoLevel = testDataFactory.getInfoLevel1();
@@ -190,6 +188,7 @@ public class TrainingDefinitionServiceTest {
     assertEquals(trainingLevel.getSolution(), clonedTrainingLevel.getSolution());
     assertEquals(trainingLevel.getMaxScore(), clonedTrainingLevel.getMaxScore());
     then(trainingDefinitionRepository).should().flush();
+    then(definitionAttachmentService).should().copyLinks(releasedDefinition, clone);
   }
 
   @Test
@@ -227,38 +226,6 @@ public class TrainingDefinitionServiceTest {
     ExtendedMatchingStatement clonedStatement =
         clonedQuestion.getExtendedMatchingStatements().getFirst();
     assertNull(clonedStatement.getExtendedMatchingOption());
-  }
-
-  @Test
-  public void cloneTrainingDefinitionSavesCopiedAttachmentsLinkedToCopiedLevel() {
-    givenLoggedInAuthor();
-    Attachment attachment = new Attachment();
-    attachment.setId(21L);
-    attachment.setContent("Manual");
-    attachment.setTrainingLevel(trainingLevel);
-    trainingLevel.addAttachment(attachment);
-    given(trainingDefinitionRepository.findById(releasedDefinition.getId()))
-        .willReturn(Optional.of(releasedDefinition));
-    given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(releasedDefinition.getId()))
-        .willReturn(List.of(infoLevel, trainingLevel));
-    given(trainingDefinitionRepository.save(any(TrainingDefinition.class)))
-        .willAnswer(returnsFirstArg());
-
-    trainingDefinitionService.clone(releasedDefinition.getId(), "Copy");
-
-    then(abstractLevelRepository).should(times(2)).save(levelCaptor.capture());
-    TrainingLevel clonedTrainingLevel =
-        assertInstanceOf(TrainingLevel.class, levelCaptor.getAllValues().get(1));
-    then(attachmentRepository).should().saveAll(attachmentsCaptor.capture());
-    List<Attachment> savedAttachments = new ArrayList<>();
-    attachmentsCaptor.getValue().forEach(savedAttachments::add);
-    assertEquals(1, savedAttachments.size());
-    Attachment savedAttachment = savedAttachments.getFirst();
-    assertNotSame(attachment, savedAttachment);
-    assertNull(savedAttachment.getId());
-    assertEquals("Manual", savedAttachment.getContent());
-    assertSame(clonedTrainingLevel, savedAttachment.getTrainingLevel());
-    assertSame(trainingLevel, attachment.getTrainingLevel());
   }
 
   @Test
@@ -425,6 +392,7 @@ public class TrainingDefinitionServiceTest {
     then(trainingDefinitionLevelsService).should().deleteLevel(assessmentLevel);
     then(trainingDefinitionLevelsService).should().deleteLevel(trainingLevel);
     then(trainingDefinitionLevelsService).should().deleteLevel(infoLevel);
+    then(definitionAttachmentService).should().removeAllLinks(unreleasedDefinition);
   }
 
   @Test

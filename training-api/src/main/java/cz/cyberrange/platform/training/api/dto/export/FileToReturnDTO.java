@@ -19,4 +19,7 @@ public class FileToReturnDTO {
       description = "Name the file is offered under, without the extension",
       example = "TrainingInstance-NetworkDemolition")
   private String title;
+
+  @Schema(description = "Whether the bytes are a ZIP archive rather than a single document.")
+  private boolean archive;
 }

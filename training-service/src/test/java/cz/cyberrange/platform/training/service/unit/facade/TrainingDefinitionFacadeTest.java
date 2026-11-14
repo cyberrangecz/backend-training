@@ -9,6 +9,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.TrainingMaterialDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelCreateDTO;
 import cz.cyberrange.platform.training.api.dto.infolevel.InfoLevelUpdateDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
@@ -32,7 +33,6 @@ import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.facade.TrainingDefinitionFacade;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.AttachmentMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapperImpl;
@@ -43,6 +43,8 @@ import cz.cyberrange.platform.training.service.services.SecurityService;
 import cz.cyberrange.platform.training.service.services.TrainingDefinitionService;
 import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import cz.cyberrange.platform.training.service.services.UserService;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentReader;
+import cz.cyberrange.platform.training.service.services.attachment.DefinitionAttachmentService;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -70,10 +72,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
       LevelMapperImpl.class,
       QuestionMapperImpl.class,
       HintMapperImpl.class,
-      AttachmentMapperImpl.class,
       MitreTechniqueMapperImpl.class
     })
 public class TrainingDefinitionFacadeTest {
+
+  private static final List<TrainingMaterialDTO> MATERIALS =
+      List.of(new TrainingMaterialDTO("a".repeat(64), "notes.txt"));
 
   private static final UserNameFilter JANE_DOE_FILTER = new UserNameFilter(null, null, "Jane Doe");
 
@@ -85,6 +89,8 @@ public class TrainingDefinitionFacadeTest {
   @Autowired private HintMapperImpl hintMapper;
 
   @MockitoBean private TrainingDefinitionService trainingDefinitionService;
+  @MockitoBean private DefinitionAttachmentReader definitionAttachmentReader;
+  @MockitoBean private DefinitionAttachmentService definitionAttachmentService;
   @MockitoBean private SecurityService securityService;
   @MockitoBean private UserService userService;
 
@@ -111,6 +117,8 @@ public class TrainingDefinitionFacadeTest {
     trainingDefinitionFacade =
         new TrainingDefinitionFacade(
             trainingDefinitionService,
+            definitionAttachmentReader,
+            definitionAttachmentService,
             userService,
             securityService,
             trainingDefinitionMapper,
@@ -178,9 +186,11 @@ public class TrainingDefinitionFacadeTest {
     infoLevelUpdate.setLevelType(LevelType.INFO_LEVEL);
     trainingDefinitionUpdate = testDataFactory.getTrainingDefinitionUpdateDTO();
     trainingDefinitionUpdate.setVersion(2L);
+    trainingDefinitionUpdate.setMaterials(MATERIALS);
     trainingDefinitionUpdate.setLevels(List.of(infoLevelUpdate));
 
     trainingDefinitionCreate = testDataFactory.getTrainingDefinitionCreateDTO();
+    trainingDefinitionCreate.setMaterials(MATERIALS);
     given(userService.getUserRefFromUserAndGroup()).willReturn(authorDTO1);
   }
 
@@ -253,7 +263,7 @@ public class TrainingDefinitionFacadeTest {
     stubInstanceCounts(trainingDefinitionService, Map.of(2L, 3L));
 
     TrainingDefinitionWithLevelsDTO updatedDefinition =
-        trainingDefinitionFacade.update(2L, trainingDefinitionUpdate);
+        trainingDefinitionFacade.update(2L, trainingDefinitionUpdate, List.of(), false);
 
     then(trainingDefinitionService)
         .should()
@@ -267,6 +277,9 @@ public class TrainingDefinitionFacadeTest {
     assertEquals(3L, updatedDefinition.getInstanceCount());
     assertEquals(1, updatedDefinition.getLevels().size());
     assertEquals(infoLevel.getId(), updatedDefinition.getLevels().get(0).getId());
+    then(definitionAttachmentService)
+        .should()
+        .synchronizeLinks(trainingDefinition2, MATERIALS, List.of(), false);
   }
 
   @Test
@@ -277,7 +290,7 @@ public class TrainingDefinitionFacadeTest {
 
     assertThrows(
         EntityConflictException.class,
-        () -> trainingDefinitionFacade.update(2L, trainingDefinitionUpdate));
+        () -> trainingDefinitionFacade.update(2L, trainingDefinitionUpdate, List.of(), false));
   }
 
   @Test
@@ -288,7 +301,7 @@ public class TrainingDefinitionFacadeTest {
     given(trainingDefinitionService.create(any(TrainingDefinition.class), anyList()))
         .willReturn(trainingDefinition2);
 
-    trainingDefinitionFacade.create(trainingDefinitionCreate);
+    trainingDefinitionFacade.create(trainingDefinitionCreate, List.of(), false);
 
     then(trainingDefinitionService)
         .should()
@@ -297,6 +310,39 @@ public class TrainingDefinitionFacadeTest {
     assertEquals(1, levelsCaptor.getValue().size());
     assertInstanceOf(InfoLevel.class, levelsCaptor.getValue().get(0));
     assertNull(levelsCaptor.getValue().get(0).getId());
+    then(definitionAttachmentService)
+        .should()
+        .synchronizeLinks(trainingDefinition2, MATERIALS, List.of(), false);
+  }
+
+  @Test
+  public void createTrainingDefinitionPassesTheKeepFlagToTheLinkSynchronization() {
+    InfoLevelCreateDTO infoLevelCreate = testDataFactory.getInfoLevelCreateDTO();
+    infoLevelCreate.setLevelType(LevelType.INFO_LEVEL);
+    trainingDefinitionCreate.setLevels(List.of(infoLevelCreate));
+    given(trainingDefinitionService.create(any(TrainingDefinition.class), anyList()))
+        .willReturn(trainingDefinition2);
+
+    trainingDefinitionFacade.create(trainingDefinitionCreate, List.of(), true);
+
+    then(definitionAttachmentService)
+        .should()
+        .synchronizeLinks(trainingDefinition2, MATERIALS, List.of(), true);
+  }
+
+  @Test
+  public void updateTrainingDefinitionPassesTheKeepFlagToTheLinkSynchronization() {
+    given(trainingDefinitionService.update(eq(2L), eq(2L), any(), anyList()))
+        .willReturn(trainingDefinition2);
+    given(trainingDefinitionService.findAllLevelsFromDefinition(2L)).willReturn(List.of(infoLevel));
+    given(trainingDefinitionService.canBeArchived(2L)).willReturn(false);
+    stubInstanceCounts(trainingDefinitionService, Map.of(2L, 3L));
+
+    trainingDefinitionFacade.update(2L, trainingDefinitionUpdate, List.of(), true);
+
+    then(definitionAttachmentService)
+        .should()
+        .synchronizeLinks(trainingDefinition2, MATERIALS, List.of(), true);
   }
 
   @Test

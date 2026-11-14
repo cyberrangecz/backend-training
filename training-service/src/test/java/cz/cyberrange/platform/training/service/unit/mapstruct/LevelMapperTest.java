@@ -31,7 +31,6 @@ import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingLevel;
 import cz.cyberrange.platform.training.persistence.model.question.ExtendedMatchingOption;
 import cz.cyberrange.platform.training.persistence.model.question.Question;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.AttachmentMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.HintMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.LevelMapper;
@@ -60,7 +59,6 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
       LevelMapperImpl.class,
       HintMapperImpl.class,
       QuestionMapperImpl.class,
-      AttachmentMapperImpl.class,
       MitreTechniqueMapperImpl.class
     })
 class LevelMapperTest {

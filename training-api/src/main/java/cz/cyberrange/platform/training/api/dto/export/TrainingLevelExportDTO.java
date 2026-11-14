@@ -1,10 +1,8 @@
 package cz.cyberrange.platform.training.api.dto.export;
 
-import cz.cyberrange.platform.training.api.dto.imports.AttachmentImportDTO;
 import cz.cyberrange.platform.training.api.dto.technique.MitreTechniqueDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -44,10 +42,6 @@ public class TrainingLevelExportDTO extends AbstractLevelExportDTO {
 
   @Schema(example = "5")
   private int incorrectAnswerLimit;
-
-  /** Carries only each attachment's {@code content}; no other attachment field survives export */
-  @Schema(description = "Only each attachment's content survives the export", example = "[]")
-  private List<AttachmentImportDTO> attachments;
 
   @Schema(
       description = "Points for solving the level, before any hint or solution penalty",

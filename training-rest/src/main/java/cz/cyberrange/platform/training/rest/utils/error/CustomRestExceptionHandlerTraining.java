@@ -6,6 +6,7 @@ import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.api.exceptions.ForbiddenException;
 import cz.cyberrange.platform.training.api.exceptions.InternalServerErrorException;
 import cz.cyberrange.platform.training.api.exceptions.MicroserviceApiException;
+import cz.cyberrange.platform.training.api.exceptions.PayloadTooLargeException;
 import cz.cyberrange.platform.training.api.exceptions.TooManyRequestsException;
 import cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.UrlPathHelper;
@@ -116,7 +118,9 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     supportedHttpMethods.append(ex.getMethod());
     supportedHttpMethods.append(
         " method is not supported for this request. Supported methods are ");
-    ex.getSupportedHttpMethods().forEach(t -> supportedHttpMethods.append(t + " "));
+    if (ex.getSupportedHttpMethods() != null) {
+      ex.getSupportedHttpMethods().forEach(t -> supportedHttpMethods.append(t).append(' '));
+    }
 
     final ApiError apiError =
         ApiError.of(
@@ -191,6 +195,25 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     return ApiErrorResponder.asJson(apiError);
   }
 
+  /**
+   * Always answers with {@link HttpStatus#PAYLOAD_TOO_LARGE} when a file or the whole multipart
+   * request exceeds the configured size limit, reporting the deepest cause as the error description
+   */
+  @Override
+  protected ResponseEntity<Object> handleMaxUploadSizeExceededException(
+      final MaxUploadSizeExceededException ex,
+      final HttpHeaders headers,
+      final HttpStatusCode status,
+      final WebRequest request) {
+    final ApiError apiError =
+        ApiError.of(
+            HttpStatus.PAYLOAD_TOO_LARGE,
+            getInitialException(ex).getLocalizedMessage(),
+            getErrorMessage(ex),
+            getRequestPath(request));
+    return ApiErrorResponder.asJson(apiError);
+  }
+
   // Handling of own exceptions
 
   /**
@@ -235,6 +258,22 @@ public class CustomRestExceptionHandlerTraining extends ResponseEntityExceptionH
     final ApiError apiError =
         ApiError.of(
             BadRequestException.class.getAnnotation(ResponseStatus.class).value(),
+            getInitialException(ex).getLocalizedMessage(),
+            getErrorMessage(ex),
+            URL_PATH_HELPER.getRequestUri(req));
+    return ApiErrorResponder.asJson(apiError);
+  }
+
+  /**
+   * Answers with the status carried on {@code PayloadTooLargeException}'s own
+   * {@code @ResponseStatus}, reporting the deepest cause of {@code ex} as the error description
+   */
+  @ExceptionHandler(PayloadTooLargeException.class)
+  public ResponseEntity<Object> handlePayloadTooLargeException(
+      final PayloadTooLargeException ex, final WebRequest request, HttpServletRequest req) {
+    final ApiError apiError =
+        ApiError.of(
+            PayloadTooLargeException.class.getAnnotation(ResponseStatus.class).value(),
             getInitialException(ex).getLocalizedMessage(),
             getErrorMessage(ex),
             URL_PATH_HELPER.getRequestUri(req));

@@ -28,7 +28,6 @@ import cz.cyberrange.platform.training.persistence.model.UserRef;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import cz.cyberrange.platform.training.service.facade.TrainingInstanceFacade;
-import cz.cyberrange.platform.training.service.mapping.mapstruct.AttachmentMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EnumMapperImpl;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.EventMapper;
 import cz.cyberrange.platform.training.service.mapping.mapstruct.TrainingDefinitionMapperImpl;
@@ -67,8 +66,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
       EnumMapperImpl.class,
       TrainingInstanceMapperImpl.class,
       TrainingRunMapperImpl.class,
-      TrainingDefinitionMapperImpl.class,
-      AttachmentMapperImpl.class
+      TrainingDefinitionMapperImpl.class
     })
 public class TrainingInstanceFacadeTest {
 

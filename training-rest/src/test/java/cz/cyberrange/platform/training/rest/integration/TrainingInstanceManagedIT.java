@@ -107,14 +107,11 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
   void findAllTrainingInstances_instancesOfBothKinds_reportsManagedFlag() throws Exception {
     stubLoggedInUser(DEFAULT_USER_REF_ID);
 
-    perform(
-            get(BASE_PATH).param("size", "100"),
-            RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)
+    perform(get(BASE_PATH).param("size", "100"), RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(
-            jsonPath("$.content[?(@.id == %d)].managed", managedFutureInstance.getId())
-                .value(true))
+            jsonPath("$.content[?(@.id == %d)].managed", managedFutureInstance.getId()).value(true))
         .andExpect(
             jsonPath("$.content[?(@.id == %d)].managed", unmanagedFutureInstance.getId())
                 .value(false));
@@ -167,8 +164,7 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
   @Test
   @DisplayName("updateTrainingInstance without managed keeps the flag of a future instance")
   void updateTrainingInstance_withoutManagedOnFutureInstance_keepsManaged() throws Exception {
-    perform(put(BASE_PATH), updateBody(managedFutureInstance, null))
-        .andExpect(status().isOk());
+    perform(put(BASE_PATH), updateBody(managedFutureInstance, null)).andExpect(status().isOk());
 
     assertThat(storedManaged(managedFutureInstance)).isTrue();
   }
@@ -176,8 +172,7 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
   @Test
   @DisplayName("updateTrainingInstance without managed keeps the flag of a running instance")
   void updateTrainingInstance_withoutManagedOnRunningInstance_keepsManaged() throws Exception {
-    perform(put(BASE_PATH), updateBody(managedRunningInstance, null))
-        .andExpect(status().isOk());
+    perform(put(BASE_PATH), updateBody(managedRunningInstance, null)).andExpect(status().isOk());
 
     assertThat(storedManaged(managedRunningInstance)).isTrue();
   }
@@ -185,8 +180,7 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
   @Test
   @DisplayName("updateTrainingInstance with another managed value changes a future instance")
   void updateTrainingInstance_changedManagedOnFutureInstance_changesManaged() throws Exception {
-    perform(put(BASE_PATH), updateBody(managedFutureInstance, false))
-        .andExpect(status().isOk());
+    perform(put(BASE_PATH), updateBody(managedFutureInstance, false)).andExpect(status().isOk());
 
     assertThat(storedManaged(managedFutureInstance)).isFalse();
   }
@@ -194,8 +188,7 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
   @Test
   @DisplayName("updateTrainingInstance with the same managed value on a running instance succeeds")
   void updateTrainingInstance_sameManagedOnRunningInstance_isAccepted() throws Exception {
-    perform(put(BASE_PATH), updateBody(managedRunningInstance, true))
-        .andExpect(status().isOk());
+    perform(put(BASE_PATH), updateBody(managedRunningInstance, true)).andExpect(status().isOk());
 
     assertThat(storedManaged(managedRunningInstance)).isTrue();
   }
@@ -245,8 +238,7 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
     body.put("access_token", "created");
     body.put("start_time", isoUtc(TrainingInstanceDataSeeder.now().plusDays(10)));
     body.put("end_time", isoUtc(TrainingInstanceDataSeeder.now().plusDays(11)));
-    body.put(
-        "training_definition_id", managedFutureInstance.getTrainingDefinition().getId());
+    body.put("training_definition_id", managedFutureInstance.getTrainingDefinition().getId());
     body.put("local_environment", false);
     body.put("pool_id", POOL_ID);
     body.put("show_stepper_bar", true);
@@ -280,8 +272,7 @@ class TrainingInstanceManagedIT extends AbstractIntegrationTest {
     return mockMvc.perform(request.with(callerWithRoles(role)));
   }
 
-  private ResultActions perform(
-      MockHttpServletRequestBuilder request, Map<String, Object> jsonBody)
+  private ResultActions perform(MockHttpServletRequestBuilder request, Map<String, Object> jsonBody)
       throws Exception {
     return perform(
         request

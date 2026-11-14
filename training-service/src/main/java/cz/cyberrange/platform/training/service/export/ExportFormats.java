@@ -3,6 +3,7 @@ package cz.cyberrange.platform.training.service.export;
 import cz.cyberrange.platform.training.api.exceptions.BadRequestException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeTypeUtils;
@@ -58,5 +59,15 @@ public class ExportFormats {
       }
     }
     return formats.getFirst();
+  }
+
+  /**
+   * Finds the format a file name's extension belongs to.
+   *
+   * @param fileName the file name
+   * @return the format, or empty when the extension is none of the formats'
+   */
+  public Optional<ExportFormat> byFileName(String fileName) {
+    return formats.stream().filter(format -> format.isNameOfFormat(fileName)).findFirst();
   }
 }

@@ -3,7 +3,6 @@ package cz.cyberrange.platform.training.rest.integration;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.Attachment;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.MitreTechnique;
@@ -16,7 +15,6 @@ import cz.cyberrange.platform.training.persistence.model.enums.AssessmentType;
 import cz.cyberrange.platform.training.persistence.model.enums.TDState;
 import cz.cyberrange.platform.training.persistence.model.enums.TRState;
 import cz.cyberrange.platform.training.persistence.repository.AbstractLevelRepository;
-import cz.cyberrange.platform.training.persistence.repository.AttachmentRepository;
 import cz.cyberrange.platform.training.persistence.repository.MitreTechniqueRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingDefinitionRepository;
 import cz.cyberrange.platform.training.persistence.repository.TrainingInstanceRepository;
@@ -47,7 +45,6 @@ final class TrainingDefinitionSeeder {
   private final JdbcTemplate jdbcTemplate;
   private final TrainingDefinitionRepository trainingDefinitionRepository;
   private final AbstractLevelRepository abstractLevelRepository;
-  private final AttachmentRepository attachmentRepository;
   private final UserRefRepository userRefRepository;
   private final MitreTechniqueRepository mitreTechniqueRepository;
   private final TrainingInstanceRepository trainingInstanceRepository;
@@ -58,7 +55,6 @@ final class TrainingDefinitionSeeder {
     this.jdbcTemplate = context.getBean(JdbcTemplate.class);
     this.trainingDefinitionRepository = context.getBean(TrainingDefinitionRepository.class);
     this.abstractLevelRepository = context.getBean(AbstractLevelRepository.class);
-    this.attachmentRepository = context.getBean(AttachmentRepository.class);
     this.userRefRepository = context.getBean(UserRefRepository.class);
     this.mitreTechniqueRepository = context.getBean(MitreTechniqueRepository.class);
     this.trainingInstanceRepository = context.getBean(TrainingInstanceRepository.class);
@@ -198,35 +194,6 @@ final class TrainingDefinitionSeeder {
     return jdbcTemplate.queryForList(
         "SELECT id FROM hint WHERE training_level_id = ? ORDER BY order_in_level",
         Long.class,
-        trainingLevelId);
-  }
-
-  /**
-   * Stores a training level at the given position carrying one attachment with the given content.
-   *
-   * @return primary key of the level
-   */
-  Long trainingLevelWithAttachment(Long definitionId, int order, String attachmentContent) {
-    return transaction.execute(
-        status -> {
-          TrainingLevel level = saveLevel(newTrainingLevel(order), definitionId, order, 1);
-          Attachment attachment = new Attachment();
-          attachment.setContent(attachmentContent);
-          attachment.setTrainingLevel(level);
-          attachmentRepository.save(attachment);
-          return level.getId();
-        });
-  }
-
-  /**
-   * Returns the contents of the attachments of a training level, ordered by their primary key.
-   *
-   * @param trainingLevelId primary key of the level
-   */
-  List<String> attachmentContents(Long trainingLevelId) {
-    return jdbcTemplate.queryForList(
-        "SELECT content FROM attachment WHERE training_level_id = ? ORDER BY id",
-        String.class,
         trainingLevelId);
   }
 

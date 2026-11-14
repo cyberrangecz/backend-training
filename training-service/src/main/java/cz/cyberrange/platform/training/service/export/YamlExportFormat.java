@@ -2,6 +2,7 @@ package cz.cyberrange.platform.training.service.export;
 
 import cz.cyberrange.platform.training.service.utils.AbstractFileExtensions;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import tools.jackson.dataformat.yaml.YAMLMapper;
@@ -38,5 +39,10 @@ public class YamlExportFormat extends ExportFormat {
   @Override
   public byte[] writeRecord(Object value) {
     return writeDocument(value);
+  }
+
+  @Override
+  public boolean isNameOfFormat(String fileName) {
+    return super.isNameOfFormat(fileName) || fileName.toLowerCase(Locale.ROOT).endsWith(".yml");
   }
 }
