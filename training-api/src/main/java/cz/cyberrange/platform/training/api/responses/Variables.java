@@ -6,8 +6,8 @@ import java.util.Set;
 import lombok.Data;
 
 /**
- * Deserialization target for the variables the sandbox service lists for one pool. Only the names
- * are carried; no value accompanies them.
+ * Deserialization target for the variables the sandbox service lists for one pool or one sandbox
+ * definition. Only the names are carried; no value accompanies them.
  */
 @Data
 public class Variables {
