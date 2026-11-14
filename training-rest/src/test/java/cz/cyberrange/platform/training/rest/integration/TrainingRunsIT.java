@@ -1841,6 +1841,37 @@ class TrainingRunsIT extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("Finishing a run that is already finished is a conflict and keeps its end time")
+  void finishTrainingRun_finishedRun_returnsConflictAndKeepsEndTime() throws Exception {
+    TrainingRun run =
+        seeder.run(instance, trainee, assessmentLevel, TRState.FINISHED, SANDBOX_ID, true);
+    java.sql.Timestamp endTime = runColumn(run.getId(), "end_time", java.sql.Timestamp.class);
+
+    expectEntityError(
+        call(TRAINEE_USER_REF_ID, TRAINEE, put(path(run.getId(), ""))),
+        409,
+        "CONFLICT",
+        path(run.getId(), ""),
+        "TrainingRun");
+    assertThat(runColumn(run.getId(), "end_time", java.sql.Timestamp.class)).isEqualTo(endTime);
+  }
+
+  @Test
+  @DisplayName("Revealing the solution of a finished run is a conflict")
+  void getSolution_finishedRun_returnsConflict() throws Exception {
+    TrainingRun run =
+        seeder.run(instance, trainee, trainingLevel, TRState.FINISHED, SANDBOX_ID, true);
+
+    expectEntityError(
+        call(TRAINEE_USER_REF_ID, TRAINEE, get(path(run.getId(), "/solutions"))),
+        409,
+        "CONFLICT",
+        path(run.getId(), "/solutions"),
+        "TrainingRun");
+    assertThat(runColumn(run.getId(), "solution_taken", Boolean.class)).isFalse();
+  }
+
+  @Test
   @DisplayName("Finishing an unknown run is not found")
   void finishTrainingRun_unknownRun_returnsNotFound() throws Exception {
     expectEntityError(
@@ -2181,6 +2212,20 @@ class TrainingRunsIT extends AbstractIntegrationTest {
         .andExpect(status().isOk());
 
     assertThat(runColumn(run.getId(), "state", String.class)).isEqualTo("ARCHIVED");
+  }
+
+  @Test
+  @DisplayName("Archiving an archived run again keeps its previous sandbox reference")
+  void archiveTrainingRun_archivedRun_changesNothing() throws Exception {
+    TrainingRun run = seeder.run(instance, trainee, trainingLevel, TRState.ARCHIVED, null, true);
+    seeder.updateRun(run.getId(), "previous_sandbox_instance_ref_id = '" + SANDBOX_ID + "'");
+
+    call(ADMINISTRATOR_USER_REF_ID, ADMINISTRATOR, patch(path(run.getId(), "/archive")))
+        .andExpect(status().isOk());
+
+    assertThat(runColumn(run.getId(), "state", String.class)).isEqualTo("ARCHIVED");
+    assertThat(runColumn(run.getId(), "previous_sandbox_instance_ref_id", String.class))
+        .isEqualTo(SANDBOX_ID);
   }
 
   @Test

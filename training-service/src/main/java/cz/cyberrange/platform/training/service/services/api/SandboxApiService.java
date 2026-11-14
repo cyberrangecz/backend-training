@@ -12,7 +12,6 @@ import cz.cyberrange.platform.training.api.responses.SandboxInfo;
 import cz.cyberrange.platform.training.api.responses.Variables;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -186,13 +185,13 @@ public class SandboxApiService {
    * @param sandboxDefinitionId the sandbox definition id
    * @return set of APG variables
    */
-  public Set<String> getVariablesBySandboxDefinitionId(Long sandboxDefinitionId) {
+  public Variables getVariablesBySandboxDefinitionId(Long sandboxDefinitionId) {
     try {
       return sandboxServiceWebClient
           .get()
           .uri("/definitions/{sandboxDefinitionId}/variables", sandboxDefinitionId)
           .retrieve()
-          .bodyToMono(new ParameterizedTypeReference<Set<String>>() {})
+          .bodyToMono(Variables.class)
           .block();
     } catch (CustomWebClientException ex) {
       throw new MicroserviceApiException(
