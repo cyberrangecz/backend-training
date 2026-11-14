@@ -12,6 +12,7 @@ import cz.cyberrange.platform.training.persistence.repository.TrainingRunReposit
 import cz.cyberrange.platform.training.persistence.repository.UserRefRepository;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -235,7 +236,7 @@ public class TrainingInstanceService {
    */
   private void checkChangedFieldsOfTrainingInstance(
       TrainingInstance trainingInstanceToUpdate, TrainingInstance currentTrainingInstance) {
-    if (!currentTrainingInstance.getStartTime().equals(trainingInstanceToUpdate.getStartTime())) {
+    if (!hasSameStartTime(currentTrainingInstance, trainingInstanceToUpdate)) {
       throw new EntityConflictException(
           new EntityErrorDetail(
               TrainingInstance.class,
@@ -270,6 +271,17 @@ public class TrainingInstanceService {
               currentTrainingInstance.getId(),
               "Whether the running or finished instance is managed cannot be changed. Only title and end time can be updated."));
     }
+  }
+
+  /**
+   * Compares the start times of two instances at millisecond precision, the finest precision the
+   * REST API exposes, so a start time read back from the API matches the stored one.
+   */
+  private boolean hasSameStartTime(TrainingInstance first, TrainingInstance second) {
+    return first
+        .getStartTime()
+        .truncatedTo(ChronoUnit.MILLIS)
+        .equals(second.getStartTime().truncatedTo(ChronoUnit.MILLIS));
   }
 
   /**
