@@ -219,6 +219,10 @@ class DefinitionAttachmentServiceTest {
     givenCurrentLinks();
     given(attachmentFileRepository.findExistingHashes(anyCollection()))
         .willReturn(Set.of(STORED_HASH));
+    AttachmentFile stored = new AttachmentFile();
+    stored.setHash(STORED_HASH);
+    stored.setMediaType("image/png");
+    given(attachmentFileRepository.findAllById(anyCollection())).willReturn(List.of(stored));
 
     service.synchronizeLinks(
         definition, List.of(), List.of(SuppliedAttachment.of("logo.png", PNG_BYTES)), true);
