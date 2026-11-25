@@ -374,8 +374,8 @@ public class TrainingDefinitionFacade {
    * @throws EntityConflictException when the definition is not {@link TDState#UNRELEASED}, already
    *     has a training instance, or carries another version
    * @throws BadRequestException when a level id repeats, a level would change its type, a level
-   *     fails a content check, or the content references (unless kept) a file that was neither supplied nor
-   *     stored
+   *     fails a content check, or the content references (unless kept) a file that was neither
+   *     supplied nor stored
    * @throws cz.cyberrange.platform.training.api.exceptions.PayloadTooLargeException when the linked
    *     files exceed the budget of a definition
    * @throws cz.cyberrange.platform.training.api.exceptions.UnprocessableEntityException when a

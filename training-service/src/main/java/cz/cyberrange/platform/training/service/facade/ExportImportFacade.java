@@ -239,12 +239,12 @@ public class ExportImportFacade {
    * the archive holds, otherwise as {@link #dbImport(ImportTrainingDefinitionDTO)} does.
    *
    * @param archive the ZIP bytes
-   * @param keepUnresolvedReferences whether level content may reference a file the archive does
-   *     not hold, which then stays referenced without a link
+   * @param keepUnresolvedReferences whether level content may reference a file the archive does not
+   *     hold, which then stays referenced without a link
    * @return the created definition with its levels, {@link TrainingDefinitionWithLevelsDTO}
    * @throws BadRequestException when the archive breaks its layout, its metadata is invalid, or
-   *     level content references a file the archive does not hold and unresolved references are
-   *     not kept
+   *     level content references a file the archive does not hold and unresolved references are not
+   *     kept
    * @throws cz.cyberrange.platform.training.api.exceptions.PayloadTooLargeException when the
    *     unpacked archive or its linked files exceed the attachment budget of a definition
    */
@@ -272,10 +272,7 @@ public class ExportImportFacade {
     TrainingDefinition newTrainingDefinition =
         trainingDefinitionService.create(newDefinition, levels);
     definitionAttachmentService.synchronizeLinks(
-        newTrainingDefinition,
-        materialsOf(suppliedFiles),
-        suppliedFiles,
-        keepUnresolvedReferences);
+        newTrainingDefinition, materialsOf(suppliedFiles), suppliedFiles, keepUnresolvedReferences);
     TrainingDefinitionWithLevelsDTO importedDefinition =
         trainingDefinitionMapper.mapToDTOWithLevels(
             newTrainingDefinition,

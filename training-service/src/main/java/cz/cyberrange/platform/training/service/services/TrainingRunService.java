@@ -266,8 +266,8 @@ public class TrainingRunService {
    * @return the {@link TrainingRun} with its new current level
    * @throws EntityNotFoundException when the training run does not exist, or its current level is
    *     already the last one of the training definition
-   * @throws EntityConflictException when the run is no longer running, or its current level has
-   *     not been answered yet
+   * @throws EntityConflictException when the run is no longer running, or its current level has not
+   *     been answered yet
    */
   public TrainingRun moveToNextLevel(Long runId) {
     TrainingRun trainingRun = findByIdWithLevel(runId);

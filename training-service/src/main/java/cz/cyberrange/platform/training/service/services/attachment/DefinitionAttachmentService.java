@@ -106,11 +106,10 @@ public class DefinitionAttachmentService {
    * reference. Supplied files that are neither a material nor referenced are ignored. A material or
    * a reference resolves to a supplied file or to a file already stored; when unresolved references
    * are kept, a reference that resolves to neither stays in the level content and gets no link, and
-   * a later upload of its file links it. Newly supplied files are
-   * stored with a detected media type. A link takes the name of its material, else the supplied
-   * file's name, else the name of its existing link, else the name of any other definition's link
-   * to that file, else the hash with an extension of the media type. Files left without any link
-   * are deleted.
+   * a later upload of its file links it. Newly supplied files are stored with a detected media
+   * type. A link takes the name of its material, else the supplied file's name, else the name of
+   * its existing link, else the name of any other definition's link to that file, else the hash
+   * with an extension of the media type. Files left without any link are deleted.
    *
    * @param definition the persisted definition, whose levels are already written
    * @param materials the files the definition keeps whether or not content references them
@@ -118,8 +117,9 @@ public class DefinitionAttachmentService {
    * @param keepUnresolvedReferences whether a reference without a supplied or stored file is kept
    *     instead of refused
    * @throws BadRequestException when a material has neither a supplied nor a stored file, a
-   *     reference has neither and unresolved references are not kept, or the media metadata of a kept supplied file is out of range or its poster is not a
-   *     JPEG, WebP or PNG image of at most 1 MiB
+   *     reference has neither and unresolved references are not kept, or the media metadata of a
+   *     kept supplied file is out of range or its poster is not a JPEG, WebP or PNG image of at
+   *     most 1 MiB
    * @throws PayloadTooLargeException when the linked files exceed the budget of a definition
    */
   @Transactional
