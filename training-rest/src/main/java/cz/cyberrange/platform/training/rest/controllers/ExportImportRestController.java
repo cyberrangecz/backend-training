@@ -4,6 +4,7 @@ import cz.cyberrange.platform.training.api.dto.export.FileToReturnDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.scorereport.TrainingInstanceScoreReportDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
+import cz.cyberrange.platform.training.rest.utils.ArchiveRequestBodyReader;
 import cz.cyberrange.platform.training.rest.utils.ZipMediaType;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
@@ -21,7 +22,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
@@ -62,30 +65,42 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ExportImportRestController {
 
+  private static final String KEEP_UNRESOLVED_ATTACHMENTS_DESCRIPTION =
+      "When true, a reference attachment:<hash> in level content that names no file supplied or"
+          + " stored is kept as it is and linked to nothing, instead of being refused with 400."
+          + " Uploading a file with that hash to the definition later resolves it. Defaults to false.";
+
   private ExportImportFacade exportImportFacade;
   private ExportFormats exportFormats;
+  private ArchiveRequestBodyReader archiveRequestBodyReader;
 
   /**
    * Instantiates a new Export import rest controller.
    *
    * @param exportImportFacade the export import facade
    * @param exportFormats the selector of the format an export is written in
+   * @param archiveRequestBodyReader the bounded reader of an archive import body
    */
   @Autowired
   public ExportImportRestController(
-      ExportImportFacade exportImportFacade, ExportFormats exportFormats) {
+      ExportImportFacade exportImportFacade,
+      ExportFormats exportFormats,
+      ArchiveRequestBodyReader archiveRequestBodyReader) {
     this.exportImportFacade = exportImportFacade;
     this.exportFormats = exportFormats;
+    this.archiveRequestBodyReader = archiveRequestBodyReader;
   }
 
   /**
    * Returns the given training definition and its levels as a file offered for inline display,
-   * named after the definition. The file is YAML when the {@code Accept} header asks for YAML, JSON
-   * otherwise. A training administrator may export any definition, anyone else only one they
-   * author.
+   * named after the definition. A definition that links no attachment comes as one document, YAML
+   * when the {@code Accept} header asks for YAML and JSON otherwise. A definition that links
+   * attachments comes as a ZIP archive holding the document in that format, the attachment metadata
+   * and the attachment files. A training administrator may export any definition, anyone else only
+   * one they author.
    *
    * @param trainingDefinitionId the training definition id
-   * @param requestHeaders the request's headers, whose {@code Accept} selects the file format
+   * @param requestHeaders the request's headers, whose {@code Accept} selects the document format
    * @return the definition and its levels as file bytes
    */
   @Operation(
@@ -93,20 +108,30 @@ public class ExportImportRestController {
       summary = "Export a training definition as a file",
       description =
           "A training administrator may export any definition, anyone else only one they author."
-              + " The file holds the definition with its levels in order, and is named after the"
-              + " definition. It is a .yaml file served as application/yaml when Accept prefers"
+              + " The response type tells the two shapes apart. A definition with no linked file"
+              + " is a .yaml file served as application/yaml when Accept prefers"
               + " application/yaml, text/yaml or text/yml, and a .json file served as"
-              + " application/json otherwise.")
+              + " application/json otherwise. A definition that links files is a .zip file served"
+              + " as application/zip, holding <name>.json or <name>.yaml in the format Accept"
+              + " selects, attachments.json with the original name, duration, size in pixels and"
+              + " poster of each file, and each file as attachments/<entry name>. A name clash"
+              + " inside the archive is told apart by a number in parentheses before the last"
+              + " extension.")
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
-        description = "The definition and its levels, as a JSON or YAML file.",
+        description =
+            "The definition and its levels, as a JSON or YAML file, or as a ZIP archive when the"
+                + " definition links files.",
         content = {
           @Content(
               mediaType = MediaType.APPLICATION_JSON_VALUE,
               schema = @Schema(type = "string", format = "binary")),
           @Content(
               mediaType = MediaType.APPLICATION_YAML_VALUE,
+              schema = @Schema(type = "string", format = "binary")),
+          @Content(
+              mediaType = ZipMediaType.APPLICATION_ZIP_VALUE,
               schema = @Schema(type = "string", format = "binary"))
         }),
     @ApiResponse(
@@ -128,13 +153,18 @@ public class ExportImportRestController {
         MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_YAML_VALUE,
         YamlExportFormat.TEXT_YAML_VALUE,
-        YamlExportFormat.TEXT_YML_VALUE
+        YamlExportFormat.TEXT_YML_VALUE,
+        ZipMediaType.APPLICATION_ZIP_VALUE
       })
   public ResponseEntity<byte[]> getExportedTrainingDefinitionAndLevels(
       @PathVariable("definitionId") Long trainingDefinitionId,
       @Parameter(hidden = true) @RequestHeader HttpHeaders requestHeaders) {
     ExportFormat format = exportFormats.byAcceptedMediaTypes(requestHeaders.getAccept());
     FileToReturnDTO file = exportImportFacade.dbExport(trainingDefinitionId, format);
+    if (file.isArchive()) {
+      return asInlineFile(
+          file, ZipMediaType.APPLICATION_ZIP, AbstractFileExtensions.ZIP_FILE_EXTENSION);
+    }
     return asInlineFile(file, format.getContentType(), format.getFileExtension());
   }
 
@@ -153,12 +183,16 @@ public class ExportImportRestController {
           "Only a training administrator or a training designer may import. The new definition"
               + " starts unreleased, and its estimated duration is the sum of its levels'. Each"
               + " level takes its position from the order it is sent in. The definition may be"
-              + " sent as JSON or YAML.")
+              + " sent as JSON or YAML, which carries no files, so level content that references a"
+              + " file is refused unless keepUnresolvedAttachments=true. A definition with files is sent as a ZIP archive to the"
+              + " same path with Content-Type application/zip.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The created definition and its levels."),
     @ApiResponse(
         responseCode = "400",
-        description = "The submitted definition could not be read, or a field was refused.",
+        description =
+            "The submitted definition could not be read, a field was refused, or the content"
+                + " references a file and keepUnresolvedAttachments is not true.",
         content = @Content(schema = @Schema(implementation = ApiError.class))),
     @ApiResponse(
         responseCode = "422",
@@ -180,10 +214,79 @@ public class ExportImportRestController {
         YamlExportFormat.TEXT_YML_VALUE
       })
   public ResponseEntity<TrainingDefinitionWithLevelsDTO> importTrainingDefinition(
-      @Valid @RequestBody ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
+      @Valid @RequestBody ImportTrainingDefinitionDTO importTrainingDefinitionDTO,
+      @Parameter(description = KEEP_UNRESOLVED_ATTACHMENTS_DESCRIPTION)
+          @RequestParam(name = "keepUnresolvedAttachments", defaultValue = "false")
+          boolean keepUnresolvedAttachments) {
     TrainingDefinitionWithLevelsDTO trainingDefinitionResource =
-        exportImportFacade.dbImport(importTrainingDefinitionDTO);
+        exportImportFacade.dbImport(importTrainingDefinitionDTO, keepUnresolvedAttachments);
     return ResponseEntity.ok(trainingDefinitionResource);
+  }
+
+  /**
+   * Creates a new training definition from an exported ZIP archive: the definition document, the
+   * attachment metadata and the attachment files. Otherwise it behaves as the import of a JSON or
+   * YAML document.
+   *
+   * @param request the request whose body is the ZIP archive
+   * @return the created definition with its levels
+   * @throws IOException when the request body cannot be read
+   */
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      required = true,
+      content =
+          @Content(
+              mediaType = ZipMediaType.APPLICATION_ZIP_VALUE,
+              schema = @Schema(type = "string", format = "binary")))
+  @Operation(
+      operationId = "importTrainingDefinitionArchive",
+      summary = "Import a training definition from a ZIP archive",
+      description =
+          "Only a training administrator or a training designer may import. The archive holds one"
+              + " definition document (.json, .yaml or .yml) at its root, attachments.json that"
+              + " lists every file with its original name, duration, size in pixels and poster,"
+              + " and each file as attachments/<entry name>. Nothing else is accepted, and the"
+              + " entry names are never used as paths. The distinct files may not exceed the"
+              + " attachment budget of a definition, and byte size, hash and media type are"
+              + " computed from the bytes. Level content may reference only files the archive"
+              + " holds, unless keepUnresolvedAttachments=true keeps a reference to any other"
+              + " file unlinked.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The created definition and its levels."),
+    @ApiResponse(
+        responseCode = "400",
+        description =
+            "The archive breaks its layout or entry limit, its metadata or definition document is"
+                + " invalid, or the content references a file the archive does not hold and"
+                + " keepUnresolvedAttachments is not true.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "413",
+        description =
+            "The request body or the distinct files exceed the attachment budget of a definition.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "422",
+        description = "The hints of a training level penalize more than its maximum score.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
+  @PostMapping(
+      path = "/imports/training-definitions",
+      produces = {
+        MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_YAML_VALUE,
+        YamlExportFormat.TEXT_YAML_VALUE,
+        YamlExportFormat.TEXT_YML_VALUE
+      },
+      consumes = ZipMediaType.APPLICATION_ZIP_VALUE)
+  public ResponseEntity<TrainingDefinitionWithLevelsDTO> importTrainingDefinitionArchive(
+      HttpServletRequest request,
+      @Parameter(description = KEEP_UNRESOLVED_ATTACHMENTS_DESCRIPTION)
+          @RequestParam(name = "keepUnresolvedAttachments", defaultValue = "false")
+          boolean keepUnresolvedAttachments) throws IOException {
+    return ResponseEntity.ok(
+        exportImportFacade.dbImportArchive(
+            archiveRequestBodyReader.read(request), keepUnresolvedAttachments));
   }
 
   /**

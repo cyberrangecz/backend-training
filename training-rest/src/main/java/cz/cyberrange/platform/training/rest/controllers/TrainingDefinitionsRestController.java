@@ -4,6 +4,13 @@ import com.querydsl.core.types.Predicate;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelBasicDTO;
 import cz.cyberrange.platform.training.api.dto.AbstractLevelDTO;
 import cz.cyberrange.platform.training.api.dto.UserRefDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentDownloadDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentFileMetadataDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentListDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentMetadataDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentPosterDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.AttachmentSummaryDTO;
+import cz.cyberrange.platform.training.api.dto.attachment.TrainingMaterialDTO;
 import cz.cyberrange.platform.training.api.dto.hint.HintBasicDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionBasicDTO;
 import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionCreateDTO;
@@ -15,6 +22,7 @@ import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefini
 import cz.cyberrange.platform.training.api.enums.TDState;
 import cz.cyberrange.platform.training.api.responses.PageResultResource;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
+import cz.cyberrange.platform.training.rest.utils.MultipartAttachments;
 import cz.cyberrange.platform.training.rest.utils.error.ApiEntityError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.sort.SortableList;
@@ -24,18 +32,22 @@ import cz.cyberrange.platform.training.service.services.UserNameFilter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -46,8 +58,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /** The rest controller for Training definitions */
 @Tag(
@@ -72,6 +87,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/training-definitions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainingDefinitionsRestController {
+
+  private static final String KEEP_UNRESOLVED_ATTACHMENTS_DESCRIPTION =
+      "When true, a reference attachment:<hash> in level content that names no file supplied or"
+          + " stored is kept as it is and linked to nothing, instead of being refused with 400."
+          + " Uploading a file with that hash to the definition later resolves it. Defaults to false.";
 
   private TrainingDefinitionFacade trainingDefinitionFacade;
 
@@ -214,7 +234,12 @@ public class TrainingDefinitionsRestController {
         responseCode = "400",
         description =
             "The request body failed validation, a level carries an id, or a level's content is"
-                + " inconsistent.",
+                + " inconsistent, or a reference names no stored file and keepUnresolvedAttachments"
+                + " is not true.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "413",
+        description = "The files the definition links to exceed the budget of a definition.",
         content = @Content(schema = @Schema(implementation = ApiError.class))),
     @ApiResponse(
         responseCode = "422",
@@ -225,10 +250,82 @@ public class TrainingDefinitionsRestController {
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingDefinitionWithLevelsDTO> createTrainingDefinition(
-      @RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO) {
+      @RequestBody @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO,
+      @Parameter(description = KEEP_UNRESOLVED_ATTACHMENTS_DESCRIPTION)
+          @RequestParam(name = "keepUnresolvedAttachments", defaultValue = "false")
+          boolean keepUnresolvedAttachments) {
     TrainingDefinitionWithLevelsDTO trainingDefinitionResource =
-        trainingDefinitionFacade.create(trainingDefinitionCreateDTO);
+        trainingDefinitionFacade.create(
+            trainingDefinitionCreateDTO, List.of(), keepUnresolvedAttachments);
     return ResponseEntity.ok(trainingDefinitionResource);
+  }
+
+  /**
+   * Stores a new training definition together with its levels and the files its content references,
+   * in one transaction.
+   *
+   * @param trainingDefinitionCreateDTO the training definition to store, its levels included
+   * @param files the files the level content references, possibly none
+   * @param fileMetadata the media metadata of those files keyed by hash, possibly none
+   * @return the stored {@link TrainingDefinitionWithLevelsDTO}, carrying the ids of every created
+   *     entity
+   */
+  @Operation(
+      operationId = "createTrainingDefinitionWithFiles",
+      summary = "Create a training definition with its levels and files",
+      description =
+          "Takes the part definition, holding the same JSON as the plain request, and any number"
+              + " of parts files, and optionally the JSON part fileMetadata, a list of objects with"
+              + " hash, duration_seconds, width, height and poster (Base64 JPEG, WebP or PNG of at"
+              + " most 1 MiB) that describe the supplied files by hash. Level content refers to a file as attachment:<sha-256 in"
+              + " lowercase hex>; the definition part lists its materials by hash and file name, and a"
+              + " file part that is neither a material nor referenced is ignored. A material or a"
+              + " reference may also name a file already stored. With keepUnresolvedAttachments=true a"
+              + " reference naming no supplied or stored file is kept unlinked instead of refused."
+              + " A failure stores nothing.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The created definition and its levels."),
+    @ApiResponse(
+        responseCode = "400",
+        description =
+            "The definition part failed validation, a level carries an id, a level's content is"
+                + " inconsistent, a material names no supplied or stored file, a reference names none and"
+                + " keepUnresolvedAttachments is not true, or a file name is"
+                + " longer than 255 characters, or the media metadata of a file is invalid.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "413",
+        description = "A file, the request or the files the definition links to are too large.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "422",
+        description = "The hint penalties of a training level exceed its maximal score.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content =
+          @Content(
+              mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+              encoding = {
+                @Encoding(name = "definition", contentType = "application/json"),
+                @Encoding(name = "fileMetadata", contentType = "application/json")
+              }))
+  @PostMapping(
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<TrainingDefinitionWithLevelsDTO> createTrainingDefinitionWithFiles(
+      @RequestPart("definition") @Valid TrainingDefinitionCreateDTO trainingDefinitionCreateDTO,
+      @RequestPart(name = "files", required = false) List<MultipartFile> files,
+      @RequestPart(name = "fileMetadata", required = false)
+          List<AttachmentFileMetadataDTO> fileMetadata,
+      @Parameter(description = KEEP_UNRESOLVED_ATTACHMENTS_DESCRIPTION)
+          @RequestParam(name = "keepUnresolvedAttachments", defaultValue = "false")
+          boolean keepUnresolvedAttachments) {
+    return ResponseEntity.ok(
+        trainingDefinitionFacade.create(
+            trainingDefinitionCreateDTO,
+            MultipartAttachments.toSuppliedAttachments(files, fileMetadata),
+            keepUnresolvedAttachments));
   }
 
   /**
@@ -260,7 +357,8 @@ public class TrainingDefinitionsRestController {
         responseCode = "400",
         description =
             "The request body failed validation, a level id appears twice, a level would change"
-                + " its type, or a level's content is inconsistent.",
+                + " its type, a level's content is inconsistent, or a reference names no stored"
+                + " file and keepUnresolvedAttachments is not true.",
         content = @Content(schema = @Schema(implementation = ApiError.class))),
     @ApiResponse(
         responseCode = "404",
@@ -274,6 +372,10 @@ public class TrainingDefinitionsRestController {
                 + " time.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
     @ApiResponse(
+        responseCode = "413",
+        description = "The files the definition links to exceed the budget of a definition.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
         responseCode = "422",
         description = "The hint penalties of a training level exceed its maximal score.",
         content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
@@ -284,9 +386,99 @@ public class TrainingDefinitionsRestController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TrainingDefinitionWithLevelsDTO> updateTrainingDefinition(
       @PathVariable("definitionId") Long definitionId,
-      @RequestBody @Valid TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
+      @RequestBody @Valid TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO,
+      @Parameter(description = KEEP_UNRESOLVED_ATTACHMENTS_DESCRIPTION)
+          @RequestParam(name = "keepUnresolvedAttachments", defaultValue = "false")
+          boolean keepUnresolvedAttachments) {
     return ResponseEntity.ok(
-        trainingDefinitionFacade.update(definitionId, trainingDefinitionUpdateDTO));
+        trainingDefinitionFacade.update(
+            definitionId, trainingDefinitionUpdateDTO, List.of(), keepUnresolvedAttachments));
+  }
+
+  /**
+   * Replaces the content and the whole level list of a training definition, and stores the files
+   * the new content references, in one transaction.
+   *
+   * @param definitionId id of the training definition to update
+   * @param trainingDefinitionUpdateDTO the new content and every level the definition keeps, with
+   *     the version the change was made on
+   * @param files the files the level content references, possibly none
+   * @param fileMetadata the media metadata of those files keyed by hash, possibly none
+   * @return the updated {@link TrainingDefinitionWithLevelsDTO}, carrying its new version and the
+   *     ids of every created entity
+   */
+  @Operation(
+      operationId = "updateTrainingDefinitionWithFiles",
+      summary = "Update a training definition with all its levels and files",
+      description =
+          "Takes the part definition, holding the same JSON as the plain request, and any number"
+              + " of parts files, and optionally the JSON part fileMetadata, a list of objects with"
+              + " hash, duration_seconds, width, height and poster (Base64 JPEG, WebP or PNG of at"
+              + " most 1 MiB) that describe the supplied files by hash. The definition links exactly to its materials and the files"
+              + " its new content refers to as attachment:<sha-256 in lowercase hex>; a material or"
+              + " a reference may name a file supplied now or already stored, and a file no"
+              + " definition links any more is deleted. With keepUnresolvedAttachments=true a reference"
+              + " naming no supplied or stored file is kept unlinked instead of refused. A failure"
+              + " changes nothing.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The updated definition, its levels and its new version."),
+    @ApiResponse(
+        responseCode = "400",
+        description =
+            "The definition part failed validation, a level id appears twice, a level would"
+                + " change its type, a level's content is inconsistent, a material names no"
+                + " supplied or stored file, a reference names none and keepUnresolvedAttachments is"
+                + " not true, or a file name is longer than 255 characters.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training definition with this id, or a level id not of this definition.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description =
+            "The definition is not unreleased, already has a training instance, is at another"
+                + " version than the one sent, or was changed by another request at the same"
+                + " time.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "413",
+        description = "A file, the request or the files the definition links to are too large.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "422",
+        description = "The hint penalties of a training level exceed its maximal score.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content =
+          @Content(
+              mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+              encoding = {
+                @Encoding(name = "definition", contentType = "application/json"),
+                @Encoding(name = "fileMetadata", contentType = "application/json")
+              }))
+  @PutMapping(
+      path = "/{definitionId}",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<TrainingDefinitionWithLevelsDTO> updateTrainingDefinitionWithFiles(
+      @PathVariable("definitionId") Long definitionId,
+      @RequestPart("definition") @Valid TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO,
+      @RequestPart(name = "files", required = false) List<MultipartFile> files,
+      @RequestPart(name = "fileMetadata", required = false)
+          List<AttachmentFileMetadataDTO> fileMetadata,
+      @Parameter(description = KEEP_UNRESOLVED_ATTACHMENTS_DESCRIPTION)
+          @RequestParam(name = "keepUnresolvedAttachments", defaultValue = "false")
+          boolean keepUnresolvedAttachments) {
+    return ResponseEntity.ok(
+        trainingDefinitionFacade.update(
+            definitionId,
+            trainingDefinitionUpdateDTO,
+            MultipartAttachments.toSuppliedAttachments(files, fileMetadata),
+            keepUnresolvedAttachments));
   }
 
   /**
@@ -301,7 +493,8 @@ public class TrainingDefinitionsRestController {
       operationId = "cloneTrainingDefinition",
       summary = "Copy a training definition under a new title",
       description =
-          "The copy carries every level of the original. It starts unreleased, with no beta"
+          "The copy carries every level of the original and links the same attachment files."
+              + " It starts unreleased, with no beta"
               + " testing group and the calling user as its only author.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The created copy and its levels."),
@@ -335,7 +528,9 @@ public class TrainingDefinitionsRestController {
   @Operation(
       operationId = "deleteTrainingDefinition",
       summary = "Delete a training definition",
-      description = "Every level of the definition is deleted with it.")
+      description =
+          "Every level of the definition is deleted with it, and so are the attachment files no"
+              + " other definition links.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "The definition was deleted."),
     @ApiResponse(
@@ -621,5 +816,299 @@ public class TrainingDefinitionsRestController {
       @RequestParam(value = "ids", required = true) List<Long> ids) {
     List<HintBasicDTO> hints = trainingDefinitionFacade.findHintsByIds(ids);
     return ResponseEntity.ok(hints);
+  }
+
+  /**
+   * Lists the training materials of a training definition with the storage budget.
+   *
+   * @param trainingDefinitionId id of the training definition
+   * @return the materials, the budget of a definition and the bytes the definition uses
+   */
+  @Operation(
+      operationId = "listTrainingDefinitionAttachments",
+      summary = "List the training materials of a training definition",
+      description =
+          "Answers with each material's hash, file name, media type, size, duration, width,"
+              + " height and whether it has a poster, ordered by file name, together with the"
+              + " budget of a definition and the bytes it uses. Open to the same callers as the"
+              + " download.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The materials, the budget and the bytes used."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The id in the path is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training definition has that id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
+  @GetMapping(path = "/{definitionId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<AttachmentListDTO> listAttachments(
+      @PathVariable("definitionId") Long trainingDefinitionId) {
+    return ResponseEntity.ok(trainingDefinitionFacade.listAttachments(trainingDefinitionId));
+  }
+
+  /**
+   * Returns the bytes of an attachment file the given training definition uses, as a download named
+   * after the file.
+   *
+   * @param trainingDefinitionId id of the training definition using the file
+   * @param hash the hash of the file
+   * @return the file bytes, typed with the stored media type
+   */
+  @Operation(
+      operationId = "downloadTrainingDefinitionAttachment",
+      summary = "Download an attachment file of a training definition",
+      description =
+          "A training administrator, a designer or organizer who may see the definition, and a"
+              + " user with a training run in an instance of the definition may download. The"
+              + " response is typed with the stored media type, named after the file as the"
+              + " definition knows it, and sent with X-Content-Type-Options: nosniff.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The file bytes.",
+        content =
+            @Content(
+                mediaType = MediaType.ALL_VALUE,
+                schema = @Schema(type = "string", format = "binary"))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The id in the path is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description =
+            "No training definition has that id, or it does not use a file with that hash.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
+  @GetMapping(path = "/{definitionId}/attachments/{hash}", produces = MediaType.ALL_VALUE)
+  public ResponseEntity<byte[]> downloadAttachment(
+      @PathVariable("definitionId") Long trainingDefinitionId, @PathVariable("hash") String hash) {
+    AttachmentDownloadDTO download =
+        trainingDefinitionFacade.downloadAttachment(trainingDefinitionId, hash);
+    return ResponseEntity.ok()
+        .headers(attachmentHeaders(download.metadata()))
+        .body(download.content());
+  }
+
+  /**
+   * Returns the poster image of an attachment file the given training definition uses.
+   *
+   * @param trainingDefinitionId id of the training definition using the file
+   * @param hash the hash of the file
+   * @return the poster image, typed with its media type
+   */
+  @Operation(
+      operationId = "downloadTrainingDefinitionAttachmentPoster",
+      summary = "Download the poster image of an attachment file",
+      description =
+          "The download endpoint with the query parameter poster answers with the poster image the"
+              + " designer's browser captured at upload: the first frame of a video or a"
+              + " downscaled image. Open to the same callers as the download.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The poster image.",
+        content =
+            @Content(
+                mediaType = MediaType.ALL_VALUE,
+                schema = @Schema(type = "string", format = "binary"))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The id in the path is not a number.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description =
+            "No training definition has that id, it does not use a file with that hash, or the"
+                + " file has no poster.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class)))
+  })
+  @GetMapping(
+      path = "/{definitionId}/attachments/{hash}",
+      params = "poster",
+      produces = MediaType.ALL_VALUE)
+  public ResponseEntity<byte[]> downloadAttachmentPoster(
+      @PathVariable("definitionId") Long trainingDefinitionId, @PathVariable("hash") String hash) {
+    AttachmentPosterDTO poster =
+        trainingDefinitionFacade.downloadAttachmentPoster(trainingDefinitionId, hash);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType(poster.mediaType()));
+    headers.set("X-Content-Type-Options", "nosniff");
+    return ResponseEntity.ok().headers(headers).body(poster.content());
+  }
+
+  /**
+   * Returns the headers of {@link #downloadAttachment(Long, String)} without reading the file
+   * bytes, which gives a file's name, media type and size.
+   *
+   * @param trainingDefinitionId id of the training definition using the file
+   * @param hash the hash of the file
+   * @return the headers of the download, with no body
+   */
+  @Operation(
+      operationId = "headTrainingDefinitionAttachment",
+      summary = "Describe an attachment file of a training definition",
+      description =
+          "Answers with the headers of the download, Content-Length, Content-Type and"
+              + " Content-Disposition included, and no body. When stored, X-Attachment-Duration"
+              + " (seconds), X-Attachment-Width and X-Attachment-Height (pixels) are sent too, on"
+              + " the download as well. Open to the same callers as the"
+              + " download.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The headers of the download.",
+        content = @Content),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The id in the path is not a number.",
+        content = @Content),
+    @ApiResponse(
+        responseCode = "404",
+        description =
+            "No training definition has that id, or it does not use a file with that hash.",
+        content = @Content)
+  })
+  @RequestMapping(
+      path = "/{definitionId}/attachments/{hash}",
+      method = RequestMethod.HEAD,
+      produces = MediaType.ALL_VALUE)
+  public ResponseEntity<Void> describeAttachment(
+      @PathVariable("definitionId") Long trainingDefinitionId, @PathVariable("hash") String hash) {
+    AttachmentMetadataDTO metadata =
+        trainingDefinitionFacade.findAttachmentMetadata(trainingDefinitionId, hash);
+    return ResponseEntity.ok().headers(attachmentHeaders(metadata)).build();
+  }
+
+  /**
+   * Links a file the service already stores to a training definition as a material, sending no
+   * bytes.
+   *
+   * @param trainingDefinitionId id of the training definition
+   * @param material the hash of the stored file and the name the definition gives it
+   * @return the linked material
+   */
+  @Operation(
+      operationId = "linkTrainingDefinitionAttachment",
+      summary = "Link a stored attachment file to a training definition",
+      description =
+          "Takes the SHA-256 and the file name of a file that any definition already stored and"
+              + " links it to this definition as a material, or renames the link the definition"
+              + " already has. Answers 404 for a hash nobody stored, which tells the caller to"
+              + " upload the bytes. Reachable by the callers who may save the definition.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "The file is linked; its material."),
+    @ApiResponse(
+        responseCode = "400",
+        description = "The id in the path is not a number, or the hash or file name is invalid.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training definition has that id, or no file with that hash is stored.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The definition is not unreleased or already has a training instance.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "413",
+        description = "The files the definition links to would exceed its budget.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
+  @PostMapping(
+      path = "/{definitionId}/attachments/link",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<AttachmentSummaryDTO> linkAttachment(
+      @PathVariable("definitionId") Long trainingDefinitionId,
+      @RequestBody @Valid TrainingMaterialDTO material) {
+    return ResponseEntity.ok(
+        trainingDefinitionFacade.linkAttachment(trainingDefinitionId, material));
+  }
+
+  /**
+   * Stores one uploaded file and links it to a training definition as a material.
+   *
+   * @param trainingDefinitionId id of the training definition
+   * @param file the file bytes, named by the part's file name
+   * @param metadata the hash of the file and its media metadata
+   * @return the linked material
+   */
+  @Operation(
+      operationId = "uploadTrainingDefinitionAttachment",
+      summary = "Upload an attachment file to a training definition",
+      description =
+          "Takes one file part and a metadata part carrying the SHA-256 the caller computed and the"
+              + " optional duration, width, height and poster. Answers 400 when the hash is not"
+              + " the hash of the bytes. Stores the bytes once for every definition, detects the"
+              + " media type from them, and links the file as a material. Reachable by the callers"
+              + " who may save the definition.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "The file is stored and linked; its material."),
+    @ApiResponse(
+        responseCode = "400",
+        description =
+            "The id in the path is not a number, the hash is not the hash of the bytes, or the"
+                + " media metadata is invalid.",
+        content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "No training definition has that id.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "409",
+        description = "The definition is not unreleased or already has a training instance.",
+        content = @Content(schema = @Schema(implementation = ApiEntityError.class))),
+    @ApiResponse(
+        responseCode = "413",
+        description = "The file or the files the definition links to exceed its budget.",
+        content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content =
+          @Content(
+              mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+              encoding = @Encoding(name = "metadata", contentType = "application/json")))
+  @PostMapping(
+      path = "/{definitionId}/attachments",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<AttachmentSummaryDTO> uploadAttachment(
+      @PathVariable("definitionId") Long trainingDefinitionId,
+      @RequestPart("file") MultipartFile file,
+      @RequestPart("metadata") AttachmentFileMetadataDTO metadata) {
+    return ResponseEntity.ok(
+        trainingDefinitionFacade.uploadAttachment(
+            trainingDefinitionId,
+            MultipartAttachments.toSuppliedAttachment(file, metadata),
+            metadata.hash()));
+  }
+
+  private static HttpHeaders attachmentHeaders(AttachmentMetadataDTO metadata) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType(metadata.mediaType()));
+    headers.setContentLength(metadata.sizeBytes());
+    headers.setContentDisposition(
+        ContentDisposition.attachment()
+            .filename(metadata.fileName(), StandardCharsets.UTF_8)
+            .build());
+    headers.set("X-Content-Type-Options", "nosniff");
+    if (metadata.durationSeconds() != null) {
+      headers.set("X-Attachment-Duration", metadata.durationSeconds().toString());
+    }
+    if (metadata.width() != null) {
+      headers.set("X-Attachment-Width", metadata.width().toString());
+    }
+    if (metadata.height() != null) {
+      headers.set("X-Attachment-Height", metadata.height().toString());
+    }
+    return headers;
   }
 }

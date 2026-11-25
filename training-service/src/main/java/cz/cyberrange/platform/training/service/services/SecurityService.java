@@ -26,6 +26,7 @@ import cz.cyberrange.platform.training.persistence.repository.detection.Cheating
 import cz.cyberrange.platform.training.service.annotations.transactions.TransactionalRO;
 import cz.cyberrange.platform.training.service.enums.RoleTypeSecurity;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -584,17 +585,21 @@ public class SecurityService {
    * user has a training run in and those whose instances the user organizes.
    *
    * @param userRefId the cross-service user reference id of the user in question
-   * @return ids of the training definitions reached either way, empty when there are none
+   * @return ids of the training definitions reached either way, empty when there are none and when
+   *     the user has no stored user reference row
    */
   private Set<Long> getParticipatedDefinitions(Long userRefId) {
-    UserRef userRef = userService.getUserByUserRefId(userRefId);
+    Optional<UserRef> userRef = userService.findUserByUserRefId(userRefId);
+    if (userRef.isEmpty()) {
+      return Set.of();
+    }
     Set<Long> participatedDefinitions =
         trainingRunRepository.findAllByParticipantRefId(userRefId).stream()
             .map(run -> run.getTrainingInstance().getTrainingDefinition().getId())
             .collect(Collectors.toSet());
 
     participatedDefinitions.addAll(
-        trainingInstanceRepository.findAllByOrganizersContainsOrderById(userRef).stream()
+        trainingInstanceRepository.findAllByOrganizersContainsOrderById(userRef.get()).stream()
             .map(instance -> instance.getTrainingDefinition().getId())
             .collect(Collectors.toSet()));
     return participatedDefinitions;

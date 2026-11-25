@@ -38,6 +38,11 @@ public class AccessTrainingRunDTO {
   @Schema(example = "1")
   private Long instanceId;
 
+  @Schema(
+      description = "Id of the training definition the run's instance was created from.",
+      example = "1")
+  private Long definitionId;
+
   @Schema(example = "Linux basics")
   private String trainingInstanceTitle;
 

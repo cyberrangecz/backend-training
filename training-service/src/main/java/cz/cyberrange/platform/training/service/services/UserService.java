@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -56,12 +57,22 @@ public class UserService {
    * @throws EntityNotFoundException when no row carries that user reference id
    */
   public UserRef getUserByUserRefId(Long userRefId) {
-    return userRefRepository
-        .findUserByUserRefId(userRefId)
+    return findUserByUserRefId(userRefId)
         .orElseThrow(
             () ->
                 new EntityNotFoundException(
                     new EntityErrorDetail(UserRef.class, "id", userRefId.getClass(), userRefId)));
+  }
+
+  /**
+   * Finds the locally stored user reference row carrying the given cross-service user reference id.
+   *
+   * @param userRefId the cross-service user reference id to look the row up by, which is not the
+   *     row's own primary key
+   * @return the {@link UserRef} row, empty when no row carries that user reference id
+   */
+  public Optional<UserRef> findUserByUserRefId(Long userRefId) {
+    return userRefRepository.findUserByUserRefId(userRefId);
   }
 
   /**
@@ -191,8 +202,7 @@ public class UserService {
                             new UriQueryParameters(uriBuilder.path("/roles/users-not-with-ids"));
                         query
                             .add("roleType", roleType.name())
-                            .add(
-                                "ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
+                            .add("ids", StringUtils.collectionToDelimitedString(userRefIds, ","));
                         setCommonParams(nameFilter, limitedPageable, query);
                         return query.build();
                       })
@@ -253,8 +263,7 @@ public class UserService {
     do {
       PageResultResource<UserRefDTO> chunk =
           pageFetcher.apply(
-              PageRequest.of(
-                  chunkNumber, USER_AND_GROUP_PAGE_SIZE_LIMIT - 1, pageable.getSort()));
+              PageRequest.of(chunkNumber, USER_AND_GROUP_PAGE_SIZE_LIMIT - 1, pageable.getSort()));
       fetched.addAll(chunk.getContent());
       fetchedPagination = chunk.getPagination();
       chunkNumber++;

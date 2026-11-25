@@ -33,10 +33,6 @@ public class TrainingLevel extends AbstractLevel {
   @Column(name = "solution_penalized", nullable = false)
   private boolean solutionPenalized;
 
-  @OneToMany(mappedBy = "trainingLevel", orphanRemoval = true)
-  @OrderBy("id")
-  private Set<Attachment> attachments = new HashSet<>();
-
   @OneToMany(mappedBy = "trainingLevel", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("order ASC, id ASC")
   private Set<Hint> hints = new LinkedHashSet<>();
@@ -168,34 +164,6 @@ public class TrainingLevel extends AbstractLevel {
    */
   public void setSolutionPenalized(boolean solutionPenalized) {
     this.solutionPenalized = solutionPenalized;
-  }
-
-  /**
-   * Gets the attachments belonging to this level, carried along whenever the level is exported,
-   * imported, or cloned.
-   *
-   * @return the attachments
-   */
-  public Set<Attachment> getAttachments() {
-    return attachments;
-  }
-
-  /**
-   * Sets the attachments belonging to this level.
-   *
-   * @param attachments the attachments
-   */
-  public void setAttachments(Set<Attachment> attachments) {
-    this.attachments = attachments;
-  }
-
-  /**
-   * Adds an attachment to this level.
-   *
-   * @param attachment the attachment
-   */
-  public void addAttachment(Attachment attachment) {
-    this.attachments.add(attachment);
   }
 
   /**

@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cz.cyberrange.platform.training.persistence.model.AbstractLevel;
 import cz.cyberrange.platform.training.persistence.model.AccessLevel;
 import cz.cyberrange.platform.training.persistence.model.AssessmentLevel;
-import cz.cyberrange.platform.training.persistence.model.Attachment;
 import cz.cyberrange.platform.training.persistence.model.Hint;
 import cz.cyberrange.platform.training.persistence.model.InfoLevel;
 import cz.cyberrange.platform.training.persistence.model.TrainingDefinition;
@@ -269,17 +268,6 @@ class CloneMapperTest {
     }
 
     @Test
-    @DisplayName("should set attachments to empty")
-    void shouldSetAttachmentsToEmpty() {
-      TrainingLevel entity = createTrainingLevel();
-
-      TrainingLevel result = sut.clone(entity);
-
-      assertNotNull(result.getAttachments());
-      assertTrue(result.getAttachments().isEmpty());
-    }
-
-    @Test
     @DisplayName("should link copied hints to the copy")
     void shouldLinkCopiedHintsToCopy() {
       TrainingLevel entity = createTrainingLevel();
@@ -293,25 +281,6 @@ class CloneMapperTest {
       Hint clonedHint = result.getHints().iterator().next();
       assertNotSame(hint, clonedHint);
       assertSame(result, clonedHint.getTrainingLevel());
-    }
-
-    @Test
-    @DisplayName("should copy attachments and link them to the copy")
-    void shouldLinkCopiedAttachmentsToCopy() {
-      TrainingLevel entity = createTrainingLevel();
-      Attachment attachment = createAttachment();
-      attachment.setId(ENTITY_ID);
-      attachment.setTrainingLevel(entity);
-      entity.addAttachment(attachment);
-
-      TrainingLevel result = sut.clone(entity);
-
-      assertEquals(1, result.getAttachments().size());
-      Attachment clonedAttachment = result.getAttachments().iterator().next();
-      assertNotSame(attachment, clonedAttachment);
-      assertNull(clonedAttachment.getId());
-      assertEquals(attachment.getContent(), clonedAttachment.getContent());
-      assertSame(result, clonedAttachment.getTrainingLevel());
     }
 
     @Test
@@ -406,79 +375,6 @@ class CloneMapperTest {
     @DisplayName("should return null for null input")
     void shouldReturnNullForNullInput() {
       Set<Hint> result = sut.cloneHints(null);
-
-      assertNull(result);
-    }
-  }
-
-  @Nested
-  @DisplayName("clone(Attachment)")
-  class CloneAttachment {
-
-    @Test
-    @DisplayName("should set id to null")
-    void shouldSetIdToNull() {
-      Attachment entity = createAttachment();
-      entity.setId(ENTITY_ID);
-
-      Attachment result = sut.clone(entity);
-
-      assertNull(result.getId());
-    }
-
-    @Test
-    @DisplayName("should set trainingLevel to null")
-    void shouldSetTrainingLevelToNull() {
-      Attachment entity = createAttachment();
-
-      Attachment result = sut.clone(entity);
-
-      assertNull(result.getTrainingLevel());
-    }
-
-    @Test
-    @DisplayName("should preserve content")
-    void shouldPreserveNonIgnoredFields() {
-      Attachment entity = createAttachment();
-
-      Attachment result = sut.clone(entity);
-
-      assertEquals(ENTITY_CONTENT, result.getContent());
-    }
-  }
-
-  @Nested
-  @DisplayName("cloneAttachments(Set<Attachment>)")
-  class CloneAttachments {
-
-    @Test
-    @DisplayName("should clone all attachments in set")
-    void shouldCloneAllAttachmentsInSet() {
-      Attachment att1 = createAttachment();
-      att1.setId(1L);
-      Attachment att2 = createAttachment();
-      att2.setId(2L);
-      att2.setContent("https://example.com/second.pdf");
-      Set<Attachment> entities = new HashSet<>(Set.of(att1, att2));
-
-      Set<Attachment> result = sut.cloneAttachments(entities);
-
-      assertEquals(2, result.size());
-    }
-
-    @Test
-    @DisplayName("should return empty set for empty input")
-    void shouldReturnEmptySetForEmptyInput() {
-      Set<Attachment> result = sut.cloneAttachments(Collections.emptySet());
-
-      assertNotNull(result);
-      assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("should return null for null input")
-    void shouldReturnNullForNullInput() {
-      Set<Attachment> result = sut.cloneAttachments(null);
 
       assertNull(result);
     }
@@ -908,12 +804,6 @@ class CloneMapperTest {
     entity.setContent(ENTITY_CONTENT);
     entity.setHintPenalty(ENTITY_PENALTY);
     entity.setOrder(ENTITY_ORDER);
-    return entity;
-  }
-
-  private static Attachment createAttachment() {
-    Attachment entity = new Attachment();
-    entity.setContent(ENTITY_CONTENT);
     return entity;
   }
 

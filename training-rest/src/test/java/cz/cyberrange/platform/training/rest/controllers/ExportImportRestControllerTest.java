@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
@@ -23,8 +24,10 @@ import cz.cyberrange.platform.training.api.dto.imports.AssessmentLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.ImportTrainingDefinitionDTO;
 import cz.cyberrange.platform.training.api.dto.imports.InfoLevelImportDTO;
 import cz.cyberrange.platform.training.api.dto.imports.TrainingLevelImportDTO;
+import cz.cyberrange.platform.training.api.dto.trainingdefinition.TrainingDefinitionWithLevelsDTO;
 import cz.cyberrange.platform.training.api.exceptions.EntityNotFoundException;
 import cz.cyberrange.platform.training.persistence.util.TestDataFactory;
+import cz.cyberrange.platform.training.rest.utils.ArchiveRequestBodyReader;
 import cz.cyberrange.platform.training.rest.utils.ZipMediaType;
 import cz.cyberrange.platform.training.rest.utils.error.ApiError;
 import cz.cyberrange.platform.training.rest.utils.error.ApiErrorResponder;
@@ -59,6 +62,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.unit.DataSize;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.cfg.EnumFeature;
@@ -97,7 +101,8 @@ public class ExportImportRestControllerTest {
             exportImportFacade,
             new ExportFormats(
                 new JsonExportFormat(objectMapper),
-                new YamlExportFormat(YAMLMapper.builder().build())));
+                new YamlExportFormat(YAMLMapper.builder().build())),
+            new ArchiveRequestBodyReader(DataSize.ofMegabytes(1)));
     this.mockMvc =
         MockMvcBuilders.standaloneSetup(exportImportRestController)
             .setCustomArgumentResolvers(
@@ -189,6 +194,62 @@ public class ExportImportRestControllerTest {
                 .string(
                     "Content-Disposition",
                     containsString("filename*=UTF-8''%C5%A0kolen%C3%AD.json")));
+  }
+
+  @Test
+  public void exportTrainingDefinitionWithAttachmentsServesZip() throws Exception {
+    FileToReturnDTO file = new FileToReturnDTO();
+    file.setContent(new byte[] {1});
+    file.setTitle("definition");
+    file.setArchive(true);
+    given(exportImportFacade.dbExport(any(Long.class), any())).willReturn(file);
+    mockMvc
+        .perform(get("/exports/training-definitions/{id}", 1L).accept(MediaType.ALL))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(ZipMediaType.APPLICATION_ZIP))
+        .andExpect(header().string("Content-Disposition", endsWith(".zip")));
+  }
+
+  @Test
+  public void importTrainingDefinitionArchiveForwardsBytesToFacade() throws Exception {
+    byte[] archive = {'P', 'K', 3, 4};
+    given(exportImportFacade.dbImportArchive(any(byte[].class), eq(false)))
+        .willReturn(new TrainingDefinitionWithLevelsDTO());
+    mockMvc
+        .perform(
+            post("/imports/training-definitions")
+                .contentType(ZipMediaType.APPLICATION_ZIP_VALUE)
+                .content(archive))
+        .andExpect(status().isOk());
+    org.mockito.Mockito.verify(exportImportFacade).dbImportArchive(archive, false);
+  }
+
+  @Test
+  public void importTrainingDefinitionArchiveForwardsTheKeepFlagToFacade() throws Exception {
+    byte[] archive = {'P', 'K', 3, 4};
+    given(exportImportFacade.dbImportArchive(any(byte[].class), eq(true)))
+        .willReturn(new TrainingDefinitionWithLevelsDTO());
+    mockMvc
+        .perform(
+            post("/imports/training-definitions")
+                .param("keepUnresolvedAttachments", "true")
+                .contentType(ZipMediaType.APPLICATION_ZIP_VALUE)
+                .content(archive))
+        .andExpect(status().isOk());
+    org.mockito.Mockito.verify(exportImportFacade).dbImportArchive(archive, true);
+  }
+
+  @Test
+  public void importTrainingDefinitionForwardsTheKeepFlagToFacade() throws Exception {
+    mockMvc
+        .perform(
+            post("/imports/training-definitions")
+                .param("keepUnresolvedAttachments", "true")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(convertObjectToJsonBytes(importTrainingDefinitionDTO)))
+        .andExpect(status().isOk());
+    org.mockito.Mockito.verify(exportImportFacade)
+        .dbImport(any(ImportTrainingDefinitionDTO.class), eq(true));
   }
 
   private void givenExportedDefinition() {

@@ -391,6 +391,7 @@ public class TrainingRunFacade {
     AccessTrainingRunDTO accessTrainingRunDTO = new AccessTrainingRunDTO();
     accessTrainingRunDTO.setTrainingRunID(trainingRunId);
     accessTrainingRunDTO.setInstanceId(trainingInstance.getId());
+    accessTrainingRunDTO.setDefinitionId(trainingInstance.getTrainingDefinition().getId());
     accessTrainingRunDTO.setTrainingInstanceTitle(trainingInstance.getTitle());
     accessTrainingRunDTO.setShowStepperBar(trainingInstance.isShowStepperBar());
     accessTrainingRunDTO.setBackwardMode(trainingInstance.isBackwardMode());
@@ -423,6 +424,8 @@ public class TrainingRunFacade {
         getInfoAboutLevels(trainingRun.getCurrentLevel().getTrainingDefinition().getId()));
     accessTrainingRunDTO.setSandboxInstanceRefId(trainingRun.getSandboxInstanceRefId());
     accessTrainingRunDTO.setInstanceId(trainingRun.getTrainingInstance().getId());
+    accessTrainingRunDTO.setDefinitionId(
+        trainingRun.getTrainingInstance().getTrainingDefinition().getId());
     accessTrainingRunDTO.setTrainingInstanceTitle(trainingRun.getTrainingInstance().getTitle());
     accessTrainingRunDTO.setManaged(trainingRun.getTrainingInstance().isManaged());
     accessTrainingRunDTO.setStartTime(trainingRun.getStartTime());

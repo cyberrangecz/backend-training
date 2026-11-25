@@ -1,6 +1,7 @@
 package cz.cyberrange.platform.training.service.export;
 
 import java.util.List;
+import java.util.Locale;
 import org.springframework.http.MediaType;
 import tools.jackson.databind.ObjectMapper;
 
@@ -88,4 +89,28 @@ public abstract class ExportFormat {
    * @throws tools.jackson.core.JacksonException when {@code value} cannot be serialized
    */
   public abstract byte[] writeRecord(Object value);
+
+  /**
+   * Parses one complete document written in this format.
+   *
+   * @param document the document's bytes
+   * @param type the type to read the document into
+   * @param <T> the type to read the document into
+   * @return the parsed value
+   * @throws tools.jackson.core.JacksonException when the document is not valid in this format or
+   *     does not fit {@code type}
+   */
+  public <T> T readDocument(byte[] document, Class<T> type) {
+    return mapper.readValue(document, type);
+  }
+
+  /**
+   * Tells whether a file name carries an extension of this format, regardless of case.
+   *
+   * @param fileName the file name
+   * @return {@code true} when the name ends with an extension of this format
+   */
+  public boolean isNameOfFormat(String fileName) {
+    return fileName.toLowerCase(Locale.ROOT).endsWith(fileExtension);
+  }
 }
