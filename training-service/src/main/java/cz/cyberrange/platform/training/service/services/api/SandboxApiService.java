@@ -161,7 +161,7 @@ public class SandboxApiService {
    * Get APG variables defined in the sandbox definition of the pool.
    *
    * @param poolId the pool id
-   * @return set of APG variables
+   * @return the APG variables wrapped in the sandbox service response
    */
   public Variables getVariablesByPoolId(Long poolId) {
     try {
@@ -181,7 +181,7 @@ public class SandboxApiService {
    * Get APG variables defined in the sandbox definition.
    *
    * @param sandboxDefinitionId the sandbox definition id
-   * @return set of APG variables
+   * @return the APG variables wrapped in the sandbox service response
    */
   public Variables getVariablesBySandboxDefinitionId(Long sandboxDefinitionId) {
     try {
