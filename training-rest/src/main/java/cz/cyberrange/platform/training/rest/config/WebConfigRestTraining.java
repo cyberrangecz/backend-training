@@ -1,13 +1,12 @@
 package cz.cyberrange.platform.training.rest.config;
 
-import cz.cyberrange.platform.training.service.export.YamlExportFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverters;
-import org.springframework.http.converter.yaml.JacksonYamlHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
 /**
@@ -18,6 +17,7 @@ import tools.jackson.dataformat.yaml.YAMLMapper;
 @Configuration
 public class WebConfigRestTraining implements WebMvcConfigurer {
 
+  @Autowired private JsonMapper jsonMapper;
   @Autowired private YAMLMapper yamlMapper;
 
   /**
@@ -34,11 +34,14 @@ public class WebConfigRestTraining implements WebMvcConfigurer {
         .defaultContentType(MediaType.APPLICATION_JSON, MediaType.ALL);
   }
 
-  /** Reads and writes YAML bodies through the application's YAML mapper */
+  /**
+   * Reads and writes JSON and YAML bodies through the application's mappers, which ignore unknown
+   * fields everywhere except in the body of a training definition import
+   */
   @Override
   public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
-    JacksonYamlHttpMessageConverter yamlConverter = new JacksonYamlHttpMessageConverter(yamlMapper);
-    yamlConverter.setSupportedMediaTypes(YamlExportFormat.MEDIA_TYPES);
-    builder.withYamlConverter(yamlConverter);
+    builder
+        .withJsonConverter(ImportBodyConverters.json(jsonMapper))
+        .withYamlConverter(ImportBodyConverters.yaml(yamlMapper));
   }
 }
