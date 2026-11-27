@@ -281,7 +281,9 @@ public class ExportImportFacadeTest {
 
     exportImportFacade.dbImport(importTrainingDefinitionDTO, false);
 
-    then(definitionAttachmentService).should().requireReferencesSupplied(anyList(), eq(List.of()), eq(false));
+    then(definitionAttachmentService)
+        .should()
+        .requireReferencesSupplied(anyList(), eq(List.of()), eq(false));
   }
 
   @Test
@@ -296,8 +298,7 @@ public class ExportImportFacadeTest {
         .requireReferencesSupplied(anyList(), eq(List.of()), eq(true));
     then(definitionAttachmentService)
         .should()
-        .synchronizeLinks(
-            eq(trainingDefinitionImported), anyCollection(), eq(List.of()), eq(true));
+        .synchronizeLinks(eq(trainingDefinitionImported), anyCollection(), eq(List.of()), eq(true));
   }
 
   @Test
@@ -322,7 +323,8 @@ public class ExportImportFacadeTest {
         .requireReferencesSupplied(anyList(), anyCollection(), eq(false));
 
     assertThrows(
-        BadRequestException.class, () -> exportImportFacade.dbImport(importTrainingDefinitionDTO, false));
+        BadRequestException.class,
+        () -> exportImportFacade.dbImport(importTrainingDefinitionDTO, false));
 
     then(trainingDefinitionService).should(never()).create(any(), anyList());
   }
@@ -357,7 +359,8 @@ public class ExportImportFacadeTest {
     byte[] archive = {1};
     given(definitionArchiveReader.read(archive)).willThrow(new BadRequestException("broken"));
 
-    assertThrows(BadRequestException.class, () -> exportImportFacade.dbImportArchive(archive, false));
+    assertThrows(
+        BadRequestException.class, () -> exportImportFacade.dbImportArchive(archive, false));
 
     then(trainingDefinitionService).should(never()).create(any(), anyList());
   }

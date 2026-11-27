@@ -76,8 +76,7 @@ class SecurityServiceTest {
   void participatesInTrainingDefinitionsIsFalseForCallerWithRowButNoRunOrOrganizedInstance() {
     UserRef userRef = mock(UserRef.class);
     when(userService.findUserByUserRefId(CALLER_USER_REF_ID)).thenReturn(Optional.of(userRef));
-    when(trainingRunRepository.findAllByParticipantRefId(CALLER_USER_REF_ID))
-        .thenReturn(List.of());
+    when(trainingRunRepository.findAllByParticipantRefId(CALLER_USER_REF_ID)).thenReturn(List.of());
     when(trainingInstanceRepository.findAllByOrganizersContainsOrderById(userRef))
         .thenReturn(List.of());
 

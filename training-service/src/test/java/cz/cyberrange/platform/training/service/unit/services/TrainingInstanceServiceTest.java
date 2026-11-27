@@ -276,6 +276,50 @@ public class TrainingInstanceServiceTest {
   }
 
   @Test
+  public void updateRunningTrainingInstanceKeepsStartTimeCutToMilliseconds() {
+    TrainingInstance currentInstance = testDataFactory.getOngoingInstance();
+    currentInstance.setId(3L);
+    currentInstance.setStartTime(currentInstance.getStartTime().withNano(123_456_789));
+    TrainingInstance instanceToUpdate = testDataFactory.getOngoingInstance();
+    instanceToUpdate.setId(3L);
+    instanceToUpdate.setStartTime(currentInstance.getStartTime().withNano(123_000_000));
+    instanceToUpdate.setTitle("Renamed");
+    instanceToUpdate.setAccessToken(
+        currentInstance
+            .getAccessToken()
+            .substring(0, currentInstance.getAccessToken().length() - 5));
+    given(trainingInstanceRepository.findById(3L)).willReturn(Optional.of(currentInstance));
+    given(organizerRefRepository.createOrGet(anyLong())).willReturn(user);
+    given(trainingInstanceRepository.save(any(TrainingInstance.class)))
+        .willAnswer(invocation -> invocation.getArgument(0));
+
+    trainingInstanceService.update(instanceToUpdate);
+
+    then(trainingInstanceRepository).should().save(any(TrainingInstance.class));
+  }
+
+  @Test
+  public void updateRunningTrainingInstanceRefusesChangedStartTime() {
+    TrainingInstance currentInstance = testDataFactory.getOngoingInstance();
+    currentInstance.setId(3L);
+    currentInstance.setStartTime(currentInstance.getStartTime().withNano(123_456_789));
+    TrainingInstance instanceToUpdate = testDataFactory.getOngoingInstance();
+    instanceToUpdate.setId(3L);
+    instanceToUpdate.setStartTime(currentInstance.getStartTime().withNano(124_000_000));
+    instanceToUpdate.setAccessToken(
+        currentInstance
+            .getAccessToken()
+            .substring(0, currentInstance.getAccessToken().length() - 5));
+    given(trainingInstanceRepository.findById(3L)).willReturn(Optional.of(currentInstance));
+    given(organizerRefRepository.createOrGet(anyLong())).willReturn(user);
+
+    assertThrows(
+        EntityConflictException.class, () -> trainingInstanceService.update(instanceToUpdate));
+
+    then(trainingInstanceRepository).should(never()).save(any(TrainingInstance.class));
+  }
+
+  @Test
   public void deleteTrainingInstance() {
     trainingInstanceService.delete(trainingInstance2);
     then(trainingInstanceRepository).should().delete(trainingInstance2);

@@ -142,7 +142,8 @@ class DefinitionAttachmentServiceTest {
         List.of(),
         List.of(
             SuppliedAttachment.of("logo.png", PNG_BYTES),
-            SuppliedAttachment.of("unused.txt", TEXT_BYTES)), false);
+            SuppliedAttachment.of("unused.txt", TEXT_BYTES)),
+        false);
 
     then(attachmentFileRepository).should().insertIfAbsent(eq(PNG_HASH), any(), anyLong(), any());
     then(attachmentFileRepository)
@@ -204,7 +205,10 @@ class DefinitionAttachmentServiceTest {
             BadRequestException.class,
             () ->
                 service.synchronizeLinks(
-                    definition, List.of(), List.of(SuppliedAttachment.of("logo.png", PNG_BYTES)), false));
+                    definition,
+                    List.of(),
+                    List.of(SuppliedAttachment.of("logo.png", PNG_BYTES)),
+                    false));
 
     assertTrue(exception.getMessage().contains(MISSING_HASH));
     assertTrue(exception.getMessage().contains(OTHER_MISSING_HASH));
@@ -314,7 +318,8 @@ class DefinitionAttachmentServiceTest {
     service.synchronizeLinks(
         definition,
         List.of(new TrainingMaterialDTO(diagram.hash(), diagram.fileName())),
-        List.of(diagram), false);
+        List.of(diagram),
+        false);
 
     then(definitionAttachmentRepository).should().saveAll(savedLinks.capture());
     assertEquals("diagram.png", savedLinks.getValue().iterator().next().getFileName());
@@ -380,7 +385,8 @@ class DefinitionAttachmentServiceTest {
         List.of(),
         List.of(
             SuppliedAttachment.of("renamed.png", PNG_BYTES),
-            SuppliedAttachment.of("notes.txt", TEXT_BYTES)), false);
+            SuppliedAttachment.of("notes.txt", TEXT_BYTES)),
+        false);
 
     then(definitionAttachmentRepository).should().saveAll(savedLinks.capture());
     List<DefinitionAttachment> created = List.copyOf(toList(savedLinks.getValue()));
@@ -399,7 +405,10 @@ class DefinitionAttachmentServiceTest {
     assertDoesNotThrow(
         () ->
             service.synchronizeLinks(
-                definition, List.of(), List.of(SuppliedAttachment.of("logo.png", PNG_BYTES)), false));
+                definition,
+                List.of(),
+                List.of(SuppliedAttachment.of("logo.png", PNG_BYTES)),
+                false));
   }
 
   @Test
@@ -413,7 +422,10 @@ class DefinitionAttachmentServiceTest {
         PayloadTooLargeException.class,
         () ->
             service.synchronizeLinks(
-                definition, List.of(), List.of(SuppliedAttachment.of("logo.png", PNG_BYTES)), false));
+                definition,
+                List.of(),
+                List.of(SuppliedAttachment.of("logo.png", PNG_BYTES)),
+                false));
     then(attachmentFileRepository).should(never()).deleteUnlinkedByHashIn(anyCollection());
   }
 
@@ -453,7 +465,8 @@ class DefinitionAttachmentServiceTest {
     service.synchronizeLinks(
         definition,
         List.of(new TrainingMaterialDTO(TEXT_HASH, "handout.txt")),
-        List.of(SuppliedAttachment.of("upload.txt", TEXT_BYTES)), false);
+        List.of(SuppliedAttachment.of("upload.txt", TEXT_BYTES)),
+        false);
 
     then(attachmentFileRepository).should().insertIfAbsent(eq(TEXT_HASH), any(), anyLong(), any());
     then(definitionAttachmentRepository).should().saveAll(savedLinks.capture());
@@ -487,7 +500,10 @@ class DefinitionAttachmentServiceTest {
         BadRequestException.class,
         () ->
             service.synchronizeLinks(
-                definition, List.of(new TrainingMaterialDTO(MISSING_HASH, "lost.txt")), List.of(), false));
+                definition,
+                List.of(new TrainingMaterialDTO(MISSING_HASH, "lost.txt")),
+                List.of(),
+                false));
   }
 
   @Test
